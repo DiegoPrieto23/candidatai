@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dialog'
 import { errorMessage } from '@/lib/errors'
 import { cn } from '@/lib/utils'
+import { BusyLabel } from '@/components/StableLabel'
 
 const BENEFITS = ['synonyms', 'languages', 'fewSkills', 'weight'] as const
 
@@ -148,7 +149,7 @@ function SemanticMatchingDialog({ open, onOpenChange }: { open: boolean; onOpenC
               onClick={() => install.mutate(undefined, { onSuccess: () => onOpenChange(false) })}
             >
               <SparkleIcon weight="duotone" />
-              {install.isPending ? t('semantic.starting') : t('semantic.install')}
+              <BusyLabel busy={install.isPending} busyText={t('semantic.starting')} text={t('semantic.install')} />
             </Button>
           )}
         </DialogFooter>

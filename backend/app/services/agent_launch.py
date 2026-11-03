@@ -31,11 +31,12 @@ from collections.abc import Sequence
 from dataclasses import dataclass, field, replace
 from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.config import REPO_ROOT, get_settings
-from app.models import Milestone
+from app.models import Milestone, Source
 from app.models.base import utcnow
 from app.services import (
     agent_prefs,
@@ -45,6 +46,7 @@ from app.services import (
     events,
     interviews,
     process,
+    search_runs,
     terminals,
 )
 from app.services import profile as profiles
@@ -130,6 +132,48 @@ class _Launcher:
     model: str | None = None
     preset: str | None = None
     warning: str | None = None
+
+
+SEARCH_TEXT = r"^[\w .,+#/&()-]*$"
+
+
+class SearchScope(BaseModel):
+    """Lo que elige el usuario en «Buscar ofertas». Sin nada, las plataformas activas con las
+    búsquedas guardadas. El puesto y el lugar van en una orden que abre una terminal: solo letras,
+    cifras y poca puntuación, sin comillas ni nada que el agente o la consola puedan interpretar."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    platform_ids: list[int] = Field(default_factory=list, max_length=50)
+    role: str | None = Field(default=None, max_length=80, pattern=SEARCH_TEXT)
+    location: str | None = Field(default=None, max_length=80, pattern=SEARCH_TEXT)
+
+
+def _check_search_scope(session: Session, scope: SearchScope) -> str:
+    """Lo que se añade a la orden. Las plataformas, por id y solo las que el agente puede recorrer
+    (LinkedIn, solo si la activó el usuario en la UI)."""
+    extra = ""
+    if scope.platform_ids:
+        wanted = set(scope.platform_ids)
+        rows = session.scalars(select(Source).where(Source.id.in_(wanted))).all()
+        allowed = {
+            row.id
+            for row in rows
+            if row.kind == "agent_browse" and row.active and row.config.get("allow_agent_browsing")
+        }
+        if wanted - allowed:
+            raise LaunchError(
+                "invalid_request", "Alguna plataforma elegida no existe o no se puede recorrer."
+            )
+        extra += f" Solo en las plataformas con id {', '.join(map(str, sorted(wanted)))}."
+    fields = (("puesto", scope.role), ("ubicación", scope.location))
+    criteria = [f"{name} «{value}»" for name, value in fields if value]
+    if criteria:
+        extra += (
+            f" Es una búsqueda puntual: {' y '.join(criteria)}. "
+            "No cambies las búsquedas guardadas ni el perfil."
+        )
+    return extra
 
 
 def prompt_for(
@@ -529,6 +573,7 @@ def check_target(
     milestone_id: int | None = None,
     profile_item: str | None = None,
     upload: str | None = None,
+    search: SearchScope | None = None,
 ) -> tuple[str, int | None, int | None]:
     """Comprueba que la acción se puede lanzar para esa oferta o hito y devuelve su orden, con la
     oferta y el hito que le corresponden (`None` si la acción no los usa)."""
@@ -558,7 +603,12 @@ def check_target(
                 raise LaunchError("invalid_request", "Escribe primero qué quieres corregir.")
     job_id = job_id if spec.needs_job else None
     milestone_id = milestone_id if spec.milestone else None
-    return prompt_for(action, job_id, milestone_id, item, path), job_id, milestone_id
+    prompt = prompt_for(action, job_id, milestone_id, item, path)
+    if search is not None and not spec.search_scope:
+        raise LaunchError("invalid_request", f"«{spec.label}» no admite elegir qué buscar.")
+    if search is not None:
+        prompt += _check_search_scope(session, search)
+    return prompt, job_id, milestone_id
 
 
 def launch(
@@ -572,14 +622,19 @@ def launch(
     preset: str | None = None,
     profile_item: str | None = None,
     upload: str | None = None,
+    search: SearchScope | None = None,
 ) -> LaunchResult:
     """Abre el agente en una terminal con la orden de `action`. No espera a que termine. `agent`,
     `model` y `preset`: la elección puntual del botón (si no, las preferencias)."""
     spec = ACTIONS[action]
-    prompt, job_id, _ = check_target(session, action, job_id, milestone_id, profile_item, upload)
+    prompt, job_id, _ = check_target(
+        session, action, job_id, milestone_id, profile_item, upload, search
+    )
     picked = pick(session, action, prompt, agent=agent, model=model, preset=preset)
     result = _open(spec.label, prompt, picked, picked.command, prompt)
     result.job_id = job_id
+    if action == "search-jobs":
+        search_runs.start(session, search.platform_ids if search else [])
     return result
 
 

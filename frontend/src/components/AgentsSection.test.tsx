@@ -184,7 +184,7 @@ function lastPut(calls: ReturnType<typeof mockApi>) {
 
 /** En «Agente», el detalle de los agentes va plegado bajo el resumen (fase 31). */
 async function openAgents() {
-  await userEvent.click(await screen.findByRole('button', { name: /^Tus agentes en detalle/ }))
+  await userEvent.click(await screen.findByRole('button', { name: /^Configurar agentes/ }))
 }
 
 /** Los agentes sin instalar y el ajuste por acción van plegados. */

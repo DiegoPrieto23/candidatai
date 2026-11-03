@@ -20,8 +20,9 @@
     "end": "Dropped on “{{stage}}”. Confirm the event in the dialog.",
     "endNone": "Dropped without moving it.",
     "cancel": "Move cancelled.",
-    "instructions": "Press space to pick up the card, move it with the arrow keys and drop it with space. Esc cancels. You can also use “Move”."
+    "instructions": "Press space to pick up the card, move it with the arrow keys and drop it with space. Esc cancels. You can also use “Update status”."
   },
+  "onlyForward": "The card goes back to its place: cards can only be dragged to the right. To go back, use “Update status”.",
   "noMoves": "This job has no possible moves from here.",
   "refused": "The card goes back to its place. {{reason}}",
   "upcomingEmpty": "Nothing in the next 7 days.",
@@ -33,7 +34,7 @@
     "copy": "Copy address"
   },
   "title": "Processes",
-  "intro": "Drag a card or press “Update status” to record what happened: a reply, an interview, a rejection…",
+  "intro": "Drag a card to the right or press “Update status” to record what happened: a reply, an interview, a rejection…",
   "followups_one": "{{count}} follow-up due",
   "followups_other": "{{count}} follow-ups due",
   "thanks_one": "{{count}} interview to thank for",

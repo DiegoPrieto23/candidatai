@@ -2,7 +2,6 @@
   "tabs": {
     "about": "About you",
     "career": "Experience and education",
-    "search": "Search",
     "documents": "Documents",
     "history": "History"
   },
@@ -27,10 +26,10 @@
       "open": "Start by hand",
       "headlineHint": "What you'd put under your name on a CV, e.g. “Data Analyst · SQL · Power BI”.",
       "role": "Role you're looking for",
-      "roleHint": "One to start with; add more later in “Search”.",
+      "roleHint": "One to start with; add more later in “Search jobs → What you're after”.",
       "summary": "Summary (optional)",
       "summaryHint": "Two or three sentences about you. Left empty, your headline is used.",
-      "defaults": "Everything else (work mode, locations, photo on the CV…) starts open to anything and you change it in “Search” and “Documents”. Your experience and skills go in “Experience and education”.",
+      "defaults": "Everything else (work mode, locations, photo on the CV…) starts open to anything and you change it in “What you're after” and “Documents”. Your experience and skills go in “Experience and education”.",
       "required": "Needed to create your profile.",
       "pickOne": "Pick at least one.",
       "create": "Create my profile",
@@ -137,7 +136,11 @@
       "title": "Skills",
       "hint": "Levels are private: they decide what a CV may claim, but never appear in it. Saving recalculates the fit of your jobs.",
       "levels": "F: strong, you use it daily · C+: used in real projects · C: you know it · B: basic, only as \"knowledge of\".",
-      "addSkill": "Add skill"
+      "addSkill": "Add skill",
+      "filterLabel": "Filter skills by level",
+      "all": "All",
+      "noneAtLevel": "No skills at this level.",
+      "reorderHint": "To change the order, show all of them."
     },
     "stories": {
       "title": "STAR stories",
@@ -171,6 +174,20 @@
     "letter": {
       "title": "Cover letter preferences",
       "hint": "For all your letters. The instructions for each job are on its page and take precedence."
+    },
+    "photo": {
+      "title": "CV photo (optional)",
+      "hint": "You don't need one: without a photo, your CVs go without it. It stays on your computer only and your agent doesn't read it.",
+      "preview": "Your current photo",
+      "choose": "Choose a photo",
+      "upload": "Upload photo",
+      "replace": "Change photo",
+      "uploading": "Uploading…",
+      "remove": "Remove",
+      "confirmRemove": "Yes, remove the photo",
+      "cancel": "Cancel",
+      "formats": "JPG, PNG or WebP, up to 10 MB. Square works best: it's cropped from the centre.",
+      "policyOff": "Your CVs currently go without a photo. To use it, turn on “Put a photo on the CV” in the documents tab."
     }
   },
   "fields": {

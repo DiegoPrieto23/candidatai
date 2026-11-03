@@ -76,7 +76,7 @@
     "intro": "Agent and model for the main actions, in three tiers. Fill them in once and apply one with a click: it changes your “By action” table and can be undone.",
     "economy": {
       "label": "Economy",
-      "help": "Closed actions (process and assess) with a local model; the CV with your most capable agent."
+      "help": "Closed actions (process, assess, replies) with a local model; the CV with your most capable agent."
     },
     "balanced": {
       "label": "Balanced",
@@ -114,10 +114,15 @@
       "linux": "<strong>Install it.</strong> Open a terminal, paste this command and press Enter:"
     },
     "step3": "<strong>Sign in.</strong> When it's done, open another window like that one, type “claude”, press Enter and follow the steps to sign in with your Claude account.",
-    "step4": "Close CandidatAI and open it again from its shortcut: the buttons with sparkles will open your agent with the command already written.",
+    "step4": "Close CandidatAI and open it again from its shortcut: the buttons with the robot will open your agent with the command already written.",
     "commandLabel": "Command to install Claude Code",
     "guide": "The step-by-step guide",
     "otherAgents": "Other agents, in “Agent”"
   },
-  "details": "Your agents in detail: versions, models and which one opens what"
+  "configure": {
+    "title": "Versions, models and which one opens what",
+    "body": "Check what you have installed, choose the models and decide which agent each action uses.",
+    "open": "Configure agents",
+    "close": "Hide the settings"
+  }
 }

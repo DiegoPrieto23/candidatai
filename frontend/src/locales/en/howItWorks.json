@@ -37,7 +37,7 @@
     },
     "follow": {
       "title": "Follow your processes and learn",
-      "body": "“{{processes}}” shows where each application stands and which have gone days without a reply. When a company replies, you note it on its job page. “{{calendar}}” gathers your interviews and other dates, “{{funnel}}” where your applications stall and “{{skills}}” what's being asked for that you don't have yet."
+      "body": "“{{processes}}” shows where each application stands and which ones have gone days without a reply. “{{replies}}” gathers the companies' emails, if you turn on reading them in a mailbox; otherwise you note it in the job. “{{calendar}}” gathers your interviews and other dates, “{{funnel}}” where your applications stall and “{{skills}}” what they ask for that you don't have yet."
     }
   },
   "guides": {

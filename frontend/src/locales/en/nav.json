@@ -23,11 +23,13 @@
     "home": "Home",
     "howItWorks": "How it works",
     "inbox": "Job inbox",
-    "processes": "Processes",
+    "processes": "Board",
     "funnel": "Funnel",
-    "sources": "Where to search",
     "profile": "My profile",
-    "agent": "Agent"
+    "agent": "Agent",
+    "calendar": "Calendar",
+    "replies": "Replies",
+    "search": "Search jobs"
   },
   "counts": {
     "toReview": "to review",
@@ -73,13 +75,46 @@
     "review": "Quick review",
     "complete": "To complete",
     "withCount": "{{label}} ({{count}})",
-    "processesLabel": "Process views",
-    "board": "Board",
-    "calendar": "Calendar",
     "profileLabel": "Sections of your profile",
     "profile": "My profile",
     "skills": "Skills you lack",
     "templates": "CV templates",
-    "email": "Email alerts"
+    "email": "Email alerts",
+    "searchLabel": "Search sections",
+    "search": "Search",
+    "searchSettings": "What you're after",
+    "sources": "Where to search"
+  },
+  "searchRun": {
+    "running": {
+      "title": "Searching for jobs…",
+      "body": "Your agent is still working in its window."
+    },
+    "counts_one": "{{done}} of {{total}} job boards · {{count}} new job",
+    "counts_other": "{{done}} of {{total}} job boards · {{count}} new jobs",
+    "stale": {
+      "title": "No news from your agent",
+      "body": "It hasn't added anything for a while. Check its window: it may be waiting for you, or it may have closed."
+    },
+    "done": {
+      "title": "Search finished",
+      "body_one": "{{count}} new job out of {{found}} seen.",
+      "body_other": "{{count}} new jobs out of {{found}} seen."
+    },
+    "no_browser": {
+      "title": "Your agent couldn't search",
+      "body": "It can't reach your browser. Connect it as “Before you start” explains and launch the search again."
+    },
+    "stopped": {
+      "title": "Your agent stopped before the end",
+      "body": "Its window says why. What it had already found is in the Inbox."
+    },
+    "problems_one": "{{count}} problem on the job boards. See it in “Where to search”.",
+    "problems_other": "{{count}} problems on the job boards. See them in “Where to search”.",
+    "seeInbox": "See in the Inbox",
+    "close": "Close this notice",
+    "notification": "See the result in CandidatAI.",
+    "minimize": "Minimise this notice",
+    "expand": "{{title}}: open this notice"
   }
 }

@@ -35,6 +35,11 @@ export function stepOptions(card: BoardCard, moves: BoardMove[]): MoveOption[] {
   return options
 }
 
+/** Las tarjetas se arrastran solo hacia la derecha: hacia etapas posteriores del tablero. */
+export function isForward(order: readonly Stage[], from: Stage, to: Stage): boolean {
+  return order.indexOf(to) > order.indexOf(from)
+}
+
 /** Por qué no se puede soltar una tarjeta en una columna. */
 export function noMoveReason(card: BoardCard, target: Stage): string {
   const t = i18n.getFixedT(null, 'move', 'noMove')

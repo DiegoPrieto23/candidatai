@@ -24,6 +24,7 @@ from app.services.pipeline import (
 )
 from app.services.process import (
     followup_status,
+    jobs_with_pending_replies,
     local_zone,
     start_of_local_day,
 )
@@ -151,11 +152,14 @@ def list_followups_due(
     job_ids = [app.job_id for app, _, _ in rows]
     last = _last_followups(session, job_ids)
     sent = drafts.followups_sent(session, job_ids)
+    replied = jobs_with_pending_replies(session, job_ids)
     due: list[tuple[Application, Job, str, int]] = []
     for application, job, company in rows:
         if sent.get(job.id, 0) >= policy.max_followups:
             continue
-        status = followup_status(application, last.get(job.id), threshold, now)
+        status = followup_status(
+            application, last.get(job.id), threshold, now, reply_pending=job.id in replied
+        )
         if status is None or not status.due or status.days_waiting is None:
             continue
         due.append((application, job, company, status.days_waiting))
@@ -461,6 +465,7 @@ def get_board(
     job_ids = [app.job_id for app, *_ in rows]
     followups = _last_followups(session, job_ids)
     sent = drafts.followups_sent(session, job_ids)
+    replied = jobs_with_pending_replies(session, job_ids)
     next_milestones = _next_milestones(session, job_ids, start_of_local_day(now))
     closings = _closings(session, [app.job_id for app, *_ in closed_rows])
 
@@ -473,6 +478,7 @@ def get_board(
             threshold,
             now,
             sent.get(application.job_id, 0),
+            reply_pending=application.job_id in replied,
         )
         closed_by = reopen_to = None
         if stage == Stage.CLOSED:

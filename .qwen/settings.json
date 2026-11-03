@@ -39,11 +39,15 @@
       "mcp__candidatai__get_funnel_stats",
       "mcp__candidatai__get_calibration",
       "mcp__candidatai__get_skill_gaps",
+      "mcp__candidatai__list_replies",
+      "mcp__candidatai__get_reply",
+      "mcp__candidatai__save_reply_proposal",
       "mcp__candidatai__save_message_draft",
       "mcp__candidatai__get_job_contacts",
       "mcp__candidatai__get_company_research",
       "mcp__candidatai__get_received_offer",
       "mcp__candidatai__wait_user_action",
+      "mcp__candidatai__finish_search",
       "mcp__candidatai__list_agent_requests"
     ],
     "deny": [

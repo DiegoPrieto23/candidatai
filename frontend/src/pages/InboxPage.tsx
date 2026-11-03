@@ -484,7 +484,7 @@ function StageFilter({
               type="button"
               {...radios.item(key, index)}
               className={cn(
-                'flex items-baseline gap-1.5 rounded-full border px-3 py-1 text-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                'flex items-baseline gap-1.5 rounded-md border px-2.5 py-1 text-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 selected
                   ? 'border-foreground bg-foreground text-background'
                   : 'bg-card text-foreground/80 hover:border-foreground/30',
@@ -514,7 +514,7 @@ function TableSkeleton() {
             <Skeleton className="h-3.5 w-40" />
           </div>
           <Skeleton className="hidden h-4 w-16 md:block" />
-          <Skeleton className="h-6 w-20 rounded-full" />
+          <Skeleton className="h-6 w-20" />
           <Skeleton className="hidden h-4 w-16 md:block" />
         </div>
       ))}

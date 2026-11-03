@@ -43,7 +43,7 @@ describe('Selector de idioma (fase 23.6)', () => {
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Job inbox' })).toBeInTheDocument()
     expect(screen.getByRole('navigation', { name: 'Main navigation' })).toBeInTheDocument()
-    expect(await screen.findByRole('link', { name: 'Job inbox (3 to review)' })).toBeInTheDocument()
+    expect(await screen.findByRole('link', { name: 'Job inbox' })).toBeInTheDocument()
     expect(document.documentElement.lang).toBe('en')
     expect(localStorage.getItem('cai-language')).toBe('en')
     expect(detectLanguage()).toBe('en')

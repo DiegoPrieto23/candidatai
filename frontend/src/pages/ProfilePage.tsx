@@ -22,14 +22,8 @@ import { HistoryBlock } from '@/components/profile/HistoryBlock'
 import { blockAnchor } from '@/components/profile/editor'
 import { CertificationsBlock, EducationBlock, ExtraSectionsBlock, ProjectsBlock } from '@/components/profile/ItemsBlocks'
 import { PersonalBlock } from '@/components/profile/PersonalBlock'
-import {
-  CvPreferencesBlock,
-  LetterPreferencesBlock,
-  SearchContractBlock,
-  SearchExperienceBlock,
-  SearchRoleBlock,
-  SearchWhereBlock,
-} from '@/components/profile/PreferencesBlocks'
+import { PhotoBlock } from '@/components/profile/PhotoBlock'
+import { CvPreferencesBlock, LetterPreferencesBlock } from '@/components/profile/PreferencesBlocks'
 import { LanguagesBlock, SkillsBlock } from '@/components/profile/SkillsBlock'
 import { StartByHand } from '@/components/profile/StartByHand'
 import { StartFromCv } from '@/components/profile/StartFromCv'
@@ -38,6 +32,7 @@ import { errorMessage } from '@/lib/errors'
 import { focusArrival } from '@/lib/focus'
 import { dateFormatter, formatNumber } from '@/lib/labels'
 import { cn } from '@/lib/utils'
+import { BusyLabel } from '@/components/StableLabel'
 
 function formatSize(bytes: number): string {
   return bytes < 1024 ? `${bytes} B` : `${formatNumber(bytes / 1024, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} KB`
@@ -149,7 +144,7 @@ function UploadDocument({ folder }: { folder: SourceDocumentFolder }) {
         }}
       />
       <Button type="button" size="sm" variant="outline" disabled={upload.isPending} onClick={() => input.current?.click()}>
-        <UploadSimpleIcon /> {upload.isPending ? t('upload.uploading') : t(`upload.${folder}`)}
+        <UploadSimpleIcon /> <BusyLabel busy={upload.isPending} busyText={t('upload.uploading')} text={t(`upload.${folder}`)} />
       </Button>
       {error && (
         <p role="alert" className="basis-full text-sm text-destructive">
@@ -230,8 +225,8 @@ function FilesOverview({ editorsAbove = false }: { editorsAbove?: boolean }) {
   )
 }
 
-/** Cinco pestañas en una fila: lo del CV junto, la búsqueda, lo que orienta al agente y el historial. */
-const TABS = ['about', 'career', 'search', 'documents', 'history'] as const
+/** Cuatro pestañas en una fila: lo del CV junto, lo que orienta al agente y el historial. */
+const TABS = ['about', 'career', 'documents', 'history'] as const
 type Tab = (typeof TABS)[number]
 
 /** Dónde está un bloque: su pestaña, el bloque de la página que lo contiene y su nombre. */
@@ -253,17 +248,12 @@ const PLACES: Record<string, { tab: Tab; anchor?: string; title: string }> = {
   certifications: { tab: 'career', title: 'blocks.certifications.title' },
   extra_sections: { tab: 'career', title: 'blocks.extra.title' },
   stories: { tab: 'career', title: 'blocks.stories.title' },
-  'search-role': { tab: 'search', title: 'blocks.searchRole.title' },
-  'search-experience': { tab: 'search', title: 'blocks.searchExperience.title' },
-  'salary-floor': { tab: 'search', anchor: 'search-experience', title: 'fields.salaryFloor' },
-  'search-where': { tab: 'search', title: 'blocks.searchWhere.title' },
-  'search-contract': { tab: 'search', title: 'blocks.searchContract.title' },
   cv: { tab: 'documents', title: 'blocks.cv.title' },
   letter: { tab: 'documents', title: 'blocks.letter.title' },
 }
 
 /** Los apartados de «Experiencia y formación», en el orden en que salen. */
-const CAREER_BLOCKS = ['skills', 'languages', 'experience', 'projects', 'education', 'certifications', 'extra_sections', 'stories'] as const
+const CAREER_BLOCKS = ['experience', 'skills', 'languages', 'projects', 'education', 'certifications', 'extra_sections', 'stories'] as const
 
 function usePlace() {
   const { t } = useTranslation('profileEditor')
@@ -359,7 +349,7 @@ function SectionNav({ onGo }: { onGo: (place: BlockPlace) => void }) {
                   event.preventDefault()
                   onGo(item)
                 }}
-                className="flex items-baseline gap-1.5 rounded-full border bg-card px-3 py-1 text-sm text-foreground/80 transition-colors outline-none hover:border-foreground/30 focus-visible:ring-2 focus-visible:ring-ring"
+                className="flex items-baseline gap-1.5 rounded-md border bg-card px-2.5 py-1 text-sm text-foreground/80 transition-colors outline-none hover:border-foreground/30 focus-visible:ring-2 focus-visible:ring-ring"
               >
                 {item.title}
                 <span className="tabular text-xs text-muted-foreground">{count}</span>
@@ -392,25 +382,20 @@ function Editor() {
         ))}
       </TabsList>
       {/* `forceMount`: cambiar de pestaña no pierde lo que no se ha guardado. */}
-      <TabsContent value="about" forceMount className={hidden}>
+      <TabsContent value="about" forceMount className={cn('grid gap-6', hidden)}>
         <PersonalBlock />
+        <PhotoBlock />
       </TabsContent>
       <TabsContent value="career" forceMount className={cn('grid gap-6', hidden)}>
         <SectionNav onGo={goTo} />
+        <ExperienceBlock />
         <SkillsBlock />
         <LanguagesBlock />
-        <ExperienceBlock />
         <ProjectsBlock />
         <EducationBlock />
         <CertificationsBlock />
         <ExtraSectionsBlock />
         <StoriesBlock />
-      </TabsContent>
-      <TabsContent value="search" forceMount className={cn('grid gap-6', hidden)}>
-        <SearchRoleBlock />
-        <SearchExperienceBlock />
-        <SearchWhereBlock />
-        <SearchContractBlock />
       </TabsContent>
       <TabsContent value="documents" forceMount className={cn('grid gap-6', hidden)}>
         <CvPreferencesBlock />
@@ -472,7 +457,7 @@ export function ProfilePage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl animate-in fade-in duration-300">
+    <div className="max-w-4xl animate-in fade-in duration-300">
       <div className="mb-8">
         <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
         <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">

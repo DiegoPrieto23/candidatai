@@ -366,8 +366,7 @@ describe('Mi perfil editable', () => {
             return saved('preferences', { diff })
           }),
     })
-    renderApp('/perfil')
-    await openTab('Búsqueda')
+    renderApp('/buscar/ajustes')
     const block = await screen.findByRole('region', { name: 'Puesto' })
     await userEvent.type(within(block).getByRole('textbox', { name: 'Puestos que buscas' }), 'Analytics Engineer{Enter}')
     await userEvent.click(within(block).getByRole('button', { name: 'Guardar' }))
@@ -391,8 +390,7 @@ describe('Mi perfil editable', () => {
 
   it('«Búsqueda» va en cuatro bloques, cada uno con su botón de guardar', async () => {
     mockApi(BASE)
-    renderApp('/perfil')
-    await openTab('Búsqueda')
+    renderApp('/buscar/ajustes')
     for (const name of ['Puesto', 'Experiencia y sueldo', 'Dónde y cómo', 'Contrato y empresa']) {
       const block = await screen.findByRole('region', { name })
       expect(within(block).getByRole('button', { name: 'Guardar' })).toBeDisabled()
@@ -407,8 +405,7 @@ describe('Mi perfil editable', () => {
 
   it('en una etiqueta, el campo va antes que las etiquetas: los de una fila empiezan a la misma altura', async () => {
     mockApi(BASE)
-    renderApp('/perfil')
-    await openTab('Búsqueda')
+    renderApp('/buscar/ajustes')
     const block = await screen.findByRole('region', { name: 'Dónde y cómo' })
     const input = within(block).getByRole('textbox', { name: 'Ubicaciones preferidas' })
     const tags = within(block).getByRole('list', { name: 'Ubicaciones preferidas' })
@@ -417,8 +414,7 @@ describe('Mi perfil editable', () => {
 
   it('los años mínimo y máximo se guardan como un rango', async () => {
     const calls = mockApi({ ...BASE, 'PUT /profile/sections/preferences': saved('preferences', { dry_run: true, diff: '+  min_years_required: 2' }) })
-    renderApp('/perfil')
-    await openTab('Búsqueda')
+    renderApp('/buscar/ajustes')
     const block = await screen.findByRole('region', { name: 'Experiencia y sueldo' })
     await userEvent.type(within(block).getByRole('spinbutton', { name: 'Desde' }), '2')
     await userEvent.type(within(block).getByRole('spinbutton', { name: 'Hasta' }), '5')
@@ -436,8 +432,7 @@ describe('Mi perfil editable', () => {
       ...BASE,
       'PUT /profile/salary-floor': { changed: true, file_hash: 'h2', profile_version_id: 4, rescore_queued: true },
     })
-    renderApp('/perfil')
-    await openTab('Búsqueda')
+    renderApp('/buscar/ajustes')
     const block = await screen.findByRole('region', { name: 'Experiencia y sueldo' })
     const field = await within(block).findByRole('spinbutton', { name: 'Sueldo mínimo' })
     await waitFor(() => expect(field).toHaveValue(30000))
@@ -468,8 +463,7 @@ describe('Mi perfil editable', () => {
         body: { ok: false, error: { type: 'conflict', message: 'El fichero ha cambiado.', details: [] } },
       },
     })
-    renderApp('/perfil')
-    await openTab('Búsqueda')
+    renderApp('/buscar/ajustes')
     const block = await screen.findByRole('region', { name: 'Experiencia y sueldo' })
     const field = await within(block).findByRole('spinbutton', { name: 'Sueldo mínimo' })
     await waitFor(() => expect(field).toHaveValue(30000))
@@ -486,8 +480,7 @@ describe('Mi perfil editable', () => {
 
   it('contrato y empresa: casillas, y «Temporal» de exclude_signals se guarda como contract_types', async () => {
     const calls = mockApi({ ...BASE, 'PUT /profile/sections/preferences': saved('preferences', { dry_run: true, diff: 'x' }) })
-    renderApp('/perfil')
-    await openTab('Búsqueda')
+    renderApp('/buscar/ajustes')
     const block = await screen.findByRole('region', { name: 'Contrato y empresa' })
     // `exclude_signals: [fixed_term]` es no aceptar temporal: «Temporal» sale sin marcar.
     expect(within(block).getByRole('checkbox', { name: 'Indefinido' })).toBeChecked()
@@ -686,15 +679,54 @@ describe('Mi perfil editable', () => {
     expect(within(preview).getByText('Sin guardias').tagName).toBe('STRONG')
   })
 
-  it('«Experiencia y formación» abre con un índice de apartados: Skills e Idiomas primero, cada uno en su bloque', async () => {
+  it('filtra las skills por nivel y una nueva se ve aunque hubiera filtro', async () => {
+    mockApi(BASE)
+    renderApp('/perfil')
+    await openTab('Experiencia y formación')
+    const block = await screen.findByRole('region', { name: 'Skills' })
+    const filters = within(block).getByRole('group', { name: 'Filtrar skills por nivel' })
+    const rows = () => within(block).queryAllByRole('textbox', { name: 'Skill' })
+    expect(rows().length).toBeGreaterThan(0)
+    await userEvent.click(within(filters).getByRole('button', { name: /^B/ }))
+    expect(within(filters).getByRole('button', { name: /^B/ })).toHaveAttribute('aria-pressed', 'true')
+    expect(rows()).toHaveLength(0)
+    expect(within(block).getByText('Ninguna skill con este nivel.')).toBeInTheDocument()
+    const before = within(filters).getByRole('button', { name: /^Todas/ }).textContent
+    await userEvent.click(within(block).getByRole('button', { name: 'Añadir skill' }))
+    expect(within(filters).getByRole('button', { name: /^Todas/ })).toHaveAttribute('aria-pressed', 'true')
+    expect(rows().length).toBeGreaterThan(0)
+    expect(within(filters).getByRole('button', { name: /^Todas/ }).textContent).not.toBe(before)
+  })
+
+  it('la foto es opcional: se sube, se cambia y se quita pidiendo confirmación', async () => {
+    const saved = { exists: true, filename: 'photo.png', size_bytes: 10, version: 'a' }
+    const calls = mockApi({
+      ...BASE,
+      'GET /profile/photo': { exists: false, filename: null, size_bytes: null, version: null },
+      'PUT /profile/photo': saved,
+      'DELETE /profile/photo': { exists: false, filename: null, size_bytes: null, version: null },
+    })
+    renderApp('/perfil')
+    const block = await screen.findByRole('region', { name: 'Foto para el CV (opcional)' })
+    expect(await within(block).findByRole('button', { name: 'Subir foto' })).toBeInTheDocument()
+    await userEvent.upload(within(block).getByLabelText('Elegir una foto'), new File(['x'], 'yo.png', { type: 'image/png' }))
+    expect(await within(block).findByRole('img', { name: 'Tu foto actual' })).toBeInTheDocument()
+    expect(calls.find((c) => c.method === 'PUT')?.body).toEqual({ content_base64: btoa('x') })
+    await userEvent.click(within(block).getByRole('button', { name: 'Quitar' }))
+    expect(calls.some((c) => c.method === 'DELETE')).toBe(false)
+    await userEvent.click(within(block).getByRole('button', { name: 'Sí, quitar la foto' }))
+    expect(await within(block).findByRole('button', { name: 'Subir foto' })).toBeInTheDocument()
+  })
+
+  it('«Experiencia y formación» abre con un índice de apartados: Experiencia primero, cada uno en su bloque', async () => {
     mockApi(BASE)
     renderApp('/perfil')
     await openTab('Experiencia y formación')
     const nav = await screen.findByRole('navigation', { name: 'Ir a un apartado' })
     expect(within(nav).getAllByRole('link').map((link) => link.textContent)).toEqual([
+      'Experiencia2',
       'Skills1',
       'Idiomas1',
-      'Experiencia2',
       'Proyectos1',
       'Formación0',
       'Certificaciones0',

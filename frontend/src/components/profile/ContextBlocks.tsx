@@ -24,6 +24,7 @@ import { cn } from '@/lib/utils'
 import { Block } from './fields'
 import { MarkdownPreview } from './MarkdownPreview'
 import { useOptionalProfileState } from './editor'
+import { BusyLabel } from '@/components/StableLabel'
 
 export const CONTEXT_SECTIONS: ContextSectionName[] = ['estilo-redaccion', 'perfil-conductual', 'criterios', 'narrativa']
 
@@ -108,7 +109,7 @@ export function ContextFileEditor({ section }: { section: ContextSectionName }) 
       )}
       <div className="flex flex-wrap items-center gap-2 border-t pt-3">
         <Button type="button" size="sm" disabled={!dirty || save.isPending || bytes > max} onClick={submit}>
-          {save.isPending ? t('actions.saving') : t('actions.save')}
+          <BusyLabel busy={save.isPending} busyText={t('actions.saving')} text={t('actions.save')} />
         </Button>
         {(dirty || conflict) && (
           <Button
@@ -181,7 +182,7 @@ export function StyleSamplesBlock() {
       actions={
         <div className="flex flex-wrap gap-2">
           <Button type="button" size="sm" variant="outline" disabled={upload.isPending} onClick={() => input.current?.click()}>
-            <UploadSimpleIcon /> {upload.isPending ? t('style.uploading') : t('style.upload')}
+            <UploadSimpleIcon /> <BusyLabel busy={upload.isPending} busyText={t('style.uploading')} text={t('style.upload')} />
           </Button>
           <OpenFolderButton folder="estilo" ariaLabel={t('style.openFolder')} />
         </div>

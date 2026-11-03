@@ -97,47 +97,128 @@ export function LanguagesBlock() {
   )
 }
 
+type LevelFilter = Skill['level'] | 'all'
+
+/** Una skill en una sola línea: con muchas, la lista tiene que caber sin tanto scroll. */
+function SkillRow({
+  skill,
+  error,
+  index,
+  count,
+  canMove,
+  onChange,
+  onMove,
+  onRemove,
+}: {
+  skill: Skill
+  error?: string
+  index: number
+  count: number
+  canMove: boolean
+  onChange: (change: Partial<Skill>) => void
+  onMove: (delta: number) => void
+  onRemove: () => void
+}) {
+  const { t } = useTranslation('profileEditor')
+  const label = skill.name || t('fields.skill')
+  return (
+    <div role="group" aria-label={label} className="grid gap-1 rounded-md bg-muted/40 px-2 py-1">
+      <div className="grid grid-cols-[minmax(0,1.4fr)_4.25rem_minmax(0,1fr)_auto] items-center gap-1.5">
+        <Input
+          aria-label={t('fields.skill')}
+          aria-invalid={Boolean(error)}
+          className="h-8 px-2"
+          value={skill.name}
+          onChange={(e) => onChange({ name: e.target.value })}
+        />
+        <select
+          aria-label={t('fields.level')}
+          title={t(`levels.${skill.level}`)}
+          className={`${SELECT} h-8 px-1.5 font-normal`}
+          value={skill.level}
+          onChange={(e) => onChange({ level: e.target.value as Skill['level'] })}
+        >
+          {SKILL_LEVELS.map((level) => (
+            <option key={level} value={level} title={t(`levels.${level}`)}>
+              {level}
+            </option>
+          ))}
+        </select>
+        <Input
+          aria-label={t('fields.category')}
+          placeholder={t('fields.category')}
+          className="h-8 px-2"
+          value={skill.category ?? ''}
+          onChange={(e) => onChange({ category: e.target.value })}
+        />
+        <ItemControls label={label} index={index} count={canMove ? count : 1} onMove={onMove} onRemove={onRemove} />
+      </div>
+      {error && <p className="text-xs text-destructive">{error}</p>}
+    </div>
+  )
+}
+
 /** Skills con su nivel privado y skills básicas. Cambiarlas recalcula los scores. */
 export function SkillsBlock() {
   const { t } = useTranslation('profileEditor')
   const block = useBlockEditor('skills', read, write, { preview: true })
   const { skills, basic_skills } = block.draft
+  const [filter, setFilter] = useState<LevelFilter>('all')
   const err = (path: string) => block.errors.get(path)
   const setSkill = (i: number, change: Partial<Skill>) =>
     block.update((d) => ({ ...d, skills: replaceAt(d.skills, i, { ...d.skills[i], ...change }) }))
+  const shown = skills.flatMap((skill, index) => (filter === 'all' || skill.level === filter ? [{ skill, index }] : []))
+  const filters: LevelFilter[] = ['all', ...SKILL_LEVELS]
   return (
     <Block id="skills" title={t('blocks.skills.title')} hint={t('blocks.skills.hint')}>
       <div className="grid gap-2">
         <p className="text-xs text-muted-foreground">{t('blocks.skills.levels')}</p>
-        {skills.map((skill, i) => (
-          <div key={`${i}-${skill.name}`} role="group" aria-label={skill.name || t('fields.skill')} className="grid gap-3 rounded-md bg-muted/40 p-3 sm:grid-cols-[1fr_8rem_1fr_auto]">
-            <TextField label={t('fields.skill')} value={skill.name} error={err(`skills.${i}.name`)} onChange={(v) => setSkill(i, { name: v })} />
-            <Label className="grid content-start gap-1.5">
-              {t('fields.level')}
-              <select className={`${SELECT} font-normal`} value={skill.level} onChange={(e) => setSkill(i, { level: e.target.value as Skill['level'] })}>
-                {SKILL_LEVELS.map((level) => (
-                  <option key={level} value={level}>
-                    {t(`levels.${level}`)}
-                  </option>
-                ))}
-              </select>
-            </Label>
-            <TextField label={t('fields.category')} value={skill.category} onChange={(v) => setSkill(i, { category: v })} />
-            <ItemControls
-              label={skill.name || t('fields.skill')}
-              index={i}
+        <div role="group" aria-label={t('blocks.skills.filterLabel')} className="flex flex-wrap gap-1">
+          {filters.map((level) => {
+            const total = level === 'all' ? skills.length : skills.filter((s) => s.level === level).length
+            return (
+              <Button
+                key={level}
+                type="button"
+                size="sm"
+                variant={filter === level ? 'default' : 'outline'}
+                aria-pressed={filter === level}
+                title={level === 'all' ? undefined : t(`levels.${level}`)}
+                onClick={() => setFilter(level)}
+              >
+                {level === 'all' ? t('blocks.skills.all') : level}
+                <span className="tabular text-xs opacity-70">{total}</span>
+              </Button>
+            )
+          })}
+        </div>
+        {shown.length === 0 && skills.length > 0 && <p className="py-2 text-sm text-muted-foreground">{t('blocks.skills.noneAtLevel')}</p>}
+        <div className="grid gap-1 2xl:grid-cols-2">
+          {shown.map(({ skill, index }) => (
+            <SkillRow
+              key={index}
+              skill={skill}
+              index={index}
               count={skills.length}
-              onMove={(delta) => block.update((d) => ({ ...d, skills: move(d.skills, i, delta) }))}
-              onRemove={() => block.update((d) => ({ ...d, skills: removeAt(d.skills, i) }))}
+              canMove={filter === 'all'}
+              error={err(`skills.${index}.name`)}
+              onChange={(change) => setSkill(index, change)}
+              onMove={(delta) => block.update((d) => ({ ...d, skills: move(d.skills, index, delta) }))}
+              onRemove={() => block.update((d) => ({ ...d, skills: removeAt(d.skills, index) }))}
             />
-          </div>
-        ))}
+          ))}
+        </div>
+        {filter !== 'all' && shown.length > 1 && <p className="text-xs text-muted-foreground">{t('blocks.skills.reorderHint')}</p>}
         <Button
           type="button"
           size="sm"
           variant="ghost"
           className="justify-self-start"
-          onClick={() => block.update((d) => ({ ...d, skills: [...d.skills, { name: '', level: 'C' }] }))}
+          onClick={() => {
+            // Una nueva nace en C: con otro filtro, desaparecería nada más añadirla.
+            setFilter('all')
+            block.update((d) => ({ ...d, skills: [...d.skills, { name: '', level: 'C' }] }))
+          }}
         >
           <PlusIcon /> {t('blocks.skills.addSkill')}
         </Button>

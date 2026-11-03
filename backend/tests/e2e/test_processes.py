@@ -7,7 +7,9 @@ El agente se simula con los comandos `cai … --json` (`tests/e2e/agent.py`).
 
 import re
 from copy import deepcopy
-from datetime import date, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
+from email.utils import format_datetime
+from typing import Any
 from zoneinfo import ZoneInfo
 
 import pytest
@@ -28,6 +30,7 @@ from tests.e2e.flows import (
     timeline,
 )
 from tests.e2e.harness import AppServer, t
+from tests.e2e.sites import FIXTURES
 
 pytestmark = pytest.mark.e2e
 
@@ -123,7 +126,7 @@ def test_an_interview_is_scheduled_prepared_and_debriefed(
     assert api(server, f"/jobs/{job_id}")["stage"] == "in_process"
 
     # En el Calendario (agenda de ese día) y en los próximos 7 días de Inicio.
-    page.goto(f"/procesos/calendario?view=agenda&date={when.date().isoformat()}")
+    page.goto(f"/calendario?view=agenda&date={when.date().isoformat()}")
     agenda = page.get_by_role("button", name=_starts(f"10:00 {title} · "))
     expect(agenda).to_contain_text(COMPANY)
     page.goto("/")
@@ -465,6 +468,11 @@ def _funnel_since(page: Page, preset: str) -> str | None:
 
 def _check_against_agent_interface(page: Page, server: AppServer, since: str | None) -> list[int]:
     stats = cai(server, "stats", "funnel", *(["--since", since] if since else []))
+    # Las cifras van plegadas en «Tu embudo»; cada periodo o recarga las puede volver a plegar.
+    numbers = page.get_by_role("button", name=t("funnel.flow.numbers"))
+    expect(numbers).to_be_visible()
+    if numbers.get_attribute("aria-expanded") == "false":
+        numbers.click()
     # Se espera a que la página pinte las cifras de ese periodo (las del anterior siguen hasta
     # que llega la respuesta).
     funnel = page.locator("table").filter(
@@ -474,13 +482,24 @@ def _check_against_agent_interface(page: Page, server: AppServer, since: str | N
     expect(funnel.locator("tbody td:first-of-type")).to_have_text(
         [re.compile(rf"^{s['count']}(\D|$)") for s in stats["steps"]]
     )
-    # El gráfico de embudo: una franja visible por etapa, también las que están a 0.
-    strips = page.locator(".recharts-funnel-trapezoid")
-    expect(strips).to_have_count(len(stats["steps"]))
-    for strip in strips.all():
-        box = strip.bounding_box()
-        assert box is not None
-        assert box["width"] > 0
+    # El gráfico dice las mismas cifras, y un paso con candidaturas se dibuja con su alto.
+    by_step = {s["step"]: s["count"] for s in stats["steps"]}
+    if by_step["applied"]:
+        chart = page.locator("section[aria-labelledby=funnel-flow] svg[role=img]")
+        expect(chart).to_have_attribute(
+            "aria-label",
+            t(
+                "funnel.flow.chartLabel",
+                applied=by_step["applied"],
+                replied=by_step["replied"],
+                interview=by_step["interview"],
+                offer=by_step["offer"],
+                accepted=by_step["accepted"],
+            ),
+        )
+        first = chart.locator("rect").first.bounding_box()
+        assert first is not None
+        assert first["height"] > 0
     steps = _table(page, t("funnel.funnel.caption"))
     assert [row[0] for row in steps] == [t(f"funnel.steps.{s['step']}") for s in stats["steps"]]
     assert [_numbers(row[1])[0] for row in steps] == [s["count"] for s in stats["steps"]]
@@ -615,3 +634,157 @@ def test_the_stage_shown_follows_the_projection_from_new_to_accepted(
         "interview_scheduled", "interview_done", "test_assigned", "offer_received", "accepted",
     ):  # fmt: skip
         assert event in events, events
+
+
+def _replies(server: AppServer) -> list[dict[str, Any]]:
+    """Los correos guardados, como los ve «Respuestas» (con asunto y ofertas candidatas)."""
+    out: list[dict[str, Any]] = api(server, "/replies", limit=500)["replies"]
+    return out
+
+
+def _drop_mail(server: AppServer, name: str, when: datetime) -> None:
+    """Deja un correo exportado en `data/inbox/respuestas/`, con su fecha."""
+    inbox = server.data_dir / "inbox" / "respuestas"
+    inbox.mkdir(parents=True, exist_ok=True)
+    raw = (FIXTURES / name).read_text(encoding="utf-8").replace("{date}", format_datetime(when))
+    (inbox / name).write_bytes(raw.replace("\n", "\r\n").encode("utf-8"))
+
+
+def test_replies_are_proposed_by_the_agent_and_decided_by_you(
+    page: Page, fresh_demo_app: AppServer
+) -> None:
+    server = fresh_demo_app
+    job_id = applied_job(server, COMPANY, COMPANY_URL)
+    before = {r["reply_id"] for r in _replies(server)}
+    sent_at = datetime.now(UTC) + timedelta(minutes=1)  # posterior al envío
+    for name in ("respuesta-entrevista.eml", "respuesta-otra.eml", "correo-ajeno.eml"):
+        _drop_mail(server, name, sent_at)
+
+    page.goto("/respuestas")
+    page.get_by_role("button", name=t("replies.page.poll")).click()
+    expect(page.get_by_role("status").filter(has_text=t("replies.page.title"))).to_be_visible()
+    new = [r for r in _replies(server) if r["reply_id"] not in before]
+    # Solo los de la empresa: el boletín la nombra, pero su remitente no es de ella.
+    assert sorted(r["subject"] for r in new) == [
+        "Novedades de tu candidatura",
+        "Tu candidatura a Analytics Engineer: primera entrevista",
+    ]
+    assert all(r["candidates"][0]["job_id"] == job_id for r in new)
+    assert not any("noticias-ejemplo.test" in r["sender"] for r in _replies(server))
+    interview_reply = next(r for r in new if "entrevista" in r["subject"])
+    other_reply = next(r for r in new if r["reply_id"] != interview_reply["reply_id"])
+
+    # El rol `classifier` guarda sus propuestas: no registran nada.
+    when = datetime.combine(_today() + timedelta(days=4), datetime.min.time(), MADRID).replace(
+        hour=10
+    )
+    cai(
+        server,
+        "replies", "propose", str(interview_reply["reply_id"]),
+        payload={
+            "job_id": job_id,
+            "event_type": "interview_scheduled",
+            "milestone": {"title": "Primera entrevista", "starts_at": when.isoformat()},
+            "summary": "Te invitan a una primera entrevista por videollamada.",
+            "confidence": "high",
+        },
+    )  # fmt: skip
+    cai(
+        server,
+        "replies", "propose", str(other_reply["reply_id"]),
+        payload={
+            "job_id": job_id,
+            "event_type": "rejected",
+            "summary": "Siguen revisando candidaturas.",
+            "confidence": "low",
+        },
+    )  # fmt: skip
+    assert api(server, f"/jobs/{job_id}")["stage"] == "applied"
+
+    # La UI enseña la propuesta; aceptarla registra la entrevista y la oferta pasa a «En proceso».
+    page.reload()
+    replies = page.get_by_role("list", name=t("replies.page.list"))
+    replies.get_by_role("button").filter(has_text="primera entrevista").click()
+    email = page.get_by_role("article", name=t("replies.page.email"))
+    proposal = email.get_by_role("region", name=t("replies.page.proposal"))
+    expect(proposal.get_by_text("Te invitan a una primera entrevista")).to_be_visible()
+    proposal.get_by_role("button", name=t("replies.card.accept")).click()
+    # Un aviso dice dónde ha quedado, con enlace a la oferta; el correo sale de «Pendientes».
+    notice = page.get_by_role("status").filter(has_text=f"Analytics Engineer · {COMPANY}")
+    expect(notice.get_by_role("link", name=f"Analytics Engineer · {COMPANY}")).to_have_attribute(
+        "href", f"/jobs/{job_id}"
+    )
+    expect(replies.get_by_role("button").filter(has_text="primera entrevista")).to_have_count(0)
+    filters = page.get_by_role("radiogroup", name=t("replies.page.filterAria"))
+    filters.get_by_role("radio", name=re.compile(t("replies.page.filters.accepted"))).click()
+    replies.get_by_role("button").filter(has_text="primera entrevista").click()
+    expect(proposal.get_by_text(t("replies.card.accepted"))).to_be_visible()
+    assert api(server, f"/jobs/{job_id}")["stage"] == "in_process"
+    events = [e["type"] for e in cai(server, "events", "list", str(job_id))["events"]]
+    assert events.count("interview_scheduled") == 1
+    section = _process_section_of(page, job_id)
+    expect(section.get_by_text("Primera entrevista")).to_be_visible()
+
+    # Ignorar la otra no cambia nada.
+    page.goto("/respuestas")
+    replies.get_by_role("button").filter(has_text="Novedades de tu candidatura").click()
+    proposal.get_by_role("button", name=t("replies.card.ignore")).click()
+    expect(replies.get_by_role("button").filter(has_text="Novedades")).to_have_count(0)
+    # «Deshacer» la devuelve a pendientes; se vuelve a ignorar.
+    ignored = page.get_by_role("status").filter(has_text=t("replies.page.resolved.ignored"))
+    ignored.get_by_role("button", name=t("replies.page.resolved.undo")).click()
+    expect(replies.get_by_role("button").filter(has_text="Novedades")).to_have_count(1)
+    proposal.get_by_role("button", name=t("replies.card.ignore")).click()
+    expect(replies.get_by_role("button").filter(has_text="Novedades")).to_have_count(0)
+    filters.get_by_role("radio", name=re.compile(t("replies.page.filters.ignored"))).click()
+    replies.get_by_role("button").filter(has_text="Novedades de tu candidatura").click()
+    expect(proposal.get_by_text(t("replies.card.ignored"))).to_be_visible()
+    after = [e["type"] for e in cai(server, "events", "list", str(job_id))["events"]]
+    assert after == events
+    assert api(server, f"/jobs/{job_id}")["stage"] == "in_process"
+    page.goto(f"/jobs/{job_id}")
+    expect(stage_badge(page)).to_contain_text(_stage_label("in_process"))
+
+
+def _drag(page: Page, card: Locator, target: Locator) -> None:
+    """Con el ratón de verdad, por pasos: `dnd-kit` no arranca hasta que se mueve 6 px."""
+    start, end = card.bounding_box(), target.bounding_box()
+    assert start and end
+    page.mouse.move(start["x"] + start["width"] / 2, start["y"] + 8)
+    page.mouse.down()
+    page.mouse.move(start["x"] + start["width"] / 2 + 12, start["y"] + 8, steps=4)
+    page.mouse.move(end["x"] + end["width"] / 2, end["y"] + 40, steps=12)
+    page.mouse.up()
+
+
+def test_a_card_is_dragged_only_to_the_right(page: Page, fresh_demo_app: AppServer) -> None:
+    server = fresh_demo_app
+    job_id = applied_job(server, COMPANY, COMPANY_URL)
+    title = api(server, f"/jobs/{job_id}")["title"]
+    page.goto("/procesos")
+
+    def column(stage: str) -> Locator:
+        return page.get_by_role("region", name=_stage_label(stage), exact=True)
+
+    # La tarjeta entera es arrastrable, y `dnd-kit` le da el papel de botón.
+    def card_in(stage: str) -> Locator:
+        return column(stage).get_by_role("button").filter(has_text=title).filter(has_text=COMPANY)
+
+    card = card_in("applied")
+    expect(card).to_be_visible()
+
+    # Hacia la izquierda no se puede: se queda donde estaba y lo dice.
+    _drag(page, card, column("cv_ready"))
+    expect(page.get_by_role("alert").filter(has_text=t("processes.onlyForward"))).to_be_visible()
+    expect(page.get_by_role("dialog")).to_have_count(0)
+    assert api(server, f"/jobs/{job_id}")["stage"] == "applied"
+
+    # Hacia la derecha abre el diálogo de siempre y, al confirmar, la tarjeta cambia de columna.
+    _drag(page, card, column("in_process"))
+    dialog = page.get_by_role("dialog", name=t("move.title"))
+    expect(dialog).to_be_visible()
+    dialog.get_by_role("radio", name=_starts(t("labels.event.reply_received"))).click()
+    dialog.get_by_role("button", name=t("move.register")).click()
+    expect(dialog).to_be_hidden()
+    expect(card_in("in_process")).to_be_visible()
+    assert api(server, f"/jobs/{job_id}")["stage"] == "in_process"

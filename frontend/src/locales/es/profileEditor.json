@@ -2,7 +2,6 @@
   "tabs": {
     "about": "Sobre ti",
     "career": "Experiencia y formación",
-    "search": "Búsqueda",
     "documents": "Documentos",
     "history": "Historial"
   },
@@ -27,10 +26,10 @@
       "open": "Empezar a mano",
       "headlineHint": "Lo que pondrías bajo tu nombre en un CV, p. ej. «Analista de datos · SQL · Power BI».",
       "role": "Puesto que buscas",
-      "roleHint": "Uno para empezar; luego añades más en «Búsqueda».",
+      "roleHint": "Uno para empezar; luego añades más en «Buscar ofertas → Qué buscas».",
       "summary": "Resumen (opcional)",
       "summaryHint": "Dos o tres frases sobre ti. Si lo dejas vacío, se usa tu titular.",
-      "defaults": "Lo demás (modalidad, ubicaciones, foto en el CV…) empieza abierto a todo y lo cambias en «Búsqueda» y «Documentos». Tu experiencia y tus skills, en «Experiencia y formación».",
+      "defaults": "Lo demás (modalidad, ubicaciones, foto en el CV…) empieza abierto a todo y lo cambias en «Qué buscas» y en «Documentos». Tu experiencia y tus skills, en «Experiencia y formación».",
       "required": "Hace falta para crear tu perfil.",
       "pickOne": "Elige al menos uno.",
       "create": "Crear mi perfil",
@@ -137,7 +136,11 @@
       "title": "Skills",
       "hint": "Los niveles son privados: deciden qué puede afirmar un CV, pero nunca salen en él. Al guardar se recalcula el encaje de tus ofertas.",
       "levels": "F: fuerte, la usas a diario · C+: la has usado en proyectos reales · C: la conoces · B: básica, solo como «conocimientos de».",
-      "addSkill": "Añadir skill"
+      "addSkill": "Añadir skill",
+      "filterLabel": "Filtrar skills por nivel",
+      "all": "Todas",
+      "noneAtLevel": "Ninguna skill con este nivel.",
+      "reorderHint": "Para cambiar el orden, muestra todas."
     },
     "stories": {
       "title": "Historias STAR",
@@ -171,6 +174,20 @@
     "letter": {
       "title": "Preferencias de carta",
       "hint": "Para todas tus cartas. Las indicaciones de cada oferta están en su ficha y mandan sobre estas."
+    },
+    "photo": {
+      "title": "Foto para el CV (opcional)",
+      "hint": "No hace falta: sin foto, tus CVs salen sin ella. Se guarda solo en tu equipo y tu agente no la lee.",
+      "preview": "Tu foto actual",
+      "choose": "Elegir una foto",
+      "upload": "Subir foto",
+      "replace": "Cambiar foto",
+      "uploading": "Subiendo…",
+      "remove": "Quitar",
+      "confirmRemove": "Sí, quitar la foto",
+      "cancel": "Cancelar",
+      "formats": "JPG, PNG o WebP, de hasta 10 MB. Mejor cuadrada: se recorta desde el centro.",
+      "policyOff": "Ahora mismo tus CVs salen sin foto. Para usarla, activa «Poner foto en el CV» en la pestaña de documentos."
     }
   },
   "fields": {

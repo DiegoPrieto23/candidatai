@@ -12,6 +12,7 @@
   "add": "Add mailbox",
   "row": {
     "folderKind": "Emails saved in a folder",
+    "readsReplies": "Reads replies",
     "noPassword": "Your email's app password is missing: without it the alerts can't be read.",
     "lastPolled": "Read {{when}}",
     "never": "Not read yet",
@@ -61,6 +62,8 @@
     "folderHint": "INBOX is the inbox. In Gmail, the label name exactly as it is.",
     "folderName": "Folder name",
     "folderNameHint": "It's created in {{path}}. Put the .eml or .mbox files there.",
+    "readReplies": "Also read company replies here",
+    "readRepliesHint": "The app checks the sender, date and subject of the emails in your inbox since your oldest open application, and only saves those from the companies you applied to. It only reads: it doesn't send, delete or change anything unless you accept it.",
     "allowPrivate": "Server on my computer or network",
     "allowPrivateHint": "Only for your own server: for safety, the app doesn't connect to local addresses unless you tick this."
   },

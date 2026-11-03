@@ -3,7 +3,16 @@ import userEvent from '@testing-library/user-event'
 import { beforeAll, describe, expect, it, vi } from 'vitest'
 import type { Calibration, CalibrationGroup, FunnelStats } from '@/api/client'
 import { i18n } from '@/lib/i18n'
-import { mockApi, renderApp, status } from '@/test/utils'
+import { mockApi as mockRoutes, renderApp, status } from '@/test/utils'
+
+/** «Tu embudo» pide sus cifras aparte: las mismas que las del embudo simulado. */
+function mockApi(routes: Record<string, unknown>) {
+  const funnel = routes['GET /stats/funnel'] as { steps?: unknown; duplicates_excluded?: number } | undefined
+  return mockRoutes({
+    'GET /stats/flow': { since: null, duplicates_excluded: funnel?.duplicates_excluded ?? 0, steps: funnel?.steps ?? [], stops: [{ step: 'applied', outcome: 'open', count: 2 }] },
+    ...routes,
+  })
+}
 
 const summary = (found: number, approved: number, applied: number, replied: number, interview: number) => ({
   found,
@@ -109,6 +118,7 @@ describe('Embudo', () => {
     mockApi({ 'GET /status': status(), 'GET /stats/funnel': stats() })
     renderApp('/embudo')
 
+    await userEvent.click(await screen.findByRole('button', { name: 'Ver las cifras' }))
     const funnel = await screen.findByRole('table', { name: 'Ofertas por paso del embudo' })
     const rows = within(funnel).getAllByRole('row').slice(1)
     // Intl separa la cifra del «%» con un espacio duro.
@@ -123,18 +133,9 @@ describe('Embudo', () => {
       'Oferta1100 %10 %',
       'Aceptadas1100 %10 %',
     ])
-    // Al lado del gráfico (jsdom no lo dibuja: lo comprueba el E2E), el nombre y las cifras reales.
-    const visible = within(screen.getByTestId('funnel-rows')).getAllByRole('listitem', { hidden: true })
-    expect(visible.map(text)).toEqual([
-      'Encontradas10',
-      'Pasan filtros880 % del anterior · 80 % del total',
-      'Aprobadas675 % del anterior · 60 % del total',
-      'Enviadas583 % del anterior · 50 % del total',
-      'Con respuesta360 % del anterior · 30 % del total',
-      'Entrevista133 % del anterior · 10 % del total',
-      'Oferta1100 % del anterior · 10 % del total',
-      'Aceptadas1100 % del anterior · 10 % del total',
-    ])
+    // El gráfico lo dice en palabras a quien no lo ve, y cada rama lleva a esas candidaturas.
+    expect(screen.getByRole('img', { name: /^5 enviadas, 3 con respuesta, 1 en entrevista, 1 con oferta y 1 aceptadas/ })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '2 esperando' })).toHaveAttribute('href', '/bandeja?stage=applied')
     expect(screen.getByText(/Sin contar 1 duplicadas/)).toBeInTheDocument()
 
     const response = screen.getByRole('region', { name: 'Primera respuesta' })
@@ -185,13 +186,14 @@ describe('Embudo', () => {
     })
     renderApp('/embudo')
 
+    await userEvent.click(await screen.findByRole('button', { name: 'Ver las cifras' }))
     const funnel = await screen.findByRole('table', { name: 'Ofertas por paso del embudo' })
     const text = (el: HTMLElement) => el.textContent?.replace(/\u00a0/g, ' ')
     const rows = within(funnel).getAllByRole('row').slice(1).map(text)
     expect(rows[0]).toBe('Encontradas1—100 %')
     expect(rows[1]).toBe('Pasan filtros00 %0 %')
     expect(rows[2]).toBe('Aprobadas0—0 %')
-    expect(screen.getByTestId('funnel-rows')).not.toHaveTextContent('NaN')
+    expect(document.body).not.toHaveTextContent('NaN')
   })
 
   it('el embudo también se lee en inglés', async () => {
@@ -199,9 +201,10 @@ describe('Embudo', () => {
     try {
       mockApi({ 'GET /status': status(), 'GET /stats/funnel': stats() })
       renderApp('/embudo')
+      await userEvent.click(await screen.findByRole('button', { name: 'Show the numbers' }))
       const funnel = await screen.findByRole('table', { name: 'Jobs per funnel step' })
       expect(within(funnel).getByRole('columnheader', { name: '% of previous step' })).toBeInTheDocument()
-      expect(screen.getByTestId('funnel-rows')).toHaveTextContent('80% of previous · 80% of total')
+      expect(screen.getByRole('img', { name: /^5 sent, 3 with a reply/ })).toBeInTheDocument()
     } finally {
       await i18n.changeLanguage('es')
     }
@@ -259,13 +262,15 @@ describe('Embudo', () => {
   it('pide el periodo elegido con `since`', async () => {
     const calls = mockApi({ 'GET /status': status(), 'GET /stats/funnel': stats() })
     renderApp('/embudo')
-    await screen.findByRole('table', { name: 'Ofertas por paso del embudo' })
+    await screen.findByRole('img', { name: /^5 enviadas/ })
     const funnelCalls = () => calls.filter((c) => c.path === '/stats/funnel')
     expect(funnelCalls()[0].search.get('since')).toBeNull()
 
     await userEvent.click(screen.getByRole('button', { name: '30 días' }))
     await waitFor(() => expect(funnelCalls()).toHaveLength(2))
     expect(funnelCalls()[1].search.get('since')).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    // «Tu embudo» sigue el mismo periodo.
+    await waitFor(() => expect(calls.filter((c) => c.path === '/stats/flow').at(-1)?.search.get('since')).toBe(funnelCalls()[1].search.get('since')))
     expect(screen.getByRole('button', { name: '30 días' })).toHaveAttribute('aria-pressed', 'true')
 
     fireEvent.change(screen.getByLabelText('Desde'), { target: { value: '2026-09-01' } })

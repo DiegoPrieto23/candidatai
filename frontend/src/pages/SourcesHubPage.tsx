@@ -4,9 +4,9 @@ import { BuildingsIcon, CompassIcon, EnvelopeSimpleIcon, PuzzlePieceIcon } from 
 import { PageTabs } from '@/components/PageTabs'
 
 /**
- * «Dónde buscar» (fase 23.3; antes «Fuentes»): de dónde salen tus ofertas. Une las plataformas que recorre tu agente,
- * las empresas objetivo (APIs de ATS y portales), las alertas por correo y el botón del navegador, cada uno en su
- * pestaña con su propia URL.
+ * «Dónde buscar», una pestaña de «Buscar ofertas»: de dónde salen tus ofertas. Une las plataformas que recorre tu
+ * agente, las empresas objetivo (APIs de ATS y portales), las alertas por correo y el botón del navegador, cada uno
+ * en su pestaña con su propia URL.
  */
 export function SourcesHubPage() {
   const { t } = useTranslation('platforms', { keyPrefix: 'hub' })
@@ -15,7 +15,7 @@ export function SourcesHubPage() {
     <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
       <PageTabs
         label={t('label')}
-        className="mx-auto max-w-3xl"
+        level="sub"
         tabs={[
           { to: '/fuentes/plataformas', label: t('platforms'), icon: CompassIcon },
           { to: '/fuentes/empresas', label: t('companies'), icon: BuildingsIcon },

@@ -34,8 +34,9 @@ COMMANDS: dict[str, str] = {
     "followups": (
         "Candidaturas enviadas (etapa `applied`) sin respuesta desde hace N días o más, contando "
         "desde el envío o el último `followup_sent`, la que más espera primero, sin las que ya "
-        "tienen 2 seguimientos; y `thanks_due`: entrevistas hechas en los últimos días sin "
-        "agradecimiento. Con los nombres de los contactos y el borrador vigente."
+        "tienen 2 seguimientos ni las que tienen un correo de la empresa por revisar (ya "
+        "contestó: mira `list_replies`); y `thanks_due`: entrevistas hechas en los últimos días "
+        "sin agradecimiento. Con los nombres de los contactos y el borrador vigente."
     ),
     "upcoming": (
         "Entrevistas, pruebas y plazos (de los procesos y de las ofertas sin enviar) desde hoy "
@@ -67,6 +68,7 @@ COMMANDS: dict[str, str] = {
     "context": "Contexto del candidato (data/contexto/) y carpetas de documentos.",
     "prompts": "Avisos al usuario (captcha, login…) mientras el agente busca ofertas.",
     "skills": "Huecos de skills: lo que piden las ofertas y tu perfil no cubre.",
+    "replies": "Respuestas de las empresas por correo: ingesta y propuestas del agente.",
     "drafts": "Borradores de seguimiento y agradecimiento (la app no envía nada).",
     "interviews": "Entrevistas: plan de preparación y repaso posterior en el hito.",
     "contacts": "Tu red de LinkedIn (Connections.csv) y los contactos de cada proceso.",

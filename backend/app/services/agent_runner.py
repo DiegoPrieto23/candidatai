@@ -46,7 +46,6 @@ from app.core.policies import get_policies
 from app.models import AgentRun
 from app.models.base import utcnow
 from app.services import agent_registry, agent_run_config
-from app.services.agent_actions import ACTIONS
 from app.services.agent_launch import CLIENT_ENV, QUESTION_PREFIX
 from app.services.agent_output import PARSERS, short
 from app.services.agent_runs import INTERRUPTED, ProgressKind, RunStatus
@@ -211,9 +210,7 @@ def claim_next(
     with session_scope() as session:
         queued = list(
             session.scalars(
-                select(AgentRun)
-                .where(AgentRun.status == "queued", AgentRun.action.in_(ACTIONS))
-                .order_by(AgentRun.id)
+                select(AgentRun).where(AgentRun.status == "queued").order_by(AgentRun.id)
             )
         )
         session.expunge_all()

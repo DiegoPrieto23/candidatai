@@ -225,7 +225,8 @@ English (a candidate in Dublin) and in Spanish (a candidate in Galicia).
 It also brings what she and her agent would have left, so no screen is empty: fit assessments, a
 cover letter and screening answers for one job, a LinkedIn message and a follow-up, two company
 dossiers (one with a red flag), the prep plan of one interview and the debrief of two, the details
-of the received offer, two gaps in "Skills", a pending request, the context, a
+of the received offer, three company emails in "Replies" (two with a proposal and one
+unclassified, with text hidden for an AI), two gaps in "Skills", a pending request, the context, a
 style sample and a salary table.
 
 ```powershell
@@ -262,17 +263,17 @@ photo, documents and emails. Keys go in `.env`, also outside git.
 | **Source documents** (old CVs, degrees, references) | `data/documentos/` | Your CV and your LinkedIn export are uploaded in **My profile → Documents**; the rest, in their folder. `update-profile` can read them, confirming before writing |
 | **What you've done in public** (repositories, portfolio, Kaggle, Scholar, verifiable certifications) | `data/profile.yaml` | The `expand` skill, or "Expand profile from my links" in "My profile". Use it **right after creating your profile**: it proposes projects, skills (with no level: you set it), achievements with the numbers the source gives and certifications, each with its link in `source`, and writes only what you accept. Public web only: no LinkedIn, nothing behind a login. Needs an agent with web search |
 
-Your salary minimum goes in My profile → Search (or in the profile's `private.salary_floor_eur`):
+Your salary minimum goes in Search jobs → What you're after (or in the profile's `private.salary_floor_eur`):
 the app discards postings that publish a salary below it and uses it to compare the offers you
 receive, but your agent never sees the figure; it only learns that a posting fell "below your
-salary minimum". In Search you also set minimum and maximum years, words that discard a
+salary minimum". In What you're after you also set minimum and maximum years, words that discard a
 posting, contract and working-time types, and whether to exclude consultancies or recruiters.
 
 In My profile, every achievement and story has **Improve with my agent**: your agent proposes a
 clearer version, asks you for any missing numbers (it never makes them up) and only writes with
 your OK. Under STAR stories, **Propose stories from my experience** suggests stories from the
 achievements that don't have one yet. Your email and phone are edited there, but your agent still
-never sees them. The same goes for your salary minimum (`private`), under **Search**.
+never sees them. The same goes for your salary minimum (`private`), under **What you're after**.
 
 **Where your data is and how to back it up.** `uv run cai paths` (or `cai paths` in the app
 folder) tells you which folder you're using. With the installer:
@@ -346,12 +347,12 @@ A typical day:
 | Source | How to set it up |
 |---|---|
 | **Manual** | **New job** in the UI: a URL or pasted text (with text, the role and company are required because they're how duplicates are spotted, and the button says what's missing) |
-| **Target companies** (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee) | **Where to search → Target companies** page or `cai sources add --kind greenhouse --name "Acme" --slug acme`. `cai sources discover --file companies.txt` finds the board of each company in a list. How to find the slug: [`FUENTES_OFERTAS.md`](FUENTES_OFERTAS.md#cómo-encontrar-el-slug) (Spanish) |
+| **Target companies** (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee) | In **Search jobs**, the **Where to search → Target companies** tab or `cai sources add --kind greenhouse --name "Acme" --slug acme`. `cai sources discover --file companies.txt` finds the board of each company in a list. How to find the slug: [`FUENTES_OFERTAS.md`](FUENTES_OFERTAS.md#cómo-encontrar-el-slug) (Spanish) |
 | **InfoJobs and Adzuna** | Their keys in `.env` (`CAI_INFOJOBS_CLIENT_ID`/`_SECRET`, `CAI_ADZUNA_APP_ID`/`_KEY`) and a search with `cai sources add` |
 | **Manfred and freehire.me** | No keys: a search on the same page or with `cai sources add --kind manfred --name Manfred --query "data engineer"` (for freehire, also `--country` and `--remote-only`) |
 | **Email alerts** | Create job alerts on LinkedIn, InfoJobs, Indeed… and have them land in a label of your mailbox. In **Where to search → Email alerts → Add mailbox**, connect one or more mailboxes (Gmail, Outlook, Yahoo, iCloud or other IMAP, always read-only) or a folder of `.eml` files; the wizard explains each provider and tests the connection before saving. The password is stored in your `.env` and never comes out again. Step by step in [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md) (Spanish). What comes in shows up in **Alerts** |
 | **"Send to CandidatAI" button** | In **Where to search → Browser button**: the app guides you through loading `extension/` in Chrome, Edge or Brave and connects it in one click. Instructions: [`extension/README.md`](../extension/README.md) (Spanish) |
-| **Your agent with your browser** | In **Where to search → Job boards**, **Set up with my agent** (`search-jobs configurar`) picks job boards and searches; or add them yourself: on InfoJobs, Tecnoempleo, Indeed and LinkedIn the searches come from the roles and locations in your profile, and each job board is edited with its pencil; `search-jobs` browses them. LinkedIn stays off until you turn it on |
+| **Your agent with your browser** | In **Where to search → Job boards**, **Set up with my agent** (`search-jobs configurar`) picks job boards and searches; or add them yourself: on InfoJobs, Tecnoempleo, Indeed and LinkedIn the searches come from the roles and locations in your profile, and each job board is edited with its pencil; `search-jobs` browses them. LinkedIn stays off until you turn it on. When you press **Search now**, a notice says “Searching…” on every page and changes when your agent finishes. On each job board, **problems** are what stopped it being read (a captcha, a login, a changed page) and **notes** are what your agent wrote down without anything failing, like the searches it didn't get to |
 | **LinkedIn's public search** | The **Public search without signing in** switch on the LinkedIn card in **Where to search → Job boards**. Off by default: it goes against LinkedIn's terms and may get your IP blocked for a while |
 
 The worker runs the automatic sources every day at `connectors.daily_at`
@@ -395,8 +396,11 @@ The worker runs the automatic sources every day at `connectors.daily_at`
   by month, week, day or agenda. Click one to see its details and open the job.
 - **Follow-ups:** it reminds you of applications without a reply; `draft-follow-up` leaves
   the drafts (max. 2 per application) and the thank-you note after an interview. You send them.
-- **Replies:** when a company answers, note it on its job page or in **Processes** with **Update status**: a
-  reply, an interview, a test, an offer or a rejection. The app does not read those emails.
+- **Replies:** if you turn it on in a mailbox, the app reads emails from the companies in your
+  processes; `review-replies` proposes what happened and you accept it in **Replies**. When you
+  accept or ignore one, a notice says which job it ended up on, with its link; **Ignore** can be undone
+  from there. With the keyboard: `J`/`K` to move between emails, `A` to accept, `I` to ignore. If you
+  leave it off, note it on the job page or on the board with **Update status**.
 - **Funnel:** conversion by step, source, week and referral, and the discard reasons. Under
   **More analysis**, folded at the end: "Is the fit right?" (by fit, verdict, template, cover
   letter…), by role, the agent's cost and **Your search in numbers** (or `cai stats story`): your

@@ -1,0 +1,83 @@
+{
+  "title": "Buscar ofertas",
+  "intro": "Tu agente recorre tus portales con tu navegador y da de alta lo que encaja con tu perfil. Solo lee: nunca se postula por ti.",
+  "where": "Portales",
+  "platforms": "Portales en los que buscar",
+  "selectAll": "Marcar todos",
+  "selectNone": "Desmarcar todos",
+  "manage": "Gestionar portales",
+  "tile": {
+    "size_one": "{{count}} búsqueda · hasta {{offers}} ofertas",
+    "size_other": "{{count}} búsquedas · hasta {{offers}} ofertas",
+    "login": "Pide sesión",
+    "lastRun_one": "{{when}}: {{count}} nueva de {{found}}",
+    "lastRun_other": "{{when}}: {{count}} nuevas de {{found}}",
+    "never": "Aún no se ha buscado aquí",
+    "problems_one": "{{count}} problema",
+    "problems_other": "{{count}} problemas",
+    "notes_one": "{{count}} nota",
+    "notes_other": "{{count}} notas"
+  },
+  "unusable_one": "{{count}} portal más desactivado o bloqueado. Se cambia en <to>Dónde buscar</to>.",
+  "unusable_other": "{{count}} portales más desactivados o bloqueados. Se cambia en <to>Dónde buscar</to>.",
+  "noneChosen": "Elige al menos un portal.",
+  "searchNow": "Buscar ahora",
+  "plan": {
+    "title": "Tu búsqueda",
+    "summary_one": "{{portals}} portales, {{count}} búsqueda",
+    "summary_other": "{{portals}} portales, {{count}} búsquedas",
+    "offers_one": "Hasta {{count}} oferta",
+    "offers_other": "Hasta {{count}} ofertas",
+    "saved": "con tus búsquedas guardadas",
+    "oneOff": "solo para esta vez",
+    "before": "Antes de empezar",
+    "browser": "Ten el navegador conectado a tu agente.",
+    "browserHint": "En Claude Code, con la extensión Claude in Chrome abierta en tu Chrome y la misma cuenta. Si no lo ve, tu agente te lo dice y no da nada de alta.",
+    "login": "Entra en {{names}}.",
+    "loginHint": "Pide sesión: tu agente te avisará antes de seguir.",
+    "safe": "Se abre en una ventana aparte, donde ves lo que hace. Puede tardar varios minutos.",
+    "looking": "Buscas:",
+    "lookingNone": "sin puestos todavía",
+    "change": "Cambiar"
+  },
+  "noBrowser": {
+    "title": "Sin navegador",
+    "body_one": "{{count}} empresa o portal que la app consulta sola: puedes hacerlo ya, sin agente.",
+    "body_other": "{{count}} empresas y portales que la app consulta sola: puedes hacerlo ya, sin agente.",
+    "latest": "Última consulta: {{when}}.",
+    "run": "Consultar ahora",
+    "running": "Consultando {{done}} de {{total}}…",
+    "created_one": "{{count}} oferta nueva",
+    "created_other": "{{count}} ofertas nuevas",
+    "failed_one": "{{count}} fuente con problemas",
+    "failed_other": "{{count}} fuentes con problemas",
+    "none": "Añade <to>empresas objetivo</to> para consultar sus ofertas sin agente ni navegador.",
+    "others": "También entran solas tus <to>alertas por correo</to> y lo que envíes con el <ext>botón del navegador</ext>."
+  },
+  "refine": {
+    "toggle": "Afinar esta búsqueda (opcional)",
+    "hint": "Solo para esta vez: tu agente usará estos datos en vez de tus búsquedas guardadas. Tu perfil no cambia.",
+    "role": "Puesto",
+    "rolePlaceholder": "Por ejemplo, Data Engineer",
+    "location": "Dónde",
+    "locationPlaceholder": "Por ejemplo, Madrid o remoto",
+    "badText": "Usa solo letras, números y signos sencillos (. , + # / & ( ) -)."
+  },
+  "empty": {
+    "title": "Aún no hay portales en los que buscar",
+    "body": "Dile a tu agente dónde sueles buscar o añade un portal tú mismo.",
+    "configure": "Elegir portales con mi agente",
+    "manage": "Ir a «Dónde buscar»"
+  },
+  "settings": {
+    "title": "Qué buscas",
+    "intro": "Los puestos, el sueldo, el lugar y el contrato deciden qué busca tu agente y qué ofertas pasan tus filtros. Cada bloque se guarda por separado y recalcula el encaje.",
+    "issues": "Tu perfil tiene errores que hay que arreglar. Los ves en <to>Mi perfil</to>.",
+    "noProfile": {
+      "title": "Primero, tu perfil",
+      "body": "Lo que buscas se guarda en tu perfil, y aún no tienes uno que se pueda leer.",
+      "go": "Ir a «Mi perfil»"
+    }
+  },
+  "searching": "Buscando…"
+}

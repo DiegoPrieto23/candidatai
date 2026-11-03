@@ -36,6 +36,7 @@ export const keys = {
   /** También bajo `cv`: la carta va a juego con el render seleccionado del CV. */
   letter: (id: number) => ['cv', id, 'letter'] as const,
   funnel: (since: string | null) => ['funnel', since] as const,
+  flow: (since: string | null) => ['funnel', 'flow', since] as const,
   // Bajo 'funnel': lo que invalida el embudo (referencias…) invalida también la calibración.
   calibration: (since: string | null) => ['funnel', 'calibration', since] as const,
   story: ['funnel', 'story'] as const,
@@ -54,6 +55,7 @@ export const keys = {
   apply: (id: number) => ['apply', id] as const,
   agent: ['agent'] as const,
   agentRuns: ['agent', 'runs'] as const,
+  searchRun: ['agent', 'search-run'] as const,
   agentAgents: ['agent', 'agents'] as const,
   agentRequests: ['agent', 'requests'] as const,
   localModels: ['agent', 'local-models'] as const,
@@ -63,6 +65,8 @@ export const keys = {
   jobCosts: (id: number) => ['jobs', id, 'costs'] as const,
   skillGaps: (days: number) => ['skill-gaps', days] as const,
   allSkillGaps: ['skill-gaps'] as const,
+  replies: (params: RepliesParams) => ['replies', params] as const,
+  allReplies: ['replies'] as const,
   reply: (id: number) => ['reply', id] as const,
   drafts: (jobId: number) => ['drafts', jobId] as const,
   network: ['network'] as const,
@@ -78,6 +82,8 @@ export type JobSort = NonNullable<JobsQuery['sort']>
 export type SortDirection = NonNullable<JobsQuery['dir']>
 
 export interface JobsParams {
+  /** Solo las de un tipo de fuente (`agent_browse`: las que trae tu agente de los portales). */
+  source_kind?: string
   stage?: Stage
   q?: string
   page: number
@@ -94,8 +100,9 @@ export function useStatus() {
   })
 }
 
-export function useJobs(params: JobsParams) {
+export function useJobs(params: JobsParams, options: { refetchInterval?: number } = {}) {
   return useQuery({
+    ...options,
     queryKey: keys.jobs(params),
     queryFn: () =>
       unwrap(
@@ -108,6 +115,7 @@ export function useJobs(params: JobsParams) {
               offset: (params.page - 1) * PAGE_SIZE,
               sort: params.sort,
               dir: params.dir,
+              source_kind: params.source_kind,
             },
           },
         }),
@@ -829,6 +837,15 @@ export function useDeleteContact(jobId: number) {
   })
 }
 
+/** «Tu embudo»: los pasos y dónde se quedó cada candidatura. Conserva la cifra anterior al cambiar de periodo. */
+export function useFunnelFlow(since: string | null) {
+  return useQuery({
+    queryKey: keys.flow(since),
+    queryFn: () => unwrap(api.GET('/stats/flow', { params: { query: { since } } })),
+    placeholderData: (previous) => previous,
+  })
+}
+
 export function useFunnelStats(since: string | null) {
   return useQuery({
     queryKey: keys.funnel(since),
@@ -1061,8 +1078,32 @@ export function useAgentLauncher() {
 /** Abre tu agente en una terminal con la orden escrita. No espera a que termine. `agent`: otro
  * agente solo para esta ejecución (fase 24.4). */
 export function useLaunchAgent() {
+  const client = useQueryClient()
   return useMutation({
     mutationFn: (body: LaunchTarget & { agent?: string }) => unwrap(api.POST('/agent/launch', { body })),
+    onSuccess: (_result, body) => {
+      if (body.action === 'search-jobs') void client.invalidateQueries({ queryKey: keys.searchRun })
+    },
+  })
+}
+
+/** La búsqueda de la que avisa la app. Sigue preguntando sin la pestaña a la vista: acaba cuando acaba. */
+export function useSearchRun() {
+  return useQuery({
+    queryKey: keys.searchRun,
+    queryFn: () => unwrap(api.GET('/agent/search-run')),
+    refetchInterval: (query) => (query.state.data?.run?.status === 'running' ? 4000 : 20000),
+    refetchIntervalInBackground: true,
+  })
+}
+
+/** Cierra el aviso de una búsqueda. */
+export function useDismissSearchRun() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (runId: number) =>
+      unwrap(api.POST('/agent/search-run/{run_id}/dismiss', { params: { path: { run_id: runId } }, body: {} })),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.searchRun }),
   })
 }
 
@@ -1189,7 +1230,9 @@ export function useInstallSemanticMatching() {
 
 // --- En segundo plano y cola de encargos (fase 19) ---------------------------------------------
 
-type LaunchTarget = { action: AgentAction; job_id?: number; milestone_id?: number }
+export type SearchScope = Schemas['SearchScope']
+
+type LaunchTarget = { action: AgentAction; job_id?: number; milestone_id?: number; search?: SearchScope }
 
 /**
  * Las últimas ejecuciones en segundo plano. Mientras alguna está en cola o en curso se pregunta
@@ -1544,6 +1587,89 @@ export function useSetSkillMark() {
   })
 }
 
+// --- Respuestas de las empresas (fase 15) ----------------------------------------------------
+
+export type ReplyStatus = Schemas['ReplyInboxItem']['status']
+export type ReplyDecision = Schemas['ReplyDecision']
+
+export interface RepliesParams {
+  status?: ReplyStatus
+  jobId?: number
+}
+
+/** Bandeja «Respuestas» (o las de una oferta con `jobId`) y los recuentos por estado. */
+export function useReplies(params: RepliesParams = {}) {
+  return useQuery({
+    queryKey: keys.replies(params),
+    queryFn: () =>
+      unwrap(api.GET('/replies', { params: { query: { status: params.status, job_id: params.jobId } } })),
+    // El worker lee el correo y el agente guarda propuestas por su cuenta: se refresca solo.
+    refetchInterval: 60_000,
+  })
+}
+
+/** Una respuesta con el texto visible del correo. */
+export function useReply(id: number | null) {
+  return useQuery({
+    queryKey: keys.reply(id ?? 0),
+    queryFn: () => unwrap(api.GET('/replies/{reply_id}', { params: { path: { reply_id: id ?? 0 } } })),
+    enabled: id !== null && id > 0,
+  })
+}
+
+/** Lee ahora el correo (IMAP en solo lectura y `data/inbox/respuestas/`). */
+export function usePollReplies() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: () => unwrap(api.POST('/replies/poll', { body: {} })),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.allReplies }),
+  })
+}
+
+/** Acepta la propuesta (tal cual o cambiada): registra su evento y, si lo hay, su hito. */
+export function useAcceptReply() {
+  const client = useQueryClient()
+  const invalidate = useInvalidateProcess()
+  return useMutation({
+    mutationFn: ({ replyId, body }: { replyId: number; body: ReplyDecision }) =>
+      unwrap(api.POST('/replies/{reply_id}/accept', { params: { path: { reply_id: replyId } }, body })),
+    onSuccess: (_r, { replyId, body }) =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: keys.allReplies }),
+        client.invalidateQueries({ queryKey: keys.reply(replyId) }),
+        invalidate(body.job_id),
+      ]),
+  })
+}
+
+/** Ignora la respuesta: no registra nada. */
+export function useIgnoreReply() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (replyId: number) =>
+      unwrap(api.POST('/replies/{reply_id}/ignore', { params: { path: { reply_id: replyId } }, body: {} })),
+    onSuccess: (_r, replyId) =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: keys.allReplies }),
+        client.invalidateQueries({ queryKey: keys.reply(replyId) }),
+      ]),
+  })
+}
+
+/** «Deshacer» tras ignorar: la respuesta vuelve a pendiente. */
+export function useUnignoreReply() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (replyId: number) =>
+      unwrap(api.POST('/replies/{reply_id}/unignore', { params: { path: { reply_id: replyId } }, body: {} })),
+    onSuccess: (_r, replyId) =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: keys.allReplies }),
+        client.invalidateQueries({ queryKey: keys.reply(replyId) }),
+      ]),
+  })
+}
+
 // --- Borradores de seguimiento y agradecimiento (fase 15) --------------------------------------
 
 /** Borradores vigentes de la oferta y cuántos seguimientos llevas enviados. */
@@ -1744,5 +1870,30 @@ export function useTestMailSource() {
 export function useTestNewMailSource() {
   return useMutation({
     mutationFn: (body: Schemas['MailSourceInput']) => unwrap(api.POST('/mail-sources/test', { body })),
+  })
+}
+
+// --- Foto del CV ---------------------------------------------------------------------------------
+
+const PROFILE_PHOTO = ['profile-photo'] as const
+
+export function useProfilePhoto() {
+  return useQuery({ queryKey: PROFILE_PHOTO, queryFn: () => unwrap(api.GET('/profile/photo')) })
+}
+
+export function useSaveProfilePhoto() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: async (file: File) =>
+      unwrap(api.PUT('/profile/photo', { body: { content_base64: await toBase64(file) } })),
+    onSuccess: (info) => client.setQueryData(PROFILE_PHOTO, info),
+  })
+}
+
+export function useDeleteProfilePhoto() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: () => unwrap(api.DELETE('/profile/photo', { body: {} })),
+    onSuccess: (info) => client.setQueryData(PROFILE_PHOTO, info),
   })
 }

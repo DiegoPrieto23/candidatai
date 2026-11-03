@@ -60,13 +60,15 @@ describe('Barra lateral (fase 23.3)', () => {
     expect(names).toEqual([
       'Inicio',
       'Mi perfil',
+      'Buscar ofertas',
       'Bandeja de ofertas',
-      'Dónde buscar',
-      'Procesos',
+      'Tablero',
+      'Calendario',
+      'Respuestas',
       'Embudo',
       'Agente',
     ])
-    expect(await within(nav).findByRole('link', { name: 'Bandeja de ofertas (3 por revisar)' })).toHaveAttribute('aria-current', 'page')
+    expect(await within(nav).findByRole('link', { name: 'Bandeja de ofertas' })).toHaveAttribute('aria-current', 'page')
   })
 
   it('«Mi perfil» avisa de que falta el perfil, y «Cómo funciona» queda abajo, fuera de la lista', async () => {
@@ -86,8 +88,7 @@ describe('Barra lateral (fase 23.3)', () => {
     ['/por-revisar', /^Revisión rápida/],
     ['/triaje', /^Revisión rápida/],
     ['/alertas', /^Por completar/],
-    ['/calendario?view=agenda', /^Calendario/],
-    ['/respuestas', /^Tablero/],
+    ['/procesos/calendario?view=agenda', /^Calendario/],
     ['/skills', /^Skills que te faltan/],
     ['/plantillas', /^Plantillas de CV/],
   ])('la ruta antigua %s abre su pestaña nueva', async (from, tab) => {

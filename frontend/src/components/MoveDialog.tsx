@@ -26,6 +26,7 @@ import { fromLocalInput, toLocalInput } from '@/lib/time'
 import type { MoveOption } from '@/lib/moves'
 import { errorMessage } from '@/lib/errors'
 import { cn } from '@/lib/utils'
+import { BusyLabel } from '@/components/StableLabel'
 
 const MILESTONE_EVENTS: Partial<Record<EventType, 'interview' | 'test'>> = {
   interview_scheduled: 'interview',
@@ -282,7 +283,7 @@ function MoveForm({ card, options, onDone }: { card: BoardCard; options: MoveOpt
           {t('cancel')}
         </Button>
         <Button type="submit" disabled={missing || pending}>
-          {pending ? t('saving') : t('register')}
+          <BusyLabel busy={pending} busyText={t('saving')} text={t('register')} />
         </Button>
       </DialogFooter>
     </form>

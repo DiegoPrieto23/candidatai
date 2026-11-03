@@ -182,6 +182,7 @@ def run(jobs: int, runs: int, explain: bool, only: str | None) -> list[Result]:
         ("Próximos hitos", lambda: client.get("/upcoming")),
         ("Seguimientos", lambda: client.get("/followups")),
         ("Calendario (mes)", lambda: client.get("/calendar", params=calendar)),
+        ("Respuestas", lambda: client.get("/replies")),
         ("Por revisar", lambda: client.get("/triage")),
         ("Alertas", lambda: client.get("/alerts")),
         ("Ejecuciones del agente", lambda: client.get("/agent/runs", params={"limit": 20})),

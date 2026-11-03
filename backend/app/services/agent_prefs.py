@@ -52,7 +52,7 @@ REQUIRES: dict[str, tuple[Capability, ...]] = {
 # y `generate-cv` no están: no leen el texto de la oferta (no tienen `get_job`), sino la extracción
 # ya validada por su esquema. `expand` (fase 25.2) sí: lee READMEs de terceros y edita el perfil.
 UNTRUSTED: frozenset[str] = frozenset(
-    {"process-jobs", "search-jobs", "configure-platforms", "expand"}
+    {"process-jobs", "review-replies", "search-jobs", "configure-platforms", "expand"}
 )
 
 CAPABILITY_NAMES: dict[Capability, str] = {

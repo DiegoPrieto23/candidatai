@@ -1,5 +1,5 @@
 {
-  "search-jobs": "Tu agente recorre con tu navegador los portales que tienes activos en «Dónde buscar» y da de alta las ofertas que encuentra. Las verás en «Por revisar».",
+  "search-jobs": "Tu agente recorre con tu navegador los portales que tienes activos en «Dónde buscar» y da de alta las ofertas que encuentra. Las verás en la Bandeja.",
   "configure-platforms": "Te pregunta en qué portales buscas, te recomienda otros según tu perfil y prepara sus búsquedas con tus puestos y ubicaciones. No guarda nada sin tu OK.",
   "process-jobs": "Lee las ofertas nuevas y saca sus datos (puesto, requisitos, sueldo, modalidad…) para poder filtrarlas y valorarlas. No necesita nada tuyo.",
   "assess-fit": "Compara cada oferta procesada con tu perfil y deja una valoración explicada en su ficha. Aprobar o descartar lo decides tú en «Por revisar».",
@@ -10,6 +10,7 @@
   "generate-cover-letter": "Redacta la carta de presentación de esta oferta con tus indicaciones y solo con datos de tu perfil, y la verifica para que no lleve nada inventado. Queda en la ficha, a juego con tu CV.",
   "add-skills": "Añade a tu perfil las skills que marcaste como «La tengo». Te enseña los cambios y te pregunta antes de guardar.",
   "training-plan": "Convierte las skills que marcaste como «No la tengo» en un plan de estudio con recursos comprobados, tiempo estimado y orden.",
+  "review-replies": "Clasifica los correos de las empresas (entrevista, prueba, oferta, rechazo…) y deja una propuesta en cada uno. El estado solo cambia cuando la aceptas tú.",
   "draft-follow-ups": "Redacta los recordatorios de las candidaturas sin respuesta y los agradecimientos tras las entrevistas. Los copias y los envías tú: la app no envía nada.",
   "draft-follow-up": "Redacta un recordatorio o un agradecimiento para esta empresa y lo deja en la ficha. Lo copias y lo envías tú: la app no envía nada.",
   "broaden-search": "Propone títulos de puesto parecidos a los que ya apruebas (p. ej. «BI Engineer») y, con tu OK, los añade a tus búsquedas. No cambia nada sin preguntarte.",

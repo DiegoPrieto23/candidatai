@@ -86,17 +86,21 @@ def create(
     action: ActionId,
     job_id: int | None = None,
     milestone_id: int | None = None,
+    search: agent_launch.SearchScope | None = None,
 ) -> AgentRequestView:
     """Deja un encargo. Si ya hay uno pendiente igual, devuelve ese."""
     if action == "handle-requests":
         raise LaunchError("invalid_request", "Atender los encargos no puede ser un encargo.")
-    prompt, job_id, milestone_id = agent_launch.check_target(session, action, job_id, milestone_id)
+    prompt, job_id, milestone_id = agent_launch.check_target(
+        session, action, job_id, milestone_id, search=search
+    )
     existing = session.scalars(
         select(AgentRequest).where(
             AgentRequest.status == "pending",
             AgentRequest.action == action,
             AgentRequest.job_id == job_id,
             AgentRequest.milestone_id == milestone_id,
+            AgentRequest.prompt == prompt,
         )
     ).first()
     if existing is not None:
@@ -110,11 +114,7 @@ def create(
 
 
 def pending_count(session: Session) -> int:
-    query = (
-        select(func.count())
-        .select_from(AgentRequest)
-        .where(AgentRequest.status == "pending", AgentRequest.action.in_(ACTIONS))
-    )
+    query = select(func.count()).select_from(AgentRequest).where(AgentRequest.status == "pending")
     return session.scalar(query) or 0
 
 
@@ -122,8 +122,7 @@ def list_requests(
     session: Session, status: RequestStatus | None = "pending", limit: int = 50
 ) -> AgentRequestList:
     """Los encargos, el más antiguo primero (pendientes) o el más reciente primero (el resto)."""
-    # Los encargos de una acción que ya no existe se conservan, pero no se enseñan ni se atienden.
-    query = select(AgentRequest).where(AgentRequest.action.in_(ACTIONS)).limit(limit)
+    query = select(AgentRequest).limit(limit)
     if status is not None:
         query = query.where(AgentRequest.status == status)
     order = AgentRequest.id if status == "pending" else AgentRequest.id.desc()
@@ -133,7 +132,7 @@ def list_requests(
 
 def _pending(session: Session, request_id: int) -> AgentRequest:
     row = session.get(AgentRequest, request_id)
-    if row is None or row.action not in ACTIONS:
+    if row is None:
         raise RequestNotFoundError(f"No existe el encargo {request_id}.")
     if row.status != "pending":
         raise RequestClosedError(f"El encargo {request_id} ya está cerrado ({row.status}).")

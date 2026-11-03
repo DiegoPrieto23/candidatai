@@ -183,7 +183,7 @@ own in **My profile**: carry on with step 3.
 With no agent (or no CV), click **Start by hand** in **My profile**: write your name, your headline,
 the role you're looking for and the levels you accept, and click **Create my profile**. The editor
 opens so you can carry on block by block; what it didn't ask (work mode, locations, photo on the CV)
-starts open to anything and you change it in **Search** and **Documents**.
+starts open to anything and you change it in **Search jobs → What you're after** and **Documents**.
 
 If you'd rather do it from your agent:
 
@@ -201,10 +201,10 @@ If you'd rather do it from your agent:
    `update-profile` skill: it reads your CV, asks you for what's missing and saves it, without
    making anything up.
 3. Then review it block by block in **My profile**: experience and achievements (with numbers if you
-   have them), skills, languages, and in **Search** what you're looking for: roles, locations,
+   have them), skills and languages; and in **Search jobs → What you're after**, what you're looking for: roles, locations,
    remote work and your salary minimum. Each block saves on its own and can be undone.
 
-<img src="img/en/profile-search.webp" alt="Search preferences in My profile" width="88%">
+<img src="img/en/search-settings.webp" alt="“What you're after”, in Search jobs" width="88%">
 
 Your salary minimum is used to discard jobs below it and to compare offers, but **your agent never
 sees the figure**.
@@ -214,7 +214,7 @@ sees the figure**.
 Jobs can come in several ways; start with one or two:
 
 - **Paste a job** you've seen: **New job**, paste its link or its text.
-- **Companies you'd like to work for**: **Where to search → Target companies**. If they use Greenhouse, Lever,
+- **Companies you'd like to work for**: in **Search jobs**, the **Where to search → Target companies** tab. If they use Greenhouse, Lever,
   Ashby and the like, their new jobs arrive every day by themselves.
 - **Job alerts by email** (LinkedIn, InfoJobs, Indeed…): **Where to search → Email alerts**, add your mailbox step by step.
   The app only reads; it never sends or deletes email.
@@ -246,7 +246,7 @@ is saved in your data folder, so opening the page doesn't notify anyone again.
 one application at a time. Messages and emails are drafts that you copy and send.
 
 **Is it safe to connect my email?** The app opens only the folder or label you choose, read-only
-(IMAP): it reads alerts and never sends, moves, deletes or marks anything as
+(IMAP): it reads alerts and, if you turn it on, company replies, and never sends, moves, deletes or marks anything as
 read. You give it an **app password**, not your normal one, and you can revoke it at any moment. Be
 aware that with Gmail an app password can reach the whole mailbox (Google offers nothing narrower);
 the limit to one label is set by the app. The password stays in the `.env` file on your computer

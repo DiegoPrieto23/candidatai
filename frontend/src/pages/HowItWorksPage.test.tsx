@@ -67,7 +67,8 @@ describe('Cómo funciona', () => {
       '/bandeja?stage=approved',
       '/perfil/plantillas',
       '/procesos',
-      '/procesos/calendario',
+      '/calendario',
+      '/respuestas',
       '/embudo',
       '/perfil/skills',
     ])

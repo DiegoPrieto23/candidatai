@@ -26,6 +26,7 @@ from app.services import (
     agent_runs,
     assess_threshold,
     local_models,
+    search_runs,
     spend_tiers,
 )
 from app.services.agent_launch import ActionId, LaunchError
@@ -64,6 +65,7 @@ class RequestBody(BaseModel):
     action: ActionId
     job_id: int | None = Field(default=None, ge=1)
     milestone_id: int | None = Field(default=None, ge=1)  # acciones de una entrevista (fase 17)
+    search: agent_launch.SearchScope | None = None  # «Buscar ofertas»: portales y búsqueda puntual
 
 
 class LaunchBody(RequestBody):
@@ -278,6 +280,7 @@ def launch_agent(session: SessionDep, body: LaunchBody) -> agent_launch.LaunchRe
             preset=body.preset,
             profile_item=body.profile_item,
             upload=body.upload,
+            search=body.search,
         )
     except LaunchError as exc:
         _raise(exc)
@@ -289,6 +292,31 @@ def launch_agent(session: SessionDep, body: LaunchBody) -> agent_launch.LaunchRe
 
 def _not_found(exc: agent_runs.RunNotFoundError) -> ToolError:
     return ToolError("not_found", str(exc))
+
+
+# --- La búsqueda abierta en la terminal -----------------------------------------------------------
+
+
+@router.get("/search-run", operation_id="get_search_run")
+def get_search_run(session: SessionDep) -> search_runs.SearchRunResponse:
+    """La búsqueda de la que avisa la UI («Buscando…», terminada), si hay alguna sin cerrar."""
+    return search_runs.current(session)
+
+
+@router.post(
+    "/search-run/{run_id}/dismiss",
+    operation_id="dismiss_search_run",
+    dependencies=[Depends(require_ui)],
+)
+def dismiss_search_run(
+    session: SessionDep, run_id: int, _body: EmptyBody
+) -> search_runs.SearchRunResponse:
+    """Cierra el aviso. Si la búsqueda seguía abierta, la app deja de seguirla."""
+    try:
+        search_runs.dismiss(session, run_id)
+    except search_runs.SearchRunNotFoundError as exc:
+        raise ToolError("not_found", str(exc)) from exc
+    return search_runs.current(session)
 
 
 @router.post(
@@ -385,7 +413,9 @@ def list_agent_requests(
 def create_agent_request(session: SessionDep, body: RequestBody) -> agent_requests.AgentRequestView:
     """«Dejar para mi próxima sesión»: el agente lo verá con `list_agent_requests`."""
     try:
-        return agent_requests.create(session, body.action, body.job_id, body.milestone_id)
+        return agent_requests.create(
+            session, body.action, body.job_id, body.milestone_id, body.search
+        )
     except LaunchError as exc:
         _raise(exc)
         raise

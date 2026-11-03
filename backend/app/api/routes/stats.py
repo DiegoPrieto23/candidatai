@@ -12,6 +12,12 @@ from app.services import analytics
 router = APIRouter(tags=["stats"])
 
 
+@router.get("/stats/flow", operation_id="get_funnel_flow")
+def get_funnel_flow(session: SessionDep, since: date | None = None) -> analytics.FunnelFlow:
+    """«Tu embudo», en la portada y en «Embudo»: los pasos y dónde se quedó cada candidatura."""
+    return analytics.get_funnel_flow(session, since)
+
+
 @router.get("/stats/funnel", operation_id="get_funnel_stats")
 def get_funnel_stats(session: SessionDep, since: date | None = None) -> analytics.FunnelStats:
     """Embudo con su conversión, desglose por fuente, puesto y semana, tiempo hasta la primera

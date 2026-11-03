@@ -1,11 +1,12 @@
 import { Outlet } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import {
-  CalendarDotsIcon,
+  CompassIcon,
   FileTextIcon,
   GraduationCapIcon,
-  KanbanIcon,
   LightningIcon,
+  MagnifyingGlassIcon,
+  SlidersHorizontalIcon,
   ListChecksIcon,
   TrayIcon,
   UserCircleIcon,
@@ -53,16 +54,17 @@ export function InboxHubPage() {
   )
 }
 
-/** «Procesos»: el tablero y el calendario son dos vistas de lo mismo. */
-export function ProcessesHubPage() {
+/** «Buscar ofertas»: lanzar una búsqueda, decidir qué buscas y dónde. */
+export function SearchHubPage() {
   const { t } = useTranslation('nav', { keyPrefix: 'tabs' })
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
       <PageTabs
-        label={t('processesLabel')}
+        label={t('searchLabel')}
         tabs={[
-          { to: '/procesos', label: t('board'), icon: KanbanIcon, end: true },
-          { to: '/procesos/calendario', label: t('calendar'), icon: CalendarDotsIcon },
+          { to: '/buscar', label: t('search'), icon: MagnifyingGlassIcon, end: true },
+          { to: '/buscar/ajustes', label: t('searchSettings'), icon: SlidersHorizontalIcon },
+          { to: '/fuentes', label: t('sources'), icon: CompassIcon },
         ]}
       />
       <div className="min-w-0">

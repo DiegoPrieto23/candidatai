@@ -66,6 +66,7 @@ import { formatWhen, fromLocalInput, toLocalDateInput, toLocalInput } from '@/li
 import { errorMessage } from '@/lib/errors'
 import { cn } from '@/lib/utils'
 import { MILESTONES_ID } from '@/components/StatusUpdate'
+import { BusyLabel } from '@/components/StableLabel'
 
 /** Etapas con ficha de proceso: desde que se aprueba la oferta. */
 const PROCESS_STAGES = new Set<Stage>(['approved', 'cv_ready', 'applied', 'in_process', 'closed'])
@@ -244,7 +245,7 @@ function MilestoneForm({
           {t('cancel')}
         </Button>
         <Button type="submit" size="sm" disabled={!startsAt || blocked || pending}>
-          {pending ? t('saving') : t('save')}
+          <BusyLabel busy={pending} busyText={t('saving')} text={t('save')} />
         </Button>
       </div>
     </form>
@@ -303,7 +304,7 @@ function DeleteMilestoneDialog({
             onClick={() => remove.mutate(milestone.id, { onSuccess: () => onOpenChange(false) })}
           >
             <TrashIcon />
-            {remove.isPending ? t('deleting') : t('confirm')}
+            <BusyLabel busy={remove.isPending} busyText={t('deleting')} text={t('confirm')} />
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -618,7 +619,7 @@ function ContactForm({
           {t('cancel')}
         </Button>
         <Button type="submit" size="sm" disabled={!fields.name.trim() || save.isPending}>
-          {save.isPending ? t('saving') : t('save')}
+          <BusyLabel busy={save.isPending} busyText={t('saving')} text={t('save')} />
         </Button>
       </div>
     </form>

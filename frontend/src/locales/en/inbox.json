@@ -101,7 +101,7 @@
     },
     "applied": {
       "what": "Applications sent, waiting for the company to answer.",
-      "next": "when they invite you to an interview or a test, note it in the job's “Process” tab and it moves to “In process”. If they take long to answer, the app reminds you to follow up."
+      "next": "when they invite you to an interview or a test, note it in the job's “Process” tab, or accept the proposal in <replies>Replies</replies> if the app read the email, and it moves to “In process”. If they take long to answer, the app reminds you to follow up."
     },
     "in_process": {
       "what": "Processes with interviews or tests under way.",

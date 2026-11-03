@@ -76,7 +76,7 @@
     "intro": "Agente y modelo para las acciones principales, en tres niveles. Rellénalos una vez y aplica uno con un clic: cambia tu tabla «Por acción» y se puede deshacer.",
     "economy": {
       "label": "Económico",
-      "help": "Las acciones cerradas (procesar y valorar) con un modelo local; el CV, con tu agente más capaz."
+      "help": "Las acciones cerradas (procesar, valorar, respuestas) con un modelo local; el CV, con tu agente más capaz."
     },
     "balanced": {
       "label": "Equilibrado",
@@ -114,10 +114,15 @@
       "linux": "<strong>Instálalo.</strong> Abre una terminal, pega esta orden y pulsa Intro:"
     },
     "step3": "<strong>Entra con tu cuenta.</strong> Cuando termine, abre otra ventana igual, escribe «claude», pulsa Intro y sigue los pasos para entrar con tu cuenta de Claude.",
-    "step4": "Cierra CandidatAI y vuelve a abrirla desde su acceso directo: los botones con destellos abrirán tu agente con la orden ya escrita.",
+    "step4": "Cierra CandidatAI y vuelve a abrirla desde su acceso directo: los botones con el robot abrirán tu agente con la orden ya escrita.",
     "commandLabel": "Orden para instalar Claude Code",
     "guide": "La guía paso a paso",
     "otherAgents": "Otros agentes, en «Agente»"
   },
-  "details": "Tus agentes en detalle: versiones, modelos y con cuál se abre cada cosa"
+  "configure": {
+    "title": "Versiones, modelos y con cuál se abre cada cosa",
+    "body": "Comprueba qué tienes instalado, elige los modelos y decide qué agente usa cada acción.",
+    "open": "Configurar agentes",
+    "close": "Ocultar la configuración"
+  }
 }

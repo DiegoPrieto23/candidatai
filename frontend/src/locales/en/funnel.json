@@ -20,11 +20,8 @@
     "accepted": "Accepted"
   },
   "funnel": {
-    "title": "Funnel",
-    "hint": "Each job counts once in every step it reached (and the earlier ones). Each row shows how many moved on from the previous step and how much of the total got that far.",
     "duplicates": " Not counting {{count}} duplicates.",
     "caption": "Jobs per funnel step",
-    "rates": "{{previous}} of previous · {{start}} of total",
     "countHead": "Jobs",
     "fromPreviousHead": "% of previous step",
     "fromStartHead": "% of total"
@@ -232,5 +229,71 @@
     "copyEn": "Copy in English",
     "lineLabel": "To share"
   },
-  "more": "More analysis"
+  "more": "More analysis",
+  "flow": {
+    "title": "Your funnel",
+    "hint": "How far each application you've sent has made it, and where the ones that stopped are now.",
+    "showing": "Showing",
+    "everything": "Everything you've sent",
+    "noneYet": "None yet",
+    "ofPrevious": "{{pct}} of {{step}}",
+    "chartLabel": "{{applied}} sent, {{replied}} with a reply, {{interview}} at interview, {{offer}} with an offer and {{accepted}} accepted. The detail is under “Show the numbers”.",
+    "passed_one": "{{count}} went from {{from}} to {{to}}",
+    "passed_other": "{{count}} went from {{from}} to {{to}}",
+    "stats": {
+      "sent": "sent",
+      "heardBack": "heard back",
+      "reachedInterview": "reached interview"
+    },
+    "biggest": "The biggest group: {{what}}, {{pct}} of what you've sent.",
+    "more": "Full analysis",
+    "numbers": "Show the numbers",
+    "stepHead": "Step",
+    "whereTheyStopped": "Where the ones that stopped are",
+    "empty": "Once you send your first application, you'll see here how far it gets.",
+    "emptyPeriod": "You didn't apply to any of the jobs seen in this period.",
+    "stops": {
+      "applied": {
+        "open_one": "{{count}} waiting",
+        "open_other": "{{count}} waiting",
+        "rejected_one": "{{count}} rejected",
+        "rejected_other": "{{count}} rejected",
+        "withdrawn_one": "{{count}} withdrawn",
+        "withdrawn_other": "{{count}} withdrawn",
+        "expired_one": "{{count}} no reply",
+        "expired_other": "{{count}} no reply"
+      },
+      "replied": {
+        "open_one": "{{count}} in talks",
+        "open_other": "{{count}} in talks",
+        "rejected_one": "{{count}} rejected",
+        "rejected_other": "{{count}} rejected",
+        "withdrawn_one": "{{count}} withdrawn",
+        "withdrawn_other": "{{count}} withdrawn",
+        "expired_one": "{{count}} expired",
+        "expired_other": "{{count}} expired"
+      },
+      "interview": {
+        "open_one": "{{count}} interviewing",
+        "open_other": "{{count}} interviewing",
+        "rejected_one": "{{count}} rejected",
+        "rejected_other": "{{count}} rejected",
+        "withdrawn_one": "{{count}} withdrawn",
+        "withdrawn_other": "{{count}} withdrawn",
+        "expired_one": "{{count}} expired",
+        "expired_other": "{{count}} expired"
+      },
+      "offer": {
+        "open_one": "{{count}} deciding",
+        "open_other": "{{count}} deciding",
+        "rejected_one": "{{count}} pulled by the company",
+        "rejected_other": "{{count}} pulled by the company",
+        "withdrawn_one": "{{count}} declined by you",
+        "withdrawn_other": "{{count}} declined by you",
+        "expired_one": "{{count}} expired",
+        "expired_other": "{{count}} expired"
+      }
+    },
+    "stopHint": "{{what}} · {{pct}} of what you've sent"
+  }
 }

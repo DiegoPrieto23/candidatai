@@ -20,6 +20,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { errorMessage } from '@/lib/errors'
 import { canCorrectGuide, interviewPhase, planIsStale } from '@/lib/interviews'
 import { dateFormatter, formatDateTime } from '@/lib/labels'
+import { BusyLabel } from '@/components/StableLabel'
 
 type PrepBlock = NonNullable<MilestoneOut['prep_plan']>['blocks'][number]
 
@@ -83,7 +84,7 @@ function PrepInstructions({ milestone }: { milestone: MilestoneOut }) {
         <span>{t('hint')}</span>
         {dirty && (
           <Button type="button" variant="outline" size="sm" className="h-7" disabled={save.isPending} onClick={submit}>
-            {save.isPending ? t('saving') : t('save')}
+            <BusyLabel busy={save.isPending} busyText={t('saving')} text={t('save')} />
           </Button>
         )}
         {!dirty && justSaved && <span role="status">{t('saved')}</span>}
@@ -277,7 +278,7 @@ function GuideVersions({ milestone, canRestore }: { milestone: MilestoneOut; can
             disabled={pending || restore.isPending}
             onClick={() => restore.mutate(milestone.id)}
           >
-            <ArrowCounterClockwiseIcon /> {restore.isPending ? t('restoring') : t(`${which}.restore`)}
+            <ArrowCounterClockwiseIcon /> <BusyLabel busy={restore.isPending} busyText={t('restoring')} text={t(`${which}.restore`)} />
           </Button>
           {pending && <span className="text-xs text-muted-foreground">{t('pendingHint')}</span>}
         </div>

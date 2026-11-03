@@ -25,9 +25,12 @@ const {
   newJob: { Page: NewJobPage },
   platforms: { Page: PlatformsPage },
   processes: { Page: ProcessesPage },
-  processesHub: { Page: ProcessesHubPage },
   profile: { Page: ProfilePage },
   profileHub: { Page: ProfileHubPage },
+  replies: { Page: RepliesPage },
+  search: { Page: SearchPage },
+  searchHub: { Page: SearchHubPage },
+  searchSettings: { Page: SearchSettingsPage },
   skills: { Page: SkillsPage },
   sources: { Page: SourcesPage },
   sourcesHub: { Page: SourcesHubPage },
@@ -69,10 +72,13 @@ export function AppRoutes() {
         </Route>
         <Route path="jobs/:id" element={<JobPage />} />
         <Route path="nueva" element={<NewJobPage />} />
-        <Route path="procesos" element={<ProcessesHubPage />}>
-          <Route index element={<ProcessesPage />} />
-          <Route path="calendario" element={<CalendarPage />} />
+        <Route path="buscar" element={<SearchHubPage />}>
+          <Route index element={<SearchPage />} />
+          <Route path="ajustes" element={<SearchSettingsPage />} />
         </Route>
+        <Route path="procesos" element={<ProcessesPage />} />
+        <Route path="calendario" element={<CalendarPage />} />
+        <Route path="respuestas" element={<RepliesPage />} />
         <Route path="embudo" element={<FunnelPage />} />
         <Route path="perfil" element={<ProfileHubPage />}>
           <Route index element={<ProfilePage />} />
@@ -83,16 +89,18 @@ export function AppRoutes() {
         <Route path="por-revisar" element={<MovedTo to="/bandeja/revision" />} />
         <Route path="triaje" element={<MovedTo to="/bandeja/revision" />} />
         <Route path="alertas" element={<MovedTo to="/bandeja/por-completar" />} />
-        <Route path="calendario" element={<MovedTo to="/procesos/calendario" />} />
-        <Route path="respuestas" element={<MovedTo to="/procesos" />} />
+        <Route path="procesos/calendario" element={<MovedTo to="/calendario" />} />
         <Route path="skills" element={<MovedTo to="/perfil/skills" />} />
         <Route path="plantillas" element={<MovedTo to="/perfil/plantillas" />} />
-        <Route path="fuentes" element={<SourcesHubPage />}>
-          <Route index element={<Navigate to="/fuentes/plataformas" replace />} />
-          <Route path="empresas" element={<SourcesPage />} />
-          <Route path="plataformas" element={<PlatformsPage />} />
-          <Route path="correo" element={<EmailAlertsPage />} />
-          <Route path="extension" element={<ExtensionPage />} />
+        {/* «Dónde buscar» es una pestaña de «Buscar ofertas»; conserva sus direcciones de siempre. */}
+        <Route path="fuentes" element={<SearchHubPage />}>
+          <Route element={<SourcesHubPage />}>
+            <Route index element={<Navigate to="/fuentes/plataformas" replace />} />
+            <Route path="empresas" element={<SourcesPage />} />
+            <Route path="plataformas" element={<PlatformsPage />} />
+            <Route path="correo" element={<EmailAlertsPage />} />
+            <Route path="extension" element={<ExtensionPage />} />
+          </Route>
         </Route>
         {/* Antes de la fase 23.3 eran páginas sueltas: los enlaces guardados siguen funcionando. */}
         <Route path="empresas" element={<Navigate to="/fuentes/empresas" replace />} />

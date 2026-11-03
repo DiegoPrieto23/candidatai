@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { PageErrorBoundary } from '@/components/PageErrorBoundary'
 import { ReadyNotices } from '@/components/ReadyNotices'
+import { SearchRunNotice } from '@/components/SearchRunNotice'
 import { UserPrompts } from '@/components/UserPrompts'
 import { Brand, MobileNav, Sidebar } from '@/components/Sidebar'
 
@@ -68,7 +69,7 @@ function DemoBanner() {
       aria-label={t('demo.label')}
       className="border-b border-warning-border bg-warning text-warning-foreground"
     >
-      <p className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-1.5 text-xs sm:px-6">
+      <p className="flex max-w-6xl items-center gap-2 px-4 py-1.5 text-xs sm:px-8">
         <FlaskIcon className="size-4 shrink-0" weight="duotone" />
         <span>
           <span className="font-semibold">{t('demo.title')}</span> {t('demo.body')}
@@ -123,7 +124,7 @@ export function AppShell() {
         {/* En escritorio la navegación y «Nueva oferta» van en la barra lateral: arriba, solo el aviso de demo. */}
         <header className="sticky top-0 z-20 border-b bg-background/80 backdrop-blur-md empty:hidden supports-[backdrop-filter]:bg-background/65 lg:static lg:border-b-0 lg:bg-transparent lg:backdrop-blur-none">
           <DemoBanner />
-          <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-2 sm:px-6 lg:hidden">
+          <div className="flex max-w-6xl items-center gap-3 px-4 py-2 sm:px-8 lg:hidden">
             <MobileNav />
             <Brand />
             <Button asChild size="sm" className="ml-auto shrink-0 active:translate-y-px">
@@ -135,7 +136,7 @@ export function AppShell() {
           </div>
         </header>
         {/* Destino de «Saltar al contenido»: sin anillo, que enmarcaría la página entera. */}
-        <main id={MAIN_ID} tabIndex={-1} className="mx-auto max-w-6xl px-4 pb-24 pt-6 outline-none sm:px-6 sm:pt-8">
+        <main id={MAIN_ID} tabIndex={-1} className="max-w-6xl px-4 pb-24 pt-6 outline-none sm:px-8 sm:pt-8">
           <div className="mb-6 empty:hidden">
             <BackgroundRunReminder />
           </div>
@@ -146,8 +147,12 @@ export function AppShell() {
           </PageErrorBoundary>
         </main>
       </div>
-      <UserPrompts />
-      <ReadyNotices />
+      {/* Abajo a la derecha, uno encima de otro: se ven al hacer scroll y no mueven la página. */}
+      <div className="pointer-events-none fixed right-4 bottom-4 z-40 flex flex-col items-end gap-2">
+        <UserPrompts />
+        <SearchRunNotice />
+        <ReadyNotices />
+      </div>
     </div>
   )
 }

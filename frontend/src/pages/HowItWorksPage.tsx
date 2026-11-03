@@ -19,7 +19,7 @@ const STEPS = [
     actors: ['you', 'agent'],
     links: [
       { to: '/perfil', label: 'entries.profile' },
-      { to: '/fuentes', label: 'entries.sources' },
+      { to: '/fuentes', label: 'tabs.sources' },
       { to: '/agente', label: 'entries.agent' },
     ],
   },
@@ -53,7 +53,8 @@ const STEPS = [
     actors: ['you', 'agent'],
     links: [
       { to: '/procesos', label: 'entries.processes' },
-      { to: '/procesos/calendario', label: 'tabs.calendar' },
+      { to: '/calendario', label: 'entries.calendar' },
+      { to: '/respuestas', label: 'entries.replies' },
       { to: '/embudo', label: 'entries.funnel' },
       { to: '/perfil/skills', label: 'tabs.skills' },
     ],
@@ -84,7 +85,8 @@ export function HowItWorksPage() {
     inbox: tNav('entries.inbox'),
     triage: tNav('tabs.review'),
     processes: tNav('entries.processes'),
-    calendar: tNav('tabs.calendar'),
+    calendar: tNav('entries.calendar'),
+    replies: tNav('entries.replies'),
     funnel: tNav('entries.funnel'),
     skills: tNav('tabs.skills'),
     searchJobs: tHome('today.searchJobs'),

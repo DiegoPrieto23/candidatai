@@ -14,7 +14,9 @@ function mailbox(id: number, overrides: Partial<MailSourceView> = {}): MailSourc
     security: 'ssl',
     user: 'ana@example.com',
     folder: 'Alertas empleo',
+    replies_folder: 'INBOX',
     enabled: true,
+    read_replies: false,
     allow_private: false,
     from_env: false,
     has_password: true,
@@ -198,7 +200,7 @@ describe('Buzones de las alertas (fase 27.4)', () => {
     expect(within(dialog).queryByLabelText('Usuario (tu dirección)')).not.toBeInTheDocument()
     await userEvent.type(within(dialog).getByLabelText('Contraseña de aplicación'), 'abcd')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Guardar' }))
-    expect(calls.find((c) => c.method === 'PATCH')?.body).toEqual({ label: 'Principal', password: 'abcd' })
+    expect(calls.find((c) => c.method === 'PATCH')?.body).toEqual({ label: 'Principal', read_replies: false, password: 'abcd' })
   })
 
   it('con la contraseña ya guardada, editar la cuenta de .env sin escribirla no la toca', async () => {
@@ -214,7 +216,7 @@ describe('Buzones de las alertas (fase 27.4)', () => {
     const dialog = await screen.findByRole('dialog')
     expect(within(dialog).getByText('Déjala vacía para no cambiarla')).toBeInTheDocument()
     await userEvent.click(within(dialog).getByRole('button', { name: 'Guardar' }))
-    expect(calls.find((c) => c.method === 'PATCH')?.body).toEqual({ label: 'Principal' })
+    expect(calls.find((c) => c.method === 'PATCH')?.body).toEqual({ label: 'Principal', read_replies: false })
   })
 
   it('«Por completar» no enseña los buzones y sus teclas siguen funcionando', async () => {

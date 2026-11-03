@@ -40,6 +40,7 @@ CALLS: dict[str, Callable[[TestClient, int], Any]] = {
     "kanban": lambda c, _: c.get("/board"),
     "proximos": lambda c, _: c.get("/upcoming", params={"days": 30}),
     "seguimientos": lambda c, _: c.get("/followups"),
+    "respuestas": lambda c, _: c.get("/replies"),
     "por_revisar": lambda c, _: c.get("/triage"),
     "alertas": lambda c, _: c.get("/alerts"),
 }

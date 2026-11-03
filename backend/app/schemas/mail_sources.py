@@ -80,7 +80,9 @@ class MailSourceInput(_Strict):
     user: User | None = None
     password: Password | None = None
     folder: Folder = "INBOX"
+    replies_folder: Folder = "INBOX"
     enabled: bool = True
+    read_replies: bool = False
     allow_private: bool = False
 
     @model_validator(mode="after")
@@ -100,6 +102,7 @@ class MailSourceInput(_Strict):
                 raise ValueError(f"«{name}» ya tiene otro uso en data/inbox/: elige otro nombre.")
             self.folder = name
             self.host = self.user = self.password = None
+            self.read_replies = False
         return self
 
 
@@ -113,7 +116,9 @@ class MailSourcePatch(_Strict):
     user: User | None = None
     password: Password | None = None
     folder: Folder | None = None
+    replies_folder: Folder | None = None
     enabled: bool | None = None
+    read_replies: bool | None = None
     allow_private: bool | None = None
 
 
@@ -133,7 +138,9 @@ class MailSourceView(BaseModel):
     security: MailSecurity
     user: str | None
     folder: str
+    replies_folder: str
     enabled: bool
+    read_replies: bool
     allow_private: bool
     from_env: bool = Field(description="La cuenta `CAI_IMAP_*` de `.env`: se cambia ahí.")
     has_password: bool

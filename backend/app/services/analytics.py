@@ -200,6 +200,31 @@ class FilterCount(BaseModel):
     count: int
 
 
+StopOutcome = Literal["open", "rejected", "withdrawn", "expired"]
+_CLOSING: dict[str, StopOutcome] = {
+    EventType.REJECTED: "rejected",
+    EventType.WITHDRAWN: "withdrawn",
+    EventType.EXPIRED: "expired",
+}
+# De lo enviado a lo aceptado, en orden: lo que dibuja «Tu embudo».
+FLOW_STEPS: tuple[FunnelStepName, ...] = ("applied", "replied", "interview", "offer", "accepted")
+
+
+class FunnelStop(BaseModel):
+    """Las candidaturas que llegaron hasta `step` y no más, y cómo están (`open`: vivas)."""
+
+    step: FunnelStepName
+    outcome: StopOutcome
+    count: int
+
+
+class FunnelFlow(BaseModel):
+    since: date | None
+    duplicates_excluded: int
+    steps: list[FunnelStep]
+    stops: list[FunnelStop]
+
+
 class FunnelStats(BaseModel):
     since: date | None
     duplicates_excluded: int
@@ -724,6 +749,67 @@ def get_funnel_stats(
             discard_reasons=_discard_reasons(session, per_job),
             hard_filter_failures=_hard_filter_failures(session, per_job),
             agent_cost=_agent_cost(session, per_job, spend, job_runs, sources_of),
+        )
+
+
+def _stops(session: Session, per_job: FromClause) -> list[FunnelStop]:
+    """Las candidaturas enviadas, por el último paso al que llegaron y cómo están ahora."""
+    rows = session.execute(
+        select(
+            per_job.c.job_id,
+            per_job.c.replied,
+            per_job.c.interview,
+            per_job.c.offer,
+            per_job.c.accepted,
+            Application.stage,
+        )
+        .outerjoin(Application, Application.job_id == per_job.c.job_id)
+        .where(per_job.c.applied == 1, per_job.c.accepted == 0)
+    ).all()
+    closed = [row.job_id for row in rows if row.stage == Stage.CLOSED]
+    closing: dict[int, StopOutcome] = {}
+    # El último cierre manda: uno anterior se pudo reabrir.
+    for job_id, kind in session.execute(
+        select(Event.job_id, Event.type)
+        .join(per_job, per_job.c.job_id == Event.job_id)
+        .where(Event.type.in_(tuple(_CLOSING)), per_job.c.applied == 1)
+        .order_by(Event.occurred_at, Event.id)
+    ):
+        closing[job_id] = _CLOSING[kind]
+    closed_set = set(closed)
+    counts: dict[tuple[FunnelStepName, StopOutcome], int] = {}
+    for row in rows:
+        step: FunnelStepName = (
+            "offer"
+            if row.offer
+            else "interview"
+            if row.interview
+            else "replied"
+            if row.replied
+            else "applied"
+        )
+        outcome: StopOutcome = (
+            closing.get(row.job_id, "expired") if row.job_id in closed_set else "open"
+        )
+        counts[(step, outcome)] = counts.get((step, outcome), 0) + 1
+    outcomes: tuple[StopOutcome, ...] = ("open", "rejected", "withdrawn", "expired")
+    return [
+        FunnelStop(step=step, outcome=outcome, count=counts[(step, outcome)])
+        for step in FLOW_STEPS
+        for outcome in outcomes
+        if (step, outcome) in counts
+    ]
+
+
+def get_funnel_flow(session: Session, since: date | None = None) -> FunnelFlow:
+    """Los pasos del embudo y dónde se quedó cada candidatura enviada. Solo esto: la portada lo
+    enseña cada vez que se abre y no necesita los desgloses de `get_funnel_stats`."""
+    with _per_job(session, since) as (per_job, duplicates):
+        return FunnelFlow(
+            since=since,
+            duplicates_excluded=duplicates,
+            steps=_steps(session, per_job),
+            stops=_stops(session, per_job),
         )
 
 
