@@ -19,6 +19,8 @@ from app.services.documents import (
     cv_brief,
     default_template,
     service,
+    template_admin,
+    templates,
     uploads,
 )
 from app.services.documents.service import FileNotAvailableError
@@ -99,6 +101,21 @@ def set_default_template(
 ) -> default_template.DefaultTemplateResult:
     """Fija la plantilla por defecto en data/profile.yaml (conserva comentarios) y lo importa."""
     return default_template.set_default_template(session, template_id)
+
+
+@router.patch("/templates/{template_id}", operation_id="rename_template")
+def rename_template(
+    template_id: str, body: template_admin.RenameTemplateInput
+) -> service.TemplateInfo:
+    """Cambia el nombre de una plantilla tuya. El id no cambia: los CVs ya hechos lo usan."""
+    template_admin.rename_template(template_id, body.name)
+    return service.template_info(templates.get(template_id))
+
+
+@router.delete("/templates/{template_id}", operation_id="delete_template")
+def delete_template(session: SessionDep, template_id: str) -> template_admin.DeleteTemplateResult:
+    """Elimina una plantilla tuya y el CV subido del que salió. Los CVs ya generados se quedan."""
+    return template_admin.delete_template(session, template_id)
 
 
 @router.get("/uploads", operation_id="list_uploads")

@@ -10,6 +10,18 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Avisos de lo que hace tu agente:** lo que lanzas con un botón (leer ofertas, valorarlas, revisar
+  respuestas, generar o corregir un CV, la carta, investigar la empresa, preparar una entrevista…) sale
+  en un aviso en cualquier página, con lo que lleva hecho, y cambia cuando termina o si no ha podido. Se
+  puede minimizar o cerrar, y cerrarlo no para a tu agente.
+- **Tu agente te pregunta en el portal:** si necesita saber algo para generar un CV, una carta o una guía,
+  te sale un aviso para contestar ahí mismo, sin ir a su ventana. También puedes contestarle en ella. Los
+  permisos que pide tu agente (y las conversaciones, como un simulacro) siguen en su ventana.
+- **Descartar o cerrar desde cualquier oferta:** la ficha de una oferta tiene **Descartar**, con motivo, en
+  todas las etapas hasta enviarla (también en **Aprobada** y **CV listo**), y **Cerrar candidatura** si ya la
+  enviaste (te han rechazado, te retiras o ha caducado). **Reabrir** lo deshace.
+- **Renombrar y eliminar tus plantillas:** en cada plantilla tuya, el lápiz cambia el nombre y **Eliminar**
+  la borra con el CV que subiste para crearla. Los CVs ya generados conservan sus ficheros.
 - **Buscar ofertas:** una página nueva, con su lupa en el menú. Eliges en qué portales buscar, ves
   cuándo se buscó por última vez y cuántas salieron, afinas con puesto y ubicación solo para esa vez, y
   lanzas a tu agente. Un aviso dice **Buscando…** en cualquier página, con los portales que lleva y las
@@ -92,6 +104,15 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   vez de 23).
 
 ### Cambiado
+- **Plantillas:** una sola lista, **Todas las plantillas**, con **Usar por defecto** en cada tuya. Los
+  bloques «Original / Con tu perfil» de cada CV subido desaparecen; en **Mi CV** solo queda lo que falta por
+  convertir.
+- **Corregir un CV es más fiable:** tu agente mide cuántas páginas ocupa antes de guardar. Si pides «que
+  ocupe 1 página», la app lo exige: una versión que no cabe no se guarda ni aparece en la ficha, y la que
+  tenías sigue igual. El aviso de **CV listo** ya no sale hasta que cabe y está verificado.
+- **Investigar empresa:** ya no pregunta nada, ni antes ni después. Busca menos (8 búsquedas y 10 páginas
+  como mucho), guarda el dosier, avisa y lo ves en la ficha, en **Empresa**.
+- **«Qué cambió»** sale siempre plegado en el historial de versiones del CV.
 - **«Qué buscas» se muda a «Buscar ofertas»:** puestos, sueldo, lugar y contrato se editan ahora en su
   propia pestaña de esa página, no en «Mi perfil». Se siguen guardando en tu perfil.
 - **Los botones ya no se mueven:** el aviso de los botones de tu agente («Se ha abierto…») flota debajo
@@ -183,6 +204,8 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   leer cada oferta una a una.
 
 ### Corregido
+- **Tu agente no podía conectarse a la app** si esta seguía abierta tras actualizarla: en Windows el
+  servidor MCP fallaba con «fichero en uso» o no llegaba a arrancar, y tu agente iba más lento, por otro camino.
 - **Tablero:** ya se puede agarrar una tarjeta justo después de soltar otra. Antes, durante un instante, el
   clic no llegaba a la tarjeta y se seleccionaba texto.
 - **El foco de teclado se ve siempre:** en «Respuestas», el correo con el foco lleva un anillo y

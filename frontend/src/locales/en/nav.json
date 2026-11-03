@@ -116,5 +116,86 @@
     "notification": "See the result in CandidatAI.",
     "minimize": "Minimise this notice",
     "expand": "{{title}}: open this notice"
+  },
+  "tasks": {
+    "runningTerminal": "Still going in your agent's window. If it asks for permission, answer there.",
+    "runningBackground": "In the background: nothing for you to do.",
+    "stale": "No news for 30 minutes. Check your agent's window or close this notice.",
+    "doneBody": "You can see it now.",
+    "doneCount_one": "{{count}} done.",
+    "doneCount_other": "{{count}} done.",
+    "counts": "{{done}} of {{total}}",
+    "see": "View",
+    "seeAgent": "View in “Agent”",
+    "notification": "Your agent has finished.",
+    "minimize": "Minimize the notice",
+    "expand": "Open the notice: {{title}}",
+    "close": "Close the notice",
+    "stopped": {
+      "title": "Your agent has stopped",
+      "body": "It hasn't finished everything. Check its window to see why."
+    },
+    "failed": {
+      "title": "It didn't work",
+      "body": "The run failed."
+    },
+    "needs_user": {
+      "title": "Your agent needs to know something",
+      "body": "It stopped with a question for you."
+    },
+    "actions": {
+      "process-jobs": {
+        "running": "Reading the new jobs…",
+        "done": "Jobs read"
+      },
+      "assess-fit": {
+        "running": "Assessing the pending jobs…",
+        "done": "Jobs assessed"
+      },
+      "assess-fit-job": {
+        "running": "Assessing the job…",
+        "done": "Job assessed"
+      },
+      "review-replies": {
+        "running": "Reviewing the replies…",
+        "done": "Replies reviewed"
+      },
+      "generate-cv": {
+        "running": "Generating the CV…",
+        "done": "CV generated"
+      },
+      "correct-cv": {
+        "running": "Correcting the CV…",
+        "done": "CV corrected"
+      },
+      "verify-cv": {
+        "running": "Verifying the CV…",
+        "done": "CV verified"
+      },
+      "generate-cover-letter": {
+        "running": "Writing the letter…",
+        "done": "Letter ready"
+      },
+      "research-company": {
+        "running": "Researching the company…",
+        "done": "Dossier ready"
+      },
+      "prepare-interview": {
+        "running": "Preparing the interview…",
+        "done": "Guide ready"
+      },
+      "correct-interview-guide": {
+        "running": "Changing the guide…",
+        "done": "Guide updated"
+      },
+      "draft-follow-up": {
+        "running": "Writing the follow-up…",
+        "done": "Draft ready"
+      },
+      "draft-message": {
+        "running": "Writing the message…",
+        "done": "Draft ready"
+      }
+    }
   }
 }

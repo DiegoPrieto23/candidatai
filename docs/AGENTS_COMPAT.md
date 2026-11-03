@@ -198,8 +198,8 @@ aceptas en la UI, y aceptar no tiene herramienta ni comando.
   declara `pass_env: [CAI_DATA_DIR]` y `.codex/config.toml` lo lleva en `env_vars`; sin eso, una
   demo abriría `data/`.
 - **Aprobaciones:** las herramientas de `policy.auto_allow` llevan `approval_mode = "approve"` en
-  `.codex/config.toml` y no preguntan; las demás (`save_fit_assessment`, `save_cv_content`,
-  `render_cv`…) piden permiso, como en Claude Code. «Allow for this session» evita que vuelva a
+  `.codex/config.toml` y no preguntan (también `save_company_research`, `check_cv_fit`, `ask_user` y
+  `finish_task`); las demás (`save_fit_assessment`, `save_cv_content`, `render_cv`…) piden permiso, como en Claude Code. «Allow for this session» evita que vuelva a
   preguntar hasta que cierres Codex.
 - Para delegar en un rol, pídelo explícitamente: "lanza el subagente `extractor` con el job_id 42".
 - Los modelos por rol están vacíos en el manifiesto a propósito (heredan el de la sesión). Si

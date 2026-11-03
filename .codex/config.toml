@@ -2,7 +2,7 @@
 
 [mcp_servers.candidatai]
 command = "uv"
-args = ["run", "--directory", "backend", "cai-mcp"]
+args = ["run", "--no-sync", "--directory", "backend", "python", "-m", "app.mcp.server"]
 env_vars = ["CAI_DATA_DIR"]
 
 [mcp_servers.candidatai.tools.get_status]
@@ -45,6 +45,9 @@ approval_mode = "approve"
 approval_mode = "approve"
 
 [mcp_servers.candidatai.tools.get_cv_brief]
+approval_mode = "approve"
+
+[mcp_servers.candidatai.tools.check_cv_fit]
 approval_mode = "approve"
 
 [mcp_servers.candidatai.tools.get_cv_correction]
@@ -95,10 +98,19 @@ approval_mode = "approve"
 [mcp_servers.candidatai.tools.get_company_research]
 approval_mode = "approve"
 
+[mcp_servers.candidatai.tools.save_company_research]
+approval_mode = "approve"
+
 [mcp_servers.candidatai.tools.get_received_offer]
 approval_mode = "approve"
 
 [mcp_servers.candidatai.tools.wait_user_action]
+approval_mode = "approve"
+
+[mcp_servers.candidatai.tools.ask_user]
+approval_mode = "approve"
+
+[mcp_servers.candidatai.tools.finish_task]
 approval_mode = "approve"
 
 [mcp_servers.candidatai.tools.finish_search]

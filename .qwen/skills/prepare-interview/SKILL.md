@@ -66,6 +66,8 @@ Lee todo antes de preguntar nada:
   con lo que haya.
 
 ## 4. Lo que falta: pregúntalo antes de escribir
+(Si tienes `ask_user`, úsalo con `wait_user_action`: le sale un aviso en la app y no tiene que ir a tu
+ventana. Con `skipped` o `expired`, pregúntaselo aquí.)
 Con todo lo anterior, haz **un solo mensaje** con las preguntas cuya respuesta no tengas y que
 cambien la guía. Típicamente:
 - formato y duración, con quién (nombre y cargo, si no están en los contactos), si hay prueba

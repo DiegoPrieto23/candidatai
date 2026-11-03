@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import ForeignKey, String, Text
+from sqlalchemy import JSON, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base, UTCDateTime, utcnow
@@ -17,7 +17,7 @@ class UserPrompt(Base):
     __tablename__ = "user_prompts"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    kind: Mapped[str] = mapped_column(String(24))  # captcha | anti_bot | login_required
+    kind: Mapped[str] = mapped_column(String(24))  # captcha | anti_bot | login_required | question
     message: Mapped[str] = mapped_column(Text)
     url: Mapped[str | None] = mapped_column(String(2000))
     source_id: Mapped[int | None] = mapped_column(ForeignKey("sources.id"))
@@ -27,3 +27,7 @@ class UserPrompt(Base):
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
     expires_at: Mapped[datetime] = mapped_column(UTCDateTime)
     answered_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
+    # Preguntas del agente (`ask_user`): respuestas para elegir, lo contestado y de qué oferta va.
+    options: Mapped[list[str] | None] = mapped_column(JSON)
+    answer: Mapped[str | None] = mapped_column(Text)
+    job_id: Mapped[int | None]

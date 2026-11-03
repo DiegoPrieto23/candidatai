@@ -524,7 +524,7 @@ cd ..\frontend; pnpm install; pnpm build
 |---|---|
 | Algo no funciona y no sabes qué | `uv run cai doctor` comprueba base de datos, PDF, Chromium, plantillas, foto, correo y captura |
 | «Ejecuta `cai db upgrade`» | Hay migraciones nuevas: `uv run cai db upgrade` |
-| `uv sync` falla con «fichero en uso» | Cierra tu agente (su servidor MCP usa `cai-mcp.exe`) y repite |
+| `uv sync` falla con «fichero en uso» | Cierra tu agente (su servidor MCP usa `cai-mcp.exe`) y la app (`cai.exe`), y repite |
 | Los PDF no salen | Instala LibreOffice o `uv run playwright install chromium`; `cai doctor` lo comprueba |
 | La UI dice que no conecta con la API | Arranca CandidatAI (`cai start` o el acceso directo) y no cierres su ventana |
 | «El puerto 8000 lo usa otro programa» | Cierra ese programa o usa `cai start --port 8001` |

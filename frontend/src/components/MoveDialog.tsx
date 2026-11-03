@@ -37,20 +37,22 @@ interface Props {
   card: BoardCard | null
   options: MoveOption[]
   onOpenChange: (open: boolean) => void
+  /** Título, si no es mover una tarjeta del tablero. */
+  title?: string
 }
 
 /** Confirma un movimiento del kanban registrando su evento. Nada cambia de columna sin él. */
-export function MoveDialog({ card, options, onOpenChange }: Props) {
+export function MoveDialog({ card, options, onOpenChange, title }: Props) {
   return (
     <Dialog open={card !== null} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-xl">
-        {card && <MoveForm card={card} options={options} onDone={() => onOpenChange(false)} />}
+        {card && <MoveForm card={card} options={options} title={title} onDone={() => onOpenChange(false)} />}
       </DialogContent>
     </Dialog>
   )
 }
 
-function MoveForm({ card, options, onDone }: { card: BoardCard; options: MoveOption[]; onDone: () => void }) {
+function MoveForm({ card, options, onDone, title }: { card: BoardCard; options: MoveOption[]; onDone: () => void; title?: string }) {
   const { t } = useTranslation('move')
   const [choice, setChoice] = useState<MoveOption | null>(options.length === 1 ? options[0] : null)
   const [occurredAt, setOccurredAt] = useState(() => toLocalInput(new Date()))
@@ -116,7 +118,7 @@ function MoveForm({ card, options, onDone }: { card: BoardCard; options: MoveOpt
   return (
     <form onSubmit={submit} className="grid gap-5">
       <DialogHeader>
-        <DialogTitle>{t('title')}</DialogTitle>
+        <DialogTitle>{title ?? t('title')}</DialogTitle>
         <DialogDescription className="truncate">
           {card.title} · {card.company}
         </DialogDescription>

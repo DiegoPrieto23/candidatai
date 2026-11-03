@@ -12,11 +12,13 @@ Sigue `docs/POLICIES.md` §1, §3 y §4.
 1. Si los argumentos dicen `pendientes` o no hay argumentos, usa `list_jobs(stage="approved")`; si
    no, trabaja con los `job_id` indicados. Si hay más de 5, pregunta si seguimos con todos.
    **¿Sigue abierta?** Para cada oferta, llama a `check_job_open`. Si responde `possibly_closed`,
-   dile al usuario el motivo y pregunta si redactas igualmente; no la descartes tú (eso lo decide
-   él en la UI). Con `open`, `unknown` o `skipped`, sigue.
+   dile al usuario el motivo y pregunta si redactas igualmente (`ask_user`, ver el paso 2); no la
+   descartes tú (eso lo decide él en la UI). Con `open`, `unknown` o `skipped`, sigue.
 2. **Preguntas antes de redactar.** Para cada oferta, mira en `get_match` las skills obligatorias
    ausentes del perfil y haz todas esas preguntas juntas en un solo mensaje ("¿Has trabajado con
-   Airflow?"). Si alguna respuesta es sí, para: primero hay que añadirla al perfil con el skill
+   Airflow?"), con `ask_user` si la tienes: le sale un aviso en la app y no tiene que ir a tu ventana.
+   Espera con `wait_user_action` hasta que deje de estar `pending`; con `skipped` o `expired`,
+   pregúntaselo aquí. Si alguna respuesta es sí, para: primero hay que añadirla al perfil con el skill
    `update-profile`. Nunca la metas en el CV sin que esté en el perfil.
 3. **Plantilla y opciones.** Si el usuario las ha indicado en los argumentos o en el chat («con
    foto», «sin foto», «plantilla moderna», «en verde», «sin proyectos»), tradúcelas a
@@ -30,8 +32,8 @@ Sigue `docs/POLICIES.md` §1, §3 y §4.
    de la plantilla: el redactor solo usa su `capacity` para ajustar la extensión.
 5. Cuando devuelva el `document_id`, delega en el rol `verifier` con ese id. Tiene que ser una
    ejecución distinta de la del redactor: la independencia es el sentido del paso.
-6. Si la verificación falla o hay aviso `too_long`, devuelve los problemas al `writer` para una
-   nueva versión. Máximo 2 vueltas; después, para y enseña los problemas. Los avisos de
+6. El `writer` mide con `check_cv_fit` antes de guardar. Si aun así la verificación falla o hay aviso
+   `too_long`, devuelve los problemas al `writer` para una nueva versión. Máximo 2 vueltas; después, para y enseña los problemas. Los avisos de
    maquetación (fase 25.5: `orphan_heading`, `large_gap`, `footer_overlap`,
    `nearly_empty_last_page`, `text_layer`) traen la página y un `fix`: con `fix: content`
    (un título huérfano o una última página casi vacía), devuélvelo al `writer` como `too_long`;
@@ -42,3 +44,5 @@ Sigue `docs/POLICIES.md` §1, §3 y §4.
 8. Recuerda que cambiar de plantilla, quitar o poner la foto o cambiar el color se hace desde la
    UI (o con `render_cv`) sin volver a redactar: no gasta cuota del agente. Solo hace falta
    volver al `writer` si el nuevo render da `too_long` o un aviso con `fix: content`.
+9. Si paras sin un CV verificado, llama a `finish_task(action="generate-cv", outcome="stopped")`, si la
+   tienes: la app deja de enseñar «Generando el CV…».

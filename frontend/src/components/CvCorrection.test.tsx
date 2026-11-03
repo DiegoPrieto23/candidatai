@@ -177,6 +177,9 @@ describe('Versiones del CV', () => {
     expect(within(list).getByText('Vigente')).toBeInTheDocument()
     expect(within(list).getByText('El resumen más corto')).toBeInTheDocument()
     expect(within(list).getByText('No quité el proyecto.')).toBeInTheDocument()
+    // Plegado siempre, también en la versión vigente: se abre si quieres verlo.
+    expect(within(list).queryByText('Resumen largo.')).not.toBeInTheDocument()
+    await userEvent.click(within(list).getByRole('button', { name: /^Qué cambió/ }))
     expect(within(list).getByText('Resumen largo.')).toBeInTheDocument()
     expect(within(list).getByText('Resumen corto.')).toBeInTheDocument()
     expect(within(list).getByText('Experiencia · Dev · Acme')).toBeInTheDocument()

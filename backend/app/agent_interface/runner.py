@@ -31,6 +31,7 @@ from app.services.documents.importer import TemplateExistsError, TemplateImportE
 from app.services.documents.importer.paths import OutsideDataError
 from app.services.documents.pdf import PdfConversionError, PdfConverterUnavailableError
 from app.services.documents.service import (
+    CvTooLongError,
     DocumentNotFoundError,
     FileNotAvailableError,
     RenderNotFoundError,
@@ -97,6 +98,7 @@ _ERROR_TYPES: tuple[tuple[type[Exception], str], ...] = (
     (CorrectionNotFoundError, "not_found"),
     (CorrectionClosedError, "not_allowed"),
     (CvVersionConflictError, "conflict"),
+    (CvTooLongError, "too_long"),
     (LetterNotFoundError, "not_found"),
     (RenderNotFoundError, "not_found"),
     (FileNotAvailableError, "not_found"),

@@ -119,3 +119,7 @@ def main() -> None:
     _configure_logging()
     logger.info("candidatai MCP: arrancando (datos en %s)", get_settings().data_dir)
     anyio.run(_serve)
+
+
+if __name__ == "__main__":
+    main()

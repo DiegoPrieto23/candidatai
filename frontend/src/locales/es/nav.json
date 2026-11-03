@@ -116,5 +116,86 @@
     "notification": "Mira el resultado en CandidatAI.",
     "minimize": "Minimizar el aviso",
     "expand": "{{title}}: abrir el aviso"
+  },
+  "tasks": {
+    "runningTerminal": "Sigue en la ventana de tu agente. Si te pide permiso, contesta allí.",
+    "runningBackground": "En segundo plano: no tienes que hacer nada.",
+    "stale": "Sin noticias desde hace 30 minutos. Mira la ventana de tu agente o cierra este aviso.",
+    "doneBody": "Ya puedes verlo.",
+    "doneCount_one": "{{count}} hecha.",
+    "doneCount_other": "{{count}} hechas.",
+    "counts": "{{done}} de {{total}}",
+    "see": "Ver",
+    "seeAgent": "Ver en «Agente»",
+    "notification": "Tu agente ha terminado.",
+    "minimize": "Minimizar el aviso",
+    "expand": "Abrir el aviso: {{title}}",
+    "close": "Cerrar el aviso",
+    "stopped": {
+      "title": "Tu agente ha parado",
+      "body": "No ha terminado todo. Mira su ventana para ver por qué."
+    },
+    "failed": {
+      "title": "No ha salido bien",
+      "body": "La ejecución ha fallado."
+    },
+    "needs_user": {
+      "title": "Tu agente necesita saber algo",
+      "body": "Ha parado con una pregunta para ti."
+    },
+    "actions": {
+      "process-jobs": {
+        "running": "Leyendo las ofertas nuevas…",
+        "done": "Ofertas leídas"
+      },
+      "assess-fit": {
+        "running": "Valorando las pendientes…",
+        "done": "Ofertas valoradas"
+      },
+      "assess-fit-job": {
+        "running": "Valorando la oferta…",
+        "done": "Oferta valorada"
+      },
+      "review-replies": {
+        "running": "Revisando las respuestas…",
+        "done": "Respuestas revisadas"
+      },
+      "generate-cv": {
+        "running": "Generando el CV…",
+        "done": "CV generado"
+      },
+      "correct-cv": {
+        "running": "Corrigiendo el CV…",
+        "done": "CV corregido"
+      },
+      "verify-cv": {
+        "running": "Verificando el CV…",
+        "done": "CV verificado"
+      },
+      "generate-cover-letter": {
+        "running": "Redactando la carta…",
+        "done": "Carta lista"
+      },
+      "research-company": {
+        "running": "Investigando la empresa…",
+        "done": "Dosier listo"
+      },
+      "prepare-interview": {
+        "running": "Preparando la entrevista…",
+        "done": "Guía lista"
+      },
+      "correct-interview-guide": {
+        "running": "Cambiando la guía…",
+        "done": "Guía actualizada"
+      },
+      "draft-follow-up": {
+        "running": "Redactando el seguimiento…",
+        "done": "Borrador listo"
+      },
+      "draft-message": {
+        "running": "Redactando el mensaje…",
+        "done": "Borrador listo"
+      }
+    }
   }
 }

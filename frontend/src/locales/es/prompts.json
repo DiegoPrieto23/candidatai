@@ -11,5 +11,15 @@
   "agentContinues": "Si no contestas en {{time}}, el agente sigue con lo siguiente.",
   "timeUp": "Se ha acabado el tiempo.",
   "skip": "Saltar",
-  "done": "Ya está"
+  "done": "Ya está",
+  "question": {
+    "description": "Lo necesita para seguir. También puedes contestarle en su ventana.",
+    "label": "Tu respuesta",
+    "placeholder": "Escribe tu respuesta…",
+    "placeholderOther": "O escribe otra respuesta…",
+    "expires": "Si no contestas en {{time}}, te lo preguntará en su ventana.",
+    "timeUp": "Se ha acabado el tiempo: te lo preguntará en su ventana.",
+    "inTerminal": "Contestar en la terminal",
+    "send": "Enviar"
+  }
 }

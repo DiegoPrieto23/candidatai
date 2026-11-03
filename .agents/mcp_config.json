@@ -4,9 +4,12 @@
       "command": "uv",
       "args": [
         "run",
+        "--no-sync",
         "--directory",
         "backend",
-        "cai-mcp"
+        "python",
+        "-m",
+        "app.mcp.server"
       ]
     }
   }

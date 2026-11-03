@@ -56,6 +56,7 @@ export const keys = {
   agent: ['agent'] as const,
   agentRuns: ['agent', 'runs'] as const,
   searchRun: ['agent', 'search-run'] as const,
+  agentTasks: ['agent', 'tasks'] as const,
   agentAgents: ['agent', 'agents'] as const,
   agentRequests: ['agent', 'requests'] as const,
   localModels: ['agent', 'local-models'] as const,
@@ -404,6 +405,31 @@ export function useSetDefaultTemplate() {
   })
 }
 
+/** Cambia el nombre de una plantilla tuya. */
+export function useRenameTemplate() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: ({ templateId, name }: { templateId: string; name: string }) =>
+      unwrap(api.PATCH('/templates/{template_id}', { params: { path: { template_id: templateId } }, body: { name } })),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.templates }),
+  })
+}
+
+/** Elimina una plantilla tuya y el CV subido del que salió. */
+export function useDeleteTemplate() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (templateId: string) =>
+      unwrap(api.DELETE('/templates/{template_id}', { params: { path: { template_id: templateId } } })),
+    onSuccess: () =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: keys.templates }),
+        client.invalidateQueries({ queryKey: keys.uploads }),
+        client.invalidateQueries({ queryKey: keys.defaultTemplate }),
+      ]),
+  })
+}
+
 /** Renderiza el CV con otras opciones (sin agente). Puede pasar a «cv_ready»: refresca la ficha. */
 export function useRenderCv(jobId: number) {
   const client = useQueryClient()
@@ -574,8 +600,8 @@ export function usePendingPrompts() {
 export function useAnswerPrompt() {
   const client = useQueryClient()
   return useMutation({
-    mutationFn: ({ promptId, outcome }: { promptId: number; outcome: 'done' | 'skipped' }) =>
-      unwrap(api.POST('/prompts/{prompt_id}/answer', { params: { path: { prompt_id: promptId } }, body: { outcome } })),
+    mutationFn: ({ promptId, outcome, answer }: { promptId: number; outcome: 'done' | 'skipped'; answer?: string }) =>
+      unwrap(api.POST('/prompts/{prompt_id}/answer', { params: { path: { prompt_id: promptId } }, body: { outcome, answer } })),
     onSettled: () =>
       Promise.all([
         client.invalidateQueries({ queryKey: keys.prompts }),
@@ -1083,7 +1109,28 @@ export function useLaunchAgent() {
     mutationFn: (body: LaunchTarget & { agent?: string }) => unwrap(api.POST('/agent/launch', { body })),
     onSuccess: (_result, body) => {
       if (body.action === 'search-jobs') void client.invalidateQueries({ queryKey: keys.searchRun })
+      void client.invalidateQueries({ queryKey: keys.agentTasks })
     },
+  })
+}
+
+/** Lo que han lanzado los botones y de lo que avisa la app. Sigue preguntando sin la pestaña a la vista. */
+export function useAgentTasks() {
+  return useQuery({
+    queryKey: keys.agentTasks,
+    queryFn: () => unwrap(api.GET('/agent/tasks')),
+    refetchInterval: (query) => (query.state.data?.tasks.some((task) => task.status === 'running') ? 4000 : 20000),
+    refetchIntervalInBackground: true,
+  })
+}
+
+/** Cierra un aviso. No para al agente. */
+export function useDismissAgentTask() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (taskId: number) =>
+      unwrap(api.POST('/agent/tasks/{task_id}/dismiss', { params: { path: { task_id: taskId } } })),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.agentTasks }),
   })
 }
 

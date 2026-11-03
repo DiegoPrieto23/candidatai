@@ -16,3 +16,6 @@ description: Extrae los datos estructurados de las ofertas pendientes de Candida
 6. Cuando terminen, resume en una tabla corta: procesadas, saltadas, fallidas (con motivo) y
    ofertas con posible inyección, que merecen un vistazo en la UI.
 7. Si quedan más pendientes, dilo y ofrece otra tanda.
+8. Llama a `finish_task(action="process-jobs", outcome="done")`, si la tienes: la app deja de
+   enseñar «Leyendo ofertas…» aunque alguna se haya saltado o haya fallado. Con `stopped` si paras
+   antes de acabar la tanda.

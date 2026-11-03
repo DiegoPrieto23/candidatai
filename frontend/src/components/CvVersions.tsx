@@ -81,7 +81,7 @@ function Version({ version, jobId, canRestore }: { version: CvVersion; jobId: nu
       )}
       {version.note && <p className="mt-1 break-words text-sm text-muted-foreground">{version.note}</p>}
       {version.changes.length > 0 && (
-        <Reveal label={t('changes', { count: version.changes.length })} className="mt-3" defaultOpen={version.current}>
+        <Reveal label={t('changes', { count: version.changes.length })} className="mt-3">
           <ul className="space-y-3">
             {version.changes.map((change, i) => (
               <Change key={i} change={change} />

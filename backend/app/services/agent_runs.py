@@ -23,7 +23,7 @@ from sqlalchemy.orm import Session
 
 from app.models import AgentRun, SkillGapMark
 from app.models.base import utcnow
-from app.services import agent_launch, assess_threshold
+from app.services import agent_launch, agent_tasks, assess_threshold
 from app.services.agent_launch import ACTIONS, ActionId, LaunchError, LaunchResult
 from app.services.agent_usage import normalize_usage
 from app.services.matching import service as matching
@@ -200,6 +200,7 @@ def start(
     )
     session.add(row)
     session.flush()
+    agent_tasks.start(session, action, job_id, milestone_id, run_id=row.id)
     return view(row)
 
 

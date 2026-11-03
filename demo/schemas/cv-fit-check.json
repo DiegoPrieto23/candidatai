@@ -1,0 +1,53 @@
+{
+  "content": {
+    "language": "es",
+    "subtitle": "Data Engineer · Python · SQL · Snowflake",
+    "summary": "Data Engineer con experiencia en pipelines ETL sobre Snowflake y modelos dimensionales para negocio.",
+    "experience": [
+      {
+        "experience_id": "exp-norteconsulting",
+        "bullets": [
+          {
+            "text": "Migración de procesos ETL a Snowflake.",
+            "evidence": [
+              "exp-norteconsulting/a1"
+            ]
+          }
+        ]
+      }
+    ],
+    "projects": [],
+    "skills": [
+      {
+        "group": "Datos",
+        "items": [
+          "Python",
+          "SQL",
+          "Snowflake"
+        ]
+      }
+    ],
+    "education_ids": [
+      "edu-grado"
+    ],
+    "certification_ids": [],
+    "extra_sections": [],
+    "languages": [
+      {
+        "language": "Inglés",
+        "level": "B2"
+      }
+    ],
+    "include_regional_language": false,
+    "keywords_targeted": [
+      "Python",
+      "SQL",
+      "Snowflake"
+    ]
+  },
+  "render_options": {
+    "template_id": null,
+    "photo": "auto",
+    "max_pages": 1
+  }
+}

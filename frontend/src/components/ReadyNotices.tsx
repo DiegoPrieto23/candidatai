@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { fileUrls, type JobCv, type ProcessView } from '@/api/client'
 import { keys, useJob, useJobCv, useJobProcess } from '@/api/queries'
 import { Button } from '@/components/ui/button'
+import { notifyIfHidden } from '@/lib/notify'
 import { POLL_MS, stopWatching, useWatches, type Watch, type WatchKind } from '@/lib/readyWatch'
 
 interface Ready {
@@ -17,9 +18,13 @@ interface Ready {
 
 const after = (iso: string, since: string) => Date.parse(iso) > Date.parse(since)
 
-/** El PDF del CV guardado después de pulsar el botón: el elegido o, si no, el último. */
+/** El PDF del CV guardado después de pulsar el botón: el elegido o, si no, el último. Solo cuando
+ * ya está verificado y cabe en sus páginas: antes de eso el agente todavía puede rehacerlo. */
 function readyCv(data: JobCv | undefined, since: string): string | null {
-  const fresh = (data?.cv?.renders ?? []).filter((r) => r.pdf_path && after(r.created_at, since))
+  if (!data?.cv?.verification) return null
+  const fresh = data.cv.renders.filter(
+    (r) => r.pdf_path && after(r.created_at, since) && !r.warnings.some((w) => w.code === 'too_long'),
+  )
   const render = fresh.find((r) => r.selected) ?? fresh.at(-1)
   return render ? fileUrls.renderPdf(render.render_id) : null
 }
@@ -49,21 +54,6 @@ function Watcher({ watch, onReady }: { watch: Watch; onReady: (ready: Ready) => 
     return () => window.clearTimeout(timer)
   }, [url, watch, onReady])
   return null
-}
-
-/** Notificación del sistema si la pestaña no está a la vista (y el permiso ya está dado). */
-function notify(title: string, body: string) {
-  if (typeof window === 'undefined' || !('Notification' in window)) return
-  if (Notification.permission !== 'granted' || document.visibilityState === 'visible') return
-  try {
-    const n = new Notification(title, { body })
-    n.onclick = () => {
-      window.focus()
-      n.close()
-    }
-  } catch {
-    // Algunos navegadores no dejan crearlas fuera de un service worker: queda el aviso de la página.
-  }
 }
 
 function Notice({ ready, onClose }: { ready: Ready; onClose: () => void }) {
@@ -118,7 +108,7 @@ export function ReadyNotices() {
     // La etapa (p. ej. «CV listo») y los recuentos también cambian.
     void client.invalidateQueries({ queryKey: keys.job(item.jobId) })
     void client.invalidateQueries({ queryKey: keys.status })
-    notify(t(item.kind), t('notification'))
+    notifyIfHidden(t(item.kind), t('notification'))
   })
 
   return (

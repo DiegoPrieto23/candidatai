@@ -63,7 +63,8 @@
   "decision": {
     "reopen": "Reabrir",
     "approve": "Aprobar",
-    "discard": "Descartar"
+    "discard": "Descartar",
+    "closeSent": "Cerrar candidatura"
   },
   "tabs": {
     "overview": "Oferta",

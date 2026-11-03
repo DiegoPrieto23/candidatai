@@ -24,6 +24,7 @@ from app.services import (
     agent_registry,
     agent_requests,
     agent_runs,
+    agent_tasks,
     assess_threshold,
     local_models,
     search_runs,
@@ -292,6 +293,28 @@ def launch_agent(session: SessionDep, body: LaunchBody) -> agent_launch.LaunchRe
 
 def _not_found(exc: agent_runs.RunNotFoundError) -> ToolError:
     return ToolError("not_found", str(exc))
+
+
+# --- Lo que han lanzado los botones ---------------------------------------------------------------
+
+
+@router.get("/tasks", operation_id="list_agent_tasks")
+def list_agent_tasks(session: SessionDep) -> agent_tasks.AgentTaskList:
+    """Los avisos abiertos: «Leyendo ofertas…», «Generando el CV…», y cómo han acabado."""
+    return agent_tasks.current(session)
+
+
+@router.post(
+    "/tasks/{task_id}/dismiss",
+    operation_id="dismiss_agent_task",
+)
+def dismiss_agent_task(session: SessionDep, task_id: int) -> agent_tasks.AgentTaskList:
+    """Cierra un aviso. No para al agente: si sigue en su ventana, sigue."""
+    try:
+        agent_tasks.dismiss(session, task_id)
+    except agent_tasks.AgentTaskNotFoundError as exc:
+        raise ToolError("not_found", str(exc)) from exc
+    return agent_tasks.current(session)
 
 
 # --- La búsqueda abierta en la terminal -----------------------------------------------------------

@@ -19,6 +19,9 @@ function prompt(changes: Partial<PromptView> = {}): PromptView {
     expires_at: '2026-10-10T10:05:00Z',
     answered_at: null,
     seconds_left: 290,
+    options: [],
+    answer: null,
+    job_id: null,
     ...changes,
   }
 }
@@ -69,5 +72,51 @@ describe('Avisos al usuario (captcha)', () => {
     await userEvent.click(within(dialog).getByRole('button', { name: /close|cerrar/i }))
     await userEvent.click(await screen.findByRole('button', { name: /Completa el captcha · / }))
     expect(await screen.findByRole('dialog')).toBeInTheDocument()
+  })
+
+  describe('Preguntas de tu agente', () => {
+    const question = prompt({
+      kind: 'question',
+      title: 'Tu agente te pregunta',
+      message: '¿Has trabajado con Airflow?',
+      url: null,
+      source_id: null,
+      source_name: null,
+      options: ['Sí', 'No'],
+    })
+
+    it('se contesta eligiendo una opción', async () => {
+      const calls = mockApi(routes([question]))
+      renderApp('/')
+      const dialog = await screen.findByRole('dialog')
+      expect(within(dialog).getByText('¿Has trabajado con Airflow?')).toBeInTheDocument()
+      await userEvent.click(within(dialog).getByRole('button', { name: 'No' }))
+      await waitFor(() =>
+        expect(calls.find((c) => c.path === '/prompts/4/answer')?.body).toEqual({ outcome: 'done', answer: 'No' }),
+      )
+    })
+
+    it('se contesta escribiendo, y sin texto no se puede enviar', async () => {
+      const calls = mockApi(routes([{ ...question, options: [] }]))
+      renderApp('/')
+      const dialog = await screen.findByRole('dialog')
+      const send = within(dialog).getByRole('button', { name: 'Enviar' })
+      expect(send).toBeDisabled()
+      await userEvent.type(within(dialog).getByRole('textbox', { name: 'Tu respuesta' }), 'Dos años')
+      await userEvent.click(send)
+      await waitFor(() =>
+        expect(calls.find((c) => c.path === '/prompts/4/answer')?.body).toEqual({ outcome: 'done', answer: 'Dos años' }),
+      )
+    })
+
+    it('«Contestar en la terminal» se lo devuelve a tu agente', async () => {
+      const calls = mockApi(routes([question]))
+      renderApp('/')
+      const dialog = await screen.findByRole('dialog')
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Contestar en la terminal' }))
+      await waitFor(() =>
+        expect(calls.find((c) => c.path === '/prompts/4/answer')?.body).toEqual({ outcome: 'skipped' }),
+      )
+    })
   })
 })

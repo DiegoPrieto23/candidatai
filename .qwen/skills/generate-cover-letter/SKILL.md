@@ -16,7 +16,9 @@ Argumentos: `job_id` y, opcionalmente, indicaciones para esta carta («máximo 1
    `save_cover_letter_brief`. **Sustituye** a las anteriores: incluye las que ya hubiera, si
    siguen valiendo. Así quedan visibles en la UI y respaldan lo que cuentes. Si contradicen las
    del perfil, mandan las de la oferta; dilo en una línea.
-3. Si no hay indicaciones en ningún sitio, pregunta una sola vez, en un mensaje: qué quiere
+3. Si no hay indicaciones en ningún sitio, pregunta una sola vez (con `ask_user` y
+   `wait_user_action` si los tienes: le sale un aviso en la app; con `skipped` o `expired`, aquí),
+   en un mensaje: qué quiere
    destacar, por qué le interesa esta empresa (si no lo sabes, no lo inventes) y tono. Si no
    quiere dar ninguna, sigue con los valores por defecto de §7. Si el perfil no tiene
    `preferences.cover_letter`, propón al final guardarlas con `update-profile`.

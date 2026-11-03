@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { PageErrorBoundary } from '@/components/PageErrorBoundary'
+import { AgentTaskNotices } from '@/components/AgentTaskNotices'
 import { ReadyNotices } from '@/components/ReadyNotices'
 import { SearchRunNotice } from '@/components/SearchRunNotice'
 import { UserPrompts } from '@/components/UserPrompts'
@@ -168,6 +169,7 @@ export function AppShell() {
       <div className="pointer-events-none fixed right-4 bottom-4 z-40 flex flex-col items-end gap-2">
         <UserPrompts />
         <SearchRunNotice />
+        <AgentTaskNotices />
         <ReadyNotices />
       </div>
     </div>

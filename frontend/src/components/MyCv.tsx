@@ -1,23 +1,8 @@
 import { useRef, useState, type ChangeEvent, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-  CheckIcon,
-  CopyIcon,
-  FileArrowUpIcon,
-  ImageIcon,
-  StarIcon,
-  TrashIcon,
-  WarningIcon,
-} from '@phosphor-icons/react'
-import { fileUrls, type TemplateInfo, type UploadInfo } from '@/api/client'
-import {
-  useDefaultTemplate,
-  useDeleteUpload,
-  useSetDefaultTemplate,
-  useTemplates,
-  useUploadCv,
-  useUploads,
-} from '@/api/queries'
+import { CheckIcon, CopyIcon, FileArrowUpIcon, TrashIcon, WarningIcon } from '@phosphor-icons/react'
+import type { UploadInfo } from '@/api/client'
+import { useDeleteUpload, useTemplates, useUploadCv, useUploads } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
 import { Reveal } from '@/components/Reveal'
 import { InlineCode } from '@/components/States'
@@ -25,21 +10,14 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatDateTime } from '@/lib/labels'
 import { errorMessage } from '@/lib/errors'
-import { cn } from '@/lib/utils'
-import { useTemplateText } from '@/lib/templateText'
 import { BusyLabel } from '@/components/StableLabel'
 
 const ACCEPT = '.docx,.pdf,.png,.jpg,.jpeg,.html'
 
-function Chip({ children, tone = 'plain' }: { children: ReactNode; tone?: 'plain' | 'primary' | 'warning' }) {
+function Chip({ children }: { children: ReactNode; tone: 'warning' }) {
   return (
     <span
-      className={cn(
-        'inline-flex h-5 items-center gap-1 rounded-full px-2 text-[0.7rem] font-medium whitespace-nowrap',
-        tone === 'primary' && 'bg-primary text-primary-foreground',
-        tone === 'warning' && 'border border-warning-border bg-warning text-warning-foreground',
-        tone === 'plain' && 'text-foreground/75 ring-1 ring-input ring-inset',
-      )}
+      className="inline-flex h-5 items-center gap-1 rounded-full border border-warning-border bg-warning px-2 text-[0.7rem] font-medium whitespace-nowrap text-warning-foreground"
     >
       {children}
     </span>
@@ -75,37 +53,6 @@ function CopyCommand({ command }: { command: string }) {
   )
 }
 
-function Page({ src, alt, note }: { src: string | null; alt: string; note?: string }) {
-  const { t } = useTranslation('templates', { keyPrefix: 'myCv' })
-  // Si la imagen no se puede hacer (p. ej. sin perfil), su aviso en vez del icono de imagen rota.
-  const [failed, setFailed] = useState(false)
-  return (
-    <figure className="min-w-0">
-      <figcaption className="mb-1.5 text-xs font-medium text-muted-foreground">{alt}</figcaption>
-      <div className="aspect-[210/297] overflow-hidden rounded-md border bg-white">
-        {src && !failed ? (
-          <a href={src} target="_blank" rel="noopener noreferrer">
-            <img
-              src={src}
-              alt={alt}
-              loading="lazy"
-              onError={() => setFailed(true)}
-              className="size-full object-cover object-top"
-            />
-          </a>
-        ) : (
-          <span className="grid size-full place-items-center px-3 text-center text-xs text-muted-foreground">
-            <span className="flex flex-col items-center gap-2">
-              <ImageIcon className="size-6" />
-              {note ?? t('noPreview')}
-            </span>
-          </span>
-        )}
-      </div>
-    </figure>
-  )
-}
-
 function PendingUpload({ upload }: { upload: UploadInfo }) {
   const { t } = useTranslation('templates', { keyPrefix: 'myCv' })
   const recreated = upload.format !== 'docx'
@@ -131,115 +78,45 @@ function PendingUpload({ upload }: { upload: UploadInfo }) {
   )
 }
 
-function ImportedUpload({ template, isDefault }: { template: TemplateInfo; isDefault: boolean }) {
+function UploadCard({ upload }: { upload: UploadInfo }) {
   const { t } = useTranslation('templates', { keyPrefix: 'myCv' })
-  const setDefault = useSetDefaultTemplate()
-  const conflicts = setDefault.data?.conflicts ?? []
-  return (
-    <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-3 sm:max-w-md">
-        <Page
-          src={template.has_source_preview ? fileUrls.templateSource(template.id) : null}
-          alt={t('original')}
-          note={t('noOriginal')}
-        />
-        <Page
-          key={fileUrls.templateRealPreview(template.id)}
-          src={fileUrls.templateRealPreview(template.id)}
-          alt={template.engine === 'html' ? t('recreation') : t('withProfile')}
-          note={t('noRealPreview')}
-        />
-      </div>
-      {template.engine === 'html' && (
-        <p className="text-xs text-muted-foreground">
-          {t('htmlOnly')}
-        </p>
-      )}
-      <p className="text-xs text-muted-foreground">
-        {t('previewHint')}
-      </p>
-      <div className="flex flex-wrap items-center gap-2">
-        {isDefault ? (
-          <Chip tone="primary">
-            <StarIcon weight="fill" /> {t('default')}
-          </Chip>
-        ) : (
-          <Button
-            size="sm"
-            onClick={() => setDefault.mutate(template.id)}
-            disabled={setDefault.isPending}
-            className="active:translate-y-px"
-          >
-            <StarIcon /> <BusyLabel busy={setDefault.isPending} busyText={t('saving')} text={t('useDefault')} />
-          </Button>
-        )}
-      </div>
-      {setDefault.isError && (
-        <p role="alert" className="text-sm text-destructive">
-          <InlineCode text={errorMessage(setDefault.error)} />
-        </p>
-      )}
-      {conflicts.length > 0 && (
-        <ul aria-label={t('conflicts')} className="space-y-1 text-sm text-muted-foreground">
-          {conflicts.map((conflict) => (
-            <li key={conflict}>
-              <InlineCode text={conflict} />
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  )
-}
-
-function UploadCard({
-  upload,
-  template,
-  isDefault,
-}: {
-  upload: UploadInfo
-  template: TemplateInfo | undefined
-  isDefault: boolean
-}) {
-  const { t } = useTranslation('templates', { keyPrefix: 'myCv' })
-  const text = useTemplateText()
   const remove = useDeleteUpload()
   return (
     <li aria-label={upload.name} className="rounded-xl border bg-card p-4">
       <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="flex flex-wrap items-center gap-2 font-medium">
-            <span className="truncate">{template ? text.name(template) : upload.name}</span>
-            {template ? <Chip>{t('yourCv')}</Chip> : <Chip tone="warning">{t('pending')}</Chip>}
+            <span className="truncate">{upload.name}</span>
+            <Chip tone="warning">{t('pending')}</Chip>
           </p>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            {upload.name} · {formatSize(upload.size)} · {formatDateTime(upload.uploaded_at)}
+            {formatSize(upload.size)} · {formatDateTime(upload.uploaded_at)}
           </p>
         </div>
-        {!template && (
-          <Button
-            variant="ghost"
-            size="xs"
-            onClick={() => remove.mutate(upload.name)}
-            disabled={remove.isPending}
-            aria-label={t('removeAria', { name: upload.name })}
-          >
-            <TrashIcon /> {t('remove')}
-          </Button>
-        )}
+        <Button
+          variant="ghost"
+          size="xs"
+          onClick={() => remove.mutate(upload.name)}
+          disabled={remove.isPending}
+          aria-label={t('removeAria', { name: upload.name })}
+        >
+          <TrashIcon /> {t('remove')}
+        </Button>
       </div>
-      {template ? <ImportedUpload template={template} isDefault={isDefault} /> : <PendingUpload upload={upload} />}
+      <PendingUpload upload={upload} />
     </li>
   )
 }
 
-/** «Mi CV»: el camino principal para usar tu propio diseño (fase 08.3). */
+/**
+ * «Mi CV»: subir tu CV para convertirlo en plantilla. Aquí solo se queda lo que falta por convertir;
+ * lo ya convertido es una plantilla más de la lista de abajo.
+ */
 export function MyCv() {
   const { t } = useTranslation('templates', { keyPrefix: 'myCv' })
   const input = useRef<HTMLInputElement>(null)
   const uploadsQuery = useUploads()
   const templates = useTemplates()
-  const defaultTemplate = useDefaultTemplate()
   const upload = useUploadCv()
 
   const onFile = (event: ChangeEvent<HTMLInputElement>) => {
@@ -247,8 +124,9 @@ export function MyCv() {
     if (file) upload.mutate(file)
     event.target.value = '' // permite volver a elegir el mismo fichero
   }
-  const byId = new Map((templates.data?.templates ?? []).map((tpl) => [tpl.id, tpl]))
+  const known = new Set((templates.data?.templates ?? []).map((tpl) => tpl.id))
   const uploads = uploadsQuery.data ?? []
+  const pending = uploads.filter((item) => !item.template_id || !known.has(item.template_id))
 
   return (
     <section aria-labelledby="my-cv-title" className="mb-12">
@@ -285,19 +163,13 @@ export function MyCv() {
           <span>{t('noneHint')}</span>
         </button>
       ) : (
-        <ul className="space-y-4">
-          {uploads.map((item) => {
-            const template = item.template_id ? byId.get(item.template_id) : undefined
-            return (
-              <UploadCard
-                key={item.name}
-                upload={item}
-                template={template}
-                isDefault={!!template && defaultTemplate.data?.template_id === template.id}
-              />
-            )
-          })}
-        </ul>
+        pending.length > 0 && (
+          <ul className="space-y-4">
+            {pending.map((item) => (
+              <UploadCard key={item.name} upload={item} />
+            ))}
+          </ul>
+        )
       )}
     </section>
   )

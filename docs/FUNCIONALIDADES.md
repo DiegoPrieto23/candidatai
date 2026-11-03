@@ -22,6 +22,8 @@ FEATURES.md dejan de coincidir fila a fila. -->
 | **Empresas objetivo**: sus ofertas llegan cada día desde Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters y Recruitee (APIs públicas, sin scraping); «Probar» dice cuántas pasan tus filtros | `/fuentes/empresas` | [Empresas](img/es/sources-companies.webp) |
 | **Portales de empleo** (en «Buscar ofertas → Dónde buscar»): «Configurar con mi agente» te recomienda portales y prepara sus búsquedas; al añadir uno conocido (InfoJobs, Tecnoempleo, Indeed, LinkedIn), las búsquedas salen solas de los puestos y las ubicaciones de tu perfil, y cada portal se puede editar. Los que recorre tu agente, cada uno con su prioridad (sin empates), su acceso y sus ofertas por recorrido, explicados con su ⓘ; InfoJobs y Adzuna con claves, Manfred y freehire.me sin ellas | `/fuentes/plataformas` | [Plataformas](img/es/sources-platforms.webp) |
 | **Buscar ofertas**: elige en qué portales buscar, afina con puesto y ubicación solo para esa vez y lanza a tu agente. Un aviso dice «Buscando…» en todas las páginas y cambia cuando tu agente termina, con lo que ha traído | `/buscar` | [Buscar ofertas](img/es/search.webp) |
+| **Descartar o cerrar desde la ficha**: en cualquier etapa, sin pasar por el Tablero. Hasta enviarla se descarta con motivo; ya enviada se cierra la candidatura (rechazo, te retiras o caducada). **Reabrir** lo deshace | `/jobs/:id` | |
+| **Avisos de tu agente**: lo que lanzas con un botón sale en un aviso en todas las páginas, con lo que lleva hecho, y cambia al terminar. Si necesita saber algo para seguir, te lo pregunta en un aviso y contestas ahí | todas | |
 | **Qué buscas**: puestos, experiencia, sueldo mínimo, lugar, contrato y lo que descartas, al lado de donde se usan; cada bloque se guarda por separado | `/buscar/ajustes` | [Qué buscas](img/es/search-settings.webp) |
 | **Buscar en portales con tu navegador**: tu agente recorre tus búsquedas, con límites de páginas y pausas, da de alta lo que encaja y para ante captchas | `search-jobs` | |
 | **Alertas de empleo por correo**: las de LinkedIn, InfoJobs, Indeed… entran solas, por IMAP en solo lectura o desde ficheros `.eml`; **varios buzones**, con guía paso a paso para Gmail, Outlook, Yahoo e iCloud; las ofertas resumen caducan a los 21 días | `/fuentes/correo` | [▶ Añadir buzón](img/es/anim/mailbox.webp) |
@@ -54,7 +56,7 @@ FEATURES.md dejan de coincidir fila a fila. -->
 | **Corregir un CV ya hecho**: di qué cambiar y tu agente toca solo eso, sin inventar nada y verificando el resultado, o edita tú el texto (la app avisa de lo que tu perfil no respalda); se conservan todas las versiones, con qué cambió y «Volver a esta versión» | `correct-cv`, `verify-cv` | |
 | **El mismo contenido, cualquier diseño**: plantilla, foto, color y secciones en la ficha, renderizado en segundos sin agente; comparas renders y marcas el que envías; la maquetación del PDF se revisa | `/jobs/:id` | [CV](img/es/job-cv.webp) · [▶ Otro diseño](img/es/anim/cv.webp) |
 | **Carta de presentación** según tus indicaciones generales y las de cada oferta, verificada, en TXT y PDF a juego con el CV; la puedes retocar a mano. En la ficha, «Escribir carta» la pide como «Generar CV»: en terminal, en segundo plano o para tu próxima sesión | `generate-cover-letter` | [Carta](img/es/job-letter.webp) |
-| **Plantillas de CV**: integradas (Word y HTML) y las tuyas; «Mi CV» al lado de tu perfil | `/perfil/plantillas` | [Plantillas](img/es/templates.webp) |
+| **Plantillas de CV**: integradas (Word y HTML) y las tuyas, que puedes renombrar, eliminar o usar por defecto; «Mi CV» al lado de tu perfil | `/perfil/plantillas` | [Plantillas](img/es/templates.webp) |
 | **Importar tu propio diseño de CV** desde Word, PDF, una imagen, HTML, Canva o Google Docs como plantilla | `import-cv-template` | |
 
 ## 4. Candidatar
@@ -81,7 +83,7 @@ FEATURES.md dejan de coincidir fila a fila. -->
 
 | Funcionalidad | Dónde | Captura |
 |---|---|---|
-| **Investigar la empresa** con fuentes: producto, noticias, cultura de ingeniería, stack y banderas rojas | `research-company` | [Dosier](img/es/job-research.webp) |
+| **Investigar la empresa** con fuentes: producto, noticias, cultura de ingeniería, stack y banderas rojas. No pregunta nada: avisa al terminar y lo ves en la ficha | `research-company` | [Dosier](img/es/job-research.webp) |
 | **Preparar la entrevista**: una guía en PDF y un plan por días, que se ven bajo la entrevista; cada ronda con su tipo (RR. HH., técnica, caso, final) y tus indicaciones, que también usa el simulacro; puedes pedir cambios a una guía ya hecha, incluso tras la entrevista, y tu agente toca solo eso; la versión anterior se conserva, con lo que cambió y **Volver a la versión anterior** | `prepare-interview`, `correct-interview-guide` | [Plan](img/es/job-interview.webp) |
 | **Simulacro de entrevista**: una pregunta cada vez, feedback concreto y una respuesta mejor solo con tu perfil | `mock-interview` | |
 | **Repaso**: notas y próximos pasos, la siguiente ronda predicha y historias STAR nuevas propuestas; con una oferta recibida, qué aclarar antes de aceptar | `debrief-interview` | |
