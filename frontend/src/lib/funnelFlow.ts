@@ -53,7 +53,7 @@ export interface FlowLayout {
 export const NODE_WIDTH = 12
 export const END_WIDTH = 10
 /** El alto de la franja de todas las enviadas. */
-const FULL_HEIGHT = 120
+const FULL_HEIGHT = 100
 const MIN_HEIGHT = 3
 const END_GAP = 10
 /** Lo que ocupa una línea de texto junto a una rama: dos seguidas no se pisan. */
@@ -127,10 +127,10 @@ export function layoutFlow(counts: Record<FlowStep, number>, stops: readonly Flo
   return { nodes, ribbons, ends, height: Math.ceil(Math.max(0, ...bottoms)) + 4 }
 }
 
-/** A dónde lleva cada rama: las que siguen abiertas, a su lista de trabajo; las cerradas, a las cerradas. */
+/** A dónde lleva cada rama: a esa etapa en la Bandeja. */
 export function stopLink(step: string, outcome: StopOutcome): string {
   if (outcome !== 'open') return '/bandeja?stage=closed'
-  return step === 'applied' ? '/bandeja?stage=applied' : '/procesos'
+  return step === 'applied' ? '/bandeja?stage=applied' : '/bandeja?stage=in_process'
 }
 
 /** El grupo más grande de los que se quedaron en un paso sin seguir abiertos o esperando. */

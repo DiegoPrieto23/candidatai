@@ -233,7 +233,6 @@
   "flow": {
     "title": "Tu embudo",
     "hint": "Hasta dónde ha llegado cada candidatura que has enviado y dónde están las que pararon.",
-    "showing": "Mostrando",
     "everything": "Todo lo que has enviado",
     "noneYet": "Ninguna aún",
     "ofPrevious": "{{pct}} de {{step}}",

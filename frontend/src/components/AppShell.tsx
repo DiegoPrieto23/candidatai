@@ -1,5 +1,5 @@
-import { Suspense, useEffect, useRef } from 'react'
-import { Link, Outlet, useLocation } from 'react-router'
+import { Suspense, useEffect, useLayoutEffect, useRef } from 'react'
+import { Link, Outlet, useLocation, useNavigationType } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { CircleNotchIcon, FlaskIcon, PlusIcon } from '@phosphor-icons/react'
@@ -113,9 +113,26 @@ function SkipLink() {
   )
 }
 
+/**
+ * Al ir a otra página se empieza por arriba: `BrowserRouter` deja el scroll de la anterior. Atrás y
+ * Adelante, no, que ahí el navegador recuerda dónde estabas; ni lo que solo cambia la consulta (un
+ * filtro de la Bandeja). En `useLayoutEffect`, antes de pintar y antes de los `useEffect` de la página
+ * que llevan a un bloque concreto, que tienen la última palabra.
+ */
+function useScrollToTop(pathname: string) {
+  const navigation = useNavigationType()
+  const previous = useRef(pathname)
+  useLayoutEffect(() => {
+    if (previous.current === pathname) return
+    previous.current = pathname
+    if (navigation !== 'POP') window.scrollTo(0, 0)
+  }, [pathname, navigation])
+}
+
 export function AppShell() {
   const { t } = useTranslation('nav')
   const { pathname } = useLocation()
+  useScrollToTop(pathname)
   return (
     <div className="flex min-h-[100dvh]">
       <SkipLink />

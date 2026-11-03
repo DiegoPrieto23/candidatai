@@ -242,7 +242,8 @@ function Board({ columns, moves }: { columns: { stage: Stage; cards: BoardCard[]
             ))}
           </div>
         </div>
-        <DragOverlay>
+        {/* Al soltar, la copia tarda en volver a su sitio: no se queda con el clic de la tarjeta de debajo. */}
+        <DragOverlay className="pointer-events-none">
           {dragging && (
             <div className="w-[16rem] rotate-1 rounded-lg border bg-card p-3 shadow-lg">
               <CardBody card={dragging} />

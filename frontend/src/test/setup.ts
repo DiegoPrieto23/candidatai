@@ -47,5 +47,6 @@ globalThis.ResizeObserver ??= class {
   disconnect() {}
 }
 Element.prototype.scrollIntoView ??= () => {}
+window.scrollTo = () => {}
 Element.prototype.hasPointerCapture ??= () => false
 Element.prototype.releasePointerCapture ??= () => {}

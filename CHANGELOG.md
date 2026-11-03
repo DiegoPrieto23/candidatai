@@ -18,6 +18,8 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   y **Buscar ofertas** va antes que la **Bandeja** en el menú.
 - **Problemas y notas de cada portal:** lo que antes se llamaba «incidentes» se separa en lo que impidió
   leer el portal (captcha, inicio de sesión) y lo que tu agente apuntó sin que fallara nada.
+- **Portada más compacta:** tu embudo se ve sin bajar. En «Recorrido de tus ofertas», **Enviada** y **En
+  proceso** llevan a su etapa en la Bandeja, y al cambiar de página siempre se empieza por arriba.
 - **Tu embudo:** un gráfico nuevo, también en la portada, que enseña hasta dónde ha llegado cada candidatura
   y dónde están las que pararon. Cada rama lleva a esas candidaturas, y **Ver las cifras** da el detalle.
 - **Nuevo aspecto:** todas las páginas arrancan a la misma distancia del menú, con un solo estilo de
@@ -181,6 +183,8 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   leer cada oferta una a una.
 
 ### Corregido
+- **Tablero:** ya se puede agarrar una tarjeta justo después de soltar otra. Antes, durante un instante, el
+  clic no llegaba a la tarjeta y se seleccionaba texto.
 - **El foco de teclado se ve siempre:** en «Respuestas», el correo con el foco lleva un anillo y
   ya no se confunde con el seleccionado. Las pestañas de la ficha, de «Mi perfil» y de «Nueva
   oferta» y los títulos de la Bandeja lo enseñan también, igual que los apartados de «Mi perfil»
@@ -224,6 +228,7 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   oferta».
 
 ### Seguridad
+- **pypdf** sube a la 6.21.4, que corrige 7 vulnerabilidades conocidas.
 - **Las ofertas con texto dirigido a una IA nunca salen como encaje fuerte:** tu agente avisa
   siempre de ellas al valorarlas y en el resumen del día, y la app rechaza una valoración «fuerte»
   hasta que la revises. Su salario y su modalidad salen solo de los datos extraídos, nunca de lo
