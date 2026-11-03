@@ -62,6 +62,10 @@ def _route_tags(source: str) -> list[tuple[str, bool]]:
     return tags
 
 
+def _has_page(tag: str, segment: str) -> bool:
+    return segment != "*" and bool(PAGE_ATTR.search(tag))
+
+
 def parse_pages(source: str) -> list[str]:
     """Rutas con página propia: ni redirecciones, ni `*`, ni las que solo agrupan otras (como
     `fuentes`, cuyas pestañas `fuentes/empresas` y `fuentes/plataformas` sí cuentan)."""
@@ -78,7 +82,7 @@ def parse_pages(source: str) -> list[str]:
         full = "/" + "/".join(s for s in [*stack, segment] if s)
         if not self_closing:
             stack.append(segment)
-        elif "<Navigate" not in tag and segment != "*" and PAGE_ATTR.search(tag):
+        elif not any(name in tag for name in ("<Navigate", "<MovedTo")) and _has_page(tag, segment):
             found.append(full)
     return found
 

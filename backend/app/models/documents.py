@@ -24,6 +24,12 @@ class Document(Base):
     verification: Mapped[dict[str, Any] | None] = mapped_column(JSON)
     # Editado por el usuario en la UI (respuestas, cartas): sin verificación del agente.
     edited_by_user: Mapped[bool] = mapped_column(default=False, server_default=false())
+    # La versión de la que sale (corrección, edición o rehacerlo); `None` en las anteriores a esto.
+    base_document_id: Mapped[int | None] = mapped_column(ForeignKey("documents.id"))
+    # La corrección que la originó (`cv_corrections`), si la hubo.
+    correction_id: Mapped[int | None] = mapped_column(ForeignKey("cv_corrections.id"))
+    # «Volver» dejó esta versión detrás: manda el último documento que no lo esté.
+    superseded: Mapped[bool] = mapped_column(default=False, server_default=false())
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
 
 
@@ -55,6 +61,23 @@ class CvBrief(Base):
     job_id: Mapped[int] = mapped_column(ForeignKey("jobs.id"), primary_key=True)
     instructions: Mapped[str] = mapped_column(Text, default="")
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
+
+
+class CvCorrection(Base):
+    """Lo que el usuario pide cambiar de un CV ya generado. La orden al agente solo lleva el
+    `job_id`: este texto lo lee `correct-cv` con `get_cv_correction`, como dato."""
+
+    __tablename__ = "cv_corrections"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    job_id: Mapped[int] = mapped_column(ForeignKey("jobs.id"), index=True)
+    instruction: Mapped[str] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(16))  # pending, applied, declined, cancelled
+    note: Mapped[str | None] = mapped_column(Text)  # lo que el agente no pudo hacer, y por qué
+    # La versión que tenía delante el agente al leerla; vacía si aún no la ha leído.
+    base_document_id: Mapped[int | None] = mapped_column(ForeignKey("documents.id", use_alter=True))
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
+    closed_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
 
 
 class CoverLetterBrief(Base):

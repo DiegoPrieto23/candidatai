@@ -76,7 +76,7 @@
     "intro": "Agent and model for the main actions, in three tiers. Fill them in once and apply one with a click: it changes your “By action” table and can be undone.",
     "economy": {
       "label": "Economy",
-      "help": "Closed actions (process, assess, replies) with a local model; the CV with your most capable agent."
+      "help": "Closed actions (process and assess) with a local model; the CV with your most capable agent."
     },
     "balanced": {
       "label": "Balanced",

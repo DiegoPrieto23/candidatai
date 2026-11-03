@@ -5,7 +5,7 @@
   "discard": "Descartar",
   "closeNotice": "Cerrar aviso",
   "loading": "Cargando alertas",
-  "title": "Alertas",
+  "title": "Por completar",
   "summary_one": "{{count}} oferta resumen de tus alertas por correo. Ábrelas en su portal y envíalas con el botón «Enviar a CandidatAI» para completarlas, o descártalas.",
   "summary_other": "{{count}} ofertas resumen de tus alertas por correo. Ábrelas en su portal y envíalas con el botón «Enviar a CandidatAI» para completarlas, o descártalas.",
   "reading": "Leyendo el correo…",
@@ -23,9 +23,16 @@
   "saveFailed": "No se pudo guardar: {{error}}",
   "empty": {
     "title": "Sin alertas pendientes",
-    "body": "Las ofertas de tus alertas de LinkedIn, InfoJobs y otros portales aparecen aquí. Añade el buzón donde te llegan (Gmail, Outlook, Yahoo, iCloud…) o una carpeta con correos guardados (.eml)."
+    "body": "Las ofertas de tus alertas de LinkedIn, InfoJobs y otros portales que llegan como resumen aparecen aquí. Los buzones de los que salen se configuran en «Dónde buscar»."
   },
   "passing": "Encajan con tus preferencias",
   "failing": "No encajan con tus filtros",
-  "failingCount": "No encajan con tus filtros ({{count}})"
+  "failingCount": "No encajan con tus filtros ({{count}})",
+  "email": {
+    "title": "Alertas por correo",
+    "intro": "Los buzones donde te llegan las alertas de empleo de LinkedIn, InfoJobs y otros portales. La app los lee en solo lectura y sus ofertas entran en la Bandeja.",
+    "emptyTitle": "Aún no hay ningún buzón",
+    "emptyBody": "Añade el buzón donde te llegan (Gmail, Outlook, Yahoo, iCloud…) o una carpeta con correos guardados (.eml).",
+    "goToComplete": "Las ofertas que llegan como resumen te esperan en"
+  }
 }

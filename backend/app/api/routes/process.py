@@ -11,6 +11,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from app.api.deps import SessionDep
+from app.schemas.interview_guide import GuideCorrectionInput
 from app.services import calendar_ics, interview_guide, process, tracking
 
 router = APIRouter(tags=["process"])
@@ -130,6 +131,44 @@ def get_interview_guide_pdf(session: SessionDep, milestone_id: int) -> FileRespo
     return FileResponse(
         path, media_type="application/pdf", filename=path.name, content_disposition_type="inline"
     )
+
+
+@router.post(
+    "/milestones/{milestone_id}/guide/correction",
+    operation_id="request_guide_correction",
+)
+def request_guide_correction(
+    session: SessionDep, milestone_id: int, body: GuideCorrectionInput
+) -> process.MilestoneOut:
+    """Anota qué cambiar de una guía ya hecha, para que lo aplique tu agente."""
+    return interview_guide.request_correction(session, milestone_id, body)
+
+
+@router.post(
+    "/milestones/{milestone_id}/guide/correction/cancel",
+    operation_id="cancel_guide_correction",
+)
+def cancel_guide_correction(session: SessionDep, milestone_id: int) -> process.MilestoneOut:
+    """Retira los cambios pedidos a la guía que aún no se han aplicado."""
+    return interview_guide.cancel_correction(session, milestone_id)
+
+
+@router.get(
+    "/milestones/{milestone_id}/guide/changes",
+    operation_id="get_guide_changes",
+)
+def get_guide_changes(session: SessionDep, milestone_id: int) -> interview_guide.GuideChanges:
+    """Qué cambió entre las dos versiones conservadas de la guía."""
+    return interview_guide.guide_changes(session, milestone_id)
+
+
+@router.post(
+    "/milestones/{milestone_id}/guide/restore",
+    operation_id="restore_guide",
+)
+def restore_guide(session: SessionDep, milestone_id: int) -> process.MilestoneOut:
+    """Vuelve a la otra versión conservada de la guía y rehace su PDF."""
+    return interview_guide.restore_guide(session, milestone_id)
 
 
 @router.get(

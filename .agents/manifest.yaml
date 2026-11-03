@@ -46,6 +46,8 @@ policy:
     - mcp:get_match
     - mcp:get_cv_content
     - mcp:get_cv_brief
+    - mcp:get_cv_correction
+    - mcp:decline_cv_correction
     - mcp:list_cv_templates
     - mcp:list_sources
     - mcp:list_mail_sources
@@ -54,9 +56,6 @@ policy:
     - mcp:get_funnel_stats
     - mcp:get_calibration
     - mcp:get_skill_gaps
-    - mcp:list_replies
-    - mcp:get_reply
-    - mcp:save_reply_proposal
     - mcp:save_message_draft
     - mcp:get_job_contacts
     - mcp:get_company_research
@@ -166,6 +165,9 @@ targets:
       prepare-interview:
         argument-hint: "[job_id] [milestone_id] [rrhh|tecnica|caso|final] [idioma]"
         allowed-tools: ["web", "mcp:get_interviews", "mcp:get_extraction", "mcp:get_profile", "mcp:get_context", "mcp:get_timeline", "mcp:get_company_research", "mcp:get_application_answers", "mcp:get_cv_content", "mcp:get_cover_letter", "mcp:get_interview_guide", "mcp:save_interview_plan", "mcp:save_interview_guide"]
+      correct-interview-guide:
+        argument-hint: "[job_id] [milestone_id]"
+        allowed-tools: ["mcp:get_interview_guide", "mcp:get_extraction", "mcp:get_profile", "mcp:get_context", "mcp:get_company_research", "mcp:save_interview_guide"]
       mock-interview:
         argument-hint: "[job_id] [milestone_id] [rrhh|tecnica|caso|final]"
         allowed-tools: ["read", "mcp:get_interviews", "mcp:get_interview_guide", "mcp:get_extraction", "mcp:get_profile", "mcp:get_context"]
@@ -192,9 +194,6 @@ targets:
       review-linkedin:
         argument-hint: "[ruta al PDF de LinkedIn o nada para pegar el texto]"
         allowed-tools: ["read", "mcp:get_profile", "mcp:list_jobs", "mcp:get_extraction"]
-      review-replies:
-        argument-hint: "[nada para todas, o un reply_id]"
-        allowed-tools: ["mcp:list_replies"]
       draft-follow-up:
         argument-hint: "[nada para todo lo pendiente, o un job_id]"
         allowed-tools: ["mcp:list_followups_due", "mcp:get_profile", "mcp:get_context", "mcp:get_extraction", "mcp:get_timeline", "mcp:save_message_draft"]

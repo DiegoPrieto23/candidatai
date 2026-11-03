@@ -21,6 +21,11 @@ from app.services.answers import AnswersContentError
 from app.services.audit import record_call, summarize_args
 from app.services.context import ContextTooLargeError
 from app.services.documents.checks import CvContentError
+from app.services.documents.corrections import (
+    CorrectionClosedError,
+    CorrectionNotFoundError,
+    CvVersionConflictError,
+)
 from app.services.documents.cover_letter import CoverLetterContentError, LetterNotFoundError
 from app.services.documents.importer import TemplateExistsError, TemplateImportError
 from app.services.documents.importer.paths import OutsideDataError
@@ -56,7 +61,6 @@ from app.services.profile_editor import (
 )
 from app.services.prompts import PromptNotFoundError
 from app.services.received_offers import ReceivedOfferNotFoundError
-from app.services.replies import ReplyNotFoundError, ReplyResolvedError
 from app.services.style_samples import StyleSampleNotFoundError
 
 logger = logging.getLogger(__name__)
@@ -77,8 +81,6 @@ _ERROR_TYPES: tuple[tuple[type[Exception], str], ...] = (
     (PromptNotFoundError, "not_found"),
     (RequestNotFoundError, "not_found"),
     (RequestClosedError, "not_allowed"),
-    (ReplyNotFoundError, "not_found"),
-    (ReplyResolvedError, "not_allowed"),
     (DraftNotFoundError, "not_found"),
     (DraftNotAllowedError, "not_allowed"),
     (BrowsingNotAllowedError, "not_allowed"),
@@ -89,6 +91,9 @@ _ERROR_TYPES: tuple[tuple[type[Exception], str], ...] = (
     (ReceivedOfferNotFoundError, "not_found"),
     (NetworkContactNotFoundError, "not_found"),
     (DocumentNotFoundError, "not_found"),
+    (CorrectionNotFoundError, "not_found"),
+    (CorrectionClosedError, "not_allowed"),
+    (CvVersionConflictError, "conflict"),
     (LetterNotFoundError, "not_found"),
     (RenderNotFoundError, "not_found"),
     (FileNotAvailableError, "not_found"),

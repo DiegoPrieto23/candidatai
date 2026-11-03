@@ -269,14 +269,14 @@ describe('Por revisar', () => {
     expect(screen.getByText('Nada por revisar')).toBeInTheDocument()
   })
 
-  it('el enlace de la cabecera lleva a «Por revisar» con su recuento', async () => {
+  it('la entrada de la Bandeja lleva la cuenta y su pestaña abre la revisión', async () => {
     mockTriage([triageItem(1, 90)], { 'GET /jobs': { items: [], total: 0, limit: 50, offset: 0 } })
     renderApp('/')
     const nav = (await screen.findAllByRole('navigation'))[0]
-    const link = await within(nav).findByRole('link', { name: /Por revisar/ })
-    await waitFor(() => expect(link).toHaveTextContent('1'))
+    const link = await within(nav).findByRole('link', { name: 'Bandeja de ofertas (1 por revisar)' })
     await userEvent.click(link)
-    expect(await screen.findByRole('heading', { level: 1, name: 'Por revisar' })).toBeInTheDocument()
+    await userEvent.click(await screen.findByRole('link', { name: 'Revisión rápida (1)' }))
+    expect(await screen.findByRole('heading', { level: 1, name: 'Revisión rápida' })).toBeInTheDocument()
   })
 })
 

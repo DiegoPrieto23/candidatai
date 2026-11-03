@@ -219,8 +219,7 @@ español (una candidata en Galicia) y en inglés (una candidata en Dublín, con 
 Trae también lo que habrían dejado ella y su agente, para que ninguna pantalla salga vacía:
 valoración del encaje, carta y respuestas de screening de una oferta, un mensaje de LinkedIn y un
 seguimiento, dos dosieres de empresa (uno con bandera roja), el plan de una entrevista y el repaso
-de dos, los datos de la oferta recibida, tres correos de empresas en «Respuestas» (dos con
-propuesta y uno sin clasificar, con texto oculto para una IA), dos huecos en «Skills», un encargo
+de dos, los datos de la oferta recibida, dos huecos en «Skills», un encargo
 pendiente, el contexto, una muestra de estilo y una tabla de salarios.
 
 ```powershell
@@ -326,11 +325,13 @@ Guía completa, con los modelos recomendados según tu memoria y qué sale de tu
 Arranca CandidatAI **fuera de tu agente** (una ventana propia o el acceso directo): si el agente se
 queda sin memoria, puede cerrar lo que haya lanzado él.
 
+Si es tu primera vez, **Cómo funciona**, en el menú, cuenta el recorrido completo y quién hace qué.
+
 Un día normal:
 
 1. Abre **Inicio**: te dice qué tienes (ofertas por revisar, CVs listos, seguimientos vencidos).
 2. Pide a tu agente `process-jobs` y `assess-fit`, o pulsa sus botones en la UI.
-3. Aprueba o descarta en **Por revisar**.
+3. Aprueba o descarta en **Revisión rápida**, en la Bandeja.
 4. `generate-cv` para las aprobadas y, cuando quieras, envía desde la ficha.
 5. `daily-summary` resume todo eso en una respuesta.
 
@@ -342,7 +343,7 @@ Un día normal:
 | **Empresas objetivo** (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee) | Página «Dónde buscar → Empresas objetivo» o `cai sources add --kind greenhouse --name "Acme" --slug acme`. `cai sources discover --file empresas.txt` busca el tablero de cada empresa de una lista. Cómo encontrar el slug, en [`FUENTES_OFERTAS.md`](FUENTES_OFERTAS.md#cómo-encontrar-el-slug) |
 | **InfoJobs y Adzuna** | Sus claves en `.env` (`CAI_INFOJOBS_CLIENT_ID`/`_SECRET`, `CAI_ADZUNA_APP_ID`/`_KEY`) y una búsqueda con `cai sources add` |
 | **Manfred y freehire.me** | Sin claves: una búsqueda en la misma página o con `cai sources add --kind manfred --name Manfred --query "data engineer"` (en freehire, también `--country` y `--remote-only`) |
-| **Alertas por correo** | Crea alertas en LinkedIn, InfoJobs, Indeed… y que lleguen a una etiqueta de tu correo. En «Alertas → Añadir buzón» conecta uno o varios buzones (Gmail, Outlook, Yahoo, iCloud u otro IMAP, siempre en solo lectura) o una carpeta de `.eml`; el asistente explica cada proveedor y prueba la conexión antes de guardar. La contraseña se guarda en tu `.env` y no vuelve a salir. Paso a paso en [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md). Lo que llega aparece en «Alertas» |
+| **Alertas por correo** | Crea alertas en LinkedIn, InfoJobs, Indeed… y que lleguen a una etiqueta de tu correo. En «Dónde buscar → Alertas por correo → Añadir buzón» conecta uno o varios buzones (Gmail, Outlook, Yahoo, iCloud u otro IMAP, siempre en solo lectura) o una carpeta de `.eml`; el asistente explica cada proveedor y prueba la conexión antes de guardar. La contraseña se guarda en tu `.env` y no vuelve a salir. Paso a paso en [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md). Lo que llega aparece en «Alertas» |
 | **Botón «Enviar a CandidatAI»** | En **Dónde buscar → Botón del navegador**: la app te guía para cargar `extension/` en Chrome, Edge o Brave y la conecta con un clic. Instrucciones: [`extension/README.md`](../extension/README.md) |
 | **Tu agente con tu navegador** | En «Dónde buscar → Portales de empleo», «Configurar con mi agente» (`search-jobs configurar`) elige portales y búsquedas; o añádelos tú: en InfoJobs, Tecnoempleo, Indeed y LinkedIn las búsquedas salen solas de los puestos y las ubicaciones de tu perfil, y cada portal se edita con su lápiz; `search-jobs` los recorre. LinkedIn queda desactivado hasta que lo actives tú |
 | **Búsqueda pública de LinkedIn** | Interruptor «Búsqueda pública sin sesión» en la tarjeta de LinkedIn de «Dónde buscar → Portales de empleo». Apagado por defecto: va contra las condiciones de LinkedIn y puede bloquear tu IP un tiempo |
@@ -362,7 +363,7 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
    bajo», y al pasar el ratón, de dónde sale) y aplica tus filtros duros; `assess-fit` añade una
    valoración razonada: «Valorar esta oferta» en su ficha o «Valorar las pendientes» para todas.
    Si una oferta no tiene encaje, su ficha dice qué falta: tu perfil, que tu agente la lea o las dos cosas.
-3. **Revisar:** en «Por revisar», `J`/`K` para moverte, `A` para aprobar, `D` para descartar (con
+3. **Revisar:** en la Bandeja, pestaña «Revisión rápida», `J`/`K` para moverte, `A` para aprobar, `D` para descartar (con
    motivo) y `O` para abrir la ficha. Un descarte se deshace en el aviso; una aprobación, con
    «Reabrir» en la ficha.
 4. **CV:** `generate-cv 42` redacta el contenido, el código lo valida y renderiza y el rol
@@ -388,10 +389,8 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
   mes, semana, día o agenda. Pulsa uno para ver sus datos e ir a la oferta.
 - **Seguimientos:** te avisa de las candidaturas sin respuesta; `draft-follow-up` deja los
   borradores (máximo 2 por candidatura) y el de agradecimiento tras una entrevista. Los envías tú.
-- **Respuestas:** en los buzones que lo tengan marcado, la app lee los correos de las empresas de tus procesos;
-  `review-replies` propone qué ha pasado y tú lo aceptas en «Respuestas». Al aceptar o ignorar,
-  un aviso dice en qué oferta ha quedado, con su enlace; «Ignorar» se puede deshacer desde él.
-  Con el teclado: `J`/`K` para pasar de un correo a otro, `A` para aceptar, `I` para ignorar.
+- **Respuestas:** cuando una empresa te conteste, anótalo en su ficha o en «Procesos» con «Actualizar estado»: una
+  respuesta, una entrevista, una prueba, una oferta o un rechazo. La app no lee esos correos.
 - **Embudo:** conversión por paso, fuente, semana y referencia, y los motivos de descarte. En «Más
   análisis», plegado al final: «¿Acierta el encaje?» (por encaje, veredicto, plantilla, carta…), por
   tipo de puesto, el coste del agente y «Tu búsqueda en números» (o `cai stats story`): tus cifras
@@ -474,7 +473,7 @@ clasificar respuestas, y tu agente más capaz para el CV. Rellénalos una vez y 
 
 - **`.env`** (en la raíz, fuera de git): `CAI_DATA_DIR`, `SOFFICE_PATH`, claves de InfoJobs y
   Adzuna, IMAP (`CAI_IMAP_HOST`, `CAI_IMAP_PORT`, `CAI_IMAP_USER`, `CAI_IMAP_PASSWORD`,
-  `CAI_IMAP_FOLDER`, `CAI_IMAP_REPLIES_FOLDER`), `CAI_BROWSER_CHANNEL` (`chrome` o `msedge` para la
+  `CAI_IMAP_FOLDER`), `CAI_BROWSER_CHANNEL` (`chrome` o `msedge` para la
   candidatura asistida), `CAI_EMBEDDINGS=off`, `UV_PATH` (uv fuera del PATH), `CAI_LANG` (`es` o
   `en`: idioma de los mensajes de `cai start` en la terminal; sin ella, el del sistema). Nada es
   obligatorio.

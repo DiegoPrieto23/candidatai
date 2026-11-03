@@ -76,7 +76,7 @@
     "intro": "Agente y modelo para las acciones principales, en tres niveles. Rellénalos una vez y aplica uno con un clic: cambia tu tabla «Por acción» y se puede deshacer.",
     "economy": {
       "label": "Económico",
-      "help": "Las acciones cerradas (procesar, valorar, respuestas) con un modelo local; el CV, con tu agente más capaz."
+      "help": "Las acciones cerradas (procesar y valorar) con un modelo local; el CV, con tu agente más capaz."
     },
     "balanced": {
       "label": "Equilibrado",

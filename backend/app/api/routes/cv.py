@@ -4,9 +4,9 @@ Renderizar desde aquí no usa IA: combina el contenido ya guardado con otra plan
 Los ficheros solo se sirven desde `data/` (renders) y desde las carpetas de plantillas (previews).
 """
 
-from typing import Literal
+from typing import Annotated, Literal
 
-from fastapi import APIRouter, File, Response, UploadFile, status
+from fastapi import APIRouter, File, Path, Response, UploadFile, status
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
@@ -14,6 +14,7 @@ from app.api.deps import SessionDep
 from app.schemas.cv import CvRenderOptions
 from app.services import profile as profile_service
 from app.services.documents import (
+    corrections,
     cover_letter,
     cv_brief,
     default_template,
@@ -141,6 +142,43 @@ def get_job_cv(session: SessionDep, job_id: int) -> service.JobCv:
     return service.get_job_cv(session, job_id)
 
 
+@router.get("/jobs/{job_id}/cv/history", operation_id="get_cv_history")
+def get_cv_history(session: SessionDep, job_id: int) -> corrections.CvHistory:
+    """Las versiones del CV, con qué cambió cada una, y la última corrección pedida."""
+    return corrections.get_history(session, job_id)
+
+
+@router.post(
+    "/jobs/{job_id}/cv/corrections",
+    operation_id="request_cv_correction",
+    status_code=status.HTTP_201_CREATED,
+)
+def request_cv_correction(
+    session: SessionDep, job_id: int, body: corrections.CorrectionInput
+) -> corrections.CorrectionView:
+    """Guarda qué corregir para que lo lea tu agente; sustituye a la que siga pendiente."""
+    return corrections.request_correction(session, job_id, body)
+
+
+@router.post("/cv-corrections/{correction_id}/cancel", operation_id="cancel_cv_correction")
+def cancel_cv_correction(session: SessionDep, correction_id: int) -> corrections.CorrectionView:
+    return corrections.cancel(session, correction_id)
+
+
+@router.post("/jobs/{job_id}/cv/edit", operation_id="edit_cv", status_code=status.HTTP_201_CREATED)
+def edit_cv(
+    session: SessionDep, job_id: int, body: corrections.CvEditInput
+) -> corrections.EditResult:
+    """Versión nueva con los textos que has cambiado, sin agente y con el mismo estilo."""
+    return corrections.save_user_edit(session, job_id, body)
+
+
+@router.post("/documents/{document_id}/restore", operation_id="restore_cv_version")
+def restore_cv_version(session: SessionDep, document_id: int) -> service.JobCv:
+    """Vuelve a una versión del CV. No borra ninguna."""
+    return corrections.restore_version(session, document_id)
+
+
 @router.post(
     "/documents/{document_id}/renders",
     operation_id="render_document",
@@ -181,6 +219,36 @@ def _render_file(session: SessionDep, render_id: int, kind: Literal["pdf", "docx
 )
 def get_render_pdf(session: SessionDep, render_id: int) -> FileResponse:
     return _render_file(session, render_id, "pdf")
+
+
+@router.get(
+    "/renders/{render_id}/cover.png",
+    operation_id="get_render_cover",
+    response_class=FileResponse,
+    responses={200: {"content": {"image/png": {}}}},
+)
+def get_render_cover(session: SessionDep, render_id: int) -> FileResponse:
+    """La portada del PDF de un render, en pequeño (la miniatura de la ficha)."""
+    from app.services.documents.authoring import pdf_thumbnail
+
+    pdf = service.render_file(session, render_id, "pdf")
+    return FileResponse(pdf_thumbnail(pdf, f"render-{render_id}"), media_type="image/png")
+
+
+@router.get(
+    "/renders/{render_id}/pages/{page}.png",
+    operation_id="get_render_page",
+    response_class=FileResponse,
+    responses={200: {"content": {"image/png": {}}}},
+)
+def get_render_page(
+    session: SessionDep, render_id: int, page: Annotated[int, Path(ge=1)]
+) -> FileResponse:
+    """Una página del PDF de un render, como imagen (la vista previa de la ficha)."""
+    from app.services.documents.authoring import pdf_page
+
+    pdf = service.render_file(session, render_id, "pdf")
+    return FileResponse(pdf_page(pdf, f"render-{render_id}", page), media_type="image/png")
 
 
 @router.get(

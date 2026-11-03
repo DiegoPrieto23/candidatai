@@ -19,7 +19,7 @@ from app.core.db import session_scope
 from app.models import Event, Job, MessageDraft
 from app.services import drafts, events, process, tracking
 from app.services.drafts import DraftNotAllowedError, MessageDraftInput
-from tests.replies_support import APPLIED, NOW, add_applied_job
+from tests.applied_support import APPLIED, NOW, add_applied_job
 
 JSON = {"Origin": UI_ORIGIN, "Content-Type": "application/json"}
 FOLLOWUP = MessageDraftInput(kind="followup", subject="Mi candidatura", body="Hola: ¿novedades?")

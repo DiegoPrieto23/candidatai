@@ -12,7 +12,6 @@
   "add": "Añadir buzón",
   "row": {
     "folderKind": "Correos guardados en una carpeta",
-    "readsReplies": "Lee respuestas",
     "noPassword": "Falta la contraseña de aplicación de tu correo: sin ella no se pueden leer las alertas.",
     "lastPolled": "Leído {{when}}",
     "never": "Aún no se ha leído",
@@ -62,8 +61,6 @@
     "folderHint": "INBOX es la bandeja de entrada. En Gmail, el nombre de la etiqueta tal cual.",
     "folderName": "Nombre de la carpeta",
     "folderNameHint": "Se crea en {{path}}. Deja ahí los .eml o .mbox.",
-    "readReplies": "Leer aquí también las respuestas de las empresas",
-    "readRepliesHint": "La app busca en la bandeja de entrada los correos de las empresas de tus candidaturas enviadas.",
     "allowPrivate": "Servidor en mi equipo o mi red",
     "allowPrivateHint": "Solo para un servidor propio: por seguridad, la app no se conecta a direcciones locales si no lo marcas."
   },

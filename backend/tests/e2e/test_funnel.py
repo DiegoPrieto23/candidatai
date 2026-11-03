@@ -179,7 +179,7 @@ def test_triage_approves_discards_with_reason_and_undoes(
     server = fresh_demo_app
     pending = _total(server, stage="pending_triage")
     assert pending >= 3, "la demo trae ofertas por revisar"
-    page.goto("/por-revisar")
+    page.goto("/bandeja/revision")
     count = page.get_by_text(t("triage.count_other", count=pending))
     expect(count).to_be_visible()
     selected = page.get_by_role("article", name=t("triage.selected"))
@@ -202,7 +202,7 @@ def test_triage_approves_discards_with_reason_and_undoes(
     expect(history.get_by_text(t("labels.event.reopened"), exact=True)).to_be_visible()
 
     # Descartar de verdad: el contador baja.
-    page.goto("/por-revisar")
+    page.goto("/bandeja/revision")
     discarded_id = _selected_job_id(page)
     selected.get_by_role("button", name=_starts(t("triage.discard"))).click()
     _discard_with_reason(page, "seniority")
@@ -327,7 +327,7 @@ def test_cv_changes_template_and_the_letter_is_verified_and_downloads(
     expect(cv.get_by_text(t("cv.verification.passed"))).to_be_visible()
 
     if other is not None:  # sin conversor a PDF solo hay una plantilla que lo saque
-        cv.get_by_text(t("cv.changeDesign")).click()
+        cv.get_by_role("tab", name=t("cv.panel.design")).click()
         form = cv.get_by_role("form", name=t("cv.renderForm"))
         form.locator(f'input[name="template"][value="{other}"]').check(force=True)
         form.get_by_role("button", name=t("cv.render"), exact=True).click()

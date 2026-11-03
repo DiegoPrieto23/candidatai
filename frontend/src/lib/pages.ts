@@ -27,13 +27,16 @@ function lazyPage(load: Loader) {
 }
 
 export const pages = {
+  howItWorks: lazyPage(() => import('@/pages/HowItWorksPage').then((m) => m.HowItWorksPage)),
+  inboxHub: lazyPage(() => import('@/pages/HubPages').then((m) => m.InboxHubPage)),
+  processesHub: lazyPage(() => import('@/pages/HubPages').then((m) => m.ProcessesHubPage)),
+  profileHub: lazyPage(() => import('@/pages/HubPages').then((m) => m.ProfileHubPage)),
   inbox: lazyPage(() => import('@/pages/InboxPage').then((m) => m.InboxPage)),
   job: lazyPage(() => import('@/pages/JobPage').then((m) => m.JobPage)),
   newJob: lazyPage(() => import('@/pages/NewJobPage').then((m) => m.NewJobPage)),
   triage: lazyPage(() => import('@/pages/TriagePage').then((m) => m.TriagePage)),
   processes: lazyPage(() => import('@/pages/ProcessesPage').then((m) => m.ProcessesPage)),
   calendar: lazyPage(() => import('@/pages/CalendarPage').then((m) => m.CalendarPage)),
-  replies: lazyPage(() => import('@/pages/RepliesPage').then((m) => m.RepliesPage)),
   // Recharts pesa: va en el chunk del embudo.
   funnel: lazyPage(() => import('@/pages/FunnelPage').then((m) => m.FunnelPage)),
   skills: lazyPage(() => import('@/pages/SkillsPage').then((m) => m.SkillsPage)),
@@ -43,27 +46,29 @@ export const pages = {
   sourcesHub: lazyPage(() => import('@/pages/SourcesHubPage').then((m) => m.SourcesHubPage)),
   sources: lazyPage(() => import('@/pages/SourcesPage').then((m) => m.SourcesPage)),
   platforms: lazyPage(() => import('@/pages/PlatformsPage').then((m) => m.PlatformsPage)),
+  emailAlerts: lazyPage(() => import('@/pages/EmailAlertsPage').then((m) => m.EmailAlertsPage)),
   extension: lazyPage(() => import('@/pages/ExtensionPage').then((m) => m.ExtensionPage)),
   agent: lazyPage(() => import('@/pages/AgentPage').then((m) => m.AgentPage)),
 }
 
 type PageKey = keyof typeof pages
 
-/** Las páginas que pinta cada ruta (`/fuentes` abre la de plataformas dentro de la suya). */
+/** Las páginas que pinta cada ruta (`/fuentes` abre la de plataformas dentro de la suya; la más larga, antes). */
 const ROUTES: [prefix: string, keys: PageKey[]][] = [
-  ['/bandeja', ['inbox']],
+  ['/como-funciona', ['howItWorks']],
+  ['/bandeja/revision', ['inboxHub', 'triage']],
+  ['/bandeja/por-completar', ['inboxHub', 'alerts']],
+  ['/bandeja', ['inboxHub', 'inbox']],
   ['/jobs/', ['job']],
   ['/nueva', ['newJob']],
-  ['/por-revisar', ['triage']],
-  ['/procesos', ['processes']],
-  ['/calendario', ['calendar']],
-  ['/respuestas', ['replies']],
+  ['/procesos/calendario', ['processesHub', 'calendar']],
+  ['/procesos', ['processesHub', 'processes']],
   ['/embudo', ['funnel']],
-  ['/skills', ['skills']],
-  ['/alertas', ['alerts']],
-  ['/plantillas', ['templates']],
-  ['/perfil', ['profile']],
+  ['/perfil/skills', ['profileHub', 'skills']],
+  ['/perfil/plantillas', ['profileHub', 'templates']],
+  ['/perfil', ['profileHub', 'profile']],
   ['/fuentes/empresas', ['sourcesHub', 'sources']],
+  ['/fuentes/correo', ['sourcesHub', 'emailAlerts']],
   ['/fuentes/extension', ['sourcesHub', 'extension']],
   ['/fuentes', ['sourcesHub', 'platforms']],
   ['/agente', ['agent']],

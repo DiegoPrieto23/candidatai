@@ -110,7 +110,11 @@ def create(
 
 
 def pending_count(session: Session) -> int:
-    query = select(func.count()).select_from(AgentRequest).where(AgentRequest.status == "pending")
+    query = (
+        select(func.count())
+        .select_from(AgentRequest)
+        .where(AgentRequest.status == "pending", AgentRequest.action.in_(ACTIONS))
+    )
     return session.scalar(query) or 0
 
 
@@ -118,7 +122,8 @@ def list_requests(
     session: Session, status: RequestStatus | None = "pending", limit: int = 50
 ) -> AgentRequestList:
     """Los encargos, el más antiguo primero (pendientes) o el más reciente primero (el resto)."""
-    query = select(AgentRequest).limit(limit)
+    # Los encargos de una acción que ya no existe se conservan, pero no se enseñan ni se atienden.
+    query = select(AgentRequest).where(AgentRequest.action.in_(ACTIONS)).limit(limit)
     if status is not None:
         query = query.where(AgentRequest.status == status)
     order = AgentRequest.id if status == "pending" else AgentRequest.id.desc()
@@ -128,7 +133,7 @@ def list_requests(
 
 def _pending(session: Session, request_id: int) -> AgentRequest:
     row = session.get(AgentRequest, request_id)
-    if row is None:
+    if row is None or row.action not in ACTIONS:
         raise RequestNotFoundError(f"No existe el encargo {request_id}.")
     if row.status != "pending":
         raise RequestClosedError(f"El encargo {request_id} ya está cerrado ({row.status}).")
@@ -154,5 +159,10 @@ def cancel(session: Session, request_id: int) -> AgentRequestView:
     row = _pending(session, request_id)
     row.status = "cancelled"
     row.completed_at = utcnow()
+    if row.action == "correct-cv" and row.job_id is not None:
+        # Sin encargo, la corrección pendiente se queda sin quien la atienda.
+        from app.services.documents import corrections
+
+        corrections.cancel_pending(session, row.job_id)
     session.flush()
     return view(row)

@@ -68,7 +68,7 @@ describe('Aviso de «listo» tras abrir el agente', () => {
     await userEvent.click(await within(section).findByRole('button', { name: 'Preparar' }))
     await within(section).findByText(/Te aviso aquí en cuanto esté/)
 
-    guide = { file: '1-5-acme-guia.pdf', language: 'es', title: 'Data Engineer', saved_at: later(), agent_name: null }
+    guide = { file: '1-5-acme-guia.pdf', language: 'es', title: 'Data Engineer', saved_at: later(), agent_name: null, restored: false }
     const notice = (await screen.findByText('Tu guía de la entrevista está lista', {}, POLL)).closest(
       '[role="status"]',
     ) as HTMLElement

@@ -126,6 +126,19 @@ def check_can_prepare(session: Session, row: Milestone, now: datetime) -> None:
         raise InterviewNotAllowedError("El proceso de esta oferta está cerrado.")
 
 
+def check_can_correct_guide(session: Session, row: Milestone) -> None:
+    """Cambiar una guía ya hecha: también tras la entrevista, que sigue sirviendo para repasar o
+    para la siguiente ronda. No con la entrevista cancelada ni con el proceso cerrado."""
+    if row.kind != "interview":
+        raise InterviewNotAllowedError(f"El hito {row.id} no es una entrevista (es «{row.kind}»).")
+    if not row.prep_guide:
+        raise InterviewNotAllowedError("Esa entrevista aún no tiene guía: prepárala primero.")
+    if row.status == "cancelled":
+        raise InterviewNotAllowedError("Esa entrevista está cancelada.")
+    if events.current_stage(session, row.job_id) == Stage.CLOSED:
+        raise InterviewNotAllowedError("El proceso de esta oferta está cerrado.")
+
+
 def check_can_debrief(row: Milestone, now: datetime) -> None:
     """Repasar: entrevista ya empezada y no cancelada. Lo usan `save_interview_notes` y el botón
     «Repasar»."""

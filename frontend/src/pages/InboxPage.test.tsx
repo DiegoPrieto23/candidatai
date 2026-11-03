@@ -190,7 +190,7 @@ describe('Qué es cada etapa y cómo avanzar', () => {
     expect(box).toHaveTextContent('tu agente no entra en LinkedIn')
     expect(within(box).getAllByRole('listitem')).toHaveLength(3)
     expect(within(box).getByRole('link', { name: 'Instálalo en unos minutos' })).toHaveAttribute('href', '/fuentes/extension')
-    expect(within(box).getByRole('link', { name: 'Alertas' })).toHaveAttribute('href', '/alertas')
+    expect(within(box).getByRole('link', { name: 'Por completar' })).toHaveAttribute('href', '/bandeja/por-completar')
   })
 
   it('en «Por leer» ofrece «Leer las ofertas nuevas» y en «Por revisar», ir a revisarlas o «Valorar las pendientes»', async () => {
@@ -203,7 +203,7 @@ describe('Qué es cada etapa y cómo avanzar', () => {
 
     renderApp('/bandeja?stage=pending_triage')
     box = await guide()
-    expect(within(box).getByRole('link', { name: 'Ir a «Por revisar»' })).toHaveAttribute('href', '/por-revisar')
+    expect(within(box).getByRole('link', { name: 'Abrir la revisión rápida' })).toHaveAttribute('href', '/bandeja/revision')
     expect(within(box).getByRole('button', { name: 'Valorar las pendientes' })).toBeInTheDocument()
     expect(box).toHaveTextContent('No cambia la etapa')
   })

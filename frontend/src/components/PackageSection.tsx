@@ -4,7 +4,6 @@ import {
   FilePdfIcon,
   PencilSimpleIcon,
   PlusIcon,
-  SealCheckIcon,
   WarningIcon,
 } from '@phosphor-icons/react'
 import { API_URL, type JobPackage, type JobView, type Stage } from '@/api/client'
@@ -263,45 +262,6 @@ function Answers({ pkg }: { pkg: JobPackage }) {
   )
 }
 
-function ChosenCv({ pkg }: { pkg: JobPackage }) {
-  const { t } = useTranslation('pkg', { keyPrefix: 'cv' })
-  const cv = pkg.cv
-  return (
-    <div className="space-y-2">
-      <h3 className="text-sm font-medium">{t('title')}</h3>
-      {cv ? (
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-          <a
-            href={`${API_URL}${cv.pdf_url}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 font-medium underline-offset-4 hover:underline"
-          >
-            <FilePdfIcon className="size-4 text-primary" />
-            {t('openPdf')}
-          </a>
-          <span className="text-muted-foreground">
-            {cv.sent ? t('sent') : t('selected')} · {cv.template_id} · {t('pages', { count: cv.pages })}
-          </span>
-          {cv.verified && (
-            <span className="flex items-center gap-1 text-muted-foreground">
-              <SealCheckIcon className="size-4 text-primary" weight="duotone" />
-              {t('verified')}
-            </span>
-          )}
-          {pkg.can_edit && (
-            <a href="#cv" className="text-muted-foreground underline underline-offset-4 hover:text-foreground">
-              {t('change')}
-            </a>
-          )}
-        </div>
-      ) : (
-        <p className="text-sm text-muted-foreground">{t('none')}</p>
-      )}
-    </div>
-  )
-}
-
 function CoverLetterSlot({ pkg }: { pkg: JobPackage }) {
   const { t } = useTranslation('pkg', { keyPrefix: 'letter' })
   const letter = pkg.cover_letter
@@ -354,7 +314,6 @@ export function PackageSection({ job }: { job: JobView }) {
         <ErrorState error={error} onRetry={() => refetch()} className="border-0 p-0" />
       ) : (
         <div className="space-y-7">
-          <ChosenCv pkg={data} />
           <Answers pkg={data} />
           <CoverLetterSlot pkg={data} />
         </div>

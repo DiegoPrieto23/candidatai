@@ -1,4 +1,4 @@
-"""Buzones de los que se leen alertas y respuestas (fase 27.4).
+"""Buzones de los que se leen las alertas (fase 27.4).
 
 Un buzón es IMAP (siempre en solo lectura, ver `mailboxes.py`) o una carpeta `data/inbox/<nombre>/`
 de `.eml`/`.mbox`. La cuenta `CAI_IMAP_*` de `.env` aparece sola como «Principal» (`from_env`):
@@ -13,7 +13,6 @@ import logging
 import re
 import socket
 import unicodedata
-from typing import Literal
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -43,9 +42,7 @@ logger = logging.getLogger(__name__)
 ENV_SECRET = "CAI_IMAP_PASSWORD"
 PRINCIPAL = "Principal"
 # Lo que de la cuenta de `.env` se cambia en `.env`, no aquí.
-_ENV_FIELDS = ("host", "port", "security", "user", "folder", "replies_folder", "allow_private")
-
-Purpose = Literal["alerts", "replies"]
+_ENV_FIELDS = ("host", "port", "security", "user", "folder", "allow_private")
 
 
 class MailSourceNotFoundError(LookupError):
@@ -87,9 +84,7 @@ def sync_env_source(session: Session) -> MailSource | None:
         kind="imap",
         security="ssl",
         folder=settings.imap_folder,
-        replies_folder=settings.imap_replies_folder,
         enabled=True,
-        read_replies=True,
         secret_ref=ENV_SECRET,
         from_env=True,
         allow_private=True,  # lo configuraste a mano en `.env`, como hasta ahora
@@ -119,7 +114,6 @@ def effective(row: MailSource) -> dict[str, object]:
             "port": row.port,
             "user": row.user,
             "folder": row.folder,
-            "replies_folder": row.replies_folder,
         }
     settings = get_settings()
     return {
@@ -127,7 +121,6 @@ def effective(row: MailSource) -> dict[str, object]:
         "port": settings.imap_port,
         "user": settings.imap_user,
         "folder": settings.imap_folder,
-        "replies_folder": settings.imap_replies_folder,
     }
 
 
@@ -140,7 +133,6 @@ def _view(row: MailSource) -> MailSourceView:
         kind=row.kind,  # type: ignore[arg-type]
         security=row.security,  # type: ignore[arg-type]
         enabled=row.enabled,
-        read_replies=row.read_replies,
         allow_private=row.allow_private,
         from_env=row.from_env,
         has_password=bool(row.secret_ref and env_file.read_secret(row.secret_ref)),
@@ -220,9 +212,7 @@ def create_mail_source(session: Session, data: MailSourceInput) -> MailSaveResul
         security=data.security,
         user=data.user,
         folder=data.folder,
-        replies_folder=data.replies_folder,
         enabled=data.enabled,
-        read_replies=data.read_replies,
         allow_private=data.allow_private,
         from_env=False,
     )
@@ -264,9 +254,7 @@ def update_mail_source(session: Session, source_id: int, patch: MailSourcePatch)
             "security": row.security,
             "user": row.user,
             "folder": row.folder,
-            "replies_folder": row.replies_folder,
             "enabled": row.enabled,
-            "read_replies": row.read_replies,
             "allow_private": row.allow_private,
         }
         merged = MailSourceInput.model_validate({**current, **changes})
@@ -363,11 +351,11 @@ def _account(
     )
 
 
-def account_of(row: MailSource, purpose: Purpose = "alerts") -> ImapAccount:
+def account_of(row: MailSource) -> ImapAccount:
     """La cuenta de un buzón IMAP, con su contraseña leída de `.env`. `MailboxError` si falta
     algo o el servidor no está permitido."""
     fields = effective(row)
-    folder = str(fields["replies_folder" if purpose == "replies" else "folder"])
+    folder = str(fields["folder"])
     password = env_file.read_secret(row.secret_ref) if row.secret_ref else None
     return _account(
         fields["host"],  # type: ignore[arg-type]
@@ -445,14 +433,10 @@ def probe_new_mail_source(
 # --- Lectura -------------------------------------------------------------------------------------
 
 
-def active_sources(session: Session, purpose: Purpose = "alerts") -> list[MailSource]:
-    """Los buzones activos que se leen para alertas o, con `read_replies`, para respuestas. En
-    una demo, solo las carpetas."""
+def active_sources(session: Session) -> list[MailSource]:
+    """Los buzones activos que se leen para las alertas. En una demo, solo las carpetas."""
     demo = get_settings().demo_mode
-    rows = [row for row in _visible(session) if row.enabled and not (demo and row.kind == "imap")]
-    if purpose == "replies":
-        rows = [row for row in rows if row.kind == "imap" and row.read_replies]
-    return rows
+    return [row for row in _visible(session) if row.enabled and not (demo and row.kind == "imap")]
 
 
 def mark(row: MailSource, error: MailboxError | None) -> None:

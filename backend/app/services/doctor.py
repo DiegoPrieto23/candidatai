@@ -381,51 +381,9 @@ def check_email_alerts(
     )
 
 
-def check_email_replies(
-    settings: Settings, imap_factory: "ImapFactory | None" = None
-) -> CheckResult:
-    """Respuestas de las empresas (fase 15): como las alertas, solo login y `EXAMINE` de su
-    carpeta; no se lee ningún correo."""
-    from app.services.ingestion.email.mailboxes import MailboxError, connect_imap, settings_account
-
-    name = "Respuestas por correo"
-    if not settings.imap_configured:
-        partial = settings.imap_host or settings.imap_user or settings.imap_password
-        if partial and settings.demo_mode:
-            return CheckResult(
-                name=name,
-                status=CheckStatus.OK,
-                detail="demo: el IMAP de `.env` no se usa (tu buzón real queda fuera); "
-                "deja las respuestas .eml en la carpeta inbox/respuestas/ de la demo",
-            )
-        return CheckResult(
-            name=name,
-            status=CheckStatus.OK,
-            detail="sin IMAP (opcional); deja las respuestas .eml o .mbox en "
-            "data/inbox/respuestas/",
-        )
-    folder = settings.imap_replies_folder
-    try:
-        kwargs = {"factory": imap_factory} if imap_factory else {}
-        account = settings_account(settings, folder)
-        assert account is not None
-        conn = connect_imap(account, **kwargs)
-    except MailboxError as exc:
-        status = CheckStatus.WARN if exc.code == "network" else CheckStatus.ERROR
-        return CheckResult(name=name, status=status, detail=exc.message)
-    with contextlib.suppress(Exception):
-        conn.logout()
-    return CheckResult(
-        name=name,
-        status=CheckStatus.OK,
-        detail=f"carpeta «{folder}» en solo lectura; solo se descargan los correos de las "
-        "empresas de tus candidaturas enviadas",
-    )
-
-
 def check_mail_sources(imap_factory: "ImapFactory | None" = None) -> CheckResult:
     """Buzones añadidos desde la UI (fase 27.4): login y `EXAMINE` de cada uno activo, sin leer
-    correos. La cuenta de `.env` ya la prueban «Alertas por correo» y «Respuestas por correo»."""
+    correos. La cuenta de `.env` ya la prueba «Alertas por correo»."""
     from sqlalchemy.exc import SQLAlchemyError
 
     from app.core.db import session_scope
@@ -689,7 +647,6 @@ def run_doctor(settings: Settings) -> DoctorReport:
             check_embeddings(settings),
             check_connectors(settings),
             check_email_alerts(settings),
-            check_email_replies(settings),
             check_mail_sources(),
             check_capture(settings),
             *agents,

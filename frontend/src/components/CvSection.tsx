@@ -4,6 +4,7 @@ import {
   CheckCircleIcon,
   ColumnsIcon,
   DownloadSimpleIcon,
+  EyeIcon,
   FilePdfIcon,
   ImageIcon,
   PaperPlaneTiltIcon,
@@ -26,12 +27,17 @@ import {
 import { useJobCv, useRenderCv, useSelectRender, useTemplates } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
 import { CvBrief } from '@/components/CvBrief'
+import { CvCorrection } from '@/components/CvCorrection'
+import { CvInlineEditor } from '@/components/CvInlineEditor'
+import { CvVersions } from '@/components/CvVersions'
 import { ClosedHint } from '@/components/JobSignals'
+import { PdfCover } from '@/components/PdfCover'
 import { RenderWarnings } from '@/components/RenderWarnings'
 import { Reveal } from '@/components/Reveal'
 import { ErrorState, InlineCode } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { errorMessage } from '@/lib/errors'
 import { i18n } from '@/lib/i18n'
 import { colorLabel, formatDateTime, PHOTO_MODE_LABEL, SECTION_LABEL } from '@/lib/labels'
@@ -71,17 +77,25 @@ function Chip({ children, tone = 'plain' }: { children: ReactNode; tone?: 'plain
 
 // --- Verificación --------------------------------------------------------------------------------
 
-function Verification({ cv }: { cv: CvView }) {
+function Verification({ cv, jobId, canVerify }: { cv: CvView; jobId: number; canVerify: boolean }) {
   const { t } = useTranslation('cv', { keyPrefix: 'verification' })
   const verification = cv.verification
+  const verify = canVerify && (
+    <AgentButton action="verify-cv" jobId={jobId}>
+      {t('verify')}
+    </AgentButton>
+  )
   if (!verification) {
     return (
-      <p className="flex items-start gap-2 text-sm text-muted-foreground">
-        <SealWarningIcon className="mt-0.5 size-4 shrink-0" />
-        <span>
-          <Trans t={t} i18nKey="pending" components={{ code: <Code /> }} />
-        </span>
-      </p>
+      <div className="space-y-2">
+        <p className="flex items-start gap-2 text-sm text-muted-foreground">
+          <SealWarningIcon className="mt-0.5 size-4 shrink-0" />
+          <span>
+            <Trans t={t} i18nKey="pending" components={{ code: <Code /> }} />
+          </span>
+        </p>
+        {verify}
+      </div>
     )
   }
   return (
@@ -103,6 +117,7 @@ function Verification({ cv }: { cv: CvView }) {
         ) : (
           <Issues issues={verification.issues} />
         ))}
+      {!verification.passed && verify}
     </div>
   )
 }
@@ -140,7 +155,7 @@ function TemplatePicker({
   return (
     <fieldset>
       <legend className="mb-2 text-sm font-medium">{t('legend')}</legend>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3">
         {templates.map((template) => {
           const checked = template.id === value
           return (
@@ -174,10 +189,10 @@ function TemplatePicker({
                 )}
               </span>
               <span className="mt-2 flex items-center gap-1.5 text-sm font-medium">
-                <span className="truncate">{text.name(template)}</span>
+                <span className="min-w-0">{text.name(template)}</span>
                 {template.from_user_cv && <Chip>{t('yourCv')}</Chip>}
               </span>
-              <span className="block truncate text-xs text-muted-foreground">
+              <span className="block text-xs text-muted-foreground">
                 {template.ats_friendly ? t('ats') : t('notAts')}
                 {template.photo_supported && t('withPhoto')}
                 {template.engine === 'html' && t('pdfOnly')}
@@ -349,12 +364,10 @@ function RenderForm({
     <form onSubmit={submit} aria-label={t('renderForm')} className="space-y-6">
       <TemplatePicker templates={templates} value={templateId} onChange={chooseTemplate} />
       {template && (
-        <div className="grid gap-6 sm:grid-cols-2">
+        <div className="grid gap-6">
           <PhotoPicker value={photo} onChange={setPhoto} supported={template.photo_supported} />
           {colors && color && <ColorPicker colors={colors} value={color} onChange={setAccent} />}
-          <div className="sm:col-span-2">
-            <SectionsPicker sections={template.sections} hidden={hidden} onChange={setHidden} />
-          </div>
+          <SectionsPicker sections={template.sections} hidden={hidden} onChange={setHidden} />
         </div>
       )}
       {render.isError && (
@@ -395,6 +408,9 @@ function RenderCard({
   onCompare,
   canCompare,
   jobId,
+  sent,
+  cover = true,
+  onShow,
 }: {
   render: RenderResult
   templateName: string
@@ -402,6 +418,9 @@ function RenderCard({
   onCompare: (on: boolean) => void
   canCompare: boolean
   jobId: number
+  sent: boolean
+  cover?: boolean
+  onShow?: () => void
 }) {
   const { t } = useTranslation('cv')
   const select = useSelectRender(jobId)
@@ -413,90 +432,106 @@ function RenderCard({
       aria-label={t('renderAria', { id: render.render_id })}
       className={cn('rounded-lg border bg-background p-4', render.selected && 'border-primary/50 ring-1 ring-primary/30')}
     >
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="flex flex-wrap items-center gap-2 text-sm font-medium">
-            {templateName}
-            {render.selected && (
-              <Chip tone="primary">
-                <PaperPlaneTiltIcon weight="fill" /> {t('toSend')}
-              </Chip>
-            )}
-            {render.template_changed && <Chip tone="warning">{t('templateChanged')}</Chip>}
-          </p>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            {optionsSummary(render)} · {formatDateTime(render.created_at)}
-          </p>
-        </div>
-        <dl className="flex gap-4 text-right text-xs">
-          <div>
-            <dt className="text-muted-foreground">{t('pages')}</dt>
-            <dd className={cn('tabular font-medium', tooLong && 'text-destructive')}>
-              {render.pages}/{render.max_pages}
-            </dd>
-          </div>
-          {total > 0 && (
-            <div>
-              <dt className="text-muted-foreground">{t('keywords')}</dt>
-              <dd
-                className="tabular font-medium"
-                title={coverage.missing.length ? t('missingKeywords', { list: coverage.missing.join(', ') }) : undefined}
-              >
-                {t('keywordsOf', { present: coverage.present.length, total })}
-              </dd>
+      <div className="flex items-start gap-4">
+        {cover && (
+          <PdfCover
+            href={fileUrls.renderPdf(render.render_id)}
+            src={fileUrls.renderCover(render.render_id)}
+            className="w-16"
+          />
+        )}
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="flex flex-wrap items-center gap-2 text-sm font-medium">
+                {templateName}
+                {render.selected && (
+                  <Chip tone="primary">
+                    <PaperPlaneTiltIcon weight="fill" /> {sent ? t('sentOne') : t('toSend')}
+                  </Chip>
+                )}
+                {render.template_changed && <Chip tone="warning">{t('templateChanged')}</Chip>}
+              </p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {optionsSummary(render)} · {formatDateTime(render.created_at)}
+              </p>
             </div>
+            <dl className="flex gap-4 text-right text-xs">
+              <div>
+                <dt className="text-muted-foreground">{t('pages')}</dt>
+                <dd className={cn('tabular font-medium', tooLong && 'text-destructive')}>
+                  {render.pages}/{render.max_pages}
+                </dd>
+              </div>
+              {total > 0 && (
+                <div>
+                  <dt className="text-muted-foreground">{t('keywords')}</dt>
+                  <dd
+                    className="tabular font-medium"
+                    title={coverage.missing.length ? t('missingKeywords', { list: coverage.missing.join(', ') }) : undefined}
+                  >
+                    {t('keywordsOf', { present: coverage.present.length, total })}
+                  </dd>
+                </div>
+              )}
+            </dl>
+          </div>
+
+          {render.template_changed && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              {t('templateChangedHint')}
+            </p>
           )}
-        </dl>
-      </div>
+          <RenderWarnings warnings={render.warnings} />
 
-      {render.template_changed && (
-        <p className="mt-2 text-xs text-muted-foreground">
-          {t('templateChangedHint')}
-        </p>
-      )}
-      <RenderWarnings warnings={render.warnings} />
-
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        <Button asChild variant="outline" size="xs">
-          <a href={fileUrls.renderPdf(render.render_id)} target="_blank" rel="noopener noreferrer">
-            <FilePdfIcon /> {t('viewPdf')}
-          </a>
-        </Button>
-        {render.docx_path && (
-          <Button asChild variant="ghost" size="xs">
-            <a href={fileUrls.renderDocx(render.render_id)} download>
-              <DownloadSimpleIcon /> DOCX
-            </a>
-          </Button>
-        )}
-        {canCompare && (
-          <label className="flex cursor-pointer items-center gap-1.5 px-1 text-xs text-muted-foreground">
-            <input
-              type="checkbox"
-              checked={comparing}
-              onChange={(e) => onCompare(e.target.checked)}
-              className="size-3.5 accent-[var(--primary)]"
-            />
-            {t('compare')}
-          </label>
-        )}
-        {!render.selected && (
-          <Button
-            size="xs"
-            variant="secondary"
-            className="ml-auto"
-            disabled={select.isPending}
-            onClick={() => select.mutate(render.render_id)}
-          >
-            <PaperPlaneTiltIcon /> {t('useThis')}
-          </Button>
-        )}
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <Button asChild variant="outline" size="xs">
+              <a href={fileUrls.renderPdf(render.render_id)} target="_blank" rel="noopener noreferrer">
+                <FilePdfIcon /> {t('viewPdf')}
+              </a>
+            </Button>
+            {render.docx_path && (
+              <Button asChild variant="ghost" size="xs">
+                <a href={fileUrls.renderDocx(render.render_id)} download>
+                  <DownloadSimpleIcon /> DOCX
+                </a>
+              </Button>
+            )}
+            {onShow && (
+              <Button variant="ghost" size="xs" onClick={onShow}>
+                <EyeIcon /> {t('preview.show')}
+              </Button>
+            )}
+            {canCompare && (
+              <label className="flex cursor-pointer items-center gap-1.5 px-1 text-xs text-muted-foreground">
+                <input
+                  type="checkbox"
+                  checked={comparing}
+                  onChange={(e) => onCompare(e.target.checked)}
+                  className="size-3.5 accent-[var(--primary)]"
+                />
+                {t('compare')}
+              </label>
+            )}
+            {!render.selected && (
+              <Button
+                size="xs"
+                variant="secondary"
+                className="ml-auto"
+                disabled={select.isPending}
+                onClick={() => select.mutate(render.render_id)}
+              >
+                <PaperPlaneTiltIcon /> {t('useThis')}
+              </Button>
+            )}
+          </div>
+          {select.isError && (
+            <p role="alert" className="mt-2 text-xs text-destructive">
+              {errorMessage(select.error)}
+            </p>
+          )}
+        </div>
       </div>
-      {select.isError && (
-        <p role="alert" className="mt-2 text-xs text-destructive">
-          {errorMessage(select.error)}
-        </p>
-      )}
     </li>
   )
 }
@@ -531,19 +566,134 @@ function Compare({ renders, names, onClose }: { renders: RenderResult[]; names: 
   )
 }
 
-/** A la vista, el render que se enviará (o el último); los demás, plegados. */
-function Renders({ cv, jobId, names }: { cv: CvView; jobId: number; names: Map<string, string> }) {
+/** Las páginas del PDF a tamaño de lectura, como imágenes: se ven igual en cualquier navegador. */
+function CvPreview({ render }: { render: RenderResult }) {
+  const { t } = useTranslation('cv', { keyPrefix: 'preview' })
+  const [failed, setFailed] = useState(false)
+  const pages = Array.from({ length: Math.max(render.pages, 1) }, (_, i) => i + 1)
+  if (failed) return <p className="rounded-lg bg-muted/60 p-6 text-sm text-muted-foreground">{t('failed')}</p>
+  return (
+    <div className="space-y-4 rounded-lg bg-muted/60 p-6">
+      {pages.map((page) => (
+        <img
+          key={page}
+          src={fileUrls.renderPage(render.render_id, page)}
+          alt={t('page', { page, total: pages.length })}
+          loading={page === 1 ? 'eager' : 'lazy'}
+          onError={() => setFailed(true)}
+          className="aspect-[1/1.414] w-full bg-white object-contain shadow-md"
+        />
+      ))}
+    </div>
+  )
+}
+
+type PanelTab = 'ask' | 'text' | 'design'
+const PANEL_TABS: PanelTab[] = ['ask', 'text', 'design']
+
+/**
+ * Las tres formas de cambiar el CV. Las pestañas siguen montadas aunque no se vean: cambiar de una a
+ * otra no pierde lo que estabas escribiendo, y la corrección pendiente se sigue vigilando.
+ */
+function EditorPanel({
+  cv,
+  jobId,
+  templatesQuery,
+  missingKeywords,
+  otherRenders,
+}: {
+  cv: CvView
+  jobId: number
+  templatesQuery: ReturnType<typeof useTemplates>
+  missingKeywords: string[]
+  otherRenders: ReactNode
+}) {
+  const { t } = useTranslation('cv')
+  const [tab, setTab] = useState<PanelTab>('ask')
+  const templates = templatesQuery.data?.templates ?? []
+  return (
+    <aside
+      aria-label={t('panel.label')}
+      className="sticky top-6 -mx-1 max-h-[calc(100vh-3rem)] overflow-y-auto px-1 pb-1"
+    >
+      <Tabs value={tab} onValueChange={(value) => setTab(value as PanelTab)} className="gap-4">
+        <TabsList className="w-full">
+          {PANEL_TABS.map((value) => (
+            <TabsTrigger key={value} value={value}>
+              {t(`panel.${value}`)}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+        <TabsContent value="ask" forceMount hidden={tab !== 'ask'} className="space-y-5">
+          <CvCorrection jobId={jobId} missingKeywords={missingKeywords} />
+          {/* Rehacer el CV con otras indicaciones: plegadas, que el CV ya está hecho. */}
+          <div className="space-y-3 border-t pt-4">
+            <Reveal label={t('brief.label')}>
+              <CvBrief jobId={jobId} />
+            </Reveal>
+            <AgentButton action="generate-cv" jobId={jobId}>
+              {t('rewrite')}
+            </AgentButton>
+          </div>
+        </TabsContent>
+        <TabsContent value="text" forceMount hidden={tab !== 'text'}>
+          <CvInlineEditor cv={cv} jobId={jobId} />
+        </TabsContent>
+        <TabsContent value="design" forceMount hidden={tab !== 'design'} className="space-y-6">
+          {templatesQuery.isPending ? (
+            <Skeleton className="h-40" />
+          ) : templatesQuery.isError ? (
+            <ErrorState error={templatesQuery.error} onRetry={() => templatesQuery.refetch()} className="border-0 p-0" />
+          ) : (
+            <RenderForm key={cv.document_id} cv={cv} jobId={jobId} templates={templates} />
+          )}
+          {otherRenders}
+        </TabsContent>
+      </Tabs>
+    </aside>
+  )
+}
+
+/**
+ * El editor: el CV a tamaño de lectura a la izquierda y, a la derecha, cómo cambiarlo. A la vista, el
+ * diseño que se enviará; un diseño recién generado pasa a verse solo, para decidir si te quedas con
+ * él. Sin poder editar (ya enviado), solo el CV y sus diseños.
+ */
+function CvWorkspace({
+  cv,
+  jobId,
+  names,
+  sent,
+  canEdit,
+  templatesQuery,
+}: {
+  cv: CvView
+  jobId: number
+  names: Map<string, string>
+  sent: boolean
+  canEdit: boolean
+  templatesQuery: ReturnType<typeof useTemplates>
+}) {
   const { t } = useTranslation('cv')
   const [compare, setCompare] = useState<number[]>([])
   const newest = [...cv.renders].reverse()
-  const main = newest.find((r) => r.selected) ?? newest[0]
-  const others = newest.filter((r) => r !== main)
+  const newestId = newest[0]?.render_id ?? null
+  const [shownId, setShownId] = useState<number | null>(null)
+  const [seen, setSeen] = useState({ document: cv.document_id, newest: newestId })
+  if (seen.document !== cv.document_id || seen.newest !== newestId) {
+    // Otra versión del texto: vuelve al que se envía. El mismo texto con un diseño nuevo: enséñalo.
+    setSeen({ document: cv.document_id, newest: newestId })
+    setShownId(seen.document === cv.document_id ? newestId : null)
+  }
+  const shown = newest.find((r) => r.render_id === shownId) ?? newest.find((r) => r.selected) ?? newest[0]
+  if (!shown) return null
+  const others = newest.filter((r) => r !== shown)
   const toggle = (id: number, on: boolean) =>
     setCompare((current) => (on ? [...current.filter((c) => c !== id), id].slice(-2) : current.filter((c) => c !== id)))
   const compared = compare
     .map((id) => cv.renders.find((r) => r.render_id === id))
     .filter((r): r is RenderResult => r !== undefined)
-  const card = (render: RenderResult) => (
+  const card = (render: RenderResult, isShown: boolean) => (
     <RenderCard
       key={render.render_id}
       render={render}
@@ -552,21 +702,46 @@ function Renders({ cv, jobId, names }: { cv: CvView; jobId: number; names: Map<s
       onCompare={(on) => toggle(render.render_id, on)}
       canCompare={others.length > 0}
       jobId={jobId}
+      sent={sent}
+      cover={!isShown}
+      onShow={isShown ? undefined : () => setShownId(render.render_id)}
     />
   )
-  if (!main) return null
-
+  const otherCards = <ul className="space-y-3">{others.map((render) => card(render, false))}</ul>
+  const main = (
+    <div className="min-w-0 space-y-4">
+      <Verification cv={cv} jobId={jobId} canVerify={canEdit} />
+      <ul>{card(shown, true)}</ul>
+      <CvPreview key={shown.render_id} render={shown} />
+    </div>
+  )
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {compared.length === 2 && <Compare renders={compared} names={names} onClose={() => setCompare([])} />}
-      {compared.length === 1 && (
-        <p className="text-xs text-muted-foreground">{t('pickAnother')}</p>
-      )}
-      <ul className="space-y-3">{card(main)}</ul>
-      {others.length > 0 && (
-        <Reveal label={t('otherRenders', { count: others.length })}>
-          <ul className="space-y-3">{others.map(card)}</ul>
-        </Reveal>
+      {compared.length === 1 && <p className="text-xs text-muted-foreground">{t('pickAnother')}</p>}
+      {canEdit ? (
+        <div className="grid grid-cols-[minmax(0,1fr)_22rem] items-start gap-6">
+          {main}
+          <EditorPanel
+            cv={cv}
+            jobId={jobId}
+            templatesQuery={templatesQuery}
+            missingKeywords={shown.keyword_coverage.missing}
+            otherRenders={
+              others.length > 0 && (
+                <div className="space-y-3 border-t pt-4">
+                  <h3 className="text-sm font-medium">{t('preview.others')}</h3>
+                  {otherCards}
+                </div>
+              )
+            }
+          />
+        </div>
+      ) : (
+        <div className="max-w-3xl space-y-4">
+          {main}
+          {others.length > 0 && <Reveal label={t('otherRenders', { count: others.length })}>{otherCards}</Reveal>}
+        </div>
       )}
     </div>
   )
@@ -579,11 +754,13 @@ function CvBody({
   jobId,
   signals,
   templatesQuery,
+  sent,
 }: {
   data: JobCv
   jobId: number
   signals?: JobView['signals']
   templatesQuery: ReturnType<typeof useTemplates>
+  sent: boolean
 }) {
   const { t } = useTranslation('cv')
   const text = useTemplateText()
@@ -617,28 +794,15 @@ function CvBody({
   const names = new Map(templates.map((tpl) => [tpl.id, text.name(tpl)]))
   return (
     <div className="space-y-6">
-      <Verification cv={data.cv} />
-      <Renders cv={data.cv} jobId={jobId} names={names} />
-      {data.can_render && (
-        <div className="flex flex-col items-start gap-4">
-          <Reveal label={t('changeDesign')} className="w-full">
-            {templatesQuery.isPending ? (
-              <Skeleton className="h-40" />
-            ) : templatesQuery.isError ? (
-              <ErrorState error={templatesQuery.error} onRetry={() => templatesQuery.refetch()} className="border-0 p-0" />
-            ) : (
-              <RenderForm key={data.cv.document_id} cv={data.cv} jobId={jobId} templates={templates} />
-            )}
-          </Reveal>
-          {/* Rehacer el CV con otras indicaciones: plegadas, que el CV ya está hecho. */}
-          <Reveal label={t('brief.label')} className="w-full max-w-xl">
-            <CvBrief jobId={jobId} />
-          </Reveal>
-          <AgentButton action="generate-cv" jobId={jobId}>
-            {t('rewrite')}
-          </AgentButton>
-        </div>
-      )}
+      <CvWorkspace
+        cv={data.cv}
+        jobId={jobId}
+        names={names}
+        sent={sent}
+        canEdit={data.can_render}
+        templatesQuery={templatesQuery}
+      />
+      <CvVersions jobId={jobId} canRestore={data.can_render} />
     </div>
   )
 }
@@ -658,7 +822,7 @@ export function CvSection({ job }: { job: JobView }) {
       ) : cvQuery.isError ? (
         <ErrorState error={cvQuery.error} onRetry={() => cvQuery.refetch()} className="border-0 p-0" />
       ) : (
-        <CvBody data={cvQuery.data} jobId={job.id} signals={job.signals} templatesQuery={templatesQuery} />
+        <CvBody data={cvQuery.data} jobId={job.id} signals={job.signals} templatesQuery={templatesQuery} sent={job.stage === 'applied' || job.stage === 'in_process'} />
       )}
     </section>
   )

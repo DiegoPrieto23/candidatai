@@ -27,7 +27,7 @@ describe('Paquete de candidatura en la ficha', () => {
     await waitFor(() => expect(screen.queryByRole('region', { name: NAME })).not.toBeInTheDocument())
   })
 
-  it('muestra el CV elegido y el aviso de datos pendientes; sin carta no hay hueco', async () => {
+  it('muestra el aviso de datos pendientes; el CV va en su sección y sin carta no hay hueco', async () => {
     mockApi({
       'GET /status': status(),
       'GET /jobs/1': jobView({ stage: 'cv_ready' }),
@@ -35,11 +35,8 @@ describe('Paquete de candidatura en la ficha', () => {
     })
     renderApp('/jobs/1?tab=application')
     const section = await screen.findByRole('region', { name: NAME })
-    expect(await within(section).findByRole('link', { name: 'Abrir PDF' })).toHaveAttribute(
-      'href',
-      'http://127.0.0.1:8000/renders/3/pdf',
-    )
-    expect(within(section).getByText('1 respuesta espera un dato tuyo (salario, disponibilidad…).')).toBeInTheDocument()
+    expect(await within(section).findByText('1 respuesta espera un dato tuyo (salario, disponibilidad…).')).toBeInTheDocument()
+    expect(within(section).queryByRole('link', { name: 'Abrir PDF' })).not.toBeInTheDocument()
     expect(within(section).getByText(/Falta un dato tuyo/)).toBeInTheDocument()
     expect(within(section).getByRole('button', { name: 'Copiar la respuesta 2' })).toBeDisabled()
     expect(within(section).queryByText('Carta de presentación')).not.toBeInTheDocument()
@@ -124,7 +121,6 @@ describe('Paquete de candidatura en la ficha', () => {
     // Ya enviada: lo de antes de enviar está plegado.
     const section = await screen.findByRole('region', { name: NAME })
     expect(await within(section).findByText('Editadas por ti')).toBeInTheDocument()
-    expect(within(section).getByText(/El que enviaste/)).toBeInTheDocument()
     expect(within(section).getByRole('button', { name: 'Copiar la respuesta 1' })).toBeEnabled()
     expect(within(section).queryByRole('button', { name: /Editar/ })).not.toBeInTheDocument()
     expect(within(section).queryByRole('button', { name: 'Añadir pregunta' })).not.toBeInTheDocument()

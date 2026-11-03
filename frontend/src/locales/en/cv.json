@@ -1,13 +1,14 @@
 {
   "title": "CV",
   "verification": {
-    "pending": "Not verified yet: “Generate CV” checks it after writing it.",
+    "pending": "Not verified yet. Versions your agent writes or corrects are verified automatically; the ones you edit, with this button.",
     "passed": "Verified: nothing made up or exaggerated",
     "failed": "The verifier found problems",
     "blocker": "Blocker",
     "warning": "Warning",
     "showWarnings_one": "Show {{count}} verifier note",
-    "showWarnings_other": "Show {{count}} verifier notes"
+    "showWarnings_other": "Show {{count}} verifier notes",
+    "verify": "Verify this version"
   },
   "template": {
     "legend": "Template",
@@ -34,25 +35,25 @@
     "noPhoto": "No photo",
     "without": "without {{sections}}"
   },
-  "renderAria": "Version {{id}}",
+  "renderAria": "Design {{id}}",
   "toSend": "To send",
+  "sentOne": "The one you sent",
   "templateChanged": "Template changed",
   "pages": "Pages",
   "keywords": "Keywords",
   "missingKeywords": "Missing: {{list}}",
   "keywordsOf": "{{present}} of {{total}}",
-  "templateChangedHint": "The template has changed since this version: generate it again to see how it looks now.",
+  "templateChangedHint": "The template has changed since this design: generate it again to see how it looks now.",
   "viewPdf": "View PDF",
   "compare": "Compare",
   "useThis": "Use this one to send",
-  "comparison": "Compare versions",
+  "comparison": "Compare designs",
   "sideBySide": "Side by side",
   "closeComparison": "Close comparison",
-  "pdfOf": "PDF of version {{id}}",
-  "changeDesign": "Change design",
-  "otherRenders_one": "Show {{count}} more version",
-  "otherRenders_other": "Show {{count}} more versions",
-  "pickAnother": "Tick another version to see them side by side.",
+  "pdfOf": "PDF of design {{id}}",
+  "otherRenders_one": "Show {{count}} more design",
+  "otherRenders_other": "Show {{count}} more designs",
+  "pickAnother": "Tick another design to see them side by side.",
   "none": {
     "title": "No CV yet",
     "hint": "Your agent writes the CV from your profile, checks it and formats it. Then you can change template, photo and colour here, without AI.",
@@ -79,7 +80,7 @@
   "layout": {
     "page": "Page {{page}}",
     "fix": {
-      "template": "Try another template below, no agent needed.",
+      "template": "Try another template in “Design”, no agent needed.",
       "content": "Content needs trimming: \"Generate CV\" with your agent trims what matters least for the job."
     }
   },
@@ -89,5 +90,80 @@
     "hint": "They save on their own and your agent uses them every time it writes this CV. They only guide it: what the CV says comes from your profile.",
     "saving": "Saving…",
     "saved": "Saved: your agent will use them when writing this CV."
+  },
+  "correction": {
+    "label": "What do you want to correct?",
+    "placeholder": "For example: remove project X, make the summary shorter, change “led” to “took part in”…",
+    "hint": "Your agent changes only this, without rewriting the CV, and keeps the previous version. Nothing that isn’t in your profile.",
+    "submit": "Request correction",
+    "pending": "Waiting for your agent:",
+    "cancel": "Cancel",
+    "declined": "Your agent couldn’t apply it:",
+    "suggest": {
+      "shorter": "Shorten the summary",
+      "focus": "Prioritize what the job asks for",
+      "keyword": "Mention {{keyword}}"
+    }
+  },
+  "history": {
+    "title": "Text versions",
+    "aria": "Version from {{date}}",
+    "current": "Current",
+    "restore": "Go back to this version",
+    "viewPdf": "View PDF",
+    "asked": "You asked:",
+    "verified": "Verified",
+    "rejected": "Failed verification",
+    "unverified": "Not verified",
+    "changes_one": "What changed ({{count}})",
+    "changes_other": "What changed ({{count}})",
+    "reordered": "Same text, in a different order.",
+    "removed": "Removed:",
+    "added": "Added:",
+    "origin": {
+      "generated": "Written by your agent",
+      "correction": "Corrected by your agent",
+      "edit": "Edited by you"
+    },
+    "sections": {
+      "subtitle": "Subtitle",
+      "summary": "Summary",
+      "experience": "Experience",
+      "projects": "Projects",
+      "skills": "Skills",
+      "education": "Education",
+      "certifications": "Certifications",
+      "extra_sections": "Other sections",
+      "languages": "Languages"
+    }
+  },
+  "edit": {
+    "form": "Edit the CV text",
+    "hint": "Changes text only and saves a new version with the same design, with no agent and not verified. To add, remove or reorder, request a correction.",
+    "subtitle": "Subtitle",
+    "summary": "Summary",
+    "bulletAria": "{{title}}, bullet {{position}}",
+    "skillGroup": "Skills, group {{position}}",
+    "groupName": "Name of group {{position}}",
+    "skillAria": "{{group}}, skill {{position}}",
+    "save": "Save new version",
+    "saving": "Saving and generating the PDF…",
+    "warningsTitle": "Saved, but check this: the app can’t confirm that each sentence says the same as your profile.",
+    "warning": {
+      "skill": "“{{value}}” isn’t in your profile, or it’s a basic skill this job doesn’t ask for.",
+      "number": "The figure “{{value}}” doesn’t appear in your profile."
+    }
+  },
+  "panel": {
+    "label": "Change the CV",
+    "ask": "Ask for changes",
+    "text": "Edit text",
+    "design": "Design"
+  },
+  "preview": {
+    "page": "Page {{page}} of {{total}} of the CV",
+    "failed": "The preview couldn’t be shown. You can open the PDF with “View PDF”.",
+    "show": "Show here",
+    "others": "Other designs of this CV"
   }
 }

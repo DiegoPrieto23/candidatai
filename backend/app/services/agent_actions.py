@@ -16,14 +16,16 @@ ActionId = Literal[
     "assess-fit",
     "assess-fit-job",
     "generate-cv",
+    "correct-cv",
+    "verify-cv",
     "generate-cover-letter",
     "add-skills",
     "training-plan",
-    "review-replies",
     "draft-follow-ups",
     "draft-follow-up",
     "broaden-search",
     "prepare-interview",
+    "correct-interview-guide",
     "mock-interview",
     "debrief-interview",
     "offer-questions",
@@ -40,8 +42,8 @@ ActionId = Literal[
 ]
 
 # Hitos de entrevista (fase 17): `upcoming`, programada y por empezar; `past`, ya empezada y no
-# cancelada.
-MilestoneRule = Literal["upcoming", "past"]
+# cancelada; `guide`, con guía ya hecha y cambios pedidos, también tras la entrevista.
+MilestoneRule = Literal["upcoming", "past", "guide"]
 
 
 # Etapas en las que tiene sentido redactar el CV de una oferta (también para rehacerlo).
@@ -63,6 +65,9 @@ class Action:
     wrong_stage: str = ""  # el motivo si la oferta no está en ellas
     milestone: MilestoneRule | None = None  # acción de un hito de entrevista (y de su oferta)
     needs_offer: bool = False  # solo si la oferta tiene un `offer_received`
+    needs_cv: bool = False  # solo si la oferta ya tiene CV
+    # Solo con una corrección pendiente: la orden no lleva su texto, lo lee el skill.
+    needs_correction: bool = False
     # Fase 19: herramientas MCP (sin prefijo) con las que se puede lanzar en segundo plano. Vacío:
     # la acción solo se abre en una terminal (pregunta, usa tu navegador o la web).
     background: tuple[str, ...] = ()
@@ -154,6 +159,43 @@ ACTIONS: dict[ActionId, Action] = {
         ),
         roles=("writer", "verifier"),
     ),
+    # Aplica lo que el usuario pidió en la ficha y lo verifica. Quien corrige es el propio skill.
+    "correct-cv": Action(
+        "Corregir CV",
+        "Usa el skill correct-cv de CandidatAI para la oferta {job_id}.",
+        needs_job=True,
+        stages=CV_STAGES,
+        wrong_stage="Solo se corrige el CV de una oferta aprobada.",
+        needs_correction=True,
+        background=(
+            "get_cv_correction",
+            "decline_cv_correction",
+            "get_cv_content",
+            "get_extraction",
+            "get_profile",
+            "get_context",
+            "save_cv_content",
+            "save_cv_verification",
+        ),
+        roles=("verifier",),
+    ),
+    # Sobre todo tras editar a mano: esa versión queda sin verificar.
+    "verify-cv": Action(
+        "Verificar CV",
+        "Usa el skill verify-cv de CandidatAI para la oferta {job_id}.",
+        needs_job=True,
+        stages=CV_STAGES,
+        wrong_stage="Solo se verifica el CV de una oferta aprobada.",
+        needs_cv=True,
+        background=(
+            "get_cv_content",
+            "get_extraction",
+            "get_profile",
+            "get_context",
+            "save_cv_verification",
+        ),
+        roles=("verifier",),
+    ),
     # Sin indicaciones, el skill pregunta una vez qué destacar; en segundo plano sigue con las de
     # por defecto (su sección «En segundo plano»). La verificación la hace el rol `verifier`.
     "generate-cover-letter": Action(
@@ -222,11 +264,6 @@ ACTIONS: dict[ActionId, Action] = {
         "Usa el skill training-plan de CandidatAI con los huecos de skills que he marcado como "
         "«No la tengo».",
     ),
-    # Inicio y «Respuestas» (fase 15): el agente propone; el usuario acepta en la UI.
-    "review-replies": Action(
-        "Revisar respuestas",
-        "Usa el skill review-replies de CandidatAI con los correos de empresas sin clasificar.",
-    ),
     # Procesos y ficha (fase 15): el agente redacta; el usuario copia y envía desde su correo.
     "draft-follow-ups": Action(
         "Redactar seguimientos",
@@ -260,6 +297,14 @@ ACTIONS: dict[ActionId, Action] = {
         "oferta {job_id}.",
         needs_job=True,
         milestone="upcoming",
+    ),
+    # Aplica lo que el usuario pidió en la ficha, sin rehacer la guía. La orden no lleva su texto.
+    "correct-interview-guide": Action(
+        "Cambiar guía",
+        "Usa el skill correct-interview-guide de CandidatAI para la entrevista {milestone_id} de "
+        "la oferta {job_id}.",
+        needs_job=True,
+        milestone="guide",
     ),
     "mock-interview": Action(
         "Simulacro",

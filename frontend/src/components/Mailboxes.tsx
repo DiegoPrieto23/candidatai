@@ -159,9 +159,6 @@ function MailboxRow({ source, onEdit }: { source: MailSourceView; onEdit: () => 
             {source.kind === 'folder' && (
               <span className="text-xs font-normal text-muted-foreground">{t('row.folderKind')}</span>
             )}
-            {source.read_replies && (
-              <span className="text-xs font-normal text-muted-foreground">{t('row.readsReplies')}</span>
-            )}
           </p>
           <p className="truncate text-xs text-muted-foreground">{where}</p>
         </div>
@@ -236,7 +233,7 @@ function MailboxRow({ source, onEdit }: { source: MailSourceView; onEdit: () => 
 }
 
 /** Panel plegable «Buzones», con el estado de cada uno. Se abre solo si alguno tiene un error o le falta la contraseña. */
-export function MailboxesPanel({ onEdit }: { onEdit: (source: MailSourceView) => void }) {
+export function MailboxesPanel({ onEdit, defaultOpen = false }: { onEdit: (source: MailSourceView) => void; defaultOpen?: boolean }) {
   const { t } = useTranslation('mailboxes')
   const query = useMailSources()
   const sources = query.data?.sources ?? []
@@ -252,9 +249,9 @@ export function MailboxesPanel({ onEdit }: { onEdit: (source: MailSourceView) =>
     )
   }
   if (sources.length === 0) return null
-  const expanded = open ?? (failing > 0 || needsPassword)
+  const expanded = open ?? (defaultOpen || failing > 0 || needsPassword)
   return (
-    <Collapsible open={expanded} onOpenChange={setOpen} className="rounded-xl border bg-card" data-mailboxes>
+    <Collapsible open={expanded} onOpenChange={setOpen} className="rounded-xl border bg-card">
       <CollapsibleTrigger className="group flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm outline-none hover:bg-foreground/[0.03] focus-visible:ring-[3px] focus-visible:ring-ring/50">
         <EnvelopeSimpleIcon className="size-4 text-primary" weight="duotone" />
         <span className="font-medium">{t('panel.title')}</span>
@@ -285,7 +282,6 @@ interface Form {
   security: 'ssl' | 'starttls'
   folder: string
   folderName: string
-  readReplies: boolean
   allowPrivate: boolean
 }
 
@@ -300,7 +296,6 @@ function initialForm(provider: ProviderId, source?: MailSourceView): Form {
       security: source.security,
       folder: source.kind === 'imap' ? source.folder : 'INBOX',
       folderName: source.kind === 'folder' ? source.folder : '',
-      readReplies: source.read_replies,
       allowPrivate: source.allow_private,
     }
   }
@@ -314,7 +309,6 @@ function initialForm(provider: ProviderId, source?: MailSourceView): Form {
     security: 'ssl',
     folder: 'INBOX',
     folderName: provider === 'folder' ? 'alertas' : '',
-    readReplies: false,
     allowPrivate: false,
   }
 }
@@ -410,13 +404,6 @@ function ImapFields({
           </Field>
         </>
       )}
-      <Check
-        id="mailbox-replies"
-        label={t('fields.readReplies')}
-        hint={t('fields.readRepliesHint')}
-        checked={form.readReplies}
-        onChange={(readReplies) => set({ readReplies })}
-      />
       {!fromEnv && (
         <details open={custom} className="rounded-lg border px-3 py-2">
           <summary className="cursor-pointer text-sm font-medium">{t('dialog.advanced')}</summary>
@@ -462,12 +449,10 @@ function bodyOf(provider: ProviderId, form: Form): MailSourceInput {
     label: form.label.trim(),
     port: Number(form.port) || 993,
     security: form.security,
-    replies_folder: 'INBOX',
     enabled: true,
-    read_replies: form.readReplies,
     allow_private: form.allowPrivate,
   }
-  if (provider === 'folder') return { ...base, kind: 'folder', folder: form.folderName.trim(), read_replies: false }
+  if (provider === 'folder') return { ...base, kind: 'folder', folder: form.folderName.trim() }
   return {
     ...base,
     kind: 'imap',
@@ -528,7 +513,7 @@ function MailboxForm({
       return
     }
     const body = editing.from_env
-      ? { label: form.label.trim(), read_replies: form.readReplies, ...(form.password ? { password: form.password } : {}) }
+      ? { label: form.label.trim(), ...(form.password ? { password: form.password } : {}) }
       : editing.kind === 'folder'
         ? { label: form.label.trim(), folder: form.folderName.trim() }
         : (({ kind: _kind, password, ...rest }) => ({ ...rest, ...(password ? { password } : {}) }))(bodyOf('imap', form))

@@ -69,7 +69,7 @@
     "nextLabel": "To move on:",
     "processJobs": "Read new jobs",
     "assessFit": "Assess pending jobs",
-    "openTriage": "Go to “To review”",
+    "openTriage": "Open quick review",
     "all": {
       "what": "All your jobs, whatever their stage. Each job moves along: To complete → To read → To review → Approved → CV ready → Applied → In process.",
       "next": "pick a stage in the row below to see only its jobs and what to do with them."
@@ -81,7 +81,7 @@
         "send": "In that tab, click the <strong>Send to CandidatAI</strong> button in the browser toolbar. It saves the description and the job moves to “To read”.",
         "discard": "If the title already tells you it's not for you, discard it right here, without opening it."
       },
-      "extension": "Don't have the button yet? <extension>Install it in a few minutes</extension>. You can also go through them one by one, with keyboard shortcuts, in <alerts>Alerts</alerts>."
+      "extension": "Don't have the button yet? <extension>Install it in a few minutes</extension>. You can also go through them one by one, with keyboard shortcuts, in <alerts>To complete</alerts>."
     },
     "pending_extraction": {
       "what": "Jobs with their full description that your agent hasn't read yet.",
@@ -89,7 +89,7 @@
     },
     "pending_triage": {
       "what": "Jobs already read and with their fit calculated, waiting for your decision.",
-      "next": "go through them in <triage>To review</triage> and approve or discard them. If you'd like an opinion first, “Assess pending jobs” has your agent compare each one with your profile and write why it fits or not. It doesn't change the stage: you decide."
+      "next": "go through them in <triage>Quick review</triage> and approve or discard them. If you'd like an opinion first, “Assess pending jobs” has your agent compare each one with your profile and write why it fits or not. It doesn't change the stage: you decide."
     },
     "approved": {
       "what": "Jobs you approved. They still need their tailored CV.",
@@ -101,7 +101,7 @@
     },
     "applied": {
       "what": "Applications sent, waiting for the company to answer.",
-      "next": "when they invite you to an interview or a test, note it in the job's “Process” tab, or accept the proposal in <replies>Replies</replies> if the app read the email, and it moves to “In process”. If they take long to answer, the app reminds you to follow up."
+      "next": "when they invite you to an interview or a test, note it in the job's “Process” tab and it moves to “In process”. If they take long to answer, the app reminds you to follow up."
     },
     "in_process": {
       "what": "Processes with interviews or tests under way.",
@@ -110,7 +110,8 @@
     "closed": {
       "what": "The end of the road: jobs discarded, rejected, expired, duplicated or that didn't pass your filters.",
       "next": "nothing to do. If you closed one by mistake, open it and click “Reopen”."
-    }
+    },
+    "openComplete": "Go through them one by one"
   },
   "noScoreWhy": {
     "profile": "Fit not calculated: your profile is missing. Create it in “My profile”.",

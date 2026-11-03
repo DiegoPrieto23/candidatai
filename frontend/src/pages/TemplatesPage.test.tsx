@@ -59,7 +59,8 @@ describe('Galería de plantillas', () => {
   it('se llega desde la navegación', async () => {
     mockApi({ 'GET /status': status(), 'GET /jobs': { items: [], total: 0 }, 'GET /templates': templateList() })
     renderApp('/')
-    await userEvent.click(screen.getByRole('link', { name: 'Plantillas' }))
+    await userEvent.click(screen.getByRole('link', { name: 'Mi perfil' }))
+    await userEvent.click(await screen.findByRole('link', { name: 'Plantillas de CV' }))
     expect(await screen.findByRole('heading', { level: 1, name: 'Plantillas de CV' })).toBeInTheDocument()
   })
 

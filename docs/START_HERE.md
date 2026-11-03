@@ -161,7 +161,7 @@ data.
    the first line is `cd ~/"Library/Application Support/CandidatAI/app/backend"`, on Linux
    `cd ~/.local/share/candidatai/app/backend`, and the last line is
    `CAI_DATA_DIR=data-demo-en uv run cai start`.
-3. Your browser opens with a **"Demo mode"** banner. Try **To review** (move with `J`/`K`, approve
+3. Your browser opens with a **"Demo mode"** banner. Try **Quick review**, in the Inbox (move with `J`/`K`, approve
    with `A`, discard with `D`), open a job, change the CV template and press **Generate**, and look at
    **Processes** and **Funnel**.
 
@@ -216,19 +216,20 @@ Jobs can come in several ways; start with one or two:
 - **Paste a job** you've seen: **New job**, paste its link or its text.
 - **Companies you'd like to work for**: **Where to search → Target companies**. If they use Greenhouse, Lever,
   Ashby and the like, their new jobs arrive every day by themselves.
-- **Job alerts by email** (LinkedIn, InfoJobs, Indeed…): **Alerts**, add your mailbox step by step.
+- **Job alerts by email** (LinkedIn, InfoJobs, Indeed…): **Where to search → Email alerts**, add your mailbox step by step.
   The app only reads; it never sends or deletes email.
 
 Then:
 
 1. On **Home**, press **Read new jobs** and then **Assess pending jobs**: your agent reads each
    job, the app gives it a fit from 0 to 100 and your agent explains why it fits you or not.
-2. In **To review**, approve or discard each job.
+2. In **Quick review**, in the Inbox, approve or discard each job.
 3. For an approved job, open it and press **Generate CV**. Then you choose the design and press
    **Generate**, and the app checks that every line comes from your profile.
 4. When you apply, the app can fill the form and **stops before sending**: you check it and press
    Send yourself.
 
+This journey is also in the app: **How it works**, in the menu, with a link to each screen.
 Every page and what you can do in it: [`FEATURES.md`](FEATURES.md).
 
 ## 7. Questions
@@ -245,7 +246,7 @@ is saved in your data folder, so opening the page doesn't notify anyone again.
 one application at a time. Messages and emails are drafts that you copy and send.
 
 **Is it safe to connect my email?** The app opens only the folder or label you choose, read-only
-(IMAP): it reads alerts and company replies and never sends, moves, deletes or marks anything as
+(IMAP): it reads alerts and never sends, moves, deletes or marks anything as
 read. You give it an **app password**, not your normal one, and you can revoke it at any moment. Be
 aware that with Gmail an app password can reach the whole mailbox (Google offers nothing narrower);
 the limit to one label is set by the app. The password stays in the `.env` file on your computer

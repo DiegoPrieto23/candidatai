@@ -162,7 +162,7 @@ toca tus datos.
    la primera línea es `cd ~/"Library/Application Support/CandidatAI/app/backend"`, en
    Linux `cd ~/.local/share/candidatai/app/backend`, y la última es
    `CAI_DATA_DIR=data-demo uv run cai start`.
-3. Se abre el navegador con un aviso de **«Modo demo»**. Prueba **Por revisar** (muévete con
+3. Se abre el navegador con un aviso de **«Modo demo»**. Prueba **Revisión rápida**, en la Bandeja (muévete con
    `J`/`K`, aprueba con `A`, descarta con `D`), abre una oferta, cambia la plantilla del CV y pulsa
    **Generar**, y mira **Procesos** y **Embudo**.
 
@@ -215,19 +215,20 @@ Las ofertas pueden entrar de varias formas; empieza con una o dos:
 - **Pega una oferta** que hayas visto: **Nueva oferta**, pega su enlace o su texto.
 - **Empresas en las que te gustaría trabajar**: **Dónde buscar → Empresas objetivo**. Si usan
   Greenhouse, Lever, Ashby y similares, sus ofertas nuevas llegan solas cada día.
-- **Alertas de empleo por correo** (LinkedIn, InfoJobs, Indeed…): **Alertas**, añade tu buzón paso
+- **Alertas de empleo por correo** (LinkedIn, InfoJobs, Indeed…): **Dónde buscar → Alertas por correo**, añade tu buzón paso
   a paso. La app solo lee; nunca envía ni borra correos.
 
 Después:
 
 1. En **Inicio**, pulsa **Leer las ofertas nuevas** y luego **Valorar las pendientes**: tu agente lee
    cada oferta, la app le pone un encaje de 0 a 100 y tu agente explica por qué encaja contigo o no.
-2. En **Por revisar**, aprueba o descarta cada oferta.
+2. En **Revisión rápida**, en la Bandeja, aprueba o descarta cada oferta.
 3. En una oferta aprobada, ábrela y pulsa **Generar CV**. Después eliges el diseño y pulsas
    **Generar**, y la app comprueba que cada línea sale de tu perfil.
 4. Al candidatar, la app puede rellenar el formulario y **se para antes de enviar**: lo revisas y
    pulsas Enviar tú.
 
+Este recorrido también está en la app: **Cómo funciona**, en el menú, con un enlace a cada pantalla.
 Cada página y lo que puedes hacer en ella: [`FUNCIONALIDADES.md`](FUNCIONALIDADES.md).
 
 ## 7. Preguntas
@@ -244,7 +245,7 @@ guarda en tu carpeta de datos, así que abrir la página no vuelve a avisar a na
 candidatura a candidatura. Los mensajes y correos son borradores que copias y envías tú.
 
 **¿Es seguro conectar mi correo?** La app abre solo la carpeta o etiqueta que elijas, en solo
-lectura (IMAP): lee alertas y respuestas de empresas y nunca envía, mueve, borra ni marca nada como
+lectura (IMAP): lee alertas y nunca envía, mueve, borra ni marca nada como
 leído. Le das una **contraseña de aplicación**, no la tuya normal, y la puedes revocar cuando
 quieras. Ten en cuenta que en Gmail una contraseña de aplicación puede llegar a todo el buzón (Google
 no ofrece nada más limitado); el límite a una etiqueta lo pone la app. La contraseña se queda en el

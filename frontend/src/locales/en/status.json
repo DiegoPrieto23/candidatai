@@ -27,6 +27,40 @@
     "prepare": "Prepare",
     "guide": "Preparation guide (PDF)",
     "guideSaved": "Saved on {{date}}",
+    "correction": {
+      "open": "Ask for changes to the guide",
+      "label": "What you want to change",
+      "placeholder": "E.g.: remove the code section and add more questions on leadership.",
+      "hint": "Your agent touches only this and adds nothing that isn’t in your profile. The previous version is kept.",
+      "pending": "Changes requested, not applied yet:",
+      "cancel": "Cancel",
+      "submit": "Apply changes",
+      "cancelled": "You can’t ask for changes to this guide because the interview is cancelled.",
+      "closed": "You can’t ask for changes to this guide because the process for this job is closed."
+    },
+    "versions": {
+      "older": {
+        "title": "Previous version · {{date}}",
+        "restore": "Go back to the previous version"
+      },
+      "newer": {
+        "title": "Latest version · {{date}}",
+        "restore": "Go back to the latest version"
+      },
+      "restoring": "Rebuilding the PDF…",
+      "loading": "Comparing the versions…",
+      "asked": "You asked:",
+      "noChanges": "The text of both versions is the same.",
+      "reordered": "Same text, in a different order.",
+      "removed": "Removed",
+      "added": "Added",
+      "pendingHint": "First cancel the requested changes or wait until they’re applied.",
+      "parts": {
+        "cover": "Cover",
+        "section": "Order of the sections",
+        "sources": "Sources"
+      }
+    },
     "mock": "Mock interview",
     "debrief": "Debrief",
     "debriefAgain": "Debrief again",

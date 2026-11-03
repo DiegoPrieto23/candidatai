@@ -24,7 +24,7 @@ from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
 from app.core.config import REPO_ROOT, get_settings
-from app.models import Application, Event, Job, Milestone, Reply
+from app.models import Event, Job, Milestone
 from app.schemas.cover_letter import CoverLetterBriefInput, CoverLetterContent
 from app.schemas.cv import CvVerification
 from app.schemas.interviews import InterviewPlanInput, PrepBlock
@@ -42,18 +42,14 @@ from app.services import (
     pipeline,
     process,
     received_offers,
-    replies,
     skill_gaps,
     style_samples,
 )
 from app.services.documents import cover_letter as letter
 from app.services.ingestion.email import service as email_service
 from app.services.matching import service as matching
-from app.services.normalize import normalize_company
 from app.services.pipeline import EventType
 
-# Destinos con la candidatura abierta (`replies` compara los correos con todas ellas).
-OPEN_FATES = ("applied", "replied", "interview_scheduled", "offer")
 # Formato de la tabla que cita `prepare-negotiation`; el mismo en los dos idiomas.
 SALARIES = REPO_ROOT / "demo" / "salarios.example.csv"
 # Una oferta en una alerta, con el formato de cada portal (el que entienden sus lectores).
@@ -127,15 +123,7 @@ def populate(
     for skill in extras["skill_gaps"]:
         skill_gaps.set_mark(session, skill, "gap")
 
-    # Los correos, de empresas con un solo proceso abierto: así su única candidata es la suya.
-    open_companies = [job.company for job in jobs if job.fate in OPEN_FATES]
-    applied = by_fate.get("applied", [])
-    single = [job for job in applied if open_companies.count(job.company) == 1]
-    if len(single) < len(extras["replies"]) or len(applied) <= len(extras["replies"]):
-        raise DemoExtrasError("No hay candidaturas enviadas suficientes para los correos.")
-    mailed = single[: len(extras["replies"])]
-    _replies(session, mailed, extras["replies"], now, agent_name)
-    followup = next(job for job in applied if job not in mailed)
+    followup = by_fate["applied"][0]
     texts = extras["followup_draft"]
     drafts.save_message_draft(
         session,
@@ -189,100 +177,6 @@ def _letter_and_answers(
     )
 
 
-def _applied_at(session: Session, job_id: int) -> datetime:
-    application = session.get(Application, job_id)
-    if application is None or application.applied_at is None:
-        raise DemoExtrasError(f"La oferta {job_id} no tiene fecha de envío.")
-    return application.applied_at
-
-
-def _weekday_at(now: datetime, days: float, hour: int) -> datetime:
-    """`days` desde hoy a la hora `hour` de Madrid, llevado al lunes si cae en fin de semana."""
-    local = (now + timedelta(days=days)).astimezone(process.local_zone())
-    while local.weekday() >= 5:
-        local += timedelta(days=1)
-    return local.replace(hour=hour, minute=0, second=0, microsecond=0)
-
-
-def _replies(
-    session: Session,
-    jobs: list[SeededJob],
-    specs: list[dict[str, Any]],
-    now: datetime,
-    agent_name: str,
-) -> None:
-    """Un correo por candidatura en `inbox/respuestas/`, leído como cualquier otro."""
-    inbox = get_settings().replies_inbox_dir
-    inbox.mkdir(parents=True, exist_ok=True)
-    expected: list[tuple[str, SeededJob, dict[str, Any], datetime]] = []
-    for n, (job, spec) in enumerate(zip(jobs, specs, strict=True), start=1):
-        applied_at = _applied_at(session, job.job_id)
-        received = min(now - timedelta(hours=3 * n), applied_at + timedelta(days=2))
-        domain = _mail_domain(job.company)
-        proposal = spec.get("proposal")
-        meeting = None
-        if proposal and proposal.get("milestone"):
-            plan = proposal["milestone"]
-            meeting = _weekday_at(now, plan["in_days"], plan["hour"])
-        fields = {
-            "company": job.company,
-            "title": job.title,
-            "date": meeting.date().isoformat() if meeting else "",
-            "hour": meeting.hour if meeting else "",
-        }
-        message = EmailMessage()
-        message["From"] = f"{spec['sender_name'].format(**fields)} <{spec['sender']}@{domain}>"
-        message["To"] = "candidata@demo.invalid"
-        message["Subject"] = spec["subject"].format(**fields)
-        message["Date"] = format_datetime(received)
-        message_id = f"<demo-{n}@{domain}>"
-        message["Message-ID"] = message_id
-        if "html" in spec:
-            message.set_content(spec["html"].format(**fields), subtype="html")
-        else:
-            message.set_content(spec["body"].format(**fields))
-        (inbox / f"demo-{n:02d}.eml").write_bytes(bytes(message))
-        expected.append((message_id, job, spec, received))
-
-    result = replies.poll_replies(session, now=now)
-    if result.created != len(expected):
-        raise DemoExtrasError(
-            f"Se esperaban {len(expected)} correos de empresas y se guardaron {result.created}: "
-            "revisa los nombres de las empresas de las candidaturas enviadas."
-        )
-    rows = {
-        row.message_id: row.id
-        for row in session.scalars(select(Reply).where(Reply.id.in_(result.reply_ids)))
-    }
-    for message_id, job, spec, received in expected:
-        proposal = spec.get("proposal")
-        if not proposal:
-            continue  # queda «Nueva»: la clasifica `review-replies`
-        milestone = None
-        if proposal.get("milestone"):
-            plan = proposal["milestone"]
-            milestone = {
-                "title": plan["title"],
-                "starts_at": _weekday_at(now, plan["in_days"], plan["hour"]),
-                "location": plan["location"],
-            }
-        replies.save_reply_proposal(
-            session,
-            rows[message_id],
-            replies.ReplyProposal.model_validate(
-                {
-                    "job_id": job.job_id,
-                    "event_type": proposal["event_type"],
-                    "occurred_at": received,
-                    "milestone": milestone,
-                    "summary": proposal["summary"],
-                    "confidence": "high",
-                }
-            ),
-            agent_name=agent_name,
-        )
-
-
 def _offline(url: str) -> str:
     raise ingest.IngestError(f"La demo no abre la página de {url}.")
 
@@ -322,12 +216,6 @@ def _alerts(session: Session, boxes: list[dict[str, Any]], now: datetime) -> Non
         )
         session.execute(update(Job).where(Job.id == job_id).values(first_seen_at=when))
         pipeline.rebuild_projection(session, job_id)
-
-
-def _mail_domain(company: str) -> str:
-    """El dominio de los correos de una empresa, con su nombre sin espacios
-    («bretemaanalytics.example»): `replies` lo reconoce como de esa empresa y de ninguna otra."""
-    return normalize_company(company).replace(" ", "") + ".example"
 
 
 def _milestone(session: Session, job_id: int) -> Milestone:

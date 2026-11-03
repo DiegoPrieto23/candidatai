@@ -37,7 +37,7 @@ afterEach(() => vi.restoreAllMocks())
 describe('Alertas', () => {
   it('con muchas, las enseña de 25 en 25', async () => {
     mockAlerts(Array.from({ length: 30 }, (_, i) => alertJob(i + 1)))
-    renderApp('/alertas')
+    renderApp('/bandeja/por-completar')
     const list = await screen.findByRole('listbox', { name: 'Encajan con tus preferencias' })
     expect(within(list).getAllByRole('option')).toHaveLength(25)
     expect(screen.getByText('1-25 de 30')).toBeInTheDocument()
@@ -51,7 +51,7 @@ describe('Alertas', () => {
       alertJob(1),
       alertJob(2, { prefilter_passed: false, prefilter_reason: 'El título indica seniority senior.' }),
     ])
-    renderApp('/alertas')
+    renderApp('/bandeja/por-completar')
 
     const good = await screen.findByRole('listbox', { name: 'Encajan con tus preferencias' })
     expect(within(good).getByText('Alerta 1')).toBeInTheDocument()
@@ -64,15 +64,14 @@ describe('Alertas', () => {
     expect(open).toHaveAttribute('href', 'https://www.linkedin.com/jobs/view/400000001/')
     expect(open).toHaveAttribute('target', '_blank')
     expect(open).toHaveAttribute('rel', 'noopener noreferrer')
-    // El recuento de la barra lateral, en el nombre del enlace.
-    const nav = await screen.findByRole('link', { name: 'Alertas (2 por completar)' })
-    expect(within(nav).getByText('2')).toBeInTheDocument()
+    // El recuento, en la pestaña de la Bandeja.
+    expect(await screen.findByRole('link', { name: 'Por completar (2)' })).toHaveAttribute('aria-current', 'page')
   })
 
   it('se mueve con J/K, abre con O en otra pestaña y descarta con D', async () => {
     const opened = vi.spyOn(window, 'open').mockReturnValue(null)
     const calls = mockAlerts([alertJob(1), alertJob(2), alertJob(3)])
-    renderApp('/alertas')
+    renderApp('/bandeja/por-completar')
     await screen.findByText('Alerta 1')
 
     await userEvent.keyboard('j')
@@ -113,10 +112,8 @@ describe('Alertas', () => {
         message: 'Alertas por correo: 1 correo nuevo, 3 ofertas, 3 nuevas (3 como resumen).',
       },
     })
-    renderApp('/alertas')
-    expect(await screen.findByText('Sin alertas pendientes')).toBeInTheDocument()
-
-    await userEvent.click(screen.getByRole('button', { name: 'Revisar correo ahora' }))
+    renderApp('/fuentes/correo')
+    await userEvent.click(await screen.findByRole('button', { name: 'Revisar correo ahora' }))
     expect(await screen.findByText(/1 correo nuevo, 3 ofertas/)).toBeInTheDocument()
     expect(calls.some((c) => c.method === 'POST' && c.path === '/alerts/poll')).toBe(true)
   })

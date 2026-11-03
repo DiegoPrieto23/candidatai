@@ -225,8 +225,7 @@ English (a candidate in Dublin) and in Spanish (a candidate in Galicia).
 It also brings what she and her agent would have left, so no screen is empty: fit assessments, a
 cover letter and screening answers for one job, a LinkedIn message and a follow-up, two company
 dossiers (one with a red flag), the prep plan of one interview and the debrief of two, the details
-of the received offer, three company emails in "Replies" (two with a proposal and one
-unclassified, with text hidden for an AI), two gaps in "Skills", a pending request, the context, a
+of the received offer, two gaps in "Skills", a pending request, the context, a
 style sample and a salary table.
 
 ```powershell
@@ -332,11 +331,13 @@ recommended models by memory and what leaves your computer in each case:
 Start CandidatAI **outside your agent** (its own window or the shortcut): if the agent runs out of
 memory it may close what it started.
 
+If it's your first time, **How it works**, in the menu, covers the whole journey and who does what.
+
 A typical day:
 
 1. Open **Home**: it tells you what's waiting (jobs to review, CVs ready, overdue follow-ups).
 2. Ask your agent for `process-jobs` and `assess-fit`, or press their buttons in the UI.
-3. Approve or discard in **To review**.
+3. Approve or discard in **Quick review**, in the Inbox.
 4. `generate-cv` for the approved ones and, when you're ready, apply from the job page.
 5. `daily-summary` sums all of that up in one answer.
 
@@ -348,7 +349,7 @@ A typical day:
 | **Target companies** (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee) | **Where to search → Target companies** page or `cai sources add --kind greenhouse --name "Acme" --slug acme`. `cai sources discover --file companies.txt` finds the board of each company in a list. How to find the slug: [`FUENTES_OFERTAS.md`](FUENTES_OFERTAS.md#cómo-encontrar-el-slug) (Spanish) |
 | **InfoJobs and Adzuna** | Their keys in `.env` (`CAI_INFOJOBS_CLIENT_ID`/`_SECRET`, `CAI_ADZUNA_APP_ID`/`_KEY`) and a search with `cai sources add` |
 | **Manfred and freehire.me** | No keys: a search on the same page or with `cai sources add --kind manfred --name Manfred --query "data engineer"` (for freehire, also `--country` and `--remote-only`) |
-| **Email alerts** | Create job alerts on LinkedIn, InfoJobs, Indeed… and have them land in a label of your mailbox. In **Alerts → Add mailbox**, connect one or more mailboxes (Gmail, Outlook, Yahoo, iCloud or other IMAP, always read-only) or a folder of `.eml` files; the wizard explains each provider and tests the connection before saving. The password is stored in your `.env` and never comes out again. Step by step in [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md) (Spanish). What comes in shows up in **Alerts** |
+| **Email alerts** | Create job alerts on LinkedIn, InfoJobs, Indeed… and have them land in a label of your mailbox. In **Where to search → Email alerts → Add mailbox**, connect one or more mailboxes (Gmail, Outlook, Yahoo, iCloud or other IMAP, always read-only) or a folder of `.eml` files; the wizard explains each provider and tests the connection before saving. The password is stored in your `.env` and never comes out again. Step by step in [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md) (Spanish). What comes in shows up in **Alerts** |
 | **"Send to CandidatAI" button** | In **Where to search → Browser button**: the app guides you through loading `extension/` in Chrome, Edge or Brave and connects it in one click. Instructions: [`extension/README.md`](../extension/README.md) (Spanish) |
 | **Your agent with your browser** | In **Where to search → Job boards**, **Set up with my agent** (`search-jobs configurar`) picks job boards and searches; or add them yourself: on InfoJobs, Tecnoempleo, Indeed and LinkedIn the searches come from the roles and locations in your profile, and each job board is edited with its pencil; `search-jobs` browses them. LinkedIn stays off until you turn it on |
 | **LinkedIn's public search** | The **Public search without signing in** switch on the LinkedIn card in **Where to search → Job boards**. Off by default: it goes against LinkedIn's terms and may get your IP blocked for a while |
@@ -367,7 +368,7 @@ The worker runs the automatic sources every day at `connectors.daily_at`
    hover, where it comes from) and applies your hard filters; `assess-fit` adds a reasoned
    verdict: "Assess this job" on its page or "Assess pending jobs" for all of them. If a job has
    no fit, its page says what's missing: your profile, your agent reading it, or both.
-3. **Review:** in **To review**, `J`/`K` to move, `A` to approve, `D` to discard (with a reason)
+3. **Review:** in the Inbox, **Quick review** tab, `J`/`K` to move, `A` to approve, `D` to discard (with a reason)
    and `O` to open the job page. A discard can be undone from the notice; an approval, with
    **Reopen** on the job page.
 4. **CV:** `generate-cv 42` writes the content, the code validates and renders it, and the
@@ -394,10 +395,8 @@ The worker runs the automatic sources every day at `connectors.daily_at`
   by month, week, day or agenda. Click one to see its details and open the job.
 - **Follow-ups:** it reminds you of applications without a reply; `draft-follow-up` leaves
   the drafts (max. 2 per application) and the thank-you note after an interview. You send them.
-- **Replies:** in the mailboxes where you ticked it, the app reads emails from the companies in your
-  processes; `review-replies` proposes what happened and you accept it in **Replies**. When you
-  accept or ignore one, a notice says which job it was logged on, with a link; **Ignore** can be
-  undone from it. With the keyboard: `J`/`K` to move between emails, `A` to accept, `I` to ignore.
+- **Replies:** when a company answers, note it on its job page or in **Processes** with **Update status**: a
+  reply, an interview, a test, an offer or a rejection. The app does not read those emails.
 - **Funnel:** conversion by step, source, week and referral, and the discard reasons. Under
   **More analysis**, folded at the end: "Is the fit right?" (by fit, verdict, template, cover
   letter…), by role, the agent's cost and **Your search in numbers** (or `cai stats story`): your
@@ -481,8 +480,8 @@ one” puts your preferences back as they were.
 ## 12. Configuration
 
 - **`.env`** (at the root, outside git): `CAI_DATA_DIR`, `SOFFICE_PATH`, InfoJobs and Adzuna keys,
-  IMAP (`CAI_IMAP_HOST`, `CAI_IMAP_PORT`, `CAI_IMAP_USER`, `CAI_IMAP_PASSWORD`, `CAI_IMAP_FOLDER`,
-  `CAI_IMAP_REPLIES_FOLDER`), `CAI_BROWSER_CHANNEL` (`chrome` or `msedge` for assisted
+  IMAP (`CAI_IMAP_HOST`, `CAI_IMAP_PORT`, `CAI_IMAP_USER`, `CAI_IMAP_PASSWORD`, `CAI_IMAP_FOLDER`),
+  `CAI_BROWSER_CHANNEL` (`chrome` or `msedge` for assisted
   applications), `CAI_EMBEDDINGS=off`, `UV_PATH` (uv outside the PATH), `CAI_LANG` (`es` or
   `en`: language of the `cai start` messages in the terminal; without it, your system's). Nothing
   is required.

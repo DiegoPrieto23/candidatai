@@ -26,7 +26,9 @@ export interface Watch {
 
 export const WATCHED_ACTIONS: Partial<Record<AgentAction, WatchKind>> = {
   'generate-cv': 'cv',
+  'correct-cv': 'cv',
   'prepare-interview': 'guide',
+  'correct-interview-guide': 'guide',
 }
 export const WATCH_MINUTES = 30
 export const POLL_MS = 5000

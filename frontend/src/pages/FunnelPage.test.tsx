@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeAll, describe, expect, it, vi } from 'vitest'
 import type { Calibration, CalibrationGroup, FunnelStats } from '@/api/client'
+import { i18n } from '@/lib/i18n'
 import { mockApi, renderApp, status } from '@/test/utils'
 
 const summary = (found: number, approved: number, applied: number, replied: number, interview: number) => ({
@@ -113,14 +114,26 @@ describe('Embudo', () => {
     // Intl separa la cifra del «%» con un espacio duro.
     const text = (el: HTMLElement) => el.textContent?.replace(/ /g, ' ')
     expect(rows.map(text)).toEqual([
+      'Encontradas10—100 %',
+      'Pasan filtros880 %80 %',
+      'Aprobadas675 %60 %',
+      'Enviadas583 %50 %',
+      'Con respuesta360 %30 %',
+      'Entrevista133 %10 %',
+      'Oferta1100 %10 %',
+      'Aceptadas1100 %10 %',
+    ])
+    // Al lado del gráfico (jsdom no lo dibuja: lo comprueba el E2E), el nombre y las cifras reales.
+    const visible = within(screen.getByTestId('funnel-rows')).getAllByRole('listitem', { hidden: true })
+    expect(visible.map(text)).toEqual([
       'Encontradas10',
-      'Pasan filtros8 · 80 %',
-      'Aprobadas6 · 75 %',
-      'Enviadas5 · 83 %',
-      'Con respuesta3 · 60 %',
-      'Entrevista1 · 33 %',
-      'Oferta1 · 100 %',
-      'Aceptadas1 · 100 %',
+      'Pasan filtros880 % del anterior · 80 % del total',
+      'Aprobadas675 % del anterior · 60 % del total',
+      'Enviadas583 % del anterior · 50 % del total',
+      'Con respuesta360 % del anterior · 30 % del total',
+      'Entrevista133 % del anterior · 10 % del total',
+      'Oferta1100 % del anterior · 10 % del total',
+      'Aceptadas1100 % del anterior · 10 % del total',
     ])
     expect(screen.getByText(/Sin contar 1 duplicadas/)).toBeInTheDocument()
 
@@ -155,6 +168,43 @@ describe('Embudo', () => {
     expect(within(titles).getByRole('rowheader', { name: 'Otros' })).toBeInTheDocument()
     expect(within(titles).queryByRole('rowheader', { name: 'Sin leer' })).not.toBeInTheDocument()
     expect(screen.getByText('Falta que tu agente lea 1 oferta: no cuenta aquí hasta entonces.')).toBeInTheDocument()
+  })
+
+  it('con una sola oferta da la cifra real de cada etapa, sin dividir por cero', async () => {
+    const counts = [1, 0, 0, 0, 0, 0, 0, 0]
+    mockApi({
+      'GET /status': status(),
+      'GET /stats/funnel': stats({
+        steps: stats().steps.map((s, i) => ({
+          ...s,
+          count: counts[i],
+          rate_from_previous: i === 1 ? 0 : null,
+          rate_from_start: counts[i],
+        })),
+      }),
+    })
+    renderApp('/embudo')
+
+    const funnel = await screen.findByRole('table', { name: 'Ofertas por paso del embudo' })
+    const text = (el: HTMLElement) => el.textContent?.replace(/\u00a0/g, ' ')
+    const rows = within(funnel).getAllByRole('row').slice(1).map(text)
+    expect(rows[0]).toBe('Encontradas1—100 %')
+    expect(rows[1]).toBe('Pasan filtros00 %0 %')
+    expect(rows[2]).toBe('Aprobadas0—0 %')
+    expect(screen.getByTestId('funnel-rows')).not.toHaveTextContent('NaN')
+  })
+
+  it('el embudo también se lee en inglés', async () => {
+    await i18n.changeLanguage('en')
+    try {
+      mockApi({ 'GET /status': status(), 'GET /stats/funnel': stats() })
+      renderApp('/embudo')
+      const funnel = await screen.findByRole('table', { name: 'Jobs per funnel step' })
+      expect(within(funnel).getByRole('columnheader', { name: '% of previous step' })).toBeInTheDocument()
+      expect(screen.getByTestId('funnel-rows')).toHaveTextContent('80% of previous · 80% of total')
+    } finally {
+      await i18n.changeLanguage('es')
+    }
   })
 
   it('enseña el coste del agente por candidatura y por entrevista, y por fuente (fase 25.4)', async () => {

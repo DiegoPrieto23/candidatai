@@ -24,17 +24,6 @@
     "pending_other": "{{count}} respuestas esperan un dato tuyo (salario, disponibilidad…).",
     "none": "Aún no hay respuestas. Pega las preguntas del formulario a tu agente y pídele que prepare la candidatura, o añádelas tú."
   },
-  "cv": {
-    "title": "CV",
-    "openPdf": "Abrir PDF",
-    "sent": "El que enviaste",
-    "selected": "Seleccionado para enviar",
-    "pages_one": "{{count}} página",
-    "pages_other": "{{count}} páginas",
-    "verified": "Verificado",
-    "change": "Cambiarlo en la sección CV",
-    "none": "Aún no hay un CV seleccionado para enviar."
-  },
   "letter": {
     "title": "Carta de presentación",
     "editedByYou": "Editada por ti",

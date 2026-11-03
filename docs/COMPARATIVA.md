@@ -186,8 +186,8 @@ tres proyectos han llegado a lo mismo: `GEMINI.md` vacío o de paso, y Antigravi
 | Pruebas técnicas y plazos | ✅ hitos con fecha en la ficha y el calendario | ❌ | ✅ `assessment-log` |
 | Calendario `.ics` | ✅ un `.ics` por hito y feed para Google Calendar | ❌ | 🟡 lee el `.ics` de una invitación |
 | Seguimientos (máx. 2) y agradecimientos | ✅ borradores | ✅ borradores | ✅ con cadencia, desactivables |
-| Clasificar las respuestas de las empresas | ✅ IMAP, propuesta que aceptas | ✅ Gmail, propuesta que aceptas | ✅ `reply-watch` |
-| Tu red de LinkedIn cruzada con las ofertas | ✅ «Conoces a N» en bandeja, «Por revisar» y ficha | ❌ | ✅ `linkedin-join` (script) |
+| Clasificar las respuestas de las empresas | ❌ se anotan a mano en la ficha | ✅ Gmail, propuesta que aceptas | ✅ `reply-watch` |
+| Tu red de LinkedIn cruzada con las ofertas | ✅ «Conoces a N» en bandeja, revisión rápida y ficha | ❌ | ✅ `linkedin-join` (script) |
 | Mensaje a un recruiter o compañero (≤ 300 caracteres) | ✅ | ❌ | ✅ |
 | Correo de candidatura | ✅ | ❌ | ✅ |
 | Dosier de empresa con fuentes | ✅ | ✅ dentro de `/apply` | ✅ `deep` |
@@ -228,7 +228,7 @@ tres proyectos han llegado a lo mismo: `GEMINI.md` vacío o de paso, y Antigravi
 
 - **Se instala como un programa**: un comando sin nada previo, la suma SHA-256 comprobada, un icono
   en el escritorio y la app abierta en el navegador. Probado en un Windows 11 recién instalado.
-- **Sirve sin agente** para lo de cada día: bandeja, «Por revisar», fuentes, alertas, kanban, calendario,
+- **Sirve sin agente** para lo de cada día: bandeja, revisión rápida, fuentes, alertas, kanban, calendario,
   embudo, perfil y cambios de plantilla. El agente solo entra para razonar.
 - Una **UI web completa** y bilingüe, que no es una vista sobre ficheros sino la app misma.
 - **MCP + CLI con paridad comprobada por test**: un agente sin MCP hace exactamente lo mismo.
@@ -262,7 +262,7 @@ ya no son funciones sino **que la gente lo conozca y lo pruebe**: es justo lo qu
 | 6 | **Lista de empresas objetivo de ejemplo**, con su ATS ya resuelto | career-ops | Arrancar con fuentes sin buscar a mano | Bajo | Sin fecha |
 | 7 | **Más señales de oferta dudosa** (tasas al candidato, prácticas sin pagar, identidad del recruiter) y que cuenten en el score | career-ops | Hoy se avisan pero no pesan | Bajo | Sin fecha |
 | 8 | **Fijar secciones del CV** que el agente no puede tocar | career-ops | Útil para un resumen o una sección que quieres siempre igual | Bajo | Sin fecha |
-| 9 | **Leer el `.ics` de una invitación** de entrevista y crear el hito | career-ops | Menos tecleo; hoy el hito se crea a mano o por la respuesta clasificada | Bajo | Sin fecha |
+| 9 | **Leer el `.ics` de una invitación** de entrevista y crear el hito | career-ops | Menos tecleo; hoy el hito se crea a mano | Bajo | Sin fecha |
 | 10 | Autorización de trabajo y visado como filtro duro, y calibración por región | career-ops | Solo si se busca fuera de la UE | Bajo | Sin fecha |
 | 11 | README en más idiomas | career-ops | Llegar a más gente; la UI ya está preparada para más idiomas | Bajo por idioma | Sin fecha |
 | 12 | Probar macOS y Linux desde la release real | — | Hoy solo la CI y los tests del instalador | Bajo (con un equipo) | 28.1 |

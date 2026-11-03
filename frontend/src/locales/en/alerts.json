@@ -5,7 +5,7 @@
   "discard": "Discard",
   "closeNotice": "Close notice",
   "loading": "Loading alerts",
-  "title": "Alerts",
+  "title": "To complete",
   "summary_one": "{{count}} summary job from your email alerts. Open them on their job board and send them with the “Send to CandidatAI” button to complete them, or discard them.",
   "summary_other": "{{count}} summary jobs from your email alerts. Open them on their job board and send them with the “Send to CandidatAI” button to complete them, or discard them.",
   "reading": "Reading email…",
@@ -23,9 +23,16 @@
   "saveFailed": "Couldn't save: {{error}}",
   "empty": {
     "title": "No pending alerts",
-    "body": "Jobs from your LinkedIn, InfoJobs and other job board alerts show up here. Add the mailbox where they arrive (Gmail, Outlook, Yahoo, iCloud…) or a folder of saved emails (.eml)."
+    "body": "Jobs from your LinkedIn, Indeed and other portal alerts that arrive as a summary show up here. The mailboxes they come from are set up in “Where to search”."
   },
   "passing": "Match your preferences",
   "failing": "Don’t match your filters",
-  "failingCount": "Don’t match your filters ({{count}})"
+  "failingCount": "Don’t match your filters ({{count}})",
+  "email": {
+    "title": "Email alerts",
+    "intro": "The mailboxes where your job alerts from LinkedIn, Indeed and other portals arrive. The app reads them read-only and their jobs go into the Inbox.",
+    "emptyTitle": "No mailboxes yet",
+    "emptyBody": "Add the mailbox where they arrive (Gmail, Outlook, Yahoo, iCloud…) or a folder with saved emails (.eml).",
+    "goToComplete": "Jobs that arrive as a summary wait for you in"
+  }
 }

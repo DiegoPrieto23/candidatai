@@ -41,7 +41,6 @@ describe('Barra lateral (fase 23.3)', () => {
   const routes = () => ({
     'GET /status': status(0, 3, 2),
     'GET /jobs': emptyPage,
-    'GET /replies': { replies: [], counts: { proposed: 1, new: 0, accepted: 0, ignored: 0 } },
   })
 
   beforeEach(() => {
@@ -52,7 +51,7 @@ describe('Barra lateral (fase 23.3)', () => {
     mockApi(routes())
     renderApp('/bandeja')
     const nav = screen.getByRole('navigation', { name: 'Navegación principal' })
-    for (const group of ['Búsqueda', 'Procesos', 'Análisis', 'Configurar']) {
+    for (const group of ['Búsqueda', 'Procesos', 'Ajustes']) {
       expect(within(nav).getByRole('list', { name: group })).toBeInTheDocument()
     }
     const names = within(nav)
@@ -60,23 +59,50 @@ describe('Barra lateral (fase 23.3)', () => {
       .map((link) => link.textContent?.replace(/\d.*$/, '').trim())
     expect(names).toEqual([
       'Inicio',
-      'Bandeja de ofertas',
-      'Por revisar',
-      'Alertas',
-      'Procesos',
-      'Calendario',
-      'Respuestas',
-      'Embudo',
-      'Skills',
-      'Dónde buscar',
-      'Plantillas',
       'Mi perfil',
+      'Bandeja de ofertas',
+      'Dónde buscar',
+      'Procesos',
+      'Embudo',
       'Agente',
     ])
-    expect(await within(nav).findByRole('link', { name: 'Por revisar (3 por revisar)' })).toBeInTheDocument()
-    expect(within(nav).getByRole('link', { name: 'Alertas (2 por completar)' })).toBeInTheDocument()
-    expect(await within(nav).findByRole('link', { name: 'Respuestas (1 por revisar)' })).toBeInTheDocument()
-    expect(within(nav).getByRole('link', { name: 'Bandeja de ofertas' })).toHaveAttribute('aria-current', 'page')
+    expect(await within(nav).findByRole('link', { name: 'Bandeja de ofertas (3 por revisar)' })).toHaveAttribute('aria-current', 'page')
+  })
+
+  it('«Mi perfil» avisa de que falta el perfil, y «Cómo funciona» queda abajo, fuera de la lista', async () => {
+    mockApi({
+      ...routes(),
+      'GET /profile/editable': { exists: false, file_hash: null, profile: null, issues: [], profile_version_id: null, undo_available: 0 },
+    })
+    renderApp('/bandeja')
+    const nav = screen.getByRole('navigation', { name: 'Navegación principal' })
+    expect(await within(nav).findByRole('link', { name: 'Mi perfil (aún sin crear)' })).toHaveAttribute('href', '/perfil')
+    expect(within(nav).queryByRole('link', { name: 'Cómo funciona' })).not.toBeInTheDocument()
+    const help = within(screen.getByRole('complementary', { name: 'Barra lateral' })).getByRole('link', { name: 'Cómo funciona' })
+    expect(help).toHaveAttribute('href', '/como-funciona')
+  })
+
+  it.each([
+    ['/por-revisar', /^Revisión rápida/],
+    ['/triaje', /^Revisión rápida/],
+    ['/alertas', /^Por completar/],
+    ['/calendario?view=agenda', /^Calendario/],
+    ['/respuestas', /^Tablero/],
+    ['/skills', /^Skills que te faltan/],
+    ['/plantillas', /^Plantillas de CV/],
+  ])('la ruta antigua %s abre su pestaña nueva', async (from, tab) => {
+    mockApi(routes())
+    renderApp(from)
+    expect(await screen.findByRole('link', { name: tab, current: 'page' })).toBeInTheDocument()
+  })
+
+  it('cada sección enseña sus pestañas: la Bandeja, con lo que te espera en cada una', async () => {
+    mockApi(routes())
+    renderApp('/bandeja')
+    const inbox = await screen.findByRole('navigation', { name: 'Vistas de la bandeja' })
+    expect(await within(inbox).findByRole('link', { name: 'Revisión rápida (3)' })).toHaveAttribute('href', '/bandeja/revision')
+    expect(within(inbox).getByRole('link', { name: 'Por completar (2)' })).toHaveAttribute('href', '/bandeja/por-completar')
+    expect(within(inbox).getByRole('link', { name: 'Ofertas' })).toHaveAttribute('aria-current', 'page')
   })
 
   it('se pliega a solo iconos y lo recuerda', async () => {
@@ -121,6 +147,7 @@ describe('Barra lateral (fase 23.3)', () => {
     expect(within(tabs).getAllByRole('link').map((link) => link.textContent)).toEqual([
       'Portales de empleo',
       'Empresas objetivo',
+      'Alertas por correo',
       'Botón del navegador',
     ])
   })

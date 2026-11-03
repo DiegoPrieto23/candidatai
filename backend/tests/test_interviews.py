@@ -16,7 +16,7 @@ from app.schemas.interviews import InterviewPlanInput
 from app.services import events, interviews, process
 from app.services.interviews import InterviewNotAllowedError, InterviewNotesInput
 from app.services.process import MilestoneNotFoundError
-from tests.replies_support import APPLIED, NOW, add_applied_job
+from tests.applied_support import APPLIED, NOW, add_applied_job
 
 TODAY = date(2026, 10, 11)  # NOW en Europe/Madrid
 NOTES = InterviewNotesInput(notes="Preguntaron por dbt.", next_steps="Prueba técnica.")

@@ -2,21 +2,16 @@ import { useEffect, useState, type ComponentType } from 'react'
 import { Link, useLocation } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import {
-  CalendarDotsIcon,
-  ChatsCircleIcon,
   DesktopIcon,
-  FileTextIcon,
   FunnelIcon,
   GlobeIcon,
-  GraduationCapIcon,
   HouseIcon,
   KanbanIcon,
-  LightningIcon,
-  ListChecksIcon,
   ListIcon,
   MoonIcon,
   PlusIcon,
   PlugsConnectedIcon,
+  QuestionIcon,
   RobotIcon,
   SidebarSimpleIcon,
   SunIcon,
@@ -27,7 +22,7 @@ import {
 } from '@phosphor-icons/react'
 import { Dialog as DialogPrimitive } from 'radix-ui'
 import type { Stage } from '@/api/client'
-import { useAgentRuns, useFollowups, useReplies, useStatus } from '@/api/queries'
+import { useAgentRuns, useEditableProfile, useFollowups, useStatus } from '@/api/queries'
 import { LanguageFlag } from '@/components/LanguageFlag'
 import { Button } from '@/components/ui/button'
 import {
@@ -40,6 +35,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useLanguage } from '@/lib/i18n'
 import { preloadRoute } from '@/lib/pages'
+import { useProfileUnsaved } from '@/lib/profileUnsaved'
 import { useTheme, type ThemeChoice } from '@/lib/theme'
 import { languageName } from '@/locales'
 import { cn } from '@/lib/utils'
@@ -47,8 +43,10 @@ import { cn } from '@/lib/utils'
 // --- Recuentos --------------------------------------------------------------------------------
 
 /** Lo que espera algo de ti en cada página. `strong`: te toca a ti; si no, es informativo. */
-type CountLabel = 'toReview' | 'toComplete' | 'agent' | 'followUp'
+type CountLabel = 'toReview' | 'agent' | 'followUp'
 type Count = { value: number; strong: boolean; label: CountLabel | null }
+/** Lo que falta en una entrada sin cifra que dar: se ve como un punto y lo dice al lector de pantalla. */
+type Signal = 'noProfile' | 'unsaved'
 
 function useStageCount(stage: Stage, label: CountLabel, strong = true): Count {
   const { data } = useStatus()
@@ -61,11 +59,6 @@ function useFollowupsCount(): Count {
   return { value: data?.followups.length ?? 0, strong: true, label: 'followUp' }
 }
 
-function useRepliesCount(): Count {
-  const { data } = useReplies()
-  return { value: data?.counts.proposed ?? 0, strong: true, label: 'toReview' }
-}
-
 /** Ejecuciones en curso (fase 19), las que esperan una respuesta tuya y los encargos pendientes. */
 function useAgentCount(): Count {
   const runs = useAgentRuns()
@@ -74,6 +67,14 @@ function useAgentCount(): Count {
   const waiting = runs.data?.runs.filter((r) => r.status === 'needs_user').length ?? 0
   const requests = data?.agent_requests ?? 0
   return { value: active + waiting + requests, strong: active + waiting > 0, label: 'agent' }
+}
+
+/** Sin perfil no hay encaje ni CV, y unos cambios sin guardar se pierden al salir. */
+function useProfileSignal(): Signal | null {
+  const unsaved = useProfileUnsaved()
+  const { data } = useEditableProfile()
+  if (data && !data.exists) return 'noProfile'
+  return unsaved > 0 ? 'unsaved' : null
 }
 
 function CountBadge({ count }: { count: Count }) {
@@ -95,17 +96,11 @@ function CountBadge({ count }: { count: Count }) {
 
 type EntryKey =
   | 'home'
-  | 'inbox'
-  | 'triage'
-  | 'alerts'
-  | 'processes'
-  | 'calendar'
-  | 'replies'
-  | 'funnel'
-  | 'skills'
-  | 'sources'
-  | 'templates'
   | 'profile'
+  | 'inbox'
+  | 'sources'
+  | 'processes'
+  | 'funnel'
   | 'agent'
 
 type Entry = {
@@ -114,56 +109,50 @@ type Entry = {
   icon: ComponentType<IconProps>
   end?: boolean
   useCount?: () => Count
+  useSignal?: () => Signal | null
   /** Otras rutas en las que esta entrada cuenta como la activa (la ficha de una oferta…). */
   alsoActive?: string[]
 }
 
 const usePendingTriage = () => useStageCount('pending_triage', 'toReview')
-const usePendingDetail = () => useStageCount('pending_detail', 'toComplete', false)
 
-type GroupKey = 'search' | 'processes' | 'analysis' | 'configure'
+type GroupKey = 'search' | 'processes' | 'settings'
 
 const NAV_GROUPS: { title: GroupKey | null; entries: Entry[] }[] = [
-  { title: null, entries: [{ to: '/', label: 'home', icon: HouseIcon, end: true }] },
+  {
+    title: null,
+    entries: [
+      { to: '/', label: 'home', icon: HouseIcon, end: true },
+      { to: '/perfil', label: 'profile', icon: UserCircleIcon, useSignal: useProfileSignal },
+    ],
+  },
   {
     title: 'search',
     entries: [
-      { to: '/bandeja', label: 'inbox', icon: TrayIcon, alsoActive: ['/jobs/'] },
-      { to: '/por-revisar', label: 'triage', icon: ListChecksIcon, useCount: usePendingTriage },
-      { to: '/alertas', label: 'alerts', icon: LightningIcon, useCount: usePendingDetail },
+      { to: '/bandeja', label: 'inbox', icon: TrayIcon, alsoActive: ['/jobs/'], useCount: usePendingTriage },
+      { to: '/fuentes', label: 'sources', icon: PlugsConnectedIcon },
     ],
   },
   {
     title: 'processes',
     entries: [
       { to: '/procesos', label: 'processes', icon: KanbanIcon, useCount: useFollowupsCount },
-      { to: '/calendario', label: 'calendar', icon: CalendarDotsIcon },
-      { to: '/respuestas', label: 'replies', icon: ChatsCircleIcon, useCount: useRepliesCount },
-    ],
-  },
-  {
-    title: 'analysis',
-    entries: [
       { to: '/embudo', label: 'funnel', icon: FunnelIcon },
-      { to: '/skills', label: 'skills', icon: GraduationCapIcon },
     ],
   },
   {
-    title: 'configure',
-    entries: [
-      { to: '/fuentes', label: 'sources', icon: PlugsConnectedIcon },
-      { to: '/plantillas', label: 'templates', icon: FileTextIcon },
-      { to: '/perfil', label: 'profile', icon: UserCircleIcon },
-      { to: '/agente', label: 'agent', icon: RobotIcon, useCount: useAgentCount },
-    ],
+    title: 'settings',
+    entries: [{ to: '/agente', label: 'agent', icon: RobotIcon, useCount: useAgentCount }],
   },
 ]
 
 const noCount = (): Count => ({ value: 0, strong: false, label: null })
+const noSignal = (): Signal | null => null
 
 function NavEntry({ entry, collapsed, onNavigate }: { entry: Entry; collapsed: boolean; onNavigate?: () => void }) {
   const { t } = useTranslation('nav')
   const count = (entry.useCount ?? noCount)()
+  const signal = (entry.useSignal ?? noSignal)()
   const label = t(`entries.${entry.label}`)
   const Icon = entry.icon
   const { pathname } = useLocation()
@@ -181,7 +170,9 @@ function NavEntry({ entry, collapsed, onNavigate }: { entry: Entry; collapsed: b
       aria-label={
         count.value && count.label
           ? t('entryWithCount', { label, count: count.value, what: t(`counts.${count.label}`) })
-          : label
+          : signal
+            ? t('entryWithSignal', { label, what: t(`signals.${signal}`) })
+            : label
       }
       aria-current={isActive ? 'page' : undefined}
       className={cn(
@@ -195,12 +186,12 @@ function NavEntry({ entry, collapsed, onNavigate }: { entry: Entry; collapsed: b
     >
       <Icon className="size-[18px] shrink-0" weight={isActive ? 'fill' : 'regular'} aria-hidden />
           {collapsed ? (
-            count.value > 0 && (
+            (count.value > 0 || signal) && (
               <span
                 aria-hidden
                 className={cn(
                   'absolute top-1.5 right-1.5 size-2 rounded-full',
-                  count.strong ? 'bg-primary' : 'bg-foreground/40',
+                  count.strong || signal ? 'bg-primary' : 'bg-foreground/40',
                 )}
               />
             )
@@ -208,6 +199,7 @@ function NavEntry({ entry, collapsed, onNavigate }: { entry: Entry; collapsed: b
             <>
               <span className="truncate">{label}</span>
               <CountBadge count={count} />
+              {signal && <span aria-hidden className="ml-auto size-2 rounded-full bg-primary" />}
             </>
           )}
     </Link>
@@ -219,6 +211,7 @@ function NavEntry({ entry, collapsed, onNavigate }: { entry: Entry; collapsed: b
       <TooltipContent side="right">
         {label}
         {count.value > 0 && ` · ${count.value}`}
+        {signal && ` · ${t(`signals.${signal}`)}`}
       </TooltipContent>
     </Tooltip>
   )
@@ -411,6 +404,7 @@ export function Sidebar() {
         <NavLinks collapsed={collapsed} />
       </div>
       <div className={cn('grid shrink-0 gap-0.5 border-t py-3', collapsed ? 'justify-items-center' : '')}>
+        <HelpLink collapsed={collapsed} />
         <LanguageMenu withLabel={!collapsed} />
         <ThemeToggle withLabel={!collapsed} />
         <SidebarButton collapsed={collapsed} onClick={toggle} />
@@ -447,6 +441,40 @@ function NewJobButton({ collapsed }: { collapsed: boolean }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>{button}</TooltipTrigger>
+      <TooltipContent side="right">{label}</TooltipContent>
+    </Tooltip>
+  )
+}
+
+/** «Cómo funciona»: ayuda, no un paso más de tu búsqueda, así que va abajo con los ajustes de la barra. */
+function HelpLink({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?: () => void }) {
+  const { t } = useTranslation('nav')
+  const label = t('entries.howItWorks')
+  const here = useLocation().pathname === '/como-funciona'
+  const link = (
+    <Button
+      asChild
+      variant="ghost"
+      size={collapsed ? 'icon' : 'sm'}
+      className={cn(!collapsed && 'w-full justify-start gap-2.5 px-2.5 font-normal text-muted-foreground', here && 'text-foreground')}
+    >
+      <Link
+        to="/como-funciona"
+        onClick={onNavigate}
+        aria-label={collapsed ? label : undefined}
+        aria-current={here ? 'page' : undefined}
+        onMouseEnter={() => preloadRoute('/como-funciona')}
+        onFocus={() => preloadRoute('/como-funciona')}
+      >
+        <QuestionIcon className="size-[18px]" weight={here ? 'fill' : 'regular'} />
+        {!collapsed && label}
+      </Link>
+    </Button>
+  )
+  if (!collapsed) return link
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{link}</TooltipTrigger>
       <TooltipContent side="right">{label}</TooltipContent>
     </Tooltip>
   )
@@ -532,6 +560,7 @@ export function MobileNav() {
             <NavLinks onNavigate={() => setOpen(false)} />
           </div>
           <div className="grid gap-0.5 border-t py-3">
+            <HelpLink collapsed={false} onNavigate={() => setOpen(false)} />
             <LanguageMenu withLabel />
             <ThemeToggle withLabel />
           </div>

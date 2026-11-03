@@ -2970,6 +2970,590 @@
         }
       }
     },
+    "/jobs/{job_id}/cv/history": {
+      "get": {
+        "tags": [
+          "cv"
+        ],
+        "summary": "Get Cv History",
+        "description": "Las versiones del CV, con qué cambió cada una, y la última corrección pedida.",
+        "operationId": "get_cv_history",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CvHistory"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/jobs/{job_id}/cv/corrections": {
+      "post": {
+        "tags": [
+          "cv"
+        ],
+        "summary": "Request Cv Correction",
+        "description": "Guarda qué corregir para que lo lea tu agente; sustituye a la que siga pendiente.",
+        "operationId": "request_cv_correction",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CorrectionInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CorrectionView"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/cv-corrections/{correction_id}/cancel": {
+      "post": {
+        "tags": [
+          "cv"
+        ],
+        "summary": "Cancel Cv Correction",
+        "operationId": "cancel_cv_correction",
+        "parameters": [
+          {
+            "name": "correction_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Correction Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CorrectionView"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/jobs/{job_id}/cv/edit": {
+      "post": {
+        "tags": [
+          "cv"
+        ],
+        "summary": "Edit Cv",
+        "description": "Versión nueva con los textos que has cambiado, sin agente y con el mismo estilo.",
+        "operationId": "edit_cv",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CvEditInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EditResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/documents/{document_id}/restore": {
+      "post": {
+        "tags": [
+          "cv"
+        ],
+        "summary": "Restore Cv Version",
+        "description": "Vuelve a una versión del CV. No borra ninguna.",
+        "operationId": "restore_cv_version",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Document Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobCv"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
     "/documents/{document_id}/renders": {
       "post": {
         "tags": [
@@ -3237,6 +3821,234 @@
             "description": "Successful Response",
             "content": {
               "application/pdf": {}
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/renders/{render_id}/cover.png": {
+      "get": {
+        "tags": [
+          "cv"
+        ],
+        "summary": "Get Render Cover",
+        "description": "La portada del PDF de un render, en pequeño (la miniatura de la ficha).",
+        "operationId": "get_render_cover",
+        "parameters": [
+          {
+            "name": "render_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Render Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "image/png": {}
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/renders/{render_id}/pages/{page}.png": {
+      "get": {
+        "tags": [
+          "cv"
+        ],
+        "summary": "Get Render Page",
+        "description": "Una página del PDF de un render, como imagen (la vista previa de la ficha).",
+        "operationId": "get_render_page",
+        "parameters": [
+          {
+            "name": "render_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Render Id"
+            }
+          },
+          {
+            "name": "page",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "title": "Page"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "image/png": {}
             }
           },
           "401": {
@@ -7625,6 +8437,468 @@
             "description": "Successful Response",
             "content": {
               "application/pdf": {}
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/milestones/{milestone_id}/guide/correction": {
+      "post": {
+        "tags": [
+          "process"
+        ],
+        "summary": "Request Guide Correction",
+        "description": "Anota qué cambiar de una guía ya hecha, para que lo aplique tu agente.",
+        "operationId": "request_guide_correction",
+        "parameters": [
+          {
+            "name": "milestone_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Milestone Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GuideCorrectionInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MilestoneOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/milestones/{milestone_id}/guide/correction/cancel": {
+      "post": {
+        "tags": [
+          "process"
+        ],
+        "summary": "Cancel Guide Correction",
+        "description": "Retira los cambios pedidos a la guía que aún no se han aplicado.",
+        "operationId": "cancel_guide_correction",
+        "parameters": [
+          {
+            "name": "milestone_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Milestone Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MilestoneOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/milestones/{milestone_id}/guide/changes": {
+      "get": {
+        "tags": [
+          "process"
+        ],
+        "summary": "Get Guide Changes",
+        "description": "Qué cambió entre las dos versiones conservadas de la guía.",
+        "operationId": "get_guide_changes",
+        "parameters": [
+          {
+            "name": "milestone_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Milestone Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuideChanges"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/milestones/{milestone_id}/guide/restore": {
+      "post": {
+        "tags": [
+          "process"
+        ],
+        "summary": "Restore Guide",
+        "description": "Vuelve a la otra versión conservada de la guía y rehace su PDF.",
+        "operationId": "restore_guide",
+        "parameters": [
+          {
+            "name": "milestone_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Milestone Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MilestoneOut"
+                }
+              }
             }
           },
           "401": {
@@ -15421,755 +16695,6 @@
         }
       }
     },
-    "/replies": {
-      "get": {
-        "tags": [
-          "replies"
-        ],
-        "summary": "Get Reply Inbox",
-        "description": "Respuestas guardadas, la más reciente primero, con sus ofertas y la propuesta.",
-        "operationId": "get_reply_inbox",
-        "parameters": [
-          {
-            "name": "status",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "enum": [
-                    "new",
-                    "proposed",
-                    "accepted",
-                    "ignored"
-                  ],
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Status"
-            }
-          },
-          {
-            "name": "job_id",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "integer",
-                  "minimum": 1
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Job Id"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "maximum": 500,
-              "minimum": 1,
-              "default": 100,
-              "title": "Limit"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ReplyInbox"
-                }
-              }
-            }
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "409": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Conflict"
-          },
-          "413": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Request Entity Too Large"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Unprocessable Entity"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          },
-          "503": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Service Unavailable"
-          }
-        }
-      }
-    },
-    "/replies/poll": {
-      "post": {
-        "tags": [
-          "replies"
-        ],
-        "summary": "Poll Replies",
-        "description": "Lee ahora el correo (IMAP en solo lectura y `data/inbox/respuestas/`).",
-        "operationId": "poll_replies",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/EmptyBody"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RepliesPollResult"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "413": {
-            "description": "Request Entity Too Large",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "Service Unavailable",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/replies/{reply_id}": {
-      "get": {
-        "tags": [
-          "replies"
-        ],
-        "summary": "Get Reply View",
-        "description": "Una respuesta con el texto visible del correo (para mostrarlo como texto).",
-        "operationId": "get_reply_view",
-        "parameters": [
-          {
-            "name": "reply_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "title": "Reply Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ReplyView"
-                }
-              }
-            }
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "409": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Conflict"
-          },
-          "413": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Request Entity Too Large"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Unprocessable Entity"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          },
-          "503": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Service Unavailable"
-          }
-        }
-      }
-    },
-    "/replies/{reply_id}/accept": {
-      "post": {
-        "tags": [
-          "replies"
-        ],
-        "summary": "Accept Reply",
-        "description": "Registra el evento (y el hito) de la propuesta, tal cual o cambiada por el usuario.",
-        "operationId": "accept_reply",
-        "parameters": [
-          {
-            "name": "reply_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "title": "Reply Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ReplyDecision"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ReplyDecisionResult"
-                }
-              }
-            }
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "409": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Conflict"
-          },
-          "413": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Request Entity Too Large"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Unprocessable Entity"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          },
-          "503": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Service Unavailable"
-          }
-        }
-      }
-    },
-    "/replies/{reply_id}/ignore": {
-      "post": {
-        "tags": [
-          "replies"
-        ],
-        "summary": "Ignore Reply",
-        "description": "Deja la respuesta sin registrar nada. Cuerpo `{}` (JSON: solo puede pedirlo la UI).",
-        "operationId": "ignore_reply",
-        "parameters": [
-          {
-            "name": "reply_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "title": "Reply Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/EmptyBody"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ReplyDecisionResult"
-                }
-              }
-            }
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "409": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Conflict"
-          },
-          "413": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Request Entity Too Large"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Unprocessable Entity"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          },
-          "503": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Service Unavailable"
-          }
-        }
-      }
-    },
-    "/replies/{reply_id}/unignore": {
-      "post": {
-        "tags": [
-          "replies"
-        ],
-        "summary": "Unignore Reply",
-        "description": "Deshace «Ignorar»: la respuesta vuelve a pendiente. Cuerpo `{}`, como `ignore`.",
-        "operationId": "unignore_reply",
-        "parameters": [
-          {
-            "name": "reply_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "title": "Reply Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/EmptyBody"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ReplyDecisionResult"
-                }
-              }
-            }
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "409": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Conflict"
-          },
-          "413": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Request Entity Too Large"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Unprocessable Entity"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          },
-          "503": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Service Unavailable"
-          }
-        }
-      }
-    },
     "/jobs/{job_id}/drafts": {
       "get": {
         "tags": [
@@ -17712,14 +18237,16 @@
               "assess-fit",
               "assess-fit-job",
               "generate-cv",
+              "correct-cv",
+              "verify-cv",
               "generate-cover-letter",
               "add-skills",
               "training-plan",
-              "review-replies",
               "draft-follow-ups",
               "draft-follow-up",
               "broaden-search",
               "prepare-interview",
+              "correct-interview-guide",
               "mock-interview",
               "debrief-interview",
               "offer-questions",
@@ -18471,14 +18998,16 @@
               "assess-fit",
               "assess-fit-job",
               "generate-cv",
+              "correct-cv",
+              "verify-cv",
               "generate-cover-letter",
               "add-skills",
               "training-plan",
-              "review-replies",
               "draft-follow-ups",
               "draft-follow-up",
               "broaden-search",
               "prepare-interview",
+              "correct-interview-guide",
               "mock-interview",
               "debrief-interview",
               "offer-questions",
@@ -18626,14 +19155,16 @@
               "assess-fit",
               "assess-fit-job",
               "generate-cv",
+              "correct-cv",
+              "verify-cv",
               "generate-cover-letter",
               "add-skills",
               "training-plan",
-              "review-replies",
               "draft-follow-ups",
               "draft-follow-up",
               "broaden-search",
               "prepare-interview",
+              "correct-interview-guide",
               "mock-interview",
               "debrief-interview",
               "offer-questions",
@@ -20966,6 +21497,87 @@
         "title": "ContextStatus",
         "description": "Estado para la UI («Mi perfil»): sin el texto de los ficheros."
       },
+      "CorrectionInput": {
+        "properties": {
+          "instruction": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Instruction"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "instruction"
+        ],
+        "title": "CorrectionInput"
+      },
+      "CorrectionView": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "job_id": {
+            "type": "integer",
+            "title": "Job Id"
+          },
+          "instruction": {
+            "type": "string",
+            "title": "Instruction"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "applied",
+              "declined",
+              "cancelled"
+            ],
+            "title": "Status"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "closed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "job_id",
+          "instruction",
+          "status",
+          "note",
+          "created_at",
+          "closed_at"
+        ],
+        "title": "CorrectionView"
+      },
       "CostGroup": {
         "properties": {
           "runs": {
@@ -21791,6 +22403,25 @@
         "title": "CvContent",
         "description": "Contenido de un CV, independiente de la plantilla (`docs/AGENT_INTERFACE.md`)."
       },
+      "CvEditInput": {
+        "properties": {
+          "base_document_id": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Base Document Id"
+          },
+          "content": {
+            "$ref": "#/components/schemas/CvContent"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "base_document_id",
+          "content"
+        ],
+        "title": "CvEditInput"
+      },
       "CvExperience": {
         "properties": {
           "experience_id": {
@@ -21841,6 +22472,38 @@
         ],
         "title": "CvExtraSection",
         "description": "Items de una sección extra del perfil; salen tal cual, sin reescribir."
+      },
+      "CvHistory": {
+        "properties": {
+          "job_id": {
+            "type": "integer",
+            "title": "Job Id"
+          },
+          "versions": {
+            "items": {
+              "$ref": "#/components/schemas/CvVersion"
+            },
+            "type": "array",
+            "title": "Versions"
+          },
+          "correction": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CorrectionView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "versions",
+          "correction"
+        ],
+        "title": "CvHistory"
       },
       "CvLanguageItem": {
         "properties": {
@@ -22025,6 +22688,95 @@
         ],
         "title": "CvVerification"
       },
+      "CvVersion": {
+        "properties": {
+          "document_id": {
+            "type": "integer",
+            "title": "Document Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "current": {
+            "type": "boolean",
+            "title": "Current"
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "generated",
+              "correction",
+              "edit"
+            ],
+            "title": "Origin"
+          },
+          "instruction": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instruction"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "verified": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verified"
+          },
+          "render": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RenderResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/SectionChange"
+            },
+            "type": "array",
+            "title": "Changes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "document_id",
+          "created_at",
+          "current",
+          "origin",
+          "instruction",
+          "note",
+          "verified",
+          "render",
+          "changes"
+        ],
+        "title": "CvVersion"
+      },
       "CvView": {
         "properties": {
           "job_id": {
@@ -22053,6 +22805,14 @@
             },
             "type": "object",
             "title": "Evidence"
+          },
+          "labels": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Labels",
+            "default": {}
           },
           "verification": {
             "anyOf": [
@@ -22293,6 +23053,68 @@
         ],
         "title": "EditPlatformBody"
       },
+      "EditResult": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok",
+            "default": true
+          },
+          "job_id": {
+            "type": "integer",
+            "title": "Job Id"
+          },
+          "document_id": {
+            "type": "integer",
+            "title": "Document Id"
+          },
+          "render": {
+            "$ref": "#/components/schemas/RenderResult"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/EditWarning"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "document_id",
+          "render",
+          "warnings"
+        ],
+        "title": "EditResult"
+      },
+      "EditWarning": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "skill",
+              "number"
+            ],
+            "title": "Code"
+          },
+          "field": {
+            "type": "string",
+            "title": "Field"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "field",
+          "value"
+        ],
+        "title": "EditWarning"
+      },
       "EditableProfile": {
         "properties": {
           "exists": {
@@ -22381,14 +23203,16 @@
               "assess-fit",
               "assess-fit-job",
               "generate-cv",
+              "correct-cv",
+              "verify-cv",
               "generate-cover-letter",
               "add-skills",
               "training-plan",
-              "review-replies",
               "draft-follow-ups",
               "draft-follow-up",
               "broaden-search",
               "prepare-interview",
+              "correct-interview-guide",
               "mock-interview",
               "debrief-interview",
               "offer-questions",
@@ -23468,6 +24292,118 @@
         ],
         "title": "GapExample"
       },
+      "GuideChange": {
+        "properties": {
+          "part": {
+            "type": "string",
+            "enum": [
+              "cover",
+              "section",
+              "sources"
+            ],
+            "title": "Part"
+          },
+          "section": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Section"
+          },
+          "removed": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Removed",
+            "default": []
+          },
+          "added": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Added",
+            "default": []
+          },
+          "reordered": {
+            "type": "boolean",
+            "title": "Reordered",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "part"
+        ],
+        "title": "GuideChange"
+      },
+      "GuideChanges": {
+        "properties": {
+          "milestone_id": {
+            "type": "integer",
+            "title": "Milestone Id"
+          },
+          "older_saved_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Older Saved At"
+          },
+          "newer_saved_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Newer Saved At"
+          },
+          "instruction": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instruction"
+          },
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/GuideChange"
+            },
+            "type": "array",
+            "title": "Changes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "milestone_id",
+          "older_saved_at",
+          "newer_saved_at",
+          "instruction",
+          "changes"
+        ],
+        "title": "GuideChanges",
+        "description": "Qué cambió entre la versión antigua y la nueva de la guía, en ese orden."
+      },
+      "GuideCorrectionInput": {
+        "properties": {
+          "instruction": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Instruction"
+          }
+        },
+        "type": "object",
+        "required": [
+          "instruction"
+        ],
+        "title": "GuideCorrectionInput",
+        "description": "Qué cambiar de una guía ya generada, en palabras del usuario."
+      },
       "GuideInfo": {
         "properties": {
           "file": {
@@ -23501,6 +24437,34 @@
               }
             ],
             "title": "Agent Name"
+          },
+          "correction": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Correction"
+          },
+          "other_saved_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Other Saved At"
+          },
+          "restored": {
+            "type": "boolean",
+            "title": "Restored",
+            "default": false
           }
         },
         "type": "object",
@@ -24866,14 +25830,16 @@
               "assess-fit",
               "assess-fit-job",
               "generate-cv",
+              "correct-cv",
+              "verify-cv",
               "generate-cover-letter",
               "add-skills",
               "training-plan",
-              "review-replies",
               "draft-follow-ups",
               "draft-follow-up",
               "broaden-search",
               "prepare-interview",
+              "correct-interview-guide",
               "mock-interview",
               "debrief-interview",
               "offer-questions",
@@ -26133,22 +27099,10 @@
             "title": "Folder",
             "default": "INBOX"
           },
-          "replies_folder": {
-            "type": "string",
-            "maxLength": 200,
-            "minLength": 1,
-            "title": "Replies Folder",
-            "default": "INBOX"
-          },
           "enabled": {
             "type": "boolean",
             "title": "Enabled",
             "default": true
-          },
-          "read_replies": {
-            "type": "boolean",
-            "title": "Read Replies",
-            "default": false
           },
           "allow_private": {
             "type": "boolean",
@@ -26288,19 +27242,6 @@
             ],
             "title": "Folder"
           },
-          "replies_folder": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 200,
-                "minLength": 1
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Replies Folder"
-          },
           "enabled": {
             "anyOf": [
               {
@@ -26311,17 +27252,6 @@
               }
             ],
             "title": "Enabled"
-          },
-          "read_replies": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Read Replies"
           },
           "allow_private": {
             "anyOf": [
@@ -26403,17 +27333,9 @@
             "type": "string",
             "title": "Folder"
           },
-          "replies_folder": {
-            "type": "string",
-            "title": "Replies Folder"
-          },
           "enabled": {
             "type": "boolean",
             "title": "Enabled"
-          },
-          "read_replies": {
-            "type": "boolean",
-            "title": "Read Replies"
           },
           "allow_private": {
             "type": "boolean",
@@ -26485,9 +27407,7 @@
           "security",
           "user",
           "folder",
-          "replies_folder",
           "enabled",
-          "read_replies",
           "allow_private",
           "from_env",
           "has_password",
@@ -28267,14 +29187,16 @@
                 "assess-fit",
                 "assess-fit-job",
                 "generate-cv",
+                "correct-cv",
+                "verify-cv",
                 "generate-cover-letter",
                 "add-skills",
                 "training-plan",
-                "review-replies",
                 "draft-follow-ups",
                 "draft-follow-up",
                 "broaden-search",
                 "prepare-interview",
+                "correct-interview-guide",
                 "mock-interview",
                 "debrief-interview",
                 "offer-questions",
@@ -29477,683 +30399,6 @@
         ],
         "title": "RenderWarning"
       },
-      "RepliesPollResult": {
-        "properties": {
-          "processes": {
-            "type": "integer",
-            "title": "Processes"
-          },
-          "checked": {
-            "type": "integer",
-            "title": "Checked"
-          },
-          "created": {
-            "type": "integer",
-            "title": "Created"
-          },
-          "reply_ids": {
-            "items": {
-              "type": "integer"
-            },
-            "type": "array",
-            "title": "Reply Ids"
-          },
-          "errors": {
-            "items": {
-              "$ref": "#/components/schemas/Issue"
-            },
-            "type": "array",
-            "title": "Errors"
-          },
-          "message": {
-            "type": "string",
-            "title": "Message"
-          }
-        },
-        "type": "object",
-        "required": [
-          "processes",
-          "checked",
-          "created",
-          "reply_ids",
-          "errors",
-          "message"
-        ],
-        "title": "RepliesPollResult"
-      },
-      "ReplyDecision": {
-        "properties": {
-          "job_id": {
-            "type": "integer",
-            "minimum": 1.0,
-            "title": "Job Id",
-            "description": "Oferta del correo: una de sus candidatas."
-          },
-          "event_type": {
-            "type": "string",
-            "enum": [
-              "reply_received",
-              "interview_scheduled",
-              "test_assigned",
-              "offer_received",
-              "rejected",
-              "none"
-            ],
-            "title": "Event Type"
-          },
-          "occurred_at": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Occurred At",
-            "description": "Cuándo pasó (por defecto, la fecha del correo)."
-          },
-          "milestone": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/ReplyMilestone"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "note": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 2000
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Note"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "job_id",
-          "event_type"
-        ],
-        "title": "ReplyDecision",
-        "description": "Lo que acepta el usuario: la propuesta del agente tal cual o cambiada, o la suya."
-      },
-      "ReplyDecisionResult": {
-        "properties": {
-          "ok": {
-            "type": "boolean",
-            "title": "Ok",
-            "default": true
-          },
-          "reply_id": {
-            "type": "integer",
-            "title": "Reply Id"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "new",
-              "proposed",
-              "accepted",
-              "ignored"
-            ],
-            "title": "Status"
-          },
-          "job_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Job Id"
-          },
-          "event_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Event Id"
-          },
-          "milestone_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Milestone Id"
-          },
-          "stage": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/Stage"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "message": {
-            "type": "string",
-            "title": "Message"
-          }
-        },
-        "type": "object",
-        "required": [
-          "reply_id",
-          "status",
-          "job_id",
-          "event_id",
-          "milestone_id",
-          "stage",
-          "message"
-        ],
-        "title": "ReplyDecisionResult"
-      },
-      "ReplyInbox": {
-        "properties": {
-          "replies": {
-            "items": {
-              "$ref": "#/components/schemas/ReplyInboxItem"
-            },
-            "type": "array",
-            "title": "Replies"
-          },
-          "counts": {
-            "additionalProperties": {
-              "type": "integer"
-            },
-            "type": "object",
-            "title": "Counts"
-          }
-        },
-        "type": "object",
-        "required": [
-          "replies",
-          "counts"
-        ],
-        "title": "ReplyInbox"
-      },
-      "ReplyInboxItem": {
-        "properties": {
-          "reply_id": {
-            "type": "integer",
-            "title": "Reply Id"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "new",
-              "proposed",
-              "accepted",
-              "ignored"
-            ],
-            "title": "Status"
-          },
-          "received_at": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Received At"
-          },
-          "sender": {
-            "type": "string",
-            "title": "Sender"
-          },
-          "sender_name": {
-            "type": "string",
-            "title": "Sender Name"
-          },
-          "subject": {
-            "type": "string",
-            "title": "Subject"
-          },
-          "risk_flags": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Risk Flags"
-          },
-          "candidates": {
-            "items": {
-              "$ref": "#/components/schemas/ReplyJob"
-            },
-            "type": "array",
-            "title": "Candidates"
-          },
-          "job_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Job Id"
-          },
-          "proposal": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/ReplyProposal"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "proposed_by": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Proposed By"
-          },
-          "valid_now": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Valid Now"
-          },
-          "event_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Event Id"
-          },
-          "resolved_at": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Resolved At"
-          }
-        },
-        "type": "object",
-        "required": [
-          "reply_id",
-          "status",
-          "received_at",
-          "sender",
-          "sender_name",
-          "subject",
-          "risk_flags",
-          "candidates",
-          "job_id",
-          "proposal",
-          "proposed_by",
-          "valid_now",
-          "event_id",
-          "resolved_at"
-        ],
-        "title": "ReplyInboxItem",
-        "description": "Una respuesta en la UI: cabeceras, ofertas candidatas y propuesta (sin el cuerpo)."
-      },
-      "ReplyJob": {
-        "properties": {
-          "job_id": {
-            "type": "integer",
-            "title": "Job Id"
-          },
-          "title": {
-            "type": "string",
-            "title": "Title"
-          },
-          "company": {
-            "type": "string",
-            "title": "Company"
-          },
-          "stage": {
-            "$ref": "#/components/schemas/Stage"
-          },
-          "reason": {
-            "type": "string",
-            "enum": [
-              "contact",
-              "domain",
-              "ats",
-              "company_name"
-            ],
-            "title": "Reason"
-          }
-        },
-        "type": "object",
-        "required": [
-          "job_id",
-          "title",
-          "company",
-          "stage",
-          "reason"
-        ],
-        "title": "ReplyJob"
-      },
-      "ReplyMilestone": {
-        "properties": {
-          "title": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 200
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Title",
-            "description": "Por defecto, el tipo."
-          },
-          "starts_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Starts At",
-            "description": "Inicio (ISO 8601 con zona, p. ej. +02:00)."
-          },
-          "ends_at": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Ends At"
-          },
-          "all_day": {
-            "type": "boolean",
-            "title": "All Day",
-            "description": "Todo el día (p. ej. el plazo de una prueba).",
-            "default": false
-          },
-          "location": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 500
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Location",
-            "description": "Lugar o enlace."
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "starts_at"
-        ],
-        "title": "ReplyMilestone",
-        "description": "Hito que propone el correo: entrevista (`interview_scheduled`) o prueba (`test_assigned`)."
-      },
-      "ReplyProposal": {
-        "properties": {
-          "job_id": {
-            "type": "integer",
-            "minimum": 1.0,
-            "title": "Job Id",
-            "description": "Oferta del correo: una de sus `candidates`."
-          },
-          "event_type": {
-            "type": "string",
-            "enum": [
-              "reply_received",
-              "interview_scheduled",
-              "test_assigned",
-              "offer_received",
-              "rejected",
-              "none"
-            ],
-            "title": "Event Type",
-            "description": "Evento a registrar si el usuario acepta; `none` si no hay nada que registrar."
-          },
-          "occurred_at": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Occurred At",
-            "description": "Cuándo pasó (por defecto, la fecha del correo)."
-          },
-          "milestone": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/ReplyMilestone"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Solo con `interview_scheduled` o `test_assigned` y una fecha clara."
-          },
-          "summary": {
-            "type": "string",
-            "maxLength": 500,
-            "minLength": 1,
-            "title": "Summary",
-            "description": "Qué dice el correo, en una o dos frases."
-          },
-          "confidence": {
-            "type": "string",
-            "enum": [
-              "high",
-              "medium",
-              "low"
-            ],
-            "title": "Confidence"
-          },
-          "injection_suspected": {
-            "type": "boolean",
-            "title": "Injection Suspected",
-            "description": "El correo trae instrucciones dirigidas a una IA.",
-            "default": false
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "job_id",
-          "event_type",
-          "summary",
-          "confidence"
-        ],
-        "title": "ReplyProposal"
-      },
-      "ReplyView": {
-        "properties": {
-          "reply_id": {
-            "type": "integer",
-            "title": "Reply Id"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "new",
-              "proposed",
-              "accepted",
-              "ignored"
-            ],
-            "title": "Status"
-          },
-          "received_at": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Received At"
-          },
-          "sender": {
-            "type": "string",
-            "title": "Sender"
-          },
-          "sender_name": {
-            "type": "string",
-            "title": "Sender Name"
-          },
-          "subject": {
-            "type": "string",
-            "title": "Subject"
-          },
-          "risk_flags": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Risk Flags"
-          },
-          "candidates": {
-            "items": {
-              "$ref": "#/components/schemas/ReplyJob"
-            },
-            "type": "array",
-            "title": "Candidates"
-          },
-          "job_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Job Id"
-          },
-          "proposal": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/ReplyProposal"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "proposed_by": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Proposed By"
-          },
-          "valid_now": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Valid Now"
-          },
-          "event_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Event Id"
-          },
-          "resolved_at": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Resolved At"
-          },
-          "body_text": {
-            "type": "string",
-            "title": "Body Text"
-          }
-        },
-        "type": "object",
-        "required": [
-          "reply_id",
-          "status",
-          "received_at",
-          "sender",
-          "sender_name",
-          "subject",
-          "risk_flags",
-          "candidates",
-          "job_id",
-          "proposal",
-          "proposed_by",
-          "valid_now",
-          "event_id",
-          "resolved_at",
-          "body_text"
-        ],
-        "title": "ReplyView"
-      },
       "RepostSignal": {
         "properties": {
           "count": {
@@ -30197,14 +30442,16 @@
               "assess-fit",
               "assess-fit-job",
               "generate-cv",
+              "correct-cv",
+              "verify-cv",
               "generate-cover-letter",
               "add-skills",
               "training-plan",
-              "review-replies",
               "draft-follow-ups",
               "draft-follow-up",
               "broaden-search",
               "prepare-interview",
+              "correct-interview-guide",
               "mock-interview",
               "debrief-interview",
               "offer-questions",
@@ -31406,6 +31653,62 @@
         "title": "SearchStory",
         "description": "Toda la búsqueda en números agregados, para contarla (p. ej. en el README).\n\nSolo recuentos y fechas: ni empresas, ni puestos, ni fuentes, ni importes. Es lo que el usuario\npuede publicar si quiere; la app no lo publica nunca."
       },
+      "SectionChange": {
+        "properties": {
+          "section": {
+            "type": "string",
+            "enum": [
+              "subtitle",
+              "summary",
+              "experience",
+              "projects",
+              "skills",
+              "education",
+              "certifications",
+              "extra_sections",
+              "languages"
+            ],
+            "title": "Section"
+          },
+          "item": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Item"
+          },
+          "removed": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Removed",
+            "default": []
+          },
+          "added": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Added",
+            "default": []
+          },
+          "reordered": {
+            "type": "boolean",
+            "title": "Reordered",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "section"
+        ],
+        "title": "SectionChange"
+      },
       "SemanticResult": {
         "properties": {
           "model": {
@@ -32301,14 +32604,6 @@
             "type": "integer",
             "title": "Agent Requests"
           },
-          "replies_new": {
-            "type": "integer",
-            "title": "Replies New"
-          },
-          "replies_proposed": {
-            "type": "integer",
-            "title": "Replies Proposed"
-          },
           "demo_mode": {
             "type": "boolean",
             "title": "Demo Mode"
@@ -32320,8 +32615,6 @@
           "by_stage",
           "pending_tasks",
           "agent_requests",
-          "replies_new",
-          "replies_proposed",
           "demo_mode"
         ],
         "title": "StatusReport"
@@ -32639,14 +32932,16 @@
                 "assess-fit",
                 "assess-fit-job",
                 "generate-cv",
+                "correct-cv",
+                "verify-cv",
                 "generate-cover-letter",
                 "add-skills",
                 "training-plan",
-                "review-replies",
                 "draft-follow-ups",
                 "draft-follow-up",
                 "broaden-search",
                 "prepare-interview",
+                "correct-interview-guide",
                 "mock-interview",
                 "debrief-interview",
                 "offer-questions",
@@ -32701,14 +32996,16 @@
                 "assess-fit",
                 "assess-fit-job",
                 "generate-cv",
+                "correct-cv",
+                "verify-cv",
                 "generate-cover-letter",
                 "add-skills",
                 "training-plan",
-                "review-replies",
                 "draft-follow-ups",
                 "draft-follow-up",
                 "broaden-search",
                 "prepare-interview",
+                "correct-interview-guide",
                 "mock-interview",
                 "debrief-interview",
                 "offer-questions",
@@ -32771,14 +33068,16 @@
                 "assess-fit",
                 "assess-fit-job",
                 "generate-cv",
+                "correct-cv",
+                "verify-cv",
                 "generate-cover-letter",
                 "add-skills",
                 "training-plan",
-                "review-replies",
                 "draft-follow-ups",
                 "draft-follow-up",
                 "broaden-search",
                 "prepare-interview",
+                "correct-interview-guide",
                 "mock-interview",
                 "debrief-interview",
                 "offer-questions",

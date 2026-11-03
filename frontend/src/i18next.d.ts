@@ -14,6 +14,7 @@ import type drafts from '@/locales/es/drafts.json'
 import type extension from '@/locales/es/extension.json'
 import type funnel from '@/locales/es/funnel.json'
 import type home from '@/locales/es/home.json'
+import type howItWorks from '@/locales/es/howItWorks.json'
 import type inbox from '@/locales/es/inbox.json'
 import type job from '@/locales/es/job.json'
 import type labels from '@/locales/es/labels.json'
@@ -32,7 +33,6 @@ import type processes from '@/locales/es/processes.json'
 import type profile from '@/locales/es/profile.json'
 import type profileEditor from '@/locales/es/profileEditor.json'
 import type prompts from '@/locales/es/prompts.json'
-import type replies from '@/locales/es/replies.json'
 import type research from '@/locales/es/research.json'
 import type signals from '@/locales/es/signals.json'
 import type skills from '@/locales/es/skills.json'
@@ -58,6 +58,7 @@ declare module 'i18next' {
       extension: typeof extension
       funnel: typeof funnel
       home: typeof home
+      howItWorks: typeof howItWorks
       inbox: typeof inbox
       job: typeof job
       labels: typeof labels
@@ -76,7 +77,6 @@ declare module 'i18next' {
       profile: typeof profile
       profileEditor: typeof profileEditor
       prompts: typeof prompts
-      replies: typeof replies
       research: typeof research
       signals: typeof signals
       skills: typeof skills

@@ -1,0 +1,59 @@
+{
+  "title": "How it works",
+  "intro": "CandidatAI organizes your job search, from the first job to the company's reply. Here's the journey, step by step; come back whenever you like.",
+  "who": {
+    "title": "Who does what",
+    "you": {
+      "name": "You",
+      "body": "You decide which jobs move forward, review what gets prepared and confirm each application."
+    },
+    "agent": {
+      "name": "Your agent",
+      "body": "The AI program installed on your computer, such as Claude Code or Codex. It reads jobs, explains whether they fit you and writes your CVs and cover letters."
+    },
+    "app": {
+      "name": "The app",
+      "body": "It stores your jobs and your profile, works out a 0-100 fit and fills in forms. On its own, it doesn't read jobs or write CVs."
+    },
+    "promise": "No application goes out without your confirmation, and your CVs only include what's in your profile."
+  },
+  "steps": {
+    "title": "The journey, in five steps",
+    "prepare": {
+      "title": "Set up your search",
+      "body": "Create your profile from your CV or start it by hand: everything written in your CVs comes from it. Then choose where to search. For the parts that need AI, have your agent installed."
+    },
+    "collect": {
+      "title": "Gather jobs",
+      "body": "Paste a job's link or text in “{{newJob}}”, add your job alerts by email or press “{{searchJobs}}” in “{{home}}” so your agent goes through your job boards. New jobs from the companies you follow arrive by themselves. They all end up in “{{inbox}}”."
+    },
+    "decide": {
+      "title": "Decide which are worth it",
+      "body": "In “{{home}}”, press “{{processJobs}}” and then “{{assessFit}}” (they appear when jobs are pending): your agent reads each job, the app gives it a 0-100 fit and your agent explains why it fits you or not. Then, in “{{triage}}”, approve or discard each one."
+    },
+    "apply": {
+      "title": "Prepare and send the application",
+      "body": "Open an approved job and press “{{generateCv}}”: your agent writes a tailored CV and each line is checked against your profile. When you apply, the app can fill in the company's form and stops before sending: you review it and you confirm."
+    },
+    "follow": {
+      "title": "Follow your processes and learn",
+      "body": "“{{processes}}” shows where each application stands and which have gone days without a reply. When a company replies, you note it on its job page. “{{calendar}}” gathers your interviews and other dates, “{{funnel}}” where your applications stall and “{{skills}}” what's being asked for that you don't have yet."
+    }
+  },
+  "guides": {
+    "title": "Learn more",
+    "opensOnGithub": "They open on GitHub, in another tab.",
+    "start": {
+      "name": "Start here",
+      "body": "Installation, a demo to try it out, your profile and your first search."
+    },
+    "guide": {
+      "name": "User guide",
+      "body": "Everything in more detail, and what to do if something goes wrong."
+    },
+    "features": {
+      "name": "Feature list",
+      "body": "What you can do on each page."
+    }
+  }
+}

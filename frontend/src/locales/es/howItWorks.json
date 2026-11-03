@@ -1,0 +1,59 @@
+{
+  "title": "Cómo funciona",
+  "intro": "CandidatAI ordena tu búsqueda de empleo, de la primera oferta a la respuesta de la empresa. Este es el recorrido, paso a paso; puedes volver aquí cuando quieras.",
+  "who": {
+    "title": "Quién hace qué",
+    "you": {
+      "name": "Tú",
+      "body": "Decides qué ofertas siguen adelante, revisas lo que se prepara y confirmas cada candidatura."
+    },
+    "agent": {
+      "name": "Tu agente",
+      "body": "El programa de IA instalado en tu equipo, como Claude Code o Codex. Lee las ofertas, explica si encajan contigo y redacta tus CVs y cartas."
+    },
+    "app": {
+      "name": "La app",
+      "body": "Guarda tus ofertas y tu perfil, calcula el encaje de 0 a 100 y rellena los formularios. Por sí sola no lee ofertas ni escribe CVs."
+    },
+    "promise": "Ninguna candidatura sale sin tu confirmación, y en tus CVs solo entra lo que está en tu perfil."
+  },
+  "steps": {
+    "title": "El recorrido, en cinco pasos",
+    "prepare": {
+      "title": "Prepara tu búsqueda",
+      "body": "Crea tu perfil desde tu CV o empiézalo a mano: de ahí sale todo lo que se escribe en tus CVs. Después, elige dónde buscar. Para lo que necesita IA, ten instalado tu agente."
+    },
+    "collect": {
+      "title": "Reúne ofertas",
+      "body": "Pega el enlace o el texto de una oferta en «{{newJob}}», añade tus alertas de empleo por correo o pulsa «{{searchJobs}}» en «{{home}}» para que tu agente recorra tus portales. Las ofertas nuevas de las empresas que sigues llegan solas. Todas quedan en «{{inbox}}»."
+    },
+    "decide": {
+      "title": "Decide cuáles merecen la pena",
+      "body": "En «{{home}}», pulsa «{{processJobs}}» y luego «{{assessFit}}» (aparecen cuando hay ofertas pendientes): tu agente lee cada oferta, la app le pone un encaje de 0 a 100 y tu agente explica por qué encaja contigo o no. Después, en «{{triage}}», apruebas o descartas cada una."
+    },
+    "apply": {
+      "title": "Prepara y envía la candidatura",
+      "body": "Abre una oferta aprobada y pulsa «{{generateCv}}»: tu agente redacta un CV a medida y se comprueba que cada línea sale de tu perfil. Al candidatar, la app puede rellenar el formulario de la empresa y se para antes de enviar: lo revisas y lo confirmas tú."
+    },
+    "follow": {
+      "title": "Sigue tus procesos y aprende",
+      "body": "«{{processes}}» te enseña en qué punto está cada candidatura y cuáles llevan días sin respuesta. Cuando una empresa te conteste, lo anotas en su ficha. «{{calendar}}» reúne tus entrevistas y otras fechas, «{{funnel}}» dónde se quedan tus candidaturas y «{{skills}}» lo que te piden y aún no tienes."
+    }
+  },
+  "guides": {
+    "title": "Para saber más",
+    "opensOnGithub": "Se abren en GitHub, en otra pestaña.",
+    "start": {
+      "name": "Empieza aquí",
+      "body": "Instalación, una demo para probarla, tu perfil y tu primera búsqueda."
+    },
+    "guide": {
+      "name": "Guía de uso",
+      "body": "Todo con más detalle, y qué hacer si algo falla."
+    },
+    "features": {
+      "name": "Lista de funcionalidades",
+      "body": "Lo que puedes hacer en cada página."
+    }
+  }
+}

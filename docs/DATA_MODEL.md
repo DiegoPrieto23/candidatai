@@ -117,7 +117,10 @@ Contenido de un documento (lo que escribe el agente). La presentación va en `do
 | language | str | `es`, `en` |
 | content | JSON | `CvContent`; en las cartas, `{letter: CoverLetterContent, instructions: {brief, preferences, max_words}}` (las indicaciones vigentes al guardar, respaldo de `user`); o `ApplicationAnswers` (`kind = answers`, fase 10.3). Con referencias a evidencias |
 | verification | JSON? | `{passed, issues[]}` del verificador |
-| edited_by_user | bool | Editado por el usuario en la UI (respuestas; cartas desde la 08c). Cada edición es un documento nuevo: el anterior se conserva y manda el último |
+| edited_by_user | bool | Editado por el usuario en la UI (respuestas; cartas desde la 08c; CVs desde la 39). Cada edición es un documento nuevo: el anterior se conserva y manda el último |
+| base_document_id | FK documents? | CV: la versión de la que sale (al rehacerlo, corregirlo o editarlo), para decir qué cambió. Vacía en los anteriores a esta columna |
+| correction_id | FK cv_corrections? | CV: la corrección que lo originó |
+| superseded | bool | CV: «Volver» lo dejó detrás. La versión vigente es la más nueva sin esta marca; nada se borra |
 | created_at | datetime | |
 
 ### `document_renders`
@@ -213,7 +216,7 @@ Nunca guarda texto crudo de ofertas ni datos del perfil en `args_summary`.
 | `scored` / `fit_assessed` | system / agent | sin cambio; `payload`: `match_id` y `score`/`passed` o `verdict` |
 | `approved` | user | `approved` |
 | `discarded` | user | `closed`; desde la UI, `payload.reason` (`skills`, `seniority`, `location`, `salary`, `company`, `closed` (ya no está publicada, fase 16), `not_interested` (descarte rápido de la Bandeja antes de completar o extraer, por el título o la empresa, fase 27.6), `other`) y `note` opcional (obligatoria con `other`) |
-| `cv_generated` | agent | sin cambio; `payload.document_id` |
+| `cv_generated` | agent / user | sin cambio; `payload.document_id` y, si lo editó el usuario, `edited_by_user` |
 | `cv_rendered` | system / user / agent | `cv_ready` si el render no es `too_long` y su documento ya está verificado con `passed`; si no, sin cambio. `payload`: `document_id`, `render_id`, `template_id`, `too_long`. Solo lo registra el servicio de render |
 | `cv_verified` | agent | `cv_ready` si `passed` y ese documento tiene un render sin `too_long`; `payload`: `document_id`, `passed` |
 | `cv_rejected` | agent | sin cambio; `payload`: `document_id`, `blockers` |
@@ -241,6 +244,7 @@ se rechaza con error claro.
 - Tabla `cover_letter_briefs` (migración 0010): `job_id` (PK/FK), `instructions` (texto), `max_words` (int?),
   `updated_at`. Las indicaciones de la carta para esa oferta; no guarda historial (el documento
   copia las que usó).
+- Tabla `cv_corrections` (migración 0034): `id`, `job_id`, `instruction` (lo que el usuario pide cambiar, hasta 2000 caracteres), `status` (`pending`, `applied`, `declined`, `cancelled`), `note` (lo que el agente no pudo hacer y por qué), `base_document_id` (la versión vigente cuando el agente la leyó, para no pisar lo que cambie después) y fechas. Una pendiente por oferta como mucho: pedir otra la sustituye o, si el agente ya la leyó, la cancela y crea una nueva. Sin evento: la etapa no cambia hasta que se guarde y verifique otra versión; «Volver» tampoco la cambia.
 - Tabla `cv_briefs` (migración 0032): `job_id` (PK/FK), `instructions` (texto) y `updated_at`. Las
   indicaciones del usuario para el CV de esa oferta, que escribe en la ficha y lee `generate-cv`
   con `get_cv_brief`. Sin historial ni evento: no cambian la etapa de la oferta.
@@ -284,7 +288,7 @@ cambia la etapa.
 | sequence | int | `SEQUENCE` del iCalendar: sube con cada cambio |
 | created_at / updated_at | datetime | |
 | prep_plan | json? | Fase 17. Plan de preparación de una entrevista (`save_interview_plan`): `dossier?` (nombre del fichero en `data/entrevistas/`), `blocks` (`date`, `minutes`, `topic`, `detail?`), `saved_at`, `agent_name` |
-| prep_guide | json? | Guía de preparación en PDF (`save_interview_guide`): `file` (el PDF en `entrevistas/` de la carpeta de datos), `saved_at`, `agent_name` y `guide` (el contenido estructurado que maqueta la app) |
+| prep_guide | json? | Guía de preparación en PDF (`save_interview_guide`): `file` (el PDF en `entrevistas/` de la carpeta de datos), `saved_at`, `agent_name`, `guide` (el contenido estructurado que maqueta la app), `correction` (los cambios pedidos, aún sin aplicar), `instruction` (los que originaron esta versión), `previous` (la versión anterior, solo esa y sin PDF: `saved_at`, `agent_name`, `guide`, `instruction`) y `restored` (la vigente es la más antigua, porque se volvió a ella). Sin migración, y volver no registra evento |
 | debrief_notes / next_steps | text? / text? | Fase 17. Repaso de la entrevista (`save_interview_notes`). Aparte de `notes`, que es lo que anota el usuario |
 | debriefed_at | datetime? | Cuándo se guardó el repaso |
 | interview_type | str? | Solo en entrevistas: qué ronda es (`hr`: RR. HH. o encaje cultural, `technical`, `case`, `final`, `other`). Lo elige el usuario al crearla o editarla |
@@ -481,9 +485,9 @@ contraseña**: vive en `.env`, en la variable que nombra `secret_ref`.
 | security | str | `ssl` o `starttls` |
 | user | str? | |
 | folder | str | Carpeta IMAP de las alertas, o el nombre de la carpeta de `data/inbox/` |
-| replies_folder | str | Carpeta IMAP de las respuestas (`INBOX`) |
+| replies_folder | str | Sin uso: la app ya no lee los correos de las empresas |
 | enabled | bool | |
-| read_replies | bool | Si se leen de aquí las respuestas de las empresas (la «Principal», sí) |
+| read_replies | bool | Sin uso: la app ya no lee los correos de las empresas |
 | secret_ref | str? | Nombre de la variable de `.env` con la contraseña (`CAI_IMAP_<ALIAS>_PASSWORD`) |
 | from_env | bool | La cuenta `CAI_IMAP_*` de `.env`: servidor, usuario y carpetas salen de ahí |
 | allow_private | bool | «Servidor en mi equipo o mi red» (un servidor propio) |
@@ -561,21 +565,21 @@ cubre (migración 0013). No es estado de una oferta: no lleva evento.
 ## Ampliaciones de la fase 15
 
 ### `replies`
-Correos de las empresas de tus procesos (migración 0014). Solo se guardan los que casan con una
-candidatura enviada; de los demás no queda nada. Contenido no confiable.
+Correos de las empresas de tus procesos (migración 0014). **Sin uso:** la app ya no lee esos correos ni
+los enseña, y la tabla se conserva con lo que ya tuvieras. Contenido no confiable.
 
 | Columna | Tipo | Notas |
 |---|---|---|
 | id | int PK | |
 | message_id | str único | `Message-ID` o, si falta, `<sha256:…>` del correo |
-| origin | str | `imap` o `local` (`data/inbox/respuestas/`) |
+| origin | str | `imap` o `local` |
 | sender, sender_name, subject | str | Remitente en minúsculas; nombre y asunto en una línea |
 | received_at | datetime? | Cabecera `Date` |
-| body_text | text | Texto visible (sin lo oculto del HTML), hasta `replies.max_body_chars` |
+| body_text | text | Texto visible (sin lo oculto del HTML), recortado |
 | risk_flags, risk_excerpt | JSON, str? | `injection_phrase` (visible u oculta) y `hidden_text` si la frase estaba oculta |
 | candidates | JSON | `[{job_id, reason}]`, de la coincidencia más fiable a la menos: `contact`, `domain`, `ats`, `company_name` |
 | status | str | `new` → `proposed` (agente) → `accepted` / `ignored` (usuario); «Deshacer» devuelve una `ignored` a `proposed` o `new` |
-| proposal | JSON? | `ReplyProposal` (`AGENT_INTERFACE.md` §Respuestas) |
+| proposal | JSON? | La propuesta que dejó el agente |
 | proposed_at, proposed_by | datetime?, str? | Cliente del agente |
 | job_id | FK? | La oferta de la propuesta (o la que eligió el usuario al aceptar) |
 | event_id | FK? | Evento registrado al aceptar |

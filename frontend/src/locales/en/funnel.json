@@ -21,10 +21,13 @@
   },
   "funnel": {
     "title": "Funnel",
-    "hint": "Each job counts once in every step it reached (and the earlier ones). The percentage is the conversion from the previous step.",
+    "hint": "Each job counts once in every step it reached (and the earlier ones). Each row shows how many moved on from the previous step and how much of the total got that far.",
     "duplicates": " Not counting {{count}} duplicates.",
     "caption": "Jobs per funnel step",
-    "valueHead": "Jobs (conversion)"
+    "rates": "{{previous}} of previous · {{start}} of total",
+    "countHead": "Jobs",
+    "fromPreviousHead": "% of previous step",
+    "fromStartHead": "% of total"
   },
   "week": {
     "title": "By week",

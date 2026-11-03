@@ -41,7 +41,7 @@
   "linkedinRisk": {
     "title": "Let the agent browse LinkedIn?",
     "p1": "LinkedIn's terms forbid browsing its website with automated tools. Even though the agent uses your browser, goes slowly and only reads, <strong>LinkedIn may restrict or close your account</strong> if it detects it.",
-    "p2": "The risk-free alternatives are its email alerts (the “Alerts” screen) and the “Send to CandidatAI” button while you view a job.",
+    "p2": "The risk-free alternatives are its email alerts (“Email alerts”, on this same page) and the “Send to CandidatAI” button while you view a job.",
     "p3": "You can turn it off whenever you like. Applications are never sent on their own.",
     "cancel": "Cancel",
     "activating": "Turning on…",
@@ -63,7 +63,7 @@
     "notRun": "It hasn't run yet.",
     "label": "LinkedIn public search",
     "title": "Public search without signing in",
-    "intro": "Different from “The agent browses it”: once a day the app queries LinkedIn's public search, without your account, with the searches above. New jobs that pass your filters come in as summaries in “Alerts”.",
+    "intro": "Different from “The agent browses it”: once a day the app queries LinkedIn's public search, without your account, with the searches above. New jobs that pass your filters come in as summaries in “To complete”.",
     "enabled": "On",
     "disabled": "Off",
     "switch": "LinkedIn public search without signing in",
@@ -114,7 +114,7 @@
   "intro": "Job boards your agent browses with your browser, in this order, when you press “Search jobs”. It only reads: it never applies for you.",
   "add": {
     "linkedinTitle": "It's saved with searching turned off, and that's what we recommend.",
-    "linkedinP1": "LinkedIn's terms forbid browsing its website with automated tools, and it may restrict or close your account if it detects it, even if the agent uses your browser and only reads. The safe way is to get its jobs through email alerts (the “Alerts” screen) or with the “Send to CandidatAI” button.",
+    "linkedinP1": "LinkedIn's terms forbid browsing its website with automated tools, and it may restrict or close your account if it detects it, even if the agent uses your browser and only reads. The safe way is to get its jobs through email alerts (“Where to search → Email alerts”) or with the “Send to CandidatAI” button.",
     "linkedinP2": "If you still want the agent to browse it, turn it on afterwards with its switch, at your own risk.",
     "title": "Add job board",
     "description": "A job board where your agent searches for jobs with your browser when you press “Search jobs”.",

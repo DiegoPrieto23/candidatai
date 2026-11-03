@@ -69,7 +69,7 @@
     "nextLabel": "Para avanzar:",
     "processJobs": "Leer las ofertas nuevas",
     "assessFit": "Valorar las pendientes",
-    "openTriage": "Ir a «Por revisar»",
+    "openTriage": "Abrir la revisión rápida",
     "all": {
       "what": "Todas tus ofertas, estén en la etapa que estén. Cada oferta avanza así: Por completar → Por leer → Por revisar → Aprobada → CV listo → Enviada → En proceso.",
       "next": "elige una etapa en la fila de abajo para ver solo sus ofertas y qué hay que hacer con ellas."
@@ -81,7 +81,7 @@
         "send": "En esa pestaña, pulsa el botón <strong>Enviar a CandidatAI</strong> de la barra del navegador. Guarda la descripción y la oferta pasa a «Por leer».",
         "discard": "Si por el título ya ves que no te interesa, descártala aquí mismo, sin abrirla."
       },
-      "extension": "¿Aún no tienes el botón? <extension>Instálalo en unos minutos</extension>. También puedes repasarlas una a una, con atajos de teclado, en <alerts>Alertas</alerts>."
+      "extension": "¿Aún no tienes el botón? <extension>Instálalo en unos minutos</extension>. También puedes repasarlas una a una, con atajos de teclado, en <alerts>Por completar</alerts>."
     },
     "pending_extraction": {
       "what": "Ofertas con la descripción completa que tu agente aún no ha leído.",
@@ -89,7 +89,7 @@
     },
     "pending_triage": {
       "what": "Ofertas ya leídas y con su encaje calculado, a la espera de que decidas.",
-      "next": "revísalas en <triage>Por revisar</triage> y apruébalas o descártalas. Si antes quieres una opinión, «Valorar las pendientes» hace que tu agente compare cada una con tu perfil y escriba por qué encaja o no. No cambia la etapa: decides tú."
+      "next": "revísalas en <triage>Revisión rápida</triage> y apruébalas o descártalas. Si antes quieres una opinión, «Valorar las pendientes» hace que tu agente compare cada una con tu perfil y escriba por qué encaja o no. No cambia la etapa: decides tú."
     },
     "approved": {
       "what": "Ofertas que has aprobado. Les falta el CV a medida.",
@@ -101,7 +101,7 @@
     },
     "applied": {
       "what": "Candidaturas enviadas, a la espera de que la empresa conteste.",
-      "next": "cuando te llamen para una entrevista o una prueba, anótalo en la pestaña «Proceso» de la oferta, o acepta la propuesta en <replies>Respuestas</replies> si la app leyó el correo, y pasa a «En proceso». Si tardan en contestar, la app te recuerda hacer un seguimiento."
+      "next": "cuando te llamen para una entrevista o una prueba, anótalo en la pestaña «Proceso» de la oferta y pasa a «En proceso». Si tardan en contestar, la app te recuerda hacer un seguimiento."
     },
     "in_process": {
       "what": "Procesos con entrevistas o pruebas en marcha.",
@@ -110,7 +110,8 @@
     "closed": {
       "what": "El final del recorrido: ofertas descartadas, rechazadas, caducadas, duplicadas o que no pasaron tus filtros.",
       "next": "no hay nada que hacer. Si cerraste una por error, ábrela y pulsa «Reabrir»."
-    }
+    },
+    "openComplete": "Repasarlas una a una"
   },
   "noScoreWhy": {
     "profile": "Sin encaje calculado: falta tu perfil. Créalo en «Mi perfil».",

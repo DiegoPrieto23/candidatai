@@ -205,7 +205,7 @@ def start(
 
 def _row(session: Session, run_id: int) -> AgentRun:
     row = session.get(AgentRun, run_id)
-    if row is None:
+    if row is None or row.action not in ACTIONS:
         raise RunNotFoundError(f"No existe la ejecución {run_id}.")
     return row
 
@@ -215,11 +215,15 @@ def get_run(session: Session, run_id: int) -> AgentRunView:
 
 
 def list_runs(session: Session, limit: int = 20, job_id: int | None = None) -> AgentRunList:
-    query = select(AgentRun).order_by(AgentRun.id.desc()).limit(limit)
+    # Las ejecuciones de una acción que ya no existe se conservan, pero no se enseñan.
+    known = AgentRun.action.in_(ACTIONS)
+    query = select(AgentRun).where(known).order_by(AgentRun.id.desc()).limit(limit)
     if job_id is not None:
         query = query.where(AgentRun.job_id == job_id)
     rows = session.scalars(query).all()
-    active = len(session.scalars(select(AgentRun.id).where(AgentRun.status.in_(ACTIVE))).all())
+    active = len(
+        session.scalars(select(AgentRun.id).where(AgentRun.status.in_(ACTIVE), known)).all()
+    )
     resumable = agent_launch.resumable_agents()
     return AgentRunList(runs=[view(r, resumable) for r in rows], active=active)
 

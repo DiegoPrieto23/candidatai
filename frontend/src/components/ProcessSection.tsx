@@ -382,7 +382,7 @@ function MilestoneRow({ milestone, stage }: { milestone: MilestoneOut; stage: St
           </p>
         )}
         {milestone.notes && <p className="mt-0.5 text-xs whitespace-pre-line text-muted-foreground">{milestone.notes}</p>}
-        <InterviewDetails milestone={milestone} />
+        <InterviewDetails milestone={milestone} stage={stage} />
         <InterviewActions milestone={milestone} stage={stage} />
         {status.error && (
           <p role="alert" className="mt-1 text-xs text-destructive">

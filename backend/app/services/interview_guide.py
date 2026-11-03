@@ -3,7 +3,8 @@
 El agente la redacta con `prepare-interview` como contenido estructurado
 (`schemas/interview_guide.py`) y la guarda con `save_interview_guide`; aquí se maqueta con un diseño
 fijo (con el color de la marca de la empresa), se imprime con Chromium a
-`<carpeta de datos>/entrevistas/` y se apunta en el hito (`milestones.prep_guide`).
+`<carpeta de datos>/entrevistas/` y se apunta en el hito (`milestones.prep_guide`). Al guardar otra,
+la anterior se conserva como contenido en el mismo hito, sin PDF: se reimprime si se vuelve a ella.
 
 Todo el texto se escapa: el agente no puede meter HTML, y lo que venga de webs (dosier de la
 empresa, conceptos) se queda en texto. Las únicas URLs son las de las fuentes, que se enlazan
@@ -15,18 +16,20 @@ import unicodedata
 from datetime import date, datetime
 from html import escape
 from pathlib import Path
+from typing import Any
 
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models import Company, Job
+from app.models import Company, Job, Milestone
 from app.models.base import utcnow
 from app.schemas.interview_guide import (
     BulletsBlock,
     CalloutBlock,
     CodeBlock,
     GuideBlock,
+    GuideCorrectionInput,
     GuideInfo,
     HeadingBlock,
     InterviewGuideInput,
@@ -37,8 +40,14 @@ from app.schemas.interview_guide import (
     guide_info,
 )
 from app.services.documents.engines.html import html_to_pdf
-from app.services.interviews import check_can_prepare, interviews_dir
-from app.services.process import local_zone, milestone_row
+from app.services.guide_diff import GuideChange, diff
+from app.services.interviews import (
+    InterviewNotAllowedError,
+    check_can_correct_guide,
+    check_can_prepare,
+    interviews_dir,
+)
+from app.services.process import MilestoneOut, local_zone, milestone_out, milestone_row
 
 # Textos fijos del PDF, en el idioma de la guía.
 LABELS: dict[Language, dict[str, str]] = {
@@ -104,6 +113,16 @@ class SaveGuideResult(BaseModel):
     sections: int
     replaced: bool
     message: str
+
+
+class GuideChanges(BaseModel):
+    """Qué cambió entre la versión antigua y la nueva de la guía, en ese orden."""
+
+    milestone_id: int
+    older_saved_at: datetime
+    newer_saved_at: datetime
+    instruction: str | None  # lo que pidió el usuario para llegar a la nueva
+    changes: list[GuideChange]
 
 
 # --- Formato --------------------------------------------------------------------------------
@@ -367,21 +386,107 @@ def guide_file(session: Session, milestone_id: int) -> Path:
     return path
 
 
-GUIDE_THUMBNAIL_PX = 240  # la miniatura de la ficha se ve a ~80 px: nítida en pantallas 2x y 3x
-
-
 def guide_thumbnail(session: Session, milestone_id: int) -> Path:
     """La portada de la guía en PNG, para la miniatura de la ficha. Se guarda en la caché de vistas
     previas con la fecha y el tamaño del PDF en el nombre: si se vuelve a preparar, se rehace."""
-    from app.services.documents.authoring import previews_dir
-    from app.services.documents.preview import pdf_to_png
+    from app.services.documents.authoring import pdf_thumbnail
 
-    pdf = guide_file(session, milestone_id)
-    stat = pdf.stat()
-    png = previews_dir() / f"guide-{milestone_id}-{stat.st_mtime_ns}-{stat.st_size}.png"
-    if not png.is_file():
-        pdf_to_png(pdf, png, width_px=GUIDE_THUMBNAIL_PX)
-    return png
+    return pdf_thumbnail(guide_file(session, milestone_id), f"guide-{milestone_id}")
+
+
+def request_correction(
+    session: Session, milestone_id: int, data: GuideCorrectionInput
+) -> MilestoneOut:
+    """Anota qué cambiar de la guía. El texto se queda aquí: la orden del agente solo lleva ids, y
+    guardar la guía nueva lo borra. No es un cambio de estado de la oferta: no registra evento."""
+    row = milestone_row(session, milestone_id)
+    check_can_correct_guide(session, row)
+    row.prep_guide = {**(row.prep_guide or {}), "correction": data.instruction}
+    row.updated_at = utcnow()
+    session.flush()
+    return milestone_out(row)
+
+
+def cancel_correction(session: Session, milestone_id: int) -> MilestoneOut:
+    """Retira los cambios pedidos que aún no se han aplicado."""
+    row = milestone_row(session, milestone_id)
+    stored = dict(row.prep_guide or {})
+    if stored.pop("correction", None) is not None:
+        row.prep_guide = stored
+        row.updated_at = utcnow()
+        session.flush()
+    return milestone_out(row)
+
+
+def guide_changes(session: Session, milestone_id: int) -> GuideChanges:
+    """Qué cambió entre las dos versiones conservadas. `FileNotFoundError` (404) si solo hay una."""
+    row = milestone_row(session, milestone_id)
+    stored = row.prep_guide or {}
+    other = stored.get("previous")
+    if not other:
+        raise FileNotFoundError(f"La guía de la entrevista {milestone_id} no tiene otra versión.")
+    older, newer = (stored, other) if stored.get("restored") else (other, stored)
+    return GuideChanges(
+        milestone_id=row.id,
+        older_saved_at=older["saved_at"],
+        newer_saved_at=newer["saved_at"],
+        instruction=newer.get("instruction"),
+        changes=diff(
+            InterviewGuideInput.model_validate(older["guide"]),
+            InterviewGuideInput.model_validate(newer["guide"]),
+        ),
+    )
+
+
+def restore_guide(session: Session, milestone_id: int) -> MilestoneOut:
+    """Cambia la versión vigente por la otra conservada, y se puede deshacer igual. No borra nada
+    ni usa al agente. Imprime antes de tocar el hito: sin Chromium (`pdf_unavailable`), todo igual.
+
+    No con cambios pedidos: tu agente podría estar aplicándolos sobre la vigente. No es un cambio de
+    estado de la oferta: no registra evento."""
+    row = milestone_row(session, milestone_id)
+    check_can_correct_guide(session, row)
+    stored = row.prep_guide or {}
+    if stored.get("correction"):
+        raise InterviewNotAllowedError(
+            "Tienes cambios pedidos sin aplicar: cancélalos antes de volver a otra versión."
+        )
+    other = stored.get("previous")
+    if not other:
+        raise InterviewNotAllowedError("Esta guía no tiene otra versión a la que volver.")
+    guide = InterviewGuideInput.model_validate(other["guide"])
+    generated = datetime.fromisoformat(other["saved_at"]).astimezone(local_zone()).date()
+    file = _print(session, row, guide, generated)
+    row.prep_guide = {
+        **other,
+        "file": file,
+        "previous": _version(stored),
+        "restored": not stored.get("restored"),
+    }
+    row.updated_at = utcnow()
+    session.flush()
+    return milestone_out(row)
+
+
+def _version(stored: dict[str, Any]) -> dict[str, Any]:
+    """Lo que se conserva de una versión: sin su PDF, que se rehace al volver a ella."""
+    return {key: stored.get(key) for key in ("saved_at", "agent_name", "guide", "instruction")}
+
+
+def _print(session: Session, row: Milestone, guide: InterviewGuideInput, generated: date) -> str:
+    """Imprime la guía en el PDF de la entrevista y devuelve su nombre. Si cambió el nombre de la
+    empresa, borra el PDF anterior, que sobra (solo uno nuestro)."""
+    company = session.execute(
+        select(Company.name).join(Job, Job.company_id == Company.id).where(Job.id == row.job_id)
+    ).scalar_one()
+    file = f"{row.job_id}-{row.id}-{_slug(company)}-guia.pdf"
+    html = render_html(guide, company, row.starts_at, row.all_day, generated)
+    targets = {s.url: s.url for s in guide.sources}
+    html_to_pdf(html, lambda _name: None, guide_path(file), "A4", targets=targets)
+    old = (row.prep_guide or {}).get("file")
+    if old and old != file and re.fullmatch(rf"{row.job_id}-{row.id}-[a-z0-9-]+-guia\.pdf", old):
+        guide_path(old).unlink(missing_ok=True)
+    return file
 
 
 def save_interview_guide(
@@ -391,33 +496,27 @@ def save_interview_guide(
     agent_name: str | None = None,
     now: datetime | None = None,
 ) -> SaveGuideResult:
-    """Maqueta la guía, la imprime a PDF y la apunta en la entrevista (sustituye a la anterior).
+    """Maqueta la guía, la imprime a PDF y la apunta en la entrevista. Conserva la anterior como
+    `previous` (solo esa), y lo que el usuario pidió cambiar queda como el origen de esta.
 
-    Solo con una entrevista programada que aún no ha empezado, como el plan. Si Chromium no está,
-    falla (`pdf_unavailable`) y no se guarda nada."""
+    Solo con una entrevista programada que aún no ha empezado, como el plan, salvo que el usuario
+    haya pedido cambios a una guía ya hecha, que puede ser después. Si Chromium no está, falla
+    (`pdf_unavailable`) y no se guarda nada."""
     row = milestone_row(session, milestone_id)
     now = now or utcnow()
-    check_can_prepare(session, row, now)
-    company = session.execute(
-        select(Company.name).join(Job, Job.company_id == Company.id).where(Job.id == row.job_id)
-    ).scalar_one()
-    file = f"{row.job_id}-{row.id}-{_slug(company)}-guia.pdf"
-    output = guide_path(file)
-    today = now.astimezone(local_zone()).date()
-    html = render_html(guide, company, row.starts_at, row.all_day, today)
-    targets = {s.url: s.url for s in guide.sources}
-    html_to_pdf(html, lambda _name: None, output, "A4", targets=targets)
-
+    if (row.prep_guide or {}).get("correction"):
+        check_can_correct_guide(session, row)
+    else:
+        check_can_prepare(session, row, now)
+    file = _print(session, row, guide, now.astimezone(local_zone()).date())
     previous = row.prep_guide or {}
-    # Si cambió el nombre de la empresa, el PDF anterior sobra (solo se borra uno nuestro).
-    old = previous.get("file")
-    if old and old != file and re.fullmatch(rf"{row.job_id}-{row.id}-[a-z0-9-]+-guia\.pdf", old):
-        guide_path(old).unlink(missing_ok=True)
     row.prep_guide = {
         "file": file,
         "saved_at": now.isoformat(),
         "agent_name": (agent_name or "")[:64] or None,
         "guide": guide.model_dump(mode="json"),
+        "instruction": previous.get("correction"),
+        "previous": _version(previous) if previous else None,
     }
     row.updated_at = now
     session.flush()

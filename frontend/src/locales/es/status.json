@@ -27,6 +27,40 @@
     "prepare": "Preparar",
     "guide": "Guía de preparación (PDF)",
     "guideSaved": "Guardada el {{date}}",
+    "correction": {
+      "open": "Pedir cambios a la guía",
+      "label": "Qué quieres cambiar",
+      "placeholder": "P. ej.: quita la sección de código y añade más preguntas sobre liderazgo.",
+      "hint": "Tu agente toca solo esto y no añade nada que no esté en tu perfil. La versión anterior se conserva.",
+      "pending": "Cambios pedidos, aún sin aplicar:",
+      "cancel": "Cancelar",
+      "submit": "Aplicar cambios",
+      "cancelled": "No se pueden pedir cambios a esta guía porque la entrevista está cancelada.",
+      "closed": "No se pueden pedir cambios a esta guía porque el proceso de esta oferta está cerrado."
+    },
+    "versions": {
+      "older": {
+        "title": "Versión anterior · {{date}}",
+        "restore": "Volver a la versión anterior"
+      },
+      "newer": {
+        "title": "Versión más reciente · {{date}}",
+        "restore": "Volver a la versión más reciente"
+      },
+      "restoring": "Rehaciendo el PDF…",
+      "loading": "Comparando las versiones…",
+      "asked": "Pediste:",
+      "noChanges": "El texto de las dos versiones es igual.",
+      "reordered": "Mismo texto, en otro orden.",
+      "removed": "Quitado",
+      "added": "Añadido",
+      "pendingHint": "Primero cancela los cambios pedidos o espera a que se apliquen.",
+      "parts": {
+        "cover": "Portada",
+        "section": "Orden de las secciones",
+        "sources": "Fuentes"
+      }
+    },
     "mock": "Simulacro",
     "debrief": "Repasar",
     "debriefAgain": "Repasar otra vez",

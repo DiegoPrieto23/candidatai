@@ -22,9 +22,8 @@ export function StageGuide({ stage }: { stage: Stage | undefined }) {
   const components = {
     strong,
     extension: <Link to="/fuentes/extension" className={link} />,
-    alerts: <Link to="/alertas" className={link} />,
-    triage: <Link to="/por-revisar" className={link} />,
-    replies: <Link to="/respuestas" className={link} />,
+    alerts: <Link to="/bandeja/por-completar" className={link} />,
+    triage: <Link to="/bandeja/revision" className={link} />,
     processes: <Link to="/procesos" className={link} />,
   }
 
@@ -49,7 +48,16 @@ export function StageGuide({ stage }: { stage: Stage | undefined }) {
   }
 
   let actions: ReactNode = null
-  if (stage === 'pending_extraction') {
+  if (stage === 'pending_detail') {
+    actions = (
+      <Button asChild size="sm">
+        <Link to="/bandeja/por-completar">
+          {t('openComplete')}
+          <ArrowRightIcon />
+        </Link>
+      </Button>
+    )
+  } else if (stage === 'pending_extraction') {
     actions = (
       <AgentButton action="process-jobs" primary>
         {t('processJobs')}
@@ -59,7 +67,7 @@ export function StageGuide({ stage }: { stage: Stage | undefined }) {
     actions = (
       <>
         <Button asChild size="sm">
-          <Link to="/por-revisar">
+          <Link to="/bandeja/revision">
             {t('openTriage')}
             <ArrowRightIcon />
           </Link>

@@ -56,8 +56,8 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 
 | MCP | CLI | Fase | Entrada | Salida | Evento |
 |---|---|---|---|---|---|
-| `get_schema` | `cai schema [NOMBRE] [--example true] --json` | 24.2 | `name?` (sin él, o `list`: el catálogo), `example=false` | Catálogo: `schemas` (`name`, `tool`, `description`). Uno: `name`, `tool`, `description`, `send` (cómo va por `--file` y por MCP), `json_schema` y `example` (o `null`). Nombres: `extraction`, `fit-assessment`, `cv-content`, `cv-render-options`, `cv-verification`, `application-answers`, `cover-letter-brief`, `cover-letter`, `cover-letter-render-options`, `cover-letter-verification`, `reply-proposal`, `message-draft`, `company-research`, `interview-plan`, `interview-notes`, `source`, `source-run`. Uno que no existe: `not_found` con los más parecidos | — |
-| `get_status` | `cai status --json` | 04 | — | `total`, `by_stage`, `pending_tasks`, `agent_requests` (encargos pendientes, 19), `replies_new` (correos sin clasificar, 34), `replies_proposed` (propuestas por aceptar en la UI, 34), `demo_mode` (12.1) | — |
+| `get_schema` | `cai schema [NOMBRE] [--example true] --json` | 24.2 | `name?` (sin él, o `list`: el catálogo), `example=false` | Catálogo: `schemas` (`name`, `tool`, `description`). Uno: `name`, `tool`, `description`, `send` (cómo va por `--file` y por MCP), `json_schema` y `example` (o `null`). Nombres: `extraction`, `fit-assessment`, `cv-content`, `cv-render-options`, `cv-verification`, `application-answers`, `cover-letter-brief`, `cover-letter`, `cover-letter-render-options`, `cover-letter-verification`, `message-draft`, `company-research`, `interview-plan`, `interview-notes`, `source`, `source-run`. Uno que no existe: `not_found` con los más parecidos | — |
+| `get_status` | `cai status --json` | 04 | — | `total`, `by_stage`, `pending_tasks`, `agent_requests` (encargos pendientes, 19), `demo_mode` (12.1) | — |
 | `add_job_from_url` | `cai jobs add-url URL --json` | 04 | `url` | `job_id`, `created`, `duplicate_of?`, `risk_flags` | `found` |
 | `add_job_from_text` | `cai jobs add-text --title T --company C --file F [--url U] [--location L] --json` | 04 | `title, company, text, url?, location?` | `job_id`, `created`, `duplicate_of?`, `risk_flags` | `found` |
 | | `… [--source S] [--platform P] [--external-id X]` | 09b | Además `source_id?` (una plataforma `agent_browse` con la navegación activada; si no, `not_allowed`), `platform?` y `external_id?` (por defecto, de la URL con `platforms.detect`). Con `source_id`, una oferta de LinkedIn (por URL o `platform`) solo entra por la plataforma LinkedIn | igual | igual (`found` con `source_id`) |
@@ -76,8 +76,10 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `list_cv_templates` | `cai templates list --json` | 08 | — | `templates` (`id`, nombre, motor, origen, `ats_friendly`, foto, columnas, página, `capacity`, `sections`, `accent_colors`, fuentes, idiomas, `has_preview`), `invalid` (con el motivo) y `fallback_template` | — |
 | `save_cv_content` | `cai cv save ID --file F --json` | 08 | `job_id, content: CvContent, render_options?: CvRenderOptions`; por CLI, `F` = `{"content": …, "render_options": …}` | `document_id` + primer render (`RenderResult`) | `cv_generated`, `cv_rendered` |
 | `render_cv` | `cai cv render DOC [--file F] --json` | 08 | `document_id, options?: CvRenderOptions` (por defecto, todo `auto`); por CLI, `F` = las opciones | `RenderResult` (sus `warnings`, desde la 25.5, con los de maquetación: `page` y `fix`; con `fix: content` se recorta como con `too_long`) | `cv_rendered` |
-| `get_cv_content` | `cai cv show (ID \| --document DOC) --json` | 08 | `job_id` (su último CV) o `document_id` | `CvContent`, `evidence` (texto de cada evidencia citada), `verification` y `renders` | — |
+| `get_cv_content` | `cai cv show (ID \| --document DOC) --json` | 08 | `job_id` (su versión vigente) o `document_id` | `CvContent`, `evidence` (texto de cada evidencia citada), `verification` y `renders` | — |
 | `get_cv_brief` | `cai cv brief ID --json` | 0.2.1 | `job_id` | `job_id`, `instructions` (las indicaciones del usuario para el CV de esa oferta, escritas en la ficha; vacías si no hay) y `updated_at` | — |
+| `get_cv_correction` | `cai cv correction ID --json` | 39 | `job_id` | `job_id`, `document_id` (la versión vigente) y `correction` (`id`, `instruction`, `status`, `note`, fechas), vacío si no hay nada pendiente. El texto es del usuario: se trata como dato y no respalda hechos. La orden de `correct-cv` nunca lo lleva | — |
+| `decline_cv_correction` | `cai cv correction-decline ID --reason R --json` | 39 | `correction_id`, `reason` (1-2000) | `ok`, `correction_id`, `job_id`, `status`. Cierra la corrección sin versión nueva cuando no se puede aplicar nada; el usuario ve el motivo. Ya cerrada: `not_allowed` | — |
 | `save_cv_verification` | `cai cv save-verification DOC --file F --json` | 08 | `document_id, verification: CvVerification` | `ok`, `passed`, `stage` y `note` (por qué no pasa a `cv_ready`, si no pasa) | `cv_verified` / `cv_rejected` |
 | `save_cover_letter_brief` | `cai letter brief ID --file F --json` | 08c | `job_id, instructions?, max_words?` (50-600); por CLI, `F` = `{"instructions": …, "max_words": …}`. Sustituye al anterior | `ok`, `job_id`, `brief` y `max_words` resuelto | — |
 | `get_application_answers` | `cai applications answers ID --json` | — | `job_id` | `job_id` y `answers` (`null` si no hay): las últimas respuestas de screening con `document_id`, `language`, `edited_by_user`, `answers` y `evidence` resueltas | — |
@@ -91,9 +93,6 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `get_funnel_stats` | `cai stats funnel [--since AAAA-MM-DD] --json` | 10 | `since?` (fecha; ofertas vistas desde las 00:00 de ese día en Europe/Madrid) | `FunnelStats` (ver §Analítica) | — |
 | `get_calibration` | `cai stats calibration [--since AAAA-MM-DD] [--min-cases N] --json` | 20 | `since?` (fecha; candidaturas **enviadas** desde las 00:00 de ese día en Europe/Madrid), `min_cases=10` (1-1000) | `Calibration` (ver §Calibración) | — |
 | `get_skill_gaps` | `cai skills gaps [--days N] [--status gap\|have\|unmarked] --json` | 14 | `days=60` (1-365), `status?` | `days`, `jobs_considered`, `gaps` y `profile_skills` (ver §Huecos de skills) | — |
-| `list_replies` | `cai replies list [--status S] [--limit N] --json` | 15 | `status?` (`new`, `proposed`, `accepted`, `ignored`), `limit=50` | `replies` (sin texto: remitente, candidatas, propuesta) y `counts` por estado | — |
-| `get_reply` | `cai replies show ID --json` | 15 | `reply_id` | El correo en `<untrusted_email>`, `candidates` (oferta, etapa, envío, próximos hitos), `timezone` y `proposal` | — |
-| `save_reply_proposal` | `cai replies propose ID --file F --json` | 15 | `reply_id`, `proposal` (ver §Respuestas) | `status: proposed`, `stage`, `valid_now`, `message` | — (la acepta el usuario en la UI) |
 | `save_message_draft` | `cai drafts save ID --file F --json` | 15 (18) | `job_id`, `draft`: `{kind: followup \| thank_you \| linkedin \| email, subject?, body, milestone_id?, recipient_role?, contact_id?, network_contact_id?, attachments?}` | `draft_id`, `kind`, `milestone_id`, `replaced`, `message` | — (no envía nada) |
 | `get_interviews` | `cai interviews list ID --json` | 17 | `job_id` | `job_id`, `job_title`, `company`, `stage`, `offer_received`, `today` (Europe/Madrid), `contacts` (nombre y cargo) e `interviews`: hitos de tipo entrevista, por fecha, con `interview_type`, `prep_instructions` (las indicaciones del usuario, que siguen la guía y el simulacro), `prep_plan`, `debrief_notes`, `next_steps` y `debriefed_at` | — |
 | `save_interview_plan` | `cai interviews plan HITO --file F --json` | 17 | `milestone_id`, `plan`: `{dossier?, blocks: [{date, minutes (15-120), topic, detail?}]}`; por CLI, `F` = el plan | `milestone_id`, `job_id`, `blocks`, `replaced`, `message`. Entrevista programada y por empezar, proceso abierto y bloques de hoy al día de la entrevista (si no, `not_allowed`) | — |
@@ -104,7 +103,7 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `save_company_research` | `cai companies save-research ID --file F --json` | 18 | `job_id`, `research`: `CompanyResearchContent` (ver §Contactos); por CLI, `F` = el dosier | `job_id`, `company`, `file`, `replaced`, `risk_flags`, `message`. Sustituye al de la empresa | — |
 | `get_received_offer` | `cai received-offers show ID --json` | 21 | `job_id` | `job_id`, `amounts_private`, `base_salary`, `variable`, `currency`, `period` (los cuatro `null` si `amounts_private`), `benefits`, `work_mode`, `location`, `start_date`, `respond_by`, `notes`, `updated_at`. Nunca el mínimo del usuario ni la diferencia con él. Sin datos anotados, `not_found` | — |
 | `get_job_contacts` | `cai contacts list ID --json` | 18 | `job_id` | `job_id`, `company`, `contacts` (del proceso: `id`, `name`, `role` = cargo, `relation`, `referral`) y `network` (personas de tu red de LinkedIn en esa empresa: `id`, `name`, `position`, `match` = `exact`/`probable`, `in_process`); `network_imported`. Sin emails, teléfonos, URLs ni notas | — |
-| `list_mail_sources` | `cai mail-sources list --json` | 27.4 | — | `sources`: buzones de las alertas (`MailSourceView`: etiqueta, tipo `imap`/`folder`, servidor, usuario, carpetas, si está activo, si lee respuestas, `from_env`, `has_password`, `secret_ref` (el nombre de la variable de `.env`, nunca el valor), `last_polled_at`, `last_error`); `demo`; `can_store_passwords` | Solo lectura: añadir, cambiar, probar y quitar buzones es cosa de la UI (`require_ui`). `cai mail-sources test ID` (solo CLI) prueba uno: login y `EXAMINE`, sin leer correos |
+| `list_mail_sources` | `cai mail-sources list --json` | 27.4 | — | `sources`: buzones de las alertas (`MailSourceView`: etiqueta, tipo `imap`/`folder`, servidor, usuario, carpetas, si está activo, `from_env`, `has_password`, `secret_ref` (el nombre de la variable de `.env`, nunca el valor), `last_polled_at`, `last_error`); `demo`; `can_store_passwords` | Solo lectura: añadir, cambiar, probar y quitar buzones es cosa de la UI (`require_ui`). `cai mail-sources test ID` (solo CLI) prueba uno: login y `EXAMINE`, sin leer correos |
 | `list_sources` | `cai sources list [--kind K] --json` | 09b | `kind?` | `sources`: `SourceView` con su config (sin secretos), `browse` (en las `agent_browse`) y última ejecución; `agent_browse`: límites (`max_result_pages`, `delay_seconds`, `default_max_offers`) | — |
 | `save_source` | `cai sources save --file F --json` | 09b | `AgentBrowseSource`: `name, platform, search_urls[], priority? (puesto 1…N sin empates; por defecto, al final si es nueva y el suyo si ya existe), access=free\|login\|blocked, allow_agent_browsing? (por defecto true; en LinkedIn false), max_offers?, notes?`; por CLI, `F` = ese objeto | `source_id`, `created`, `allow_agent_browsing` y `priority` guardados y `message`. Crea o actualiza por `name`. Un puesto ocupado: una nueva se inserta (las siguientes bajan uno) y una existente se intercambia (el `message` dice a cuál ha movido); fuera de 1…N: `invalid_request` con el rango. LinkedIn (por `platform` o por cualquier URL de linkedin.com o lnkd.in) con `true`: `not_allowed`; si el usuario ya lo activó, se conserva. Búsquedas de otro dominio: `invalid_request` | — |
 | `record_source_run` | `cai sources record-run ID --file F --json` | 09b | `source_id` + `SourceRunSummary`: `found, created, existing=0, incidents[{code, message}], started_at?, finished_at?`; por CLI, `F` = el resumen | `ok`, `run_id`. Actor `agent`; avanza `last_run_at`. Plataforma desactivada: `not_allowed` | — |
@@ -192,6 +191,13 @@ las más recientes primero.
 ### CV (fase 08)
 
 - `save_cv_content` solo admite ofertas en `approved` o `cv_ready` (si no, `invalid_transition`).
+  Con `correction_id` (y `correction_note`, lo que no se pudo aplicar), la versión queda ligada a esa
+  corrección y, sin `render_options`, repite el diseño de la vigente. Se puede repetir con la misma
+  corrección si la verificación falla; una cancelada o rechazada da `not_allowed`. Leer con
+  `get_cv_correction` anota la versión de la que parte: si después cambia la vigente, guardar da
+  `conflict`, y si el usuario pide otra cosa, `not_allowed`. En los dos casos, se vuelve a leer.
+- El «último CV» es la **versión vigente**: la más nueva que «Volver» (solo en la UI) no ha dejado
+  detrás. `get_cv_content` trae además `labels`: el nombre de cada experiencia y proyecto.
   Antes de guardar comprueba lo que el código puede comprobar de `POLICIES.md` §1: ids de
   experiencia, proyecto, formación y certificación, evidencias que existen en el perfil, skills que
   están en el perfil (con los sinónimos de `config/skill_aliases.yaml`) y skills básicas (nivel B o
@@ -240,8 +246,7 @@ las más recientes primero.
 
 - `list_followups_due`: ofertas en `applied` (sin respuesta) con N días o más desde el envío o el
   último `followup_sent`. Lo que pasa a `in_process` deja de contar, y también las que ya llevan
-  `followups.max_followups` (2) seguimientos y las que tienen un correo de la empresa por revisar
-  en «Respuestas» (nuevo o con propuesta): ya contestó, aunque aún no lo hayas aceptado. Desde la
+  `followups.max_followups` (2) seguimientos. Desde la
   fase 15 trae `thanks_due` (entrevistas hechas en los últimos `followups.thank_you_days` días sin
   agradecimiento enviado). Lo usan
   `daily-summary` y `draft-follow-up`; registrar que se envió (`followup_sent`) es cosa del
@@ -283,8 +288,15 @@ las más recientes primero.
   estructurado (secciones de bloques tipados, sin HTML). La app la maqueta con el color de la
   marca, la imprime a PDF en `entrevistas/` de la carpeta de datos y la apunta en
   `milestones.prep_guide`; la ficha la enlaza (`GET /milestones/{id}/guide.pdf`). Sustituye a la
-  anterior. `get_interview_guide` la lee (el simulacro saca de ahí las preguntas probables) y
+  vigente. `get_interview_guide` la lee (el simulacro saca de ahí las preguntas probables) y
   `get_application_answers` da las respuestas de screening ya enviadas.
+- Los cambios que el usuario pide a una guía ya hecha llegan en `info.correction` de
+  `get_interview_guide`; los aplica `correct-interview-guide`, cuya orden solo lleva ids. Con cambios
+  pendientes, `save_interview_guide` también vale tras la entrevista, y guardar los da por atendidos.
+- Guardar una guía conserva la anterior (solo esa) en el hito. Ver qué cambió y volver a ella es de la
+  UI (`GET /milestones/{id}/guide/changes` y `POST /milestones/{id}/guide/restore`), sin herramienta
+  para el agente: volver rehace el PDF y, con cambios pendientes o sin Chromium, no cambia nada. En
+  `info`, `other_saved_at` dice la fecha de la otra versión y `restored` que la vigente es la antigua.
 - `save_interview_notes`: el repaso de `debrief-interview` (`debrief_notes`, `next_steps`).
   Sustituye al anterior.
 - Ninguna registra eventos ni cambia el estado del hito: marcar la entrevista como hecha
@@ -490,59 +502,6 @@ nuevo se nota al momento). La API sirve lo mismo en `GET /skills/gaps?days=`.
 - Marcar y añadir alias es solo de la UI (`POST /skills/marks`, `POST /skills/aliases`): el
   agente no decide qué skills tiene el usuario ni qué nombres son lo mismo.
 
-### Respuestas de las empresas (fase 15)
-
-La app lee los correos de las empresas de tus candidaturas enviadas (`applied`, `in_process`) y
-los guarda en `replies` (ver `CONFIGURAR_CORREO.md` §Respuestas). El agente los clasifica con el
-skill `review-replies` (rol `classifier`, una sesión aislada por correo) y deja una
-propuesta. **Nada cambia de etapa hasta que el usuario la acepta en la UI.**
-
-`get_reply` entrega el correo así (lo de dentro es contenido no confiable):
-
-```
-<untrusted_email id="7" risk_flags="">
-De: Laura Pazos <laura.pazos@bretema.example>
-Asunto: Entrevista para el puesto de Data Engineer
-Fecha: 2026-10-05T09:12:00+02:00
-
-Hola: …
-</untrusted_email>
-```
-
-`proposal` de `save_reply_proposal`:
-
-```jsonc
-{
-  "job_id": 12,                       // una de las `candidates` del correo
-  "event_type": "interview_scheduled",// reply_received | interview_scheduled | test_assigned |
-                                      // offer_received | rejected | none (nada que registrar)
-  "occurred_at": null,                // por defecto, la fecha del correo
-  "milestone": {                      // solo con interview_scheduled o test_assigned
-    "title": "Entrevista con Talento", "starts_at": "2026-10-08T10:00:00+02:00",
-    "ends_at": null, "all_day": false, "location": "Google Meet"
-  },
-  "summary": "Primera entrevista por videollamada el jueves 8 a las 10:00.",
-  "confidence": "high",               // high | medium | low (con low, sin `milestone`)
-  "injection_suspected": false
-}
-```
-
-- El `job_id` debe estar entre las candidatas (`invalid_request` si no). Una respuesta ya aceptada
-  o ignorada por el usuario no admite propuesta (`not_allowed`). Guardar otra propuesta sustituye
-  la anterior.
-- `valid_now: false` avisa de que el evento no es válido en la etapa actual (p. ej. la oferta ya
-  está cerrada): se guarda igual y decide el usuario.
-- Sin herramienta para leer el buzón: `cai replies poll` (CLI), la tarea `poll_replies` del worker
-  y «Revisar correo ahora» en la UI.
-- **Aceptar o ignorar no tiene herramienta ni comando, a propósito**: solo la UI (pantalla
-  «Respuestas» y aviso en la ficha de la oferta) llama a `POST /replies/{id}/accept` o `…/ignore`,
-  que exigen el origen de la UI y cuerpo JSON (`require_ui`). Aceptar registra el evento como
-  `user` con `payload.reply_id` y, si hay hito, lo crea; con `none` archiva sin evento. El usuario
-  puede aceptar la propuesta tal cual o cambiar la oferta, el tipo, la fecha o añadir una nota.
-  «Deshacer» tras ignorar (`POST /replies/{id}/unignore`, también solo la UI) la devuelve a
-  `proposed` si tenía propuesta o a `new`; aceptar no se deshace, porque el evento ya está en el
-  historial.
-
 ### Ofertas vivas y republicadas (fase 16)
 
 - `list_jobs`, `get_job` y las vistas de la UI llevan `signals` (`DATA_MODEL.md` §Fase 16):
@@ -573,7 +532,7 @@ próxima sesión»**. Ninguno de los dos tiene herramienta para lanzarlo: un age
 lanza a sí mismo.
 
 - **En segundo plano** (`POST /agent/runs`, solo la UI): `process-jobs`, `assess-fit`,
-  `generate-cv` y `generate-cover-letter`. El worker lanza `launch.headless` del manifiesto con la orden y **solo las
+  `generate-cv`, `correct-cv`, `verify-cv` y `generate-cover-letter`. El worker lanza `launch.headless` del manifiesto con la orden y **solo las
   herramientas MCP de la acción** (`agent_launch.ACTIONS[...].background`), su skill, los
   subagentes y la lectura de `docs/`; el resto de herramientas de esta tabla se le **deniegan**
   explícitamente. La orden añade: «no preguntes; si necesitas al usuario, termina con líneas
@@ -584,8 +543,8 @@ lanza a sí mismo.
   sigue con las de POLICIES §7.
   Fase 24.5: con Claude Code, el techo va en la orden; con OpenCode, en una configuración propia
   de la ejecución (`services/agent_run_config.py`) que solo enciende esas herramientas, el skill y
-  los roles de la acción. `generate-cv` y `generate-cover-letter` no van en segundo plano con OpenCode
-  (sus roles leen ficheros). Si el agente de la acción no puede, `GET /agent` propone otro en
+  los roles de la acción. `generate-cv`, `correct-cv`, `verify-cv` y `generate-cover-letter` no van en segundo plano con
+  OpenCode (sus roles leen ficheros). Si el agente de la acción no puede, `GET /agent` propone otro en
   `background_agent.suggested` y `suggested_name`. `GET /agent` dice también
   `no_agent_installed` (ningún agente del manifiesto en el `PATH`; en Docker, siempre `false`), con
   el que Inicio y «Agente» explican cómo instalar uno. Cada ejecución guarda su agente, su formato de
@@ -619,8 +578,8 @@ segundo plano, fase 24.5), en terminal y en segundo plano. El agente
 lanzado recibe `CAI_CLIENT_NAME=<agente>`.
 
 **Niveles de gasto (fase 24.6, solo la UI).** `GET /agent/tiers` devuelve los tres niveles
-(`economy`, `balanced`, `max`) con el agente y el modelo de `process-jobs`, `assess-fit`,
-`review-replies` y `generate-cv`, si están editados (`custom`), si coinciden con tus preferencias
+(`economy`, `balanced`, `max`) con el agente y el modelo de `process-jobs`, `assess-fit`
+y `generate-cv`, si están editados (`custom`), si coinciden con tus preferencias
 (`active`), avisos (`notes`) y `can_undo`. `PUT /agent/tiers/{nivel}` guarda un nivel (se valida
 como las preferencias); `POST /agent/tiers/{nivel}/reset` vuelve a la propuesta;
 `POST /agent/tiers/{nivel}/apply` pone sus acciones en tus preferencias por acción y guarda las de

@@ -24,7 +24,7 @@ describe('Inicio', () => {
       level: 1,
       name: 'Tienes 28 ofertas por revisar, 1 CV listo para enviar y 1 seguimiento pendiente.',
     })
-    expect(within(heading).getByRole('link', { name: '28 ofertas por revisar' })).toHaveAttribute('href', '/por-revisar')
+    expect(within(heading).getByRole('link', { name: '28 ofertas por revisar' })).toHaveAttribute('href', '/bandeja/revision')
     expect(within(heading).getByRole('link', { name: '1 CV listo para enviar' })).toHaveAttribute(
       'href',
       '/bandeja?stage=cv_ready',
@@ -48,7 +48,7 @@ describe('Inicio', () => {
     })
     renderApp('/')
     const triage = await screen.findByRole('link', { name: /Te toca\s*4\s*Por revisar/ })
-    expect(triage).toHaveAttribute('href', '/por-revisar')
+    expect(triage).toHaveAttribute('href', '/bandeja/revision')
     expect(screen.getByRole('link', { name: /Empresa\s*2\s*Enviada/ })).toHaveAttribute('href', '/procesos')
     // En Inicio no sale la fila de recuentos de la cabecera.
     expect(screen.queryByRole('navigation', { name: 'Ofertas por etapa' })).not.toBeInTheDocument()
@@ -68,24 +68,6 @@ describe('Inicio', () => {
     expect(search?.get('dir')).toBe('desc')
   })
 
-  it('lleva a las respuestas por revisar y ofrece clasificar las nuevas con tu agente', async () => {
-    mockApi({
-      'GET /status': status(),
-      'GET /followups': noFollowups,
-      'GET /upcoming': noUpcoming,
-      'GET /jobs': page([]),
-      'GET /agent': { available: true, agent: 'claude', reason: null, actions: [] },
-      'GET /replies': { replies: [], counts: { new: 3, proposed: 2, accepted: 0, ignored: 0 } },
-    })
-    renderApp('/')
-    const heading = await screen.findByRole('heading', {
-      level: 1,
-      name: 'Tienes 2 respuestas de empresas por revisar.',
-    })
-    expect(within(heading).getByRole('link')).toHaveAttribute('href', '/respuestas')
-    expect(screen.getByText(/Para tu agente: 3 correos sin clasificar/)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Revisar respuestas/ })).toBeInTheDocument()
-  })
 })
 
 describe('Primeros pasos (app recién instalada)', () => {
@@ -111,6 +93,7 @@ describe('Primeros pasos (app recién instalada)', () => {
     expect(within(steps).getByText(/ordena tu búsqueda de empleo/)).toBeInTheDocument()
     expect(within(steps).getByRole('link', { name: 'Qué es y cómo se instala, en «Agente»' })).toHaveAttribute('href', '/agente')
     expect(within(steps).getByRole('link', { name: /Empieza a mano en «Mi perfil»/ })).toHaveAttribute('href', '/perfil')
+    expect(within(steps).getByRole('link', { name: /en «Cómo funciona»/ })).toHaveAttribute('href', '/como-funciona')
   })
 
   it('sin perfil, el titular cuenta los primeros pasos y la única acción rellena es la del paso', async () => {

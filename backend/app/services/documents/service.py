@@ -90,6 +90,8 @@ class CvView(BaseModel):
     created_at: datetime
     content: CvContent
     evidence: dict[str, str]  # evidencia citada -> su texto en la versión del perfil del CV
+    # Experiencia o proyecto -> «Puesto · Empresa» o su nombre: el contenido solo lleva sus ids.
+    labels: dict[str, str] = {}
     verification: CvVerification | None
     renders: list[RenderResult]
 
@@ -564,6 +566,36 @@ def template_preview(template_id: str) -> Path:
 # --- Contenido ------------------------------------------------------------------------------
 
 
+def render_options_of(session: Session, doc: Document) -> CvRenderOptions:
+    """El estilo del render seleccionado (o del último) de un CV, para repetirlo en otra versión.
+
+    Si su plantilla ya no existe, la elige la app."""
+    rows = _renders(session, doc.id)
+    chosen = next((r for r in rows if r.selected), rows[-1] if rows else None)
+    if chosen is None:
+        return CvRenderOptions()
+    resolved = options.ResolvedOptions.model_validate(chosen.options)
+    try:
+        template_id: str | None = templates.get(resolved.template_id).id
+    except templates.TemplateNotFoundError:
+        template_id = None
+    return CvRenderOptions(
+        template_id=template_id,
+        photo="include" if resolved.photo else "exclude",
+        accent_color=resolved.accent_color if template_id else None,
+        max_pages=resolved.max_pages,
+        hidden_sections=resolved.hidden_sections,
+        page_size=resolved.page_size,
+    )
+
+
+def item_labels(profile: CandidateProfile) -> dict[str, str]:
+    """Cómo se llama cada experiencia y proyecto, para enseñarlos en la UI."""
+    labels = {exp.id: f"{exp.role} · {exp.company}" for exp in profile.experience}
+    labels.update({prj.id: prj.name for prj in profile.projects})
+    return labels
+
+
 def save_content(
     session: Session,
     job_id: int,
@@ -582,12 +614,14 @@ def save_content(
         job, content, stored.profile, extraction, render_options or CvRenderOptions()
     )
 
+    base = latest_document(session, job_id)
     doc = Document(
         job_id=job_id,
         profile_version_id=stored.profile_version_id,
         kind=CV_KIND,
         language=content.language,
         content=content.model_dump(mode="json"),
+        base_document_id=base.id if base else None,
     )
     try:
         session.add(doc)
@@ -610,9 +644,14 @@ def save_content(
 
 
 def latest_document(session: Session, job_id: int) -> Document | None:
+    """La versión vigente del CV: la última que «Volver» no ha dejado detrás."""
     stmt = (
         select(Document)
-        .where(Document.job_id == job_id, Document.kind == CV_KIND)
+        .where(
+            Document.job_id == job_id,
+            Document.kind == CV_KIND,
+            Document.superseded.is_(False),
+        )
         .order_by(Document.id.desc())
         .limit(1)
     )
@@ -663,6 +702,7 @@ def get_content(
         created_at=doc.created_at,
         content=content,
         evidence={ref: refs.get(ref, "(no existe en el perfil)") for ref in dict.fromkeys(cited)},
+        labels=item_labels(profile),
         verification=CvVerification.model_validate(doc.verification) if doc.verification else None,
         renders=[_to_result(r, doc.job_id, hashes) for r in _renders(session, doc.id)],
     )

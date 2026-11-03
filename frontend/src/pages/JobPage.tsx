@@ -24,7 +24,6 @@ import { ArchivedApplication } from '@/components/ArchivedApplication'
 import { CoverLetterSection } from '@/components/CoverLetterSection'
 import { CompanyResearchSection } from '@/components/CompanyResearchSection'
 import { CvSection } from '@/components/CvSection'
-import { JobReplyNotice } from '@/components/JobReplyNotice'
 import { ClosedNotice, DoubtfulNote, RepostNote } from '@/components/JobSignals'
 import { DiscardDialog } from '@/components/DiscardDialog'
 import { DraftsSection } from '@/components/DraftsSection'
@@ -656,9 +655,9 @@ function JobTabs({ job }: { job: JobView }) {
 
       <TabsContent value="application" className="space-y-6">
         {sent && <ArchivedApplication job={job} />}
+        <CvSection job={job} />
         <PackageSection job={job} />
         <ApplySection job={job} />
-        <CvSection job={job} />
         <CoverLetterSection job={job} />
       </TabsContent>
 
@@ -709,7 +708,7 @@ export function JobPage() {
   const { data: job, isPending, isError, error, refetch } = useJob(id)
 
   return (
-    <div className="mx-auto max-w-4xl animate-in fade-in duration-300">
+    <div className="mx-auto max-w-5xl animate-in fade-in duration-300">
       <Link
         to="/bandeja"
         className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
@@ -760,7 +759,6 @@ export function JobPage() {
           <div className="mb-6 space-y-4 empty:hidden">
             {job.stage === 'pending_detail' && <MissingDetail job={job} />}
             {job.injection && <InjectionAlert injection={job.injection} />}
-            {wasSent(job) && <JobReplyNotice jobId={job.id} />}
             <ClosedNotice job={job} />
             <RepostNote job={job} />
             <DoubtfulNote job={job} />

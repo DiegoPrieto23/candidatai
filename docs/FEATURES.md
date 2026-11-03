@@ -22,7 +22,8 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 | **Target companies**: their jobs come in every day from Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters and Recruitee (public APIs, no scraping); "Test" shows how many pass your filters | `/fuentes/empresas` | [Companies](img/en/sources-companies.webp) |
 | **Job boards** (in “Where to search”): **Set up with my agent** recommends job boards and prepares their searches; when you add a known one (InfoJobs, Tecnoempleo, Indeed, LinkedIn), the searches come from the roles and locations in your profile, and each job board can be edited. The ones your agent browses, with a unique priority each, access type and jobs per run, each explained with its ⓘ; InfoJobs and Adzuna with keys, Manfred and freehire.me without | `/fuentes/plataformas` | [Platforms](img/en/sources-platforms.webp) |
 | **Search portals with your browser**: your agent walks your saved searches, with page limits and pauses, adds what fits and stops at captchas | `search-jobs` | |
-| **Job alerts by email**: LinkedIn, InfoJobs, Indeed… alerts come in by themselves, read-only over IMAP or from `.eml` files; **several mailboxes**, with a step-by-step guide for Gmail, Outlook, Yahoo and iCloud; summary jobs expire after 21 days | `/alertas` | [Alerts](img/en/alerts.webp) · [▶ Add a mailbox](img/en/anim/mailbox.webp) |
+| **Job alerts by email**: LinkedIn, InfoJobs, Indeed… alerts come in by themselves, read-only over IMAP or from `.eml` files; **several mailboxes**, with a step-by-step guide for Gmail, Outlook, Yahoo and iCloud; summary jobs expire after 21 days | `/fuentes/correo` | [▶ Add a mailbox](img/en/anim/mailbox.webp) |
+| **Complete summary jobs**: jobs that arrive as a summary, one by one: open them on their portal, send them with the browser button or discard them, with `J`/`K`, `O`, `D` and Undo; those that fail your filters stay folded away | `/bandeja/por-completar` | [To complete](img/en/alerts.webp) |
 | **"Send to CandidatAI" button**: a Chrome/Edge/Brave extension that sends the job you're viewing (LinkedIn included) or completes an alert summary. The “Browser button” tab guides you through loading it, warns if it's out of date and connects it in one click, without the terminal | `/fuentes/extension` | [Browser button](img/en/sources-extension.webp) |
 | **LinkedIn public search** (off by default, at your own risk): once a day, without your account or cookies; your agent can't turn it on | `/fuentes/plataformas` | |
 | **Find your companies' job boards** from a list of names | `cai sources discover` | |
@@ -35,8 +36,9 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 | Feature | Where | Screenshot |
 |---|---|---|
 | **Home**: on a fresh install, what the app does and what your agent is, and “Getting started” (upload your CV to create your profile, or start it by hand, and choose where to search with your agent); with no agent installed, “You need an AI agent” with the steps to install Claude Code; then what's waiting today (jobs to process or assess, replies, follow-ups), the best fits, ready to send and the next milestones | `/` | [Home](img/en/home.webp) |
-| **Hard filters and an explained 0-100 fit** (“good fit”, “possible fit” or “low fit”, and on hover what each part measures; without a fit, the job page says what's missing): level, years, remote mode, location, languages and words that discard; skill coverage weighted by your level, preferences and optional local semantic similarity | `/por-revisar` | [To review](img/en/triage.webp) |
-| **Review with the keyboard**: `J`/`K` to move, `A` approve, `D` discard with a reason, `O` open, and Undo | `/por-revisar` | [▶ Keyboard](img/en/anim/triage.webp) |
+| **How it works**: who does what (you, your agent and the app), the whole journey in five steps with a link to each screen, and the guides, always at hand in the menu | `/como-funciona` | [How it works](img/en/how-it-works.webp) |
+| **Hard filters and an explained 0-100 fit** (“good fit”, “possible fit” or “low fit”, and on hover what each part measures; without a fit, the job page says what's missing): level, years, remote mode, location, languages and words that discard; skill coverage weighted by your level, preferences and optional local semantic similarity | `/bandeja/revision` | [To review](img/en/triage.webp) |
+| **Review with the keyboard**: `J`/`K` to move, `A` approve, `D` discard with a reason, `O` open, and Undo | `/bandeja/revision` | [▶ Keyboard](img/en/anim/triage.webp) |
 | **Your agent's verdict**: fit with risks and questions, citing your deal-breakers; in the background it skips low-fit jobs. It always flags jobs with possible text aimed at an AI, which never come out as a strong fit. On each job, “Assess this job”; for all of them, “Assess pending jobs” when it has no assessment or an outdated one | `assess-fit` | |
 | **"You know N people here"**: your LinkedIn connections (official CSV export) matched to each company | `/jobs/:id` | |
 | **The job page**, in tabs (Posting, Application, Process, Company, History & notes) that open on the one that fits the stage: extraction, fit breakdown, signals, history, notes, cost in agent time, and every section below | `/jobs/:id` | [Job](img/en/job.webp) |
@@ -46,9 +48,11 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 | Feature | Where | Screenshot |
 |---|---|---|
 | **Tailored CV**: with your instructions for that job if you want (what to highlight, the language…); your agent writes it citing evidence from your profile for every line; the code rejects what isn't there and a separate role verifies it; the job page shows a notice with the PDF as soon as it's ready | `generate-cv` | |
+| **CV editor**: the CV at reading size next to a panel to ask for changes, edit the text or change the design | | |
+| **Correct a CV you already have**: say what to change and your agent touches only that, without inventing anything and verifying the result, or edit the text yourself (the app warns about what your profile doesn't back); every version is kept, with what changed and “Go back to this version” | `correct-cv`, `verify-cv` | |
 | **Same content, any design**: template, photo, colour and sections in the job page, rendered in seconds without the agent; compare renders and mark the one you send; the PDF layout is checked | `/jobs/:id` | [CV](img/en/job-cv.webp) · [▶ Another design](img/en/anim/cv.webp) |
 | **Cover letter** following your general and per-job instructions, verified, as TXT and PDF matching the CV design; edit it by hand if you want. On the job page, **Write letter** asks for it like **Generate CV**: in a terminal, in the background or for your next session | `generate-cover-letter` | [Letter](img/en/job-letter.webp) |
-| **CV templates**: built-in (Word and HTML) and yours; "My CV" side by side with your profile | `/plantillas` | [Templates](img/en/templates.webp) |
+| **CV templates**: built-in (Word and HTML) and yours; "My CV" side by side with your profile | `/perfil/plantillas` | [Templates](img/en/templates.webp) |
 | **Import your own CV design** from Word, PDF, an image, HTML, Canva or Google Docs as a template | `import-cv-template` | |
 
 ## 4. Apply
@@ -66,9 +70,7 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 |---|---|---|
 | **Processes**: a kanban that only moves through recorded events (mouse, keyboard or touch), received offers side by side and follow-up reminders | `/procesos` | [Processes](img/en/processes.webp) |
 | **Process page**: milestones with date and time (edit, cancel or, if added by mistake, delete them), contacts and referrals, drafts and **What happened?**, which once in process records another interview, a test or the offer, and only lets you accept once there's an offer | `/jobs/:id` | [Process](img/en/job-interview.webp) |
-| **Calendar**: interviews, tests and deadlines, with an `.ics` per milestone and a feed for Google Calendar | `/calendario` | [Calendar](img/en/calendar.webp) |
-| **Company replies**: the app reads your email read-only and keeps only messages from companies you applied to. When you accept or ignore one, a notice says which job it was logged on; **Ignore** can be undone from it. With the keyboard: `J`/`K` to move, `A` accept, `I` ignore | `/respuestas` | [Replies](img/en/replies.webp) |
-| **Classify replies**: your agent proposes interview (with its date), test, offer, rejection or nothing; nothing changes stage until you accept | `review-replies` | |
+| **Calendar**: interviews, tests and deadlines, with an `.ics` per milestone and a feed for Google Calendar | `/procesos/calendario` | [Calendar](img/en/calendar.webp) |
 | **Follow-ups and thank-you notes** as drafts (at most 2 follow-ups per application) | `draft-follow-up` | |
 
 ## 6. Interviews and offers
@@ -76,7 +78,7 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 | Feature | Where | Screenshot |
 |---|---|---|
 | **Company research** with sources: product, news, engineering culture, stack and red flags | `research-company` | [Dossier](img/en/job-research.webp) |
-| **Interview prep**: a PDF guide and a day-by-day plan, shown under the interview; each round with its type (HR, technical, case, final) and your instructions, which the mock interview uses too | `prepare-interview` | [Plan](img/en/job-interview.webp) |
+| **Interview prep**: a PDF guide and a day-by-day plan, shown under the interview; each round with its type (HR, technical, case, final) and your instructions, which the mock interview uses too; ask for changes to a guide you already have, even after the interview, and your agent touches only that; the previous version is kept, with what changed and **Go back to the previous version** | `prepare-interview`, `correct-interview-guide` | [Plan](img/en/job-interview.webp) |
 | **Mock interview**: one question at a time, concrete feedback and a better answer from your profile only | `mock-interview` | |
 | **Debrief**: notes and next steps, the next round predicted and new STAR stories proposed; with a received offer, what to clarify before accepting | `debrief-interview` | |
 | **Received offers** compared against your minimum and the posted range, **without your agent ever seeing your minimum** | `/procesos` | [Received offer](img/en/job-offer.webp) |
@@ -90,7 +92,7 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 | **"Is the fit right?"**: reply and interview rates by fit, verdict, source, template, letter and referral, with 95 % intervals, under "More analysis" in the Funnel | `/embudo` | |
 | **Your search in numbers**, ready to share (figures only, never companies), under "More analysis" in the Funnel | `/embudo` · `cai stats story` | |
 | **Weekly retrospective**: what's working and what to change, without touching weights or filters | `review-search` | |
-| **Skills**: what your jobs ask for that your profile lacks; "it's the same as…" aliases, "I have it" and "I don't have it", 25 at a time | `/skills` | [Skills](img/en/skills.webp) |
+| **Skills**: what your jobs ask for that your profile lacks; "it's the same as…" aliases, "I have it" and "I don't have it", 25 at a time | `/perfil/skills` | [Skills](img/en/skills.webp) |
 | **Training plan** with verified resources for your real gaps, and an assessment of a course or project | `training-plan` | |
 | **Widen the search** with adjacent job titles from what you approve and discard | `broaden-search` | |
 | **My profile, editable**: with no profile yet, you upload your CV and your agent builds it from it, or you start it by hand (name, headline, role and levels); context files are created from their template even before you have a profile; an index to jump to each section; skills and languages at the top; collapsible experience, projects, education, certifications and STAR stories; **Search** preferences (years, private minimum salary, words that discard, contract, company type), CV and letter preferences, context and style samples; the unsaved-changes notice names the blocks and takes you to them; keeps your file's comments, with Undo | `/perfil` | [Experience](img/en/profile-experience.webp) · [Search](img/en/profile-search.webp) · [▶ Collapsible](img/en/anim/profile.webp) |
