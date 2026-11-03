@@ -468,6 +468,11 @@ def _funnel_since(page: Page, preset: str) -> str | None:
 
 def _check_against_agent_interface(page: Page, server: AppServer, since: str | None) -> list[int]:
     stats = cai(server, "stats", "funnel", *(["--since", since] if since else []))
+    # Las cifras van plegadas en «Tu embudo»; cada periodo o recarga las puede volver a plegar.
+    numbers = page.get_by_role("button", name=t("funnel.flow.numbers"))
+    expect(numbers).to_be_visible()
+    if numbers.get_attribute("aria-expanded") == "false":
+        numbers.click()
     # Se espera a que la página pinte las cifras de ese periodo (las del anterior siguen hasta
     # que llega la respuesta).
     funnel = page.locator("table").filter(
@@ -477,13 +482,24 @@ def _check_against_agent_interface(page: Page, server: AppServer, since: str | N
     expect(funnel.locator("tbody td:first-of-type")).to_have_text(
         [re.compile(rf"^{s['count']}(\D|$)") for s in stats["steps"]]
     )
-    # El gráfico de embudo: una franja visible por etapa, también las que están a 0.
-    strips = page.locator(".recharts-funnel-trapezoid")
-    expect(strips).to_have_count(len(stats["steps"]))
-    for strip in strips.all():
-        box = strip.bounding_box()
-        assert box is not None
-        assert box["width"] > 0
+    # El gráfico dice las mismas cifras, y un paso con candidaturas se dibuja con su alto.
+    by_step = {s["step"]: s["count"] for s in stats["steps"]}
+    if by_step["applied"]:
+        chart = page.locator("section[aria-labelledby=funnel-flow] svg[role=img]")
+        expect(chart).to_have_attribute(
+            "aria-label",
+            t(
+                "funnel.flow.chartLabel",
+                applied=by_step["applied"],
+                replied=by_step["replied"],
+                interview=by_step["interview"],
+                offer=by_step["offer"],
+                accepted=by_step["accepted"],
+            ),
+        )
+        first = chart.locator("rect").first.bounding_box()
+        assert first is not None
+        assert first["height"] > 0
     steps = _table(page, t("funnel.funnel.caption"))
     assert [row[0] for row in steps] == [t(f"funnel.steps.{s['step']}") for s in stats["steps"]]
     assert [_numbers(row[1])[0] for row in steps] == [s["count"] for s in stats["steps"]]

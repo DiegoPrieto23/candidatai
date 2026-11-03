@@ -28,6 +28,7 @@ import {
   type ProfileData,
 } from './types'
 import { useTemplateText } from '@/lib/templateText'
+import { BusyLabel } from '@/components/StableLabel'
 
 const prefs = (p: ProfileData): Preferences =>
   p.preferences ?? { roles: [], seniority_target: [], remote_modes: [], languages_for_work: [], cv: { photo_policy: { default: true } } }
@@ -206,7 +207,7 @@ function SalaryFloorField() {
             )
           }
         >
-          {save.isPending ? t('actions.saving') : t('fields.salarySave')}
+          <BusyLabel busy={save.isPending} busyText={t('actions.saving')} text={t('fields.salarySave')} />
         </Button>
         <span role="status" className="text-xs text-emerald-700 dark:text-emerald-400">
           {saved && !dirty ? t('fields.salarySaved') : null}

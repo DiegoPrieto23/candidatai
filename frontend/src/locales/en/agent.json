@@ -120,9 +120,9 @@
   "semantic": "Meaning-based comparison",
   "summary": {
     "ready": "Your agent: {{agent}}, ready",
-    "readyHint": "The buttons with sparkles all over the app open it in a separate window with the command already written: there you see what it does and approve it.",
+    "readyHint": "The buttons with the robot all over the app open it in a separate window with the command already written: there you see what it does and approve it.",
     "cantOpen": "Your agent: I can't open it from here",
-    "cantOpenHint": "{{reason}} The buttons with sparkles show you the command so you can copy it and paste it into your agent.",
+    "cantOpenHint": "{{reason}} The buttons with the robot show you the command so you can copy it and paste it into your agent.",
     "notTheChat": "<strong>Claude isn't the same as Claude Code.</strong> Claude is the chat app or the website (claude.ai). Claude Code is a program you install on your computer, with the same account and subscription, and it's the one CandidatAI uses."
   }
 }

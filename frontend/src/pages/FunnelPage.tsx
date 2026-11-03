@@ -7,8 +7,6 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  Funnel,
-  FunnelChart,
   LabelList,
   Legend,
   ResponsiveContainer,
@@ -20,6 +18,7 @@ import type { Calibration, CalibrationGroup, FunnelStats, Schemas } from '@/api/
 import { useCalibration, useFunnelStats, useSearchStory } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
 import { CopyButton } from '@/components/CopyButton'
+import { FunnelFlow } from '@/components/FunnelFlow'
 import { Reveal } from '@/components/Reveal'
 import { EmptyState, ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
@@ -27,7 +26,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { funnelStrips } from '@/lib/funnelStrips'
 import { i18n } from '@/lib/i18n'
 import {
   dateFormatter,
@@ -218,66 +216,6 @@ function HorizontalBars({
 }
 
 // --- Secciones ------------------------------------------------------------------------------
-
-const FUNNEL_ROW_HEIGHT = 52
-
-function FunnelPanel({ stats }: { stats: FunnelStats }) {
-  const { t } = useTranslation('funnel')
-  const height = stats.steps.length * FUNNEL_ROW_HEIGHT
-  return (
-    <Panel
-      title={t('funnel.title')}
-      hint={
-        <>
-          {t('funnel.hint')}
-          {stats.duplicates_excluded > 0 && t('funnel.duplicates', { count: stats.duplicates_excluded })}
-        </>
-      }
-    >
-      <div aria-hidden="true" className="grid grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-3">
-        <ResponsiveContainer width="100%" height={height} initialDimension={{ width: 200, height }}>
-          <FunnelChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
-            <Funnel
-              data={funnelStrips(stats.steps)}
-              dataKey="width"
-              nameKey="name"
-              lastShapeType="rectangle"
-              stroke="var(--card)"
-              strokeWidth={2}
-              isAnimationActive={false}
-            />
-          </FunnelChart>
-        </ResponsiveContainer>
-        {/* Cada fila mide lo mismo que su franja: fuera de la franja, el texto no se solapa aunque sea estrecha. */}
-        <ol data-testid="funnel-rows">
-          {stats.steps.map((s, i) => (
-            <li key={s.step} className="flex flex-col justify-center leading-tight" style={{ height: FUNNEL_ROW_HEIGHT }}>
-              <span className="flex items-baseline justify-between gap-2 text-sm">
-                <span className="min-w-0 truncate">{t(`steps.${s.step}`)}</span>
-                <span className="tabular font-medium">{intFmt.format(s.count)}</span>
-              </span>
-              {i > 0 && (
-                <span className="text-xs text-muted-foreground">
-                  {t('funnel.rates', { previous: pct(s.rate_from_previous), start: pct(s.rate_from_start) })}
-                </span>
-              )}
-            </li>
-          ))}
-        </ol>
-      </div>
-      <SrTable
-        caption={t('funnel.caption')}
-        head={['', t('funnel.countHead'), t('funnel.fromPreviousHead'), t('funnel.fromStartHead')]}
-        rows={stats.steps.map((s) => [
-          t(`steps.${s.step}`),
-          intFmt.format(s.count),
-          pct(s.rate_from_previous),
-          pct(s.rate_from_start),
-        ])}
-      />
-    </Panel>
-  )
-}
 
 function WeekChart({ weeks }: { weeks: Schemas['WeekFunnel'][] }) {
   const { t } = useTranslation('funnel')
@@ -523,10 +461,8 @@ function Dashboard({ stats, since }: { stats: FunnelStats; since: string | null 
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
-        <FunnelPanel stats={stats} />
-        <ResponseTimePanel rt={stats.response_time} />
-      </div>
+      <FunnelFlow since={since} />
+      <ResponseTimePanel rt={stats.response_time} />
 
       <Panel title={t('bySource.title')} hint={t('bySource.hint')}>
         <BreakdownTable

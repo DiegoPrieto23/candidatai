@@ -37,6 +37,7 @@ ROUTES = [
     Route("/calendario", "calendar.title"),
     Route("/respuestas", "replies.page.title"),
     Route("/buscar", "search.title"),
+    Route("/buscar/ajustes", "search.settings.title"),
     Route("/embudo", "funnel.title"),
     Route("/perfil", "profile.title"),
     Route("/perfil/skills", "skills.title"),

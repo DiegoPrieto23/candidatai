@@ -70,6 +70,25 @@ class SourceRun(Base):
     errors: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
 
 
+class SearchRun(Base):
+    """Una búsqueda abierta desde la UI en la terminal del agente (`services/search_runs.py`).
+
+    `source_ids`: los portales que tenía que recorrer. `after_source_run_id`: el último recorrido
+    anotado al empezar; los de esta búsqueda son los posteriores. `outcome`: `done`, `no_browser` o
+    `stopped`, lo que dijo el agente al terminar. `dismissed_at`: el aviso ya está cerrado.
+    """
+
+    __tablename__ = "search_runs"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    source_ids: Mapped[list[int]] = mapped_column(JSON)
+    after_source_run_id: Mapped[int] = mapped_column(default=0)
+    outcome: Mapped[str | None] = mapped_column(String(16))
+    started_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
+    finished_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
+    dismissed_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
+
+
 class EmailMessage(Base):
     """Correo de alertas ya procesado. Solo su `Message-ID`, nunca el cuerpo."""
 

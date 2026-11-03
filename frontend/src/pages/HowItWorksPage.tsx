@@ -19,7 +19,7 @@ const STEPS = [
     actors: ['you', 'agent'],
     links: [
       { to: '/perfil', label: 'entries.profile' },
-      { to: '/fuentes', label: 'entries.sources' },
+      { to: '/fuentes', label: 'tabs.sources' },
       { to: '/agente', label: 'entries.agent' },
     ],
   },

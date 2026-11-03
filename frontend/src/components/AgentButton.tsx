@@ -1,11 +1,12 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
+import { Popover } from 'radix-ui'
 import {
   ArrowsLeftRightIcon,
   CaretDownIcon,
   ClockCountdownIcon,
   GearSixIcon,
-  SparkleIcon,
+  RobotIcon,
   TerminalWindowIcon,
   XIcon,
 } from '@phosphor-icons/react'
@@ -59,7 +60,7 @@ type Feedback = {
  * eventos; sin ratón, la ayuda va también en el desplegable y, para lectores de pantalla, en
  * `aria-describedby`.
  *
- * Lo que lanza tu agente se reconoce por el icono de destellos. Solo la acción principal de cada
+ * Lo que lanza tu agente se reconoce por el icono del robot. Solo la acción principal de cada
  * pantalla va rellena (`primary`); las demás, con borde, para que no compitan entre sí. El agente
  * con el que se abre no ocupa sitio en el botón: va en el globo y en el desplegable.
  */
@@ -181,7 +182,16 @@ export function AgentButton({
   const mechanism = agent ? t('titleAgent', { agent: shownAgent ?? agent }) : t('titleCopy')
   const variant = primary ? 'default' : 'outline'
   return (
-    <span data-slot="agent-button" className={cn('inline-flex flex-col items-start gap-1.5', className)}>
+    <Popover.Root
+      open={prompt !== null || feedback !== null}
+      onOpenChange={(open) => {
+        if (open) return
+        setPrompt(null)
+        setFeedback(null)
+      }}
+    >
+    <span data-slot="agent-button" className={cn('inline-flex', className)}>
+      <Popover.Anchor asChild>
       <span className="inline-flex">
         <Hint
           text={
@@ -213,7 +223,7 @@ export function AgentButton({
               className="rounded-r-none"
               aria-describedby={hintId}
             >
-              <SparkleIcon weight="duotone" className={cn(!primary && 'text-primary')} />
+              <RobotIcon className={cn(!primary && 'text-primary')} />
               {children}
             </Button>
           </span>
@@ -315,8 +325,27 @@ export function AgentButton({
           </DropdownMenuContent>
         </DropdownMenu>
       </span>
+      </Popover.Anchor>
+    </span>
+    {/* Flota: un aviso no ensancha el botón ni mueve lo que tiene alrededor. */}
+    <Popover.Portal>
+      <Popover.Content
+        side="bottom"
+        align="start"
+        sideOffset={6}
+        collisionPadding={16}
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        onCloseAutoFocus={(e) => e.preventDefault()}
+        // No se cierra por tocar otra cosa (ni al cerrarse el desplegable que lo lanzó): el aviso se
+        // va solo y la orden para copiar, con su botón.
+        onInteractOutside={(e) => e.preventDefault()}
+        className={cn(
+          'z-50 rounded-lg border bg-popover text-popover-foreground shadow-md outline-none animate-in fade-in-0 duration-150',
+          prompt ? 'w-[28rem] max-w-[calc(100vw-2rem)]' : 'max-w-sm px-3 py-2 leading-snug',
+        )}
+      >
       {prompt && (
-        <span role="group" aria-labelledby={`${hintId}-prompt`} className="grid w-full max-w-md gap-2 rounded-lg border border-warning-border bg-warning/40 p-3 text-sm">
+        <span role="group" aria-labelledby={`${hintId}-prompt`} className="grid gap-2 rounded-lg border border-warning-border bg-warning/40 p-3 text-sm">
           <span className="flex items-start justify-between gap-2">
             <span id={`${hintId}-prompt`} aria-live="polite" className="font-medium">{launcher.data?.no_agent_installed ? t('noAgent') : t('cantOpen')}</span>
             <Button type="button" size="icon-sm" variant="ghost" className="-mt-1 -mr-1" aria-label={t('closePrompt')} onClick={() => setPrompt(null)}>
@@ -349,6 +378,8 @@ export function AgentButton({
           </>
         )}
       </span>
-    </span>
+      </Popover.Content>
+    </Popover.Portal>
+    </Popover.Root>
   )
 }

@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { errorMessage } from '@/lib/errors'
 import { cn } from '@/lib/utils'
+import { BusyLabel } from '@/components/StableLabel'
 
 function PollResult({ result, onClose }: { result: EmailPollResult; onClose: () => void }) {
   const { t } = useTranslation('alerts')
@@ -44,7 +45,7 @@ export function EmailAlertsPage() {
   const empty = sources.isSuccess && sources.data.sources.length === 0
 
   return (
-    <div className="mx-auto w-full max-w-3xl animate-in fade-in duration-300">
+    <div className="w-full max-w-3xl animate-in fade-in duration-300">
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">{t('email.title')}</h1>
@@ -63,7 +64,7 @@ export function EmailAlertsPage() {
             className="active:translate-y-px"
           >
             <ArrowsClockwiseIcon className={cn(poll.isPending && 'animate-spin')} />
-            {poll.isPending ? t('reading') : t('poll')}
+            <BusyLabel busy={poll.isPending} busyText={t('reading')} text={t('poll')} />
           </Button>
         </div>
       </div>

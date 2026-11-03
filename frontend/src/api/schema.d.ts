@@ -1579,6 +1579,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/stats/flow": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Funnel Flow
+         * @description «Tu embudo», en la portada y en «Embudo»: los pasos y dónde se quedó cada candidatura.
+         */
+        get: operations["get_funnel_flow"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/stats/funnel": {
         parameters: {
             query?: never;
@@ -2234,6 +2254,46 @@ export interface paths {
          * @description Abre tu agente en una terminal con la orden ya escrita. Tú ves y apruebas lo que haga.
          */
         post: operations["launch_agent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/agent/search-run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Search Run
+         * @description La búsqueda de la que avisa la UI («Buscando…», terminada), si hay alguna sin cerrar.
+         */
+        get: operations["get_search_run"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/agent/search-run/{run_id}/dismiss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Dismiss Search Run
+         * @description Cierra el aviso. Si la búsqueda seguía abierta, la app deja de seguirla.
+         */
+        post: operations["dismiss_search_run"];
         delete?: never;
         options?: never;
         head?: never;
@@ -5136,6 +5196,17 @@ export interface components {
             /** Cost Per Interview Usd */
             cost_per_interview_usd: number | null;
         };
+        /** FunnelFlow */
+        FunnelFlow: {
+            /** Since */
+            since: string | null;
+            /** Duplicates Excluded */
+            duplicates_excluded: number;
+            /** Steps */
+            steps: components["schemas"]["FunnelStep"][];
+            /** Stops */
+            stops: components["schemas"]["FunnelStop"][];
+        };
         /** FunnelStats */
         FunnelStats: {
             /** Since */
@@ -5174,6 +5245,24 @@ export interface components {
             rate_from_previous: number | null;
             /** Rate From Start */
             rate_from_start: number | null;
+        };
+        /**
+         * FunnelStop
+         * @description Las candidaturas que llegaron hasta `step` y no más, y cómo están (`open`: vivas).
+         */
+        FunnelStop: {
+            /**
+             * Step
+             * @enum {string}
+             */
+            step: "found" | "triaged" | "approved" | "applied" | "replied" | "interview" | "offer" | "accepted";
+            /**
+             * Outcome
+             * @enum {string}
+             */
+            outcome: "open" | "rejected" | "withdrawn" | "expired";
+            /** Count */
+            count: number;
         };
         /** GapExample */
         GapExample: {
@@ -7794,6 +7883,42 @@ export interface components {
             evidence: string[];
             /** Needs User Input */
             needs_user_input: boolean;
+        };
+        /** SearchRunResponse */
+        SearchRunResponse: {
+            run: components["schemas"]["SearchRunView"] | null;
+        };
+        /**
+         * SearchRunView
+         * @description Lo que enseña el aviso. `problems` no cuenta las notas del agente.
+         */
+        SearchRunView: {
+            /** Id */
+            id: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "running" | "stale" | "finished";
+            /** Outcome */
+            outcome: ("done" | "no_browser" | "stopped") | null;
+            /** Portals Total */
+            portals_total: number;
+            /** Portals Done */
+            portals_done: number;
+            /** Found */
+            found: number;
+            /** Created */
+            created: number;
+            /** Problems */
+            problems: number;
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            /** Finished At */
+            finished_at: string | null;
         };
         /**
          * SearchScope
@@ -16438,6 +16563,100 @@ export interface operations {
             };
         };
     };
+    get_funnel_flow: {
+        parameters: {
+            query?: {
+                since?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FunnelFlow"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     get_funnel_stats: {
         parameters: {
             query?: {
@@ -19590,6 +19809,196 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LaunchResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_search_run: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SearchRunResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    dismiss_search_run: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmptyBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SearchRunResponse"];
                 };
             };
             /** @description Unauthorized */

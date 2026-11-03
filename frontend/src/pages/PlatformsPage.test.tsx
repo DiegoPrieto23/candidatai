@@ -107,8 +107,8 @@ describe('Plataformas', () => {
     expect(calls.find((c) => c.path === '/sources')?.search.get('kind')).toBe('agent_browse')
     // Cada una, en una línea: su último recorrido; lo demás, plegado.
     expect(screen.getByText(/12 encontradas,\s+3 nuevas$/)).toBeInTheDocument()
-    expect(screen.getByText(/· 1 incidente/)).toBeInTheDocument()
-    // Plegados aunque haya incidentes: la línea del recorrido ya los cuenta.
+    expect(screen.getByText(/· 1 problema/)).toBeInTheDocument()
+    // Plegados aunque haya problemas: la línea del recorrido ya los cuenta.
     expect(screen.queryByText('Captcha en la página 2: se para.')).not.toBeInTheDocument()
     expect(screen.queryByRole('combobox', { name: 'Prioridad de LinkedIn' })).not.toBeInTheDocument()
     await openSettings()

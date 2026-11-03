@@ -18,6 +18,7 @@ import { errorMessage } from '@/lib/errors'
 import { isTyping } from '@/lib/keyboard'
 import { useRadioGroup } from '@/lib/radioGroup'
 import { cn } from '@/lib/utils'
+import { BusyLabel } from '@/components/StableLabel'
 
 type Filter = 'pending' | 'accepted' | 'ignored' | 'all'
 
@@ -321,7 +322,7 @@ export function RepliesPage() {
             className="active:translate-y-px"
           >
             <ArrowsClockwiseIcon className={cn(poll.isPending && 'animate-spin')} />
-            {poll.isPending ? t('reading') : t('poll')}
+            <BusyLabel busy={poll.isPending} busyText={t('reading')} text={t('poll')} />
           </Button>
         </div>
       </div>

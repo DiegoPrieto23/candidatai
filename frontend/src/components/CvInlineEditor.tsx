@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { errorMessage } from '@/lib/errors'
+import { BusyLabel } from '@/components/StableLabel'
 
 // Los límites de `CvContent`.
 const MAX_SUBTITLE = 200
@@ -180,7 +181,7 @@ function EditForm({ cv, jobId, onSaved }: { cv: CvView; jobId: number; onSaved: 
       )}
       <Button type="submit" disabled={!dirty || edit.isPending} className="active:translate-y-px">
         <FloppyDiskIcon />
-        {edit.isPending ? t('saving') : t('save')}
+        <BusyLabel busy={edit.isPending} busyText={t('saving')} text={t('save')} />
       </Button>
     </form>
   )

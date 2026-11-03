@@ -39,6 +39,7 @@ import { i18n } from '@/lib/i18n'
 import { dateFormatter, SOURCE_KIND_LABEL } from '@/lib/labels'
 import { platformHome } from '@/lib/searches'
 import { cn } from '@/lib/utils'
+import { BusyLabel } from '@/components/StableLabel'
 
 type Portal = 'infojobs' | 'adzuna' | 'manfred' | 'freehire'
 
@@ -413,10 +414,10 @@ function AddSourceForm({ onAdded }: { onAdded?: () => void }) {
 
       <div className="flex flex-wrap justify-end gap-2">
         <Button type="button" variant="outline" disabled={!ready || preview.isPending} onClick={test} className="h-10">
-          {preview.isPending ? t('testing') : t('test')}
+          <BusyLabel busy={preview.isPending} busyText={t('testing')} text={t('test')} />
         </Button>
         <Button type="submit" disabled={!ready || add.isPending} className="h-10 px-5 active:translate-y-px">
-          {add.isPending ? t('saving') : t('add')}
+          <BusyLabel busy={add.isPending} busyText={t('saving')} text={t('add')} />
         </Button>
       </div>
     </form>
@@ -452,7 +453,7 @@ function Website({ source }: { source: SourceView }) {
             className="h-8 w-56 bg-background text-sm"
           />
           <Button type="submit" size="sm" disabled={save.isPending}>
-            {save.isPending ? t('saving') : t('save')}
+            <BusyLabel busy={save.isPending} busyText={t('saving')} text={t('save')} />
           </Button>
           <Button type="button" size="sm" variant="ghost" onClick={() => setEditing(false)}>
             {t('cancel')}
@@ -546,11 +547,11 @@ function SourceRow({ source }: { source: SourceView }) {
         </div>
         <div className="flex flex-wrap gap-1.5">
           <Button variant="outline" size="sm" disabled={busy} onClick={() => preview.mutate(source.id)}>
-            {preview.isPending ? t('testing') : t('test')}
+            <BusyLabel busy={preview.isPending} busyText={t('testing')} text={t('test')} />
           </Button>
           <Button variant="outline" size="sm" disabled={busy || !source.active} onClick={() => run.mutate(source.id)}>
             <PlayIcon weight="fill" />
-            {run.isPending ? t('running') : t('run')}
+            <BusyLabel busy={run.isPending} busyText={t('running')} text={t('run')} />
           </Button>
           <Button
             variant="ghost"
@@ -602,7 +603,7 @@ export function SourcesPage() {
   const [adding, setAdding] = useState(false)
   const none = sources.isSuccess && !sources.data.sources.some((s) => CONNECTOR_KINDS.has(s.kind))
   return (
-    <div className="mx-auto max-w-3xl animate-in fade-in duration-300">
+    <div className="max-w-3xl animate-in fade-in duration-300">
       <div className="mb-8 flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
         <div className="min-w-0 flex-1">
           <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>

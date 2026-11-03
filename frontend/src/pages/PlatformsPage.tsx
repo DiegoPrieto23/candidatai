@@ -32,7 +32,9 @@ import { errorMessage } from '@/lib/errors'
 import { i18n } from '@/lib/i18n'
 import { dateFormatter } from '@/lib/labels'
 import { platformHome, searchLabel } from '@/lib/searches'
+import { splitIssues } from '@/lib/runIssues'
 import { cn } from '@/lib/utils'
+import { BusyLabel } from '@/components/StableLabel'
 
 const ACCESS: readonly BrowseAccess[] = ['free', 'login', 'blocked']
 // Ofertas que abre el agente en cada recorrido (el servidor acepta de 1 a 100).
@@ -90,7 +92,7 @@ function Searches({ urls, name }: { urls: string[]; name: string }) {
   )
 }
 
-type CountKey = 'found' | 'new' | 'known' | 'issues' | 'offers' | 'pages' | 'afterFilters'
+type CountKey = 'found' | 'new' | 'known' | 'problems' | 'notes' | 'offers' | 'pages' | 'afterFilters'
 
 function plural(key: CountKey, count: number): string {
   return i18n.t(`platforms:counts.${key}`, { count })
@@ -134,7 +136,7 @@ function LinkedInRiskDialog({
             {t('cancel')}
           </Button>
           <Button variant="destructive" disabled={pending} onClick={onConfirm}>
-            {pending ? t('activating') : t('activate')}
+            <BusyLabel busy={pending} busyText={t('activating')} text={t('activate')} />
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -193,7 +195,7 @@ function PublicRiskDialog({
             {t('cancel')}
           </Button>
           <Button variant="destructive" disabled={pending} onClick={onConfirm}>
-            {pending ? t('activating') : detail ? t('download') : t('activate')}
+            <BusyLabel busy={pending} busyText={t('activating')} text={detail ? t('download') : t('activate')} />
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -338,7 +340,7 @@ function LinkedInPublicPanel() {
             disabled={runNow.isPending || waiting || view.searches.length === 0}
             onClick={() => runNow.mutate()}
           >
-            {runNow.isPending ? t('searching') : t('searchNow')}
+            <BusyLabel busy={runNow.isPending} busyText={t('searching')} text={t('searchNow')} />
           </Button>
           {waiting && !blocked && view.next_run_at && (
             <span className="text-xs text-muted-foreground">
@@ -372,7 +374,7 @@ function LinkedInPublicPanel() {
 
 // --- Una plataforma ------------------------------------------------------------------------------
 
-/** El último recorrido en una línea («11 oct · 34 encontradas, 15 nuevas · 2 incidentes»). */
+/** El último recorrido en una línea («11 oct · 34 encontradas, 15 nuevas · 1 problema · 2 notas»). */
 function LastRun({ source }: { source: SourceView }) {
   const { t } = useTranslation('platforms', { keyPrefix: 'row' })
   const last = source.last_run
@@ -384,39 +386,53 @@ function LastRun({ source }: { source: SourceView }) {
       </p>
     )
   }
+  const { problems, notes } = splitIssues(last.errors)
   return (
     <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
       <ClockIcon className="size-3.5 shrink-0" />
       <span>
         {formatWhen(last.finished_at ?? last.started_at)} · {plural('found', last.found)}, {plural('new', last.created)}
-        {last.errors.length > 0 && (
-          <span className="text-amber-700 dark:text-amber-400"> · {plural('issues', last.errors.length)}</span>
+        {problems.length > 0 && (
+          <span className="text-amber-700 dark:text-amber-400"> · {plural('problems', problems.length)}</span>
         )}
+        {notes.length > 0 && <span> · {plural('notes', notes.length)}</span>}
       </span>
     </p>
   )
 }
 
-/** El registro del último recorrido: cuántas ya conocía y sus incidentes. */
+/** El registro del último recorrido: cuántas ya conocía, qué falló y qué apuntó tu agente. */
 function RunLog({ source }: { source: SourceView }) {
   const { t } = useTranslation('platforms', { keyPrefix: 'row' })
   const last = source.last_run
   if (!last) return null
   const existing = Math.max(0, last.after_filters - last.created)
+  const { problems, notes } = splitIssues(last.errors)
   return (
     <div className="grid gap-1 text-xs text-muted-foreground">
       <span>{t('log')}</span>
       <p className="text-foreground/80">
         {plural('found', last.found)}, {plural('new', last.created)}, {plural('known', existing)}
       </p>
-      {last.errors.length > 0 && (
-        <ul className="space-y-0.5 pl-4">
-          {last.errors.map((issue, i) => (
-            <li key={i} className="list-disc">
-              <InlineCode text={issue.message} />
-            </li>
-          ))}
-        </ul>
+      {[
+        { title: t('problemsTitle'), hint: t('problemsHint'), items: problems },
+        { title: t('notesTitle'), hint: t('notesHint'), items: notes },
+      ].map(
+        ({ title, hint, items }) =>
+          items.length > 0 && (
+            <div key={title} className="mt-1.5 grid gap-0.5">
+              <span>
+                <span className="font-medium text-foreground/80">{title}</span> {hint}
+              </span>
+              <ul className="space-y-0.5 pl-4">
+                {items.map((issue, i) => (
+                  <li key={i} className="list-disc">
+                    <InlineCode text={issue.message} />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ),
       )}
     </div>
   )
@@ -515,7 +531,7 @@ function PlatformRow({ source, order, limits }: { source: SourceView; order: Slo
 
       {/* La búsqueda pública de LinkedIn, a la vista solo si está activada: es otra forma de buscar. */}
       {linkedin && publicEnabled && <LinkedInPublicPanel />}
-      {/* Plegado siempre: los incidentes ya se cuentan en la línea del último recorrido. */}
+      {/* Plegado siempre: los problemas y las notas ya se cuentan en la línea del último recorrido. */}
       <Reveal label={t('row.settings')} className="space-y-3">
         <div className="flex flex-wrap gap-3">
           <div className="grid gap-1">
@@ -695,7 +711,7 @@ export function PlatformsPage() {
   // Con plataformas, lo destacado es buscar; sin ninguna, añadir la primera (en el estado vacío).
   const any = (platforms.data?.sources.length ?? 0) > 0
   return (
-    <div className="mx-auto max-w-3xl animate-in fade-in duration-300">
+    <div className="max-w-3xl animate-in fade-in duration-300">
       <div className="mb-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>

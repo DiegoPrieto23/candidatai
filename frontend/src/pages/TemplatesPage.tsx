@@ -113,7 +113,7 @@ export function TemplatesPage() {
   return (
     <div className="animate-in fade-in duration-300">
       <header className="mb-8 max-w-[65ch]">
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{t('title')}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
           {t('intro')}
         </p>

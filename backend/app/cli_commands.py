@@ -2528,6 +2528,7 @@ register_tools(
         "list_mail_sources": _render_mail_sources,
         "save_source": _render_message,
         "record_source_run": _render_recorded_run,
+        "finish_search": _render_message,
         "request_user_action": _render_prompt,
         "wait_user_action": _render_prompt,
         "list_followups_due": _render_followups,

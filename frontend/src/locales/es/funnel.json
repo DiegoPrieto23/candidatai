@@ -20,11 +20,8 @@
     "accepted": "Aceptadas"
   },
   "funnel": {
-    "title": "Embudo",
-    "hint": "Cada oferta cuenta una vez en cada paso al que llegó (y en los anteriores). Cada fila dice qué parte pasó desde el paso anterior y qué parte del total llegó hasta ahí.",
     "duplicates": " Sin contar {{count}} duplicadas.",
     "caption": "Ofertas por paso del embudo",
-    "rates": "{{previous}} del anterior · {{start}} del total",
     "countHead": "Ofertas",
     "fromPreviousHead": "% sobre el paso anterior",
     "fromStartHead": "% sobre el total"
@@ -232,5 +229,71 @@
     "copyEn": "Copiar en inglés",
     "lineLabel": "Para compartir"
   },
-  "more": "Más análisis"
+  "more": "Más análisis",
+  "flow": {
+    "title": "Tu embudo",
+    "hint": "Hasta dónde ha llegado cada candidatura que has enviado y dónde están las que pararon.",
+    "showing": "Mostrando",
+    "everything": "Todo lo que has enviado",
+    "noneYet": "Ninguna aún",
+    "ofPrevious": "{{pct}} de {{step}}",
+    "chartLabel": "{{applied}} enviadas, {{replied}} con respuesta, {{interview}} en entrevista, {{offer}} con oferta y {{accepted}} aceptadas. El detalle está en «Ver las cifras».",
+    "passed_one": "{{count}} pasó de {{from}} a {{to}}",
+    "passed_other": "{{count}} pasaron de {{from}} a {{to}}",
+    "stats": {
+      "sent": "enviadas",
+      "heardBack": "con respuesta",
+      "reachedInterview": "llegaron a entrevista"
+    },
+    "biggest": "El grupo más grande: {{what}}, el {{pct}} de lo enviado.",
+    "more": "Análisis completo",
+    "numbers": "Ver las cifras",
+    "stepHead": "Paso",
+    "whereTheyStopped": "Dónde están las que pararon",
+    "empty": "Cuando envíes tu primera candidatura, aquí verás hasta dónde llega.",
+    "emptyPeriod": "No enviaste ninguna candidatura de las ofertas vistas en este periodo.",
+    "stops": {
+      "applied": {
+        "open_one": "{{count}} esperando",
+        "open_other": "{{count}} esperando",
+        "rejected_one": "{{count}} rechazada",
+        "rejected_other": "{{count}} rechazadas",
+        "withdrawn_one": "{{count}} retirada",
+        "withdrawn_other": "{{count}} retiradas",
+        "expired_one": "{{count}} sin respuesta",
+        "expired_other": "{{count}} sin respuesta"
+      },
+      "replied": {
+        "open_one": "{{count}} en conversación",
+        "open_other": "{{count}} en conversación",
+        "rejected_one": "{{count}} rechazada",
+        "rejected_other": "{{count}} rechazadas",
+        "withdrawn_one": "{{count}} retirada",
+        "withdrawn_other": "{{count}} retiradas",
+        "expired_one": "{{count}} caducada",
+        "expired_other": "{{count}} caducadas"
+      },
+      "interview": {
+        "open_one": "{{count}} en entrevistas",
+        "open_other": "{{count}} en entrevistas",
+        "rejected_one": "{{count}} rechazada",
+        "rejected_other": "{{count}} rechazadas",
+        "withdrawn_one": "{{count}} retirada",
+        "withdrawn_other": "{{count}} retiradas",
+        "expired_one": "{{count}} caducada",
+        "expired_other": "{{count}} caducadas"
+      },
+      "offer": {
+        "open_one": "{{count}} decidiendo",
+        "open_other": "{{count}} decidiendo",
+        "rejected_one": "{{count}} retirada por la empresa",
+        "rejected_other": "{{count}} retiradas por la empresa",
+        "withdrawn_one": "{{count}} rechazada por ti",
+        "withdrawn_other": "{{count}} rechazadas por ti",
+        "expired_one": "{{count}} caducada",
+        "expired_other": "{{count}} caducadas"
+      }
+    },
+    "stopHint": "{{what}} · {{pct}} de lo enviado"
+  }
 }

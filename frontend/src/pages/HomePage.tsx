@@ -6,6 +6,7 @@ import type { JobRow, Stage, UpcomingItem } from '@/api/client'
 import { useAgentLauncher, useFollowups, useJobs, useReplies, useStatus, useUpcoming } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
 import { FirstSteps } from '@/components/FirstSteps'
+import { FunnelFlow } from '@/components/FunnelFlow'
 import { GetAnAgent } from '@/components/GetAnAgent'
 import { ScoreBadge } from '@/components/MatchDetails'
 import { ErrorState } from '@/components/States'
@@ -92,7 +93,7 @@ function Today() {
   return (
     <section aria-labelledby="hoy" className="max-w-3xl">
       <p className="text-sm text-muted-foreground first-letter:uppercase">{dateFormatter(TODAY).format(now)}</p>
-      <h1 id="hoy" className="mt-3 text-3xl leading-[1.2] font-semibold tracking-tight text-balance sm:text-[2.6rem]">
+      <h1 id="hoy" className="mt-2 text-2xl leading-snug font-semibold tracking-tight text-balance sm:text-[1.75rem]">
         {status.isPending ? (
           <Skeleton className="h-12 w-full max-w-xl" />
         ) : stepsLeft ? (
@@ -372,6 +373,7 @@ export function HomePage() {
         </Panel>
       </div>
       <Track />
+      <FunnelFlow more />
       <div className="grid items-start gap-6 lg:grid-cols-5">
         <Panel
           title={t('panels.bestFit')}

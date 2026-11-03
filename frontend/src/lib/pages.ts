@@ -37,6 +37,8 @@ export const pages = {
   processes: lazyPage(() => import('@/pages/ProcessesPage').then((m) => m.ProcessesPage)),
   replies: lazyPage(() => import('@/pages/RepliesPage').then((m) => m.RepliesPage)),
   search: lazyPage(() => import('@/pages/SearchPage').then((m) => m.SearchPage)),
+  searchHub: lazyPage(() => import('@/pages/HubPages').then((m) => m.SearchHubPage)),
+  searchSettings: lazyPage(() => import('@/pages/SearchSettingsPage').then((m) => m.SearchSettingsPage)),
   calendar: lazyPage(() => import('@/pages/CalendarPage').then((m) => m.CalendarPage)),
   // Recharts pesa: va en el chunk del embudo.
   funnel: lazyPage(() => import('@/pages/FunnelPage').then((m) => m.FunnelPage)),
@@ -62,7 +64,8 @@ const ROUTES: [prefix: string, keys: PageKey[]][] = [
   ['/bandeja', ['inboxHub', 'inbox']],
   ['/jobs/', ['job']],
   ['/nueva', ['newJob']],
-  ['/buscar', ['search']],
+  ['/buscar/ajustes', ['searchHub', 'searchSettings']],
+  ['/buscar', ['searchHub', 'search']],
   ['/procesos/calendario', ['calendar']],
   ['/procesos', ['processes']],
   ['/calendario', ['calendar']],
@@ -71,10 +74,10 @@ const ROUTES: [prefix: string, keys: PageKey[]][] = [
   ['/perfil/skills', ['profileHub', 'skills']],
   ['/perfil/plantillas', ['profileHub', 'templates']],
   ['/perfil', ['profileHub', 'profile']],
-  ['/fuentes/empresas', ['sourcesHub', 'sources']],
-  ['/fuentes/correo', ['sourcesHub', 'emailAlerts']],
-  ['/fuentes/extension', ['sourcesHub', 'extension']],
-  ['/fuentes', ['sourcesHub', 'platforms']],
+  ['/fuentes/empresas', ['searchHub', 'sourcesHub', 'sources']],
+  ['/fuentes/correo', ['searchHub', 'sourcesHub', 'emailAlerts']],
+  ['/fuentes/extension', ['searchHub', 'sourcesHub', 'extension']],
+  ['/fuentes', ['searchHub', 'sourcesHub', 'platforms']],
   ['/agente', ['agent']],
 ]
 

@@ -1,14 +1,59 @@
 {
   "title": "Search jobs",
-  "intro": "Your agent browses these job boards with your browser and looks for what fits your profile. It only reads: it never applies for you. What it finds lands in the Inbox.",
+  "intro": "Your agent walks your job boards with your browser and adds what fits your profile. It only reads: it never applies for you.",
+  "where": "Job boards",
   "platforms": "Job boards to search",
-  "never": "Not searched yet",
-  "created_one": "{{count}} new",
-  "created_other": "{{count}} new",
-  "unusable_one": "{{count}} more job board is turned off. Turn it on in <to>Where to search</to>.",
-  "unusable_other": "{{count}} more job boards are turned off. Turn them on in <to>Where to search</to>.",
+  "selectAll": "Select all",
+  "selectNone": "Clear all",
+  "manage": "Manage job boards",
+  "tile": {
+    "size_one": "{{count}} search · up to {{offers}} jobs",
+    "size_other": "{{count}} searches · up to {{offers}} jobs",
+    "login": "Needs sign-in",
+    "lastRun_one": "{{when}}: {{count}} new of {{found}}",
+    "lastRun_other": "{{when}}: {{count}} new of {{found}}",
+    "never": "Not searched yet",
+    "problems_one": "{{count}} problem",
+    "problems_other": "{{count}} problems",
+    "notes_one": "{{count}} note",
+    "notes_other": "{{count}} notes"
+  },
+  "unusable_one": "{{count}} more job board is off or blocked. Change it in <to>Where to search</to>.",
+  "unusable_other": "{{count}} more job boards are off or blocked. Change them in <to>Where to search</to>.",
   "noneChosen": "Choose at least one job board.",
   "searchNow": "Search now",
+  "plan": {
+    "title": "Your search",
+    "summary_one": "{{portals}} job boards, {{count}} search",
+    "summary_other": "{{portals}} job boards, {{count}} searches",
+    "offers_one": "Up to {{count}} job",
+    "offers_other": "Up to {{count}} jobs",
+    "saved": "with your saved searches",
+    "oneOff": "just this once",
+    "before": "Before you start",
+    "browser": "Keep your browser connected to your agent.",
+    "browserHint": "In Claude Code, with the Claude in Chrome extension open in your Chrome and the same account. If it can't see it, your agent tells you and adds nothing.",
+    "login": "Sign in to {{names}}.",
+    "loginHint": "It needs a session: your agent will tell you before going on.",
+    "safe": "It opens in a separate window where you see what it does. It can take several minutes.",
+    "looking": "You're after:",
+    "lookingNone": "no roles yet",
+    "change": "Change"
+  },
+  "noBrowser": {
+    "title": "Without a browser",
+    "body_one": "{{count}} company or job board the app checks on its own: you can do it now, with no agent.",
+    "body_other": "{{count}} companies and job boards the app checks on its own: you can do it now, with no agent.",
+    "latest": "Last checked: {{when}}.",
+    "run": "Check now",
+    "running": "Checking {{done}} of {{total}}…",
+    "created_one": "{{count}} new job",
+    "created_other": "{{count}} new jobs",
+    "failed_one": "{{count}} source with problems",
+    "failed_other": "{{count}} sources with problems",
+    "none": "Add <to>target companies</to> to check their jobs with no agent or browser.",
+    "others": "Your <to>email alerts</to> and what you send with the <ext>browser button</ext> also come in on their own."
+  },
   "refine": {
     "toggle": "Refine this search (optional)",
     "hint": "Just this once: your agent will use these instead of your saved searches. Your profile doesn't change.",
@@ -18,16 +63,21 @@
     "locationPlaceholder": "For example, Madrid or remote",
     "badText": "Use only letters, numbers and simple signs (. , + # / & ( ) -)."
   },
-  "recent": {
-    "title": "Latest found by your agent",
-    "all": "See all in the Inbox",
-    "empty": "It hasn't brought any jobs from the boards yet."
-  },
   "empty": {
     "title": "No job boards to search yet",
     "body": "Tell your agent where you usually search or add a job board yourself.",
     "configure": "Choose job boards with my agent",
     "manage": "Go to “Where to search”"
   },
-  "others": "Target companies and email alerts don't need launching: the app checks them on its own. Set them up in <to>Where to search</to>."
+  "settings": {
+    "title": "What you're after",
+    "intro": "Roles, salary, place and contract decide what your agent looks for and which jobs pass your filters. Each block saves separately and recalculates the fit.",
+    "issues": "Your profile has errors to fix. See them in <to>My profile</to>.",
+    "noProfile": {
+      "title": "Your profile first",
+      "body": "What you're after is saved in your profile, and you don't have a readable one yet.",
+      "go": "Go to “My profile”"
+    }
+  },
+  "searching": "Searching…"
 }

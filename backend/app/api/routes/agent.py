@@ -26,6 +26,7 @@ from app.services import (
     agent_runs,
     assess_threshold,
     local_models,
+    search_runs,
     spend_tiers,
 )
 from app.services.agent_launch import ActionId, LaunchError
@@ -291,6 +292,31 @@ def launch_agent(session: SessionDep, body: LaunchBody) -> agent_launch.LaunchRe
 
 def _not_found(exc: agent_runs.RunNotFoundError) -> ToolError:
     return ToolError("not_found", str(exc))
+
+
+# --- La búsqueda abierta en la terminal -----------------------------------------------------------
+
+
+@router.get("/search-run", operation_id="get_search_run")
+def get_search_run(session: SessionDep) -> search_runs.SearchRunResponse:
+    """La búsqueda de la que avisa la UI («Buscando…», terminada), si hay alguna sin cerrar."""
+    return search_runs.current(session)
+
+
+@router.post(
+    "/search-run/{run_id}/dismiss",
+    operation_id="dismiss_search_run",
+    dependencies=[Depends(require_ui)],
+)
+def dismiss_search_run(
+    session: SessionDep, run_id: int, _body: EmptyBody
+) -> search_runs.SearchRunResponse:
+    """Cierra el aviso. Si la búsqueda seguía abierta, la app deja de seguirla."""
+    try:
+        search_runs.dismiss(session, run_id)
+    except search_runs.SearchRunNotFoundError as exc:
+        raise ToolError("not_found", str(exc)) from exc
+    return search_runs.current(session)
 
 
 @router.post(

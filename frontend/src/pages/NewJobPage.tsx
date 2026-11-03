@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { errorMessage } from '@/lib/errors'
 import { formatList } from '@/lib/i18n'
 import type { AddedState } from './JobPage'
+import { BusyLabel } from '@/components/StableLabel'
 
 function useGoToJob() {
   const navigate = useNavigate()
@@ -161,7 +162,7 @@ function UrlForm({ onUsePaste }: { onUsePaste: (url?: string) => void }) {
       )}
       <div className="flex justify-end">
         <Button type="submit" disabled={!url.trim() || add.isPending} className="h-10 px-5 active:translate-y-px">
-          {add.isPending ? t('downloading') : t('submit')}
+          <BusyLabel busy={add.isPending} busyText={t('downloading')} text={t('submit')} />
         </Button>
       </div>
     </form>
@@ -248,7 +249,7 @@ function TextForm({ initialUrl = '' }: { initialUrl?: string }) {
           aria-describedby={ready ? undefined : 'text-missing'}
           className="h-10 px-5 active:translate-y-px"
         >
-          {add.isPending ? t('saving') : t('submit')}
+          <BusyLabel busy={add.isPending} busyText={t('saving')} text={t('submit')} />
         </Button>
       </div>
     </form>
@@ -265,7 +266,7 @@ export function NewJobPage() {
     setTab('text')
   }
   return (
-    <div className="mx-auto max-w-2xl animate-in fade-in duration-300">
+    <div className="max-w-2xl animate-in fade-in duration-300">
       <div className="mb-8">
         <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
         <p className="mt-1.5 text-sm text-muted-foreground">

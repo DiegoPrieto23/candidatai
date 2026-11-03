@@ -101,5 +101,8 @@ approval_mode = "approve"
 [mcp_servers.candidatai.tools.wait_user_action]
 approval_mode = "approve"
 
+[mcp_servers.candidatai.tools.finish_search]
+approval_mode = "approve"
+
 [mcp_servers.candidatai.tools.list_agent_requests]
 approval_mode = "approve"

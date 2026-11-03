@@ -46,6 +46,7 @@ from app.services import (
     events,
     interviews,
     process,
+    search_runs,
     terminals,
 )
 from app.services import profile as profiles
@@ -632,6 +633,8 @@ def launch(
     picked = pick(session, action, prompt, agent=agent, model=model, preset=preset)
     result = _open(spec.label, prompt, picked, picked.command, prompt)
     result.job_id = job_id
+    if action == "search-jobs":
+        search_runs.start(session, search.platform_ids if search else [])
     return result
 
 

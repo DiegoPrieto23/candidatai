@@ -18,6 +18,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { errorMessage } from '@/lib/errors'
 import { buildSearches, canBuildSearches, searchLabel, type SearchPreferences } from '@/lib/searches'
+import { BusyLabel } from '@/components/StableLabel'
 
 /** Portales conocidos: rellenan el id y una búsqueda de ejemplo. «Otra» deja escribir el id. */
 const KNOWN: { id: string; name: string; example: string }[] = [
@@ -256,7 +257,7 @@ function AddPlatformForm({ onDone }: { onDone: () => void }) {
           {t('cancel')}
         </Button>
         <Button type="submit" disabled={!ready || add.isPending}>
-          {add.isPending ? t('saving') : t('submit')}
+          <BusyLabel busy={add.isPending} busyText={t('saving')} text={t('submit')} />
         </Button>
       </DialogFooter>
     </form>
@@ -299,7 +300,7 @@ function EditPlatformForm({ source, onDone }: { source: SourceView; onDone: () =
           {t('cancel')}
         </Button>
         <Button type="submit" disabled={!ready || edit.isPending}>
-          {edit.isPending ? t('saving') : te('submit')}
+          <BusyLabel busy={edit.isPending} busyText={t('saving')} text={te('submit')} />
         </Button>
       </DialogFooter>
     </form>

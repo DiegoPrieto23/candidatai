@@ -58,7 +58,8 @@ describe('Buscar ofertas', () => {
     )
     renderApp('/buscar')
     const list = await screen.findByRole('list', { name: 'Portales en los que buscar' })
-    expect(within(list).getByText('4 nuevas')).toBeInTheDocument()
+    expect(within(list).getByText(/4 nuevas de 9/)).toBeInTheDocument()
+    expect(screen.getByText('2 portales, 0 búsquedas')).toBeInTheDocument()
     // LinkedIn sin activar no se ofrece: lo activa el usuario en «Dónde buscar».
     expect(within(list).queryByText('LinkedIn')).not.toBeInTheDocument()
     expect(screen.getByText(/1 portal más desactivado/)).toBeInTheDocument()
@@ -96,6 +97,41 @@ describe('Buscar ofertas', () => {
     await userEvent.type(screen.getByLabelText('Puesto'), 'x"; rm')
     expect(screen.getByRole('alert')).toHaveTextContent(/solo letras/i)
     expect(screen.getByRole('button', { name: /^Buscar ahora/ })).toBeDisabled()
+  })
+
+  it('avisa de lo que hay que preparar y resume la búsqueda', async () => {
+    const urls = ['https://glassdoor.es/a', 'https://glassdoor.es/b']
+    mockApi(
+      routes([
+        platform(1, 'Glassdoor', { browse: { allow_agent_browsing: true, search_urls: urls, priority: 1, access: 'login', max_offers: 15, notes: '' } }),
+        platform(2, 'Tecnoempleo', { browse: { allow_agent_browsing: true, search_urls: ['https://tecnoempleo.com/a'], priority: 2, access: 'free', max_offers: 10, notes: '' } }),
+      ]),
+    )
+    renderApp('/buscar')
+    expect(await screen.findByText('2 portales, 3 búsquedas')).toBeInTheDocument()
+    expect(screen.getByText(/Hasta 25 ofertas/)).toBeInTheDocument()
+    expect(screen.getByText('Ten el navegador conectado a tu agente.')).toBeInTheDocument()
+    expect(screen.getByText('Entra en Glassdoor.')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('checkbox', { name: /Glassdoor/ }))
+    expect(screen.queryByText('Entra en Glassdoor.')).not.toBeInTheDocument()
+  })
+
+  it('sin navegador, consulta las fuentes con API una a una', async () => {
+    const result = (id: number, created: number) => ({ source_id: id, name: 'x', kind: 'lever', run_id: 1, skipped: null, found: 3, after_filters: 3, created, existing: 0, duplicates: 0, job_ids: [], errors: [], message: '' })
+    const calls = mockApi(
+      routes(
+        [
+          platform(7, 'Acme', { kind: 'lever', browse: null }),
+          platform(8, 'Globex', { kind: 'greenhouse', browse: null }),
+          platform(9, 'Sin claves', { kind: 'adzuna', browse: null, keys_missing: true }),
+        ],
+        { 'POST /sources/7/run': result(7, 2), 'POST /sources/8/run': result(8, 1) },
+      ),
+    )
+    renderApp('/buscar')
+    await userEvent.click(await screen.findByRole('button', { name: 'Consultar ahora' }))
+    expect(await screen.findByText('3 ofertas nuevas')).toBeInTheDocument()
+    expect(calls.filter((c) => c.method === 'POST').map((c) => c.path)).toEqual(['/sources/7/run', '/sources/8/run'])
   })
 
   it('sin portales, lleva a elegirlos', async () => {

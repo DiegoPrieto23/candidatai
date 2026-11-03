@@ -36,7 +36,7 @@ describe('Aviso de «listo» tras abrir el agente', () => {
     renderApp('/jobs/1?tab=application')
     const section = await screen.findByRole('region', { name: 'CV' })
     await userEvent.click(await within(section).findByRole('button', { name: 'Generar CV' }))
-    expect(await within(section).findByText(/Te aviso aquí en cuanto esté/)).toBeInTheDocument()
+    expect(await screen.findByText(/Te aviso aquí en cuanto esté/)).toBeInTheDocument()
     expect(screen.queryByText('Tu CV está listo')).not.toBeInTheDocument()
 
     // Un render anterior al clic no cuenta; uno nuevo, sí.
@@ -66,7 +66,7 @@ describe('Aviso de «listo» tras abrir el agente', () => {
     renderApp('/jobs/1?tab=process')
     const section = await screen.findByRole('region', { name: 'Proceso' })
     await userEvent.click(await within(section).findByRole('button', { name: 'Preparar' }))
-    await within(section).findByText(/Te aviso aquí en cuanto esté/)
+    await screen.findByText(/Te aviso aquí en cuanto esté/)
 
     guide = { file: '1-5-acme-guia.pdf', language: 'es', title: 'Data Engineer', saved_at: later(), agent_name: null, restored: false }
     const notice = (await screen.findByText('Tu guía de la entrevista está lista', {}, POLL)).closest(

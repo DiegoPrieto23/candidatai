@@ -60,6 +60,7 @@ import {
   VERDICT_LABEL,
 } from '@/lib/labels'
 import { cn } from '@/lib/utils'
+import { BusyLabel } from '@/components/StableLabel'
 
 /** Lo que deja la pantalla de alta al navegar aquí. */
 export interface AddedState {
@@ -436,7 +437,7 @@ function NoteForm({ jobId }: { jobId: number }) {
       <div className="flex justify-end">
         <Button type="submit" size="sm" disabled={!note.trim() || addNote.isPending} className="active:translate-y-px">
           <NotePencilIcon />
-          {addNote.isPending ? t('saving') : t('save')}
+          <BusyLabel busy={addNote.isPending} busyText={t('saving')} text={t('save')} />
         </Button>
       </div>
     </form>
@@ -709,7 +710,7 @@ export function JobPage() {
   const { data: job, isPending, isError, error, refetch } = useJob(id)
 
   return (
-    <div className="mx-auto max-w-5xl animate-in fade-in duration-300">
+    <div className="max-w-5xl animate-in fade-in duration-300">
       <Link
         to="/bandeja"
         className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
@@ -730,7 +731,7 @@ export function JobPage() {
         <>
           <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
-              <h1 className="text-2xl leading-tight font-semibold tracking-tight text-balance sm:text-3xl">
+              <h1 className="text-2xl leading-tight font-semibold tracking-tight text-balance">
                 {job.title}
               </h1>
               <p className="mt-2 text-muted-foreground">

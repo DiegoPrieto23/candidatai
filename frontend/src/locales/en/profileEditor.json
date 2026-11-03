@@ -2,7 +2,6 @@
   "tabs": {
     "about": "About you",
     "career": "Experience and education",
-    "search": "Search",
     "documents": "Documents",
     "history": "History"
   },
@@ -27,10 +26,10 @@
       "open": "Start by hand",
       "headlineHint": "What you'd put under your name on a CV, e.g. “Data Analyst · SQL · Power BI”.",
       "role": "Role you're looking for",
-      "roleHint": "One to start with; add more later in “Search”.",
+      "roleHint": "One to start with; add more later in “Search jobs → What you're after”.",
       "summary": "Summary (optional)",
       "summaryHint": "Two or three sentences about you. Left empty, your headline is used.",
-      "defaults": "Everything else (work mode, locations, photo on the CV…) starts open to anything and you change it in “Search” and “Documents”. Your experience and skills go in “Experience and education”.",
+      "defaults": "Everything else (work mode, locations, photo on the CV…) starts open to anything and you change it in “What you're after” and “Documents”. Your experience and skills go in “Experience and education”.",
       "required": "Needed to create your profile.",
       "pickOne": "Pick at least one.",
       "create": "Create my profile",

@@ -318,3 +318,50 @@ def test_extraction_copies_its_title_to_its_column() -> None:
     )
     assert JobExtraction(data={"title_normalized": 7}).title_normalized is None
     assert JobExtraction(data={}).title_normalized is None
+
+
+def test_flow_says_where_each_sent_application_stopped(session: Session) -> None:
+    h = History(session)
+    sent = ("applied_manually", _t(2))
+    h.job(h.ats, _t(1), "espera", sent)
+    h.job(h.ats, _t(1), "espera 2", sent)
+    h.job(h.ats, _t(1), "caducada", sent, ("expired", _t(3)))
+    h.job(h.ats, _t(1), "rechazo", sent, ("rejected", _t(3)))
+    h.job(h.ats, _t(1), "habla", sent, ("reply_received", _t(3)))
+    h.job(h.ats, _t(1), "entrevista", sent, ("interview_scheduled", _t(3)))
+    h.job(h.ats, _t(1), "oferta", sent, ("offer_received", _t(3)))
+    h.job(h.ats, _t(1), "retirada", sent, ("offer_received", _t(3)), ("withdrawn", _t(4)))
+    h.job(h.ats, _t(1), "aceptada", sent, ("offer_received", _t(3)), ("accepted", _t(4)))
+    # Sin enviar: no cuenta en el recorrido.
+    h.job(h.ats, _t(1), "sin enviar", ("extracted", _t(1, 11)), ("approved", _t(2)))
+
+    flow = analytics.get_funnel_flow(session)
+    assert {(s.step, s.outcome): s.count for s in flow.stops} == {
+        ("applied", "open"): 2,
+        ("applied", "expired"): 1,
+        ("replied", "rejected"): 1,
+        ("replied", "open"): 1,
+        ("interview", "open"): 1,
+        ("offer", "open"): 1,
+        ("offer", "withdrawn"): 1,
+    }
+    counts = {s.step: s.count for s in flow.steps}
+    assert counts["applied"] == 9
+    assert counts["accepted"] == 1
+    # Cada enviada está en una sola rama, o aceptada.
+    assert sum(s.count for s in flow.stops) + counts["accepted"] == counts["applied"]
+
+
+def test_flow_a_reopened_application_counts_as_open(session: Session) -> None:
+    h = History(session)
+    h.job(h.ats, _t(1), "x", ("applied_manually", _t(2)), ("expired", _t(3)), ("reopened", _t(4)))
+    stops = analytics.get_funnel_flow(session).stops
+    assert [(s.step, s.outcome, s.count) for s in stops] == [("applied", "open", 1)]
+
+
+def test_flow_respects_the_period_and_an_empty_database(session: Session) -> None:
+    assert analytics.get_funnel_flow(session).stops == []
+    h = History(session)
+    h.job(h.ats, _t(1), "vieja", ("applied_manually", _t(2)))
+    assert analytics.get_funnel_flow(session, date(2026, 10, 1)).stops == []
+    assert len(analytics.get_funnel_flow(session, date(2026, 8, 1)).stops) == 1

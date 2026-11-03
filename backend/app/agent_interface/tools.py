@@ -53,6 +53,7 @@ from app.services import (
     prompts,
     received_offers,
     replies,
+    search_runs,
     search_titles,
     skill_gaps,
     status,
@@ -182,6 +183,13 @@ class ListSourcesInput(_Input):
 
 class RecordSourceRunInput(SourceRunSummary):
     source_id: int = Field(ge=1, description="Id de la plataforma (`agent_browse`).")
+
+
+class FinishSearchInput(_Input):
+    outcome: search_runs.SearchOutcome = Field(
+        description="`done`: has recorrido lo que podías. `no_browser`: no ves el navegador y no "
+        "has podido buscar. `stopped`: has parado antes de acabar."
+    )
 
 
 class RequestUserActionInput(_Input):
@@ -574,6 +582,12 @@ def _record_source_run(
 ) -> browse.RecordRunResult:
     summary = SourceRunSummary.model_validate(args.model_dump(exclude={"source_id"}))
     return browse.record_run(session, args.source_id, summary)
+
+
+def _finish_search(
+    session: Session, args: FinishSearchInput, _ctx: CallContext
+) -> search_runs.FinishSearchResult:
+    return search_runs.finish(session, args.outcome)
 
 
 def _request_user_action(
@@ -1265,6 +1279,18 @@ TOOLS: tuple[ToolSpec, ...] = (
             file_keys=tuple(SourceRunSummary.model_fields),
         ),
         audit_fields=("source_id",),
+    ),
+    ToolSpec(
+        name="finish_search",
+        description=(
+            "Di que has terminado la búsqueda en los portales, o que no has podido hacerla: la "
+            "app deja de enseñar «Buscando…» y avisa al usuario."
+        ),
+        input_model=FinishSearchInput,
+        output_model=search_runs.FinishSearchResult,
+        handler=_finish_search,
+        cli=CliSpec(path=("sources", "finish-search")),
+        audit_fields=("outcome",),
     ),
     ToolSpec(
         name="request_user_action",

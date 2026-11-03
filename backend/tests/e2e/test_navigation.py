@@ -16,9 +16,8 @@ def test_the_entries_and_each_section_opens_its_tabs(page: Page, demo_app: AppSe
     expected = [
         "home",
         "profile",
-        "inbox",
         "search",
-        "sources",
+        "inbox",
         "processes",
         "calendar",
         "replies",
@@ -56,8 +55,11 @@ def test_the_entries_and_each_section_opens_its_tabs(page: Page, demo_app: AppSe
     expect(page.get_by_role("dialog")).to_be_visible()
     page.keyboard.press("Escape")
 
-    # Dónde buscar: los buzones.
-    nav.get_by_role("link", name=t("nav.entries.sources")).click()
+    # Dónde buscar es una pestaña de Buscar ofertas, con sus propias pestañas: los buzones.
+    nav.get_by_role("link", name=t("nav.entries.search")).click()
+    page.get_by_role("navigation", name=t("nav.tabs.searchLabel")).get_by_role(
+        "link", name=t("nav.tabs.sources")
+    ).click()
     page.get_by_role("link", name=t("nav.tabs.email")).click()
     expect(page.get_by_role("heading", level=1, name=t("alerts.email.title"))).to_be_visible()
     expect(page.get_by_role("button", name=t("alerts.addMailbox")).first).to_be_visible()
@@ -77,3 +79,37 @@ def test_the_entries_and_each_section_opens_its_tabs(page: Page, demo_app: AppSe
         "link", name=t("nav.entries.howItWorks")
     ).click()
     expect(page.get_by_role("heading", level=1, name=t("howItWorks.title"))).to_be_visible()
+
+
+def test_every_page_starts_at_the_same_distance_from_the_sidebar(
+    page: Page, demo_app: AppServer
+) -> None:
+    lefts = {}
+    for route in (
+        "/",
+        "/perfil",
+        "/perfil/skills",
+        "/perfil/plantillas",
+        "/buscar",
+        "/buscar/ajustes",
+        "/fuentes/plataformas",
+        "/fuentes/empresas",
+        "/fuentes/correo",
+        "/fuentes/extension",
+        "/bandeja",
+        "/procesos",
+        "/calendario",
+        "/respuestas",
+        "/embudo",
+        "/agente",
+        "/nueva",
+        "/como-funciona",
+        "/jobs/1",
+    ):
+        page.goto(route)
+        title = page.get_by_role("heading", level=1).first
+        expect(title).to_be_visible()
+        box = title.bounding_box()
+        assert box is not None
+        lefts[route] = box["x"]
+    assert len(set(lefts.values())) == 1, lefts

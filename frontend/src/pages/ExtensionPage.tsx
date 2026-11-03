@@ -230,7 +230,7 @@ export function ExtensionPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl animate-in fade-in duration-300">
+    <div className="max-w-3xl animate-in fade-in duration-300">
       <div className="mb-8">
         <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
         <p className="mt-1.5 text-sm text-muted-foreground">{t('intro')}</p>

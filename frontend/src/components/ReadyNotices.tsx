@@ -126,13 +126,9 @@ export function ReadyNotices() {
       {watches.map((w) => (
         <Watcher key={`${w.id}:${w.since}`} watch={w} onReady={onReady} />
       ))}
-      {ready.length > 0 && (
-        <div className="pointer-events-none fixed right-4 bottom-4 z-40 flex flex-col items-end gap-2">
-          {ready.map((item) => (
-            <Notice key={item.id} ready={item} onClose={() => setReady((items) => items.filter((i) => i !== item))} />
-          ))}
-        </div>
-      )}
+      {ready.map((item) => (
+        <Notice key={item.id} ready={item} onClose={() => setReady((items) => items.filter((i) => i !== item))} />
+      ))}
     </>
   )
 }

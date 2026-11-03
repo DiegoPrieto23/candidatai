@@ -24,6 +24,7 @@ import { errorMessage } from '@/lib/errors'
 import { formatList, i18n } from '@/lib/i18n'
 import { formatDate, formatDateTime, formatMoney, formatNumber } from '@/lib/labels'
 import { cn } from '@/lib/utils'
+import { BusyLabel } from '@/components/StableLabel'
 
 /** Etapas en las que se puede descartar (el aviso de cierre solo tiene sentido antes de enviar). */
 const BEFORE_SENDING: ReadonlySet<Stage> = new Set([
@@ -260,7 +261,7 @@ export function ClosedNotice({ job }: { job: JobView }) {
               onClick={() => check.mutate({ jobId: job.id, force: true })}
             >
               <ArrowsClockwiseIcon className={cn(check.isPending && 'animate-spin')} />
-              {check.isPending ? t('checking') : t('checkAgain')}
+              <BusyLabel busy={check.isPending} busyText={t('checking')} text={t('checkAgain')} />
             </Button>
           </div>
           {check.data && !check.data.possibly_closed && (

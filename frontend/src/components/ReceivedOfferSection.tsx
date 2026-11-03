@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { formatDate, formatMoney, REMOTE_LABEL } from '@/lib/labels'
 import { errorMessage } from '@/lib/errors'
+import { BusyLabel } from '@/components/StableLabel'
 
 /** Etapas en las que la empresa puede haberte hecho una oferta (`offer_received`). */
 const OFFER_STAGES: ReadonlySet<Stage> = new Set(['applied', 'in_process'])
@@ -155,7 +156,7 @@ function OfferForm({ jobId, offer, onDone }: { jobId: number; offer: ReceivedOff
           {t('cancel')}
         </Button>
         <Button type="submit" size="sm" disabled={save.isPending}>
-          {save.isPending ? t('saving') : t('save')}
+          <BusyLabel busy={save.isPending} busyText={t('saving')} text={t('save')} />
         </Button>
       </div>
     </form>

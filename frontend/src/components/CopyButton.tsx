@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { CheckIcon, CopyIcon } from '@phosphor-icons/react'
 import { useTranslation } from 'react-i18next'
+import { StableLabel } from '@/components/StableLabel'
 import { Button } from '@/components/ui/button'
 
 /** Copia un texto al portapapeles y lo confirma durante un momento. */
@@ -43,7 +44,10 @@ export function CopyButton({
         onClick={copy}
       >
         {state === 'copied' ? <CheckIcon /> : <CopyIcon />}
-        {state === 'copied' ? t('copy.copied') : state === 'failed' ? t('copy.failed') : (label ?? t('copy.label'))}
+        <StableLabel
+          text={state === 'copied' ? t('copy.copied') : state === 'failed' ? t('copy.failed') : (label ?? t('copy.label'))}
+          reserve={[t('copy.copied'), t('copy.failed'), label ?? t('copy.label')]}
+        />
       </Button>
       <span role="status" className="sr-only">
         {state === 'copied' ? t('copy.copiedStatus') : state === 'failed' ? t('copy.failed') : ''}

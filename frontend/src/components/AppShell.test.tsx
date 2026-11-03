@@ -60,16 +60,15 @@ describe('Barra lateral (fase 23.3)', () => {
     expect(names).toEqual([
       'Inicio',
       'Mi perfil',
-      'Bandeja de ofertas',
       'Buscar ofertas',
-      'Dónde buscar',
+      'Bandeja de ofertas',
       'Tablero',
       'Calendario',
       'Respuestas',
       'Embudo',
       'Agente',
     ])
-    expect(await within(nav).findByRole('link', { name: 'Bandeja de ofertas (3 por revisar)' })).toHaveAttribute('aria-current', 'page')
+    expect(await within(nav).findByRole('link', { name: 'Bandeja de ofertas' })).toHaveAttribute('aria-current', 'page')
   })
 
   it('«Mi perfil» avisa de que falta el perfil, y «Cómo funciona» queda abajo, fuera de la lista', async () => {

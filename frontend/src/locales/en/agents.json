@@ -114,7 +114,7 @@
       "linux": "<strong>Install it.</strong> Open a terminal, paste this command and press Enter:"
     },
     "step3": "<strong>Sign in.</strong> When it's done, open another window like that one, type “claude”, press Enter and follow the steps to sign in with your Claude account.",
-    "step4": "Close CandidatAI and open it again from its shortcut: the buttons with sparkles will open your agent with the command already written.",
+    "step4": "Close CandidatAI and open it again from its shortcut: the buttons with the robot will open your agent with the command already written.",
     "commandLabel": "Command to install Claude Code",
     "guide": "The step-by-step guide",
     "otherAgents": "Other agents, in “Agent”"

@@ -21,6 +21,7 @@ import { blockedText, modelText, reasonText, warningText } from '@/lib/agentText
 import { errorMessage } from '@/lib/errors'
 import { i18n, SOURCE_LANGUAGE } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
+import { BusyLabel } from '@/components/StableLabel'
 
 /**
  * Sección «Agentes» de la página «Agente» (fase 24.4): qué agentes hay y qué sabe hacer
@@ -103,7 +104,7 @@ function CopyCommand({ command }: { command: string }) {
       <code className="min-w-0 flex-1 truncate rounded bg-muted px-1.5 py-0.5 font-mono">{command}</code>
       <Button type="button" variant="ghost" size="sm" onClick={() => void copy()} aria-label={t('copy')}>
         {copied ? <CheckIcon /> : <CopyIcon />}
-        {copied ? t('copied') : t('copy')}
+        <BusyLabel busy={copied} busyText={t('copied')} text={t('copy')} />
       </Button>
     </div>
   )

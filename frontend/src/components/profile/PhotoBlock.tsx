@@ -3,6 +3,7 @@ import { TrashIcon, UploadSimpleIcon, UserCircleIcon } from '@phosphor-icons/rea
 import { useTranslation } from 'react-i18next'
 import { fileUrls } from '@/api/client'
 import { useDeleteProfilePhoto, useProfilePhoto, useSaveProfilePhoto } from '@/api/queries'
+import { BusyLabel } from '@/components/StableLabel'
 import { Button } from '@/components/ui/button'
 import { errorMessage } from '@/lib/errors'
 import { Block } from './fields'
@@ -57,7 +58,7 @@ export function PhotoBlock() {
           <div className="flex flex-wrap gap-2">
             <Button type="button" size="sm" variant="outline" disabled={save.isPending} onClick={() => input.current?.click()}>
               <UploadSimpleIcon />
-              {save.isPending ? t('uploading') : info?.exists ? t('replace') : t('upload')}
+              <BusyLabel busy={save.isPending} busyText={t('uploading')} text={info?.exists ? t('replace') : t('upload')} />
             </Button>
             {info?.exists && !confirming && (
               <Button type="button" size="sm" variant="ghost" onClick={() => setConfirming(true)}>

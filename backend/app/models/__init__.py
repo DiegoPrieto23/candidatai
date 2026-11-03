@@ -24,6 +24,7 @@ from app.models.sources import (
     EmailMessage,
     MailSource,
     MailSourceChange,
+    SearchRun,
     Source,
     SourceRun,
 )
@@ -60,6 +61,7 @@ __all__ = [
     "ReceivedOffer",
     "Reply",
     "SkillGapMark",
+    "SearchRun",
     "Source",
     "SourceRun",
     "Task",

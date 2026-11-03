@@ -25,7 +25,6 @@
     "inbox": "Bandeja de ofertas",
     "processes": "Tablero",
     "funnel": "Embudo",
-    "sources": "Dónde buscar",
     "profile": "Mi perfil",
     "agent": "Agente",
     "calendar": "Calendario",
@@ -80,6 +79,42 @@
     "profile": "Mi perfil",
     "skills": "Skills que te faltan",
     "templates": "Plantillas de CV",
-    "email": "Alertas por correo"
+    "email": "Alertas por correo",
+    "searchLabel": "Apartados de la búsqueda",
+    "search": "Buscar",
+    "searchSettings": "Qué buscas",
+    "sources": "Dónde buscar"
+  },
+  "searchRun": {
+    "running": {
+      "title": "Buscando ofertas…",
+      "body": "Tu agente sigue trabajando en su ventana."
+    },
+    "counts_one": "{{done}} de {{total}} portales · {{count}} oferta nueva",
+    "counts_other": "{{done}} de {{total}} portales · {{count}} ofertas nuevas",
+    "stale": {
+      "title": "Sin noticias de tu agente",
+      "body": "Lleva un rato sin dar de alta nada. Mira su ventana: quizá espera tu respuesta o se ha cerrado."
+    },
+    "done": {
+      "title": "Búsqueda terminada",
+      "body_one": "{{count}} oferta nueva de {{found}} vistas.",
+      "body_other": "{{count}} ofertas nuevas de {{found}} vistas."
+    },
+    "no_browser": {
+      "title": "Tu agente no ha podido buscar",
+      "body": "No tiene acceso a tu navegador. Conéctalo como dice «Antes de empezar» y vuelve a lanzar la búsqueda."
+    },
+    "stopped": {
+      "title": "Tu agente ha parado antes de acabar",
+      "body": "En su ventana cuenta por qué. Lo que ya había encontrado está en la Bandeja."
+    },
+    "problems_one": "{{count}} problema en los portales. Los ves en «Dónde buscar».",
+    "problems_other": "{{count}} problemas en los portales. Los ves en «Dónde buscar».",
+    "seeInbox": "Ver en la Bandeja",
+    "close": "Cerrar el aviso",
+    "notification": "Mira el resultado en CandidatAI.",
+    "minimize": "Minimizar el aviso",
+    "expand": "{{title}}: abrir el aviso"
   }
 }

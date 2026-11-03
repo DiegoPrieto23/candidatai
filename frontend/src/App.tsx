@@ -29,6 +29,8 @@ const {
   profileHub: { Page: ProfileHubPage },
   replies: { Page: RepliesPage },
   search: { Page: SearchPage },
+  searchHub: { Page: SearchHubPage },
+  searchSettings: { Page: SearchSettingsPage },
   skills: { Page: SkillsPage },
   sources: { Page: SourcesPage },
   sourcesHub: { Page: SourcesHubPage },
@@ -70,7 +72,10 @@ export function AppRoutes() {
         </Route>
         <Route path="jobs/:id" element={<JobPage />} />
         <Route path="nueva" element={<NewJobPage />} />
-        <Route path="buscar" element={<SearchPage />} />
+        <Route path="buscar" element={<SearchHubPage />}>
+          <Route index element={<SearchPage />} />
+          <Route path="ajustes" element={<SearchSettingsPage />} />
+        </Route>
         <Route path="procesos" element={<ProcessesPage />} />
         <Route path="calendario" element={<CalendarPage />} />
         <Route path="respuestas" element={<RepliesPage />} />
@@ -87,12 +92,15 @@ export function AppRoutes() {
         <Route path="procesos/calendario" element={<MovedTo to="/calendario" />} />
         <Route path="skills" element={<MovedTo to="/perfil/skills" />} />
         <Route path="plantillas" element={<MovedTo to="/perfil/plantillas" />} />
-        <Route path="fuentes" element={<SourcesHubPage />}>
-          <Route index element={<Navigate to="/fuentes/plataformas" replace />} />
-          <Route path="empresas" element={<SourcesPage />} />
-          <Route path="plataformas" element={<PlatformsPage />} />
-          <Route path="correo" element={<EmailAlertsPage />} />
-          <Route path="extension" element={<ExtensionPage />} />
+        {/* «Dónde buscar» es una pestaña de «Buscar ofertas»; conserva sus direcciones de siempre. */}
+        <Route path="fuentes" element={<SearchHubPage />}>
+          <Route element={<SourcesHubPage />}>
+            <Route index element={<Navigate to="/fuentes/plataformas" replace />} />
+            <Route path="empresas" element={<SourcesPage />} />
+            <Route path="plataformas" element={<PlatformsPage />} />
+            <Route path="correo" element={<EmailAlertsPage />} />
+            <Route path="extension" element={<ExtensionPage />} />
+          </Route>
         </Route>
         {/* Antes de la fase 23.3 eran páginas sueltas: los enlaces guardados siguen funcionando. */}
         <Route path="empresas" element={<Navigate to="/fuentes/empresas" replace />} />

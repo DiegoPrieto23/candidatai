@@ -169,7 +169,7 @@ export function UserPrompts() {
         <button
           type="button"
           onClick={() => setHidden(null)}
-          className="fixed right-4 bottom-4 z-40 inline-flex items-center gap-2 rounded-full border border-amber-500/60 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-900 shadow-lg dark:bg-amber-950 dark:text-amber-200"
+          className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-amber-500/60 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-900 shadow-lg dark:bg-amber-950 dark:text-amber-200"
         >
           <ShieldWarningIcon className="size-4" weight="duotone" />
           {prompt.title} · {clock(left)}

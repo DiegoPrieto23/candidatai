@@ -2,7 +2,6 @@
   "tabs": {
     "about": "Sobre ti",
     "career": "Experiencia y formación",
-    "search": "Búsqueda",
     "documents": "Documentos",
     "history": "Historial"
   },
@@ -27,10 +26,10 @@
       "open": "Empezar a mano",
       "headlineHint": "Lo que pondrías bajo tu nombre en un CV, p. ej. «Analista de datos · SQL · Power BI».",
       "role": "Puesto que buscas",
-      "roleHint": "Uno para empezar; luego añades más en «Búsqueda».",
+      "roleHint": "Uno para empezar; luego añades más en «Buscar ofertas → Qué buscas».",
       "summary": "Resumen (opcional)",
       "summaryHint": "Dos o tres frases sobre ti. Si lo dejas vacío, se usa tu titular.",
-      "defaults": "Lo demás (modalidad, ubicaciones, foto en el CV…) empieza abierto a todo y lo cambias en «Búsqueda» y «Documentos». Tu experiencia y tus skills, en «Experiencia y formación».",
+      "defaults": "Lo demás (modalidad, ubicaciones, foto en el CV…) empieza abierto a todo y lo cambias en «Qué buscas» y en «Documentos». Tu experiencia y tus skills, en «Experiencia y formación».",
       "required": "Hace falta para crear tu perfil.",
       "pickOne": "Elige al menos uno.",
       "create": "Crear mi perfil",

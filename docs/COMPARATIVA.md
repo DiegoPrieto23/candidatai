@@ -141,7 +141,7 @@ tres proyectos han llegado a lo mismo: `GEMINI.md` vacío o de paso, y Antigravi
 
 | Función | CandidatAI | AI Job Search | career-ops |
 |---|---|---|---|
-| Filtros duros (nivel, años, modalidad, zona, idiomas, sueldo mínimo) | ✅ en código, editables en «Mi perfil → Búsqueda» | ✅ deal-breakers + Language Gate | ✅ y para en seco si rompe una regla dura |
+| Filtros duros (nivel, años, modalidad, zona, idiomas, sueldo mínimo) | ✅ en código, editables en «Buscar ofertas → Qué buscas» | ✅ deal-breakers + Language Gate | ✅ y para en seco si rompe una regla dura |
 | Score explicado | ✅ 0-100 por componentes | ✅ 5 dimensiones | ✅ 1-5 con pesos y su origen |
 | Similitud semántica local (embeddings) | ✅ opcional | ❌ | ❌ |
 | Valoración razonada del agente | ✅ `assess-fit` | ✅ | ✅ informe A-H con veredicto |

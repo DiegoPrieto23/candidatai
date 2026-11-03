@@ -30,6 +30,7 @@ import { fromLocalInput, toLocalDateInput, toLocalInput } from '@/lib/time'
 import { errorMessage } from '@/lib/errors'
 import { isTyping } from '@/lib/keyboard'
 import { cn } from '@/lib/utils'
+import { BusyLabel } from '@/components/StableLabel'
 
 const CONFIDENCE_TONE = {
   high: 'border-emerald-600/30 text-emerald-700 dark:text-emerald-400',
@@ -412,7 +413,7 @@ function DecisionForm({ item, onDone }: { item: ReplyInboxItem; onDone: (decisio
           {t('cancel')}
         </Button>
         <Button type="submit" disabled={invalid || accept.isPending}>
-          {accept.isPending ? t('saving') : eventType === 'none' ? t('archive') : t('register')}
+          <BusyLabel busy={accept.isPending} busyText={t('saving')} text={eventType === 'none' ? t('archive') : t('register')} />
         </Button>
       </DialogFooter>
     </form>

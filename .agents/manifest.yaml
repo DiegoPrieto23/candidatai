@@ -64,6 +64,7 @@ policy:
     - mcp:get_company_research
     - mcp:get_received_offer
     - mcp:wait_user_action
+    - mcp:finish_search
     - mcp:list_agent_requests
   # Rutas (relativas a la raíz, con comodines) que ningún agente lee o edita.
   deny_read: [.env, .env.*, data/browser-profile/**]

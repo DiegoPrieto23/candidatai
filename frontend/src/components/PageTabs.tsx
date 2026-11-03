@@ -19,10 +19,22 @@ export type PageTab = {
  * Las pestañas de una sección, cada una con su propia URL. En móvil, la fila se desplaza en vez de
  * partirse en dos.
  */
-export function PageTabs({ label, tabs, className }: { label: string; tabs: readonly PageTab[]; className?: string }) {
+export function PageTabs({
+  label,
+  tabs,
+  className,
+  level = 'main',
+}: {
+  label: string
+  tabs: readonly PageTab[]
+  className?: string
+  /** `sub`: pestañas dentro de otra pestaña. Pesan menos para que se lea cuál manda. */
+  level?: 'main' | 'sub'
+}) {
+  const main = level === 'main'
   return (
-    <nav aria-label={label} className={cn('w-full min-w-0', className)}>
-      <ul className="scroll-row inline-flex max-w-full gap-1 rounded-lg border bg-card p-1">
+    <nav aria-label={label} className={cn('w-full min-w-0', main && 'border-b', className)}>
+      <ul className={cn('scroll-row flex max-w-full', main ? '-mb-px gap-5' : 'gap-1')}>
         {tabs.map(({ to, label: name, icon: Icon, end, count, countLabel }) => (
           <li key={to} className="flex-none">
             <NavLink
@@ -31,17 +43,18 @@ export function PageTabs({ label, tabs, className }: { label: string; tabs: read
               aria-label={count ? countLabel : undefined}
               className={({ isActive }) =>
                 cn(
-                  'flex items-center gap-2 rounded-md px-3 py-1.5 text-sm whitespace-nowrap transition-colors',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                  isActive
-                    ? 'bg-foreground/[0.07] font-medium text-foreground dark:bg-foreground/10'
-                    : 'text-muted-foreground hover:text-foreground',
+                  'flex items-center gap-2 text-sm whitespace-nowrap transition-colors',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset',
+                  main ? 'border-b-2 pt-0.5 pb-2.5' : 'rounded-md px-2.5 py-1',
+                  main && (isActive ? 'border-primary' : 'border-transparent hover:border-foreground/20'),
+                  !main && isActive && 'bg-foreground/[0.07] dark:bg-foreground/10',
+                  isActive ? 'font-medium text-foreground' : 'text-muted-foreground hover:text-foreground',
                 )
               }
             >
               {({ isActive }) => (
                 <>
-                  <Icon className="size-4" weight={isActive ? 'fill' : 'regular'} aria-hidden />
+                  <Icon className={cn('size-4', isActive && main && 'text-primary')} weight={isActive ? 'fill' : 'regular'} aria-hidden />
                   {name}
                   {!!count && (
                     <span className="tabular grid h-[18px] min-w-[18px] place-items-center rounded-full bg-foreground/10 px-1 text-[0.7rem] font-semibold text-foreground/80">

@@ -47,6 +47,7 @@
     "candidatai_get_company_research": "allow",
     "candidatai_get_received_offer": "allow",
     "candidatai_wait_user_action": "allow",
+    "candidatai_finish_search": "allow",
     "candidatai_list_agent_requests": "allow",
     "read": {
       "*": "allow",

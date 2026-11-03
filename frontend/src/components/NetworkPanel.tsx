@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { errorMessage } from '@/lib/errors'
 import { formatList } from '@/lib/i18n'
 import { CONTACT_RELATION_LABEL, formatDate } from '@/lib/labels'
+import { BusyLabel } from '@/components/StableLabel'
 
 /** Etapas con ficha de proceso: solo ahí se puede añadir a alguien como contacto. */
 const PROCESS_STAGES: ReadonlySet<Stage> = new Set(['approved', 'cv_ready', 'applied', 'in_process'])
@@ -123,7 +124,7 @@ function ImportNetwork() {
         onClick={() => run.mutate()}
       >
         <DownloadSimpleIcon />
-        {run.isPending ? t('importing') : t('button')}
+        <BusyLabel busy={run.isPending} busyText={t('importing')} text={t('button')} />
       </Button>
       {data && !data.default_file_exists && (
         <p className="text-xs text-muted-foreground">{t('missing')}</p>

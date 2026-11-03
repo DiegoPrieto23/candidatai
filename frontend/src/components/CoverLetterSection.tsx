@@ -42,6 +42,7 @@ import { colorLabel, formatDateTime, PHOTO_MODE_LABEL } from '@/lib/labels'
 import { countWords } from '@/lib/letters'
 import { cn } from '@/lib/utils'
 import { useTemplateText } from '@/lib/templateText'
+import { BusyLabel } from '@/components/StableLabel'
 
 /** Desde la aprobación; en «closed», solo si hubo carta. */
 const LETTER_STAGES = new Set<Stage>(['approved', 'cv_ready', 'applied', 'in_process', 'closed'])
@@ -318,7 +319,7 @@ function LetterEditor({
       )}
       <div className="flex gap-2">
         <Button type="submit" size="sm" disabled={save.isPending || !changed || empty}>
-          {save.isPending ? t('saving') : t('save')}
+          <BusyLabel busy={save.isPending} busyText={t('saving')} text={t('save')} />
         </Button>
         <Button type="button" variant="ghost" size="sm" onClick={onDone}>
           {t('cancel')}
@@ -413,7 +414,7 @@ function RenderForm({ data, letter, jobId }: { data: JobCoverLetter; letter: Cov
       <div className="flex items-end sm:col-span-3">
         <Button type="submit" disabled={render.isPending}>
           <ArrowsClockwiseIcon className={cn(render.isPending && 'animate-spin')} />
-          {render.isPending ? t('rendering') : t('render')}
+          <BusyLabel busy={render.isPending} busyText={t('rendering')} text={t('render')} />
         </Button>
       </div>
       {render.isError && (

@@ -43,6 +43,7 @@ import { i18n } from '@/lib/i18n'
 import { colorLabel, formatDateTime, PHOTO_MODE_LABEL, SECTION_LABEL } from '@/lib/labels'
 import { cn } from '@/lib/utils'
 import { useTemplateText } from '@/lib/templateText'
+import { BusyLabel } from '@/components/StableLabel'
 
 type PhotoMode = NonNullable<CvRenderOptions['photo']>
 const PHOTO_MODES: PhotoMode[] = ['auto', 'include', 'exclude']
@@ -378,7 +379,7 @@ function RenderForm({
       <div className="flex flex-wrap items-center gap-3">
         <Button type="submit" disabled={!template || render.isPending} className="active:translate-y-px">
           <ArrowsClockwiseIcon className={cn(render.isPending && 'animate-spin')} />
-          {render.isPending ? t('rendering') : t('render')}
+          <BusyLabel busy={render.isPending} busyText={t('rendering')} text={t('render')} />
         </Button>
         <p className="text-xs text-muted-foreground">
           {render.isPending

@@ -30,6 +30,7 @@ import { formatNumber, LEVEL_LABEL } from '@/lib/labels'
 import { errorMessage } from '@/lib/errors'
 import { LIST_PAGE_SIZE, pageOf } from '@/lib/paging'
 import { cn } from '@/lib/utils'
+import { BusyLabel } from '@/components/StableLabel'
 
 type Kind = 'all' | 'must' | 'nice'
 type MarkFilter = 'all' | 'unmarked' | SkillMark
@@ -182,7 +183,7 @@ function AliasForm({
           {t('cancel')}
         </Button>
         <Button type="submit" disabled={!chosen || addAlias.isPending}>
-          {addAlias.isPending ? t('saving') : t('submit')}
+          <BusyLabel busy={addAlias.isPending} busyText={t('saving')} text={t('submit')} />
         </Button>
       </DialogFooter>
     </form>

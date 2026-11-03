@@ -13,6 +13,7 @@ import { errorMessage } from '@/lib/errors'
 import { i18n } from '@/lib/i18n'
 import { ChoicesField, TextField } from './fields'
 import { SENIORITIES } from './types'
+import { BusyLabel } from '@/components/StableLabel'
 
 type Seniority = (typeof SENIORITIES)[number]
 
@@ -105,7 +106,7 @@ export function StartByHand() {
           )}
           <div className="flex flex-wrap gap-2 border-t pt-4">
             <Button type="submit" disabled={create.isPending}>
-              {create.isPending ? t('noProfile.byHand.creating') : t('noProfile.byHand.create')}
+              <BusyLabel busy={create.isPending} busyText={t('noProfile.byHand.creating')} text={t('noProfile.byHand.create')} />
             </Button>
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
               {t('noProfile.byHand.cancel')}

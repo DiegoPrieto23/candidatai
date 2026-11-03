@@ -34,6 +34,18 @@ Una fila por ejecución de una fuente; la usan los conectores y, desde la 09b, a
 | completed | int | Resúmenes completados (09b) |
 | errors | JSON | `[{code, message, item?}]`: fallo de la fuente o de una oferta suelta |
 
+### `search_runs` (fase 39d)
+Una búsqueda abierta desde «Buscar ahora» en la terminal del agente: de ella sale el aviso «Buscando…».
+Lo demás (portales recorridos, ofertas nuevas, problemas) se calcula con `source_runs` y `jobs`.
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | int PK | |
+| source_ids | JSON | Los portales que tenía que recorrer |
+| after_source_run_id | int | El último `source_runs.id` al empezar: los de esta búsqueda son los posteriores |
+| outcome | str? | `done`, `no_browser` o `stopped`, lo que dijo el agente con `finish_search` |
+| started_at / finished_at | datetime | `finished_at`, solo si lo dijo el agente |
+| dismissed_at | datetime? | Aviso cerrado por el usuario, o sustituido por una búsqueda nueva |
+
 ### `companies`
 | Columna | Tipo | Notas |
 |---|---|---|

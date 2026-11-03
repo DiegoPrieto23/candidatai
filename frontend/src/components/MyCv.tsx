@@ -27,6 +27,7 @@ import { formatDateTime } from '@/lib/labels'
 import { errorMessage } from '@/lib/errors'
 import { cn } from '@/lib/utils'
 import { useTemplateText } from '@/lib/templateText'
+import { BusyLabel } from '@/components/StableLabel'
 
 const ACCEPT = '.docx,.pdf,.png,.jpg,.jpeg,.html'
 
@@ -68,7 +69,7 @@ function CopyCommand({ command }: { command: string }) {
       </code>
       <Button variant="ghost" size="xs" onClick={copy} aria-label={t('copyAria')}>
         {copied ? <CheckIcon /> : <CopyIcon />}
-        {copied ? t('copied') : t('copy')}
+        <BusyLabel busy={copied} busyText={t('copied')} text={t('copy')} />
       </Button>
     </div>
   )
@@ -169,7 +170,7 @@ function ImportedUpload({ template, isDefault }: { template: TemplateInfo; isDef
             disabled={setDefault.isPending}
             className="active:translate-y-px"
           >
-            <StarIcon /> {setDefault.isPending ? t('saving') : t('useDefault')}
+            <StarIcon /> <BusyLabel busy={setDefault.isPending} busyText={t('saving')} text={t('useDefault')} />
           </Button>
         )}
       </div>
@@ -262,7 +263,7 @@ export function MyCv() {
         </div>
         <input ref={input} type="file" accept={ACCEPT} onChange={onFile} className="sr-only" aria-label={t('file')} />
         <Button onClick={() => input.current?.click()} disabled={upload.isPending} className="active:translate-y-px">
-          <FileArrowUpIcon /> {upload.isPending ? t('uploading') : t('upload')}
+          <FileArrowUpIcon /> <BusyLabel busy={upload.isPending} busyText={t('uploading')} text={t('upload')} />
         </Button>
       </div>
       {upload.isError && (

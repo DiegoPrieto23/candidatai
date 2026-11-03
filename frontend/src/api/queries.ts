@@ -36,6 +36,7 @@ export const keys = {
   /** También bajo `cv`: la carta va a juego con el render seleccionado del CV. */
   letter: (id: number) => ['cv', id, 'letter'] as const,
   funnel: (since: string | null) => ['funnel', since] as const,
+  flow: (since: string | null) => ['funnel', 'flow', since] as const,
   // Bajo 'funnel': lo que invalida el embudo (referencias…) invalida también la calibración.
   calibration: (since: string | null) => ['funnel', 'calibration', since] as const,
   story: ['funnel', 'story'] as const,
@@ -54,6 +55,7 @@ export const keys = {
   apply: (id: number) => ['apply', id] as const,
   agent: ['agent'] as const,
   agentRuns: ['agent', 'runs'] as const,
+  searchRun: ['agent', 'search-run'] as const,
   agentAgents: ['agent', 'agents'] as const,
   agentRequests: ['agent', 'requests'] as const,
   localModels: ['agent', 'local-models'] as const,
@@ -835,6 +837,15 @@ export function useDeleteContact(jobId: number) {
   })
 }
 
+/** «Tu embudo»: los pasos y dónde se quedó cada candidatura. Conserva la cifra anterior al cambiar de periodo. */
+export function useFunnelFlow(since: string | null) {
+  return useQuery({
+    queryKey: keys.flow(since),
+    queryFn: () => unwrap(api.GET('/stats/flow', { params: { query: { since } } })),
+    placeholderData: (previous) => previous,
+  })
+}
+
 export function useFunnelStats(since: string | null) {
   return useQuery({
     queryKey: keys.funnel(since),
@@ -1067,8 +1078,32 @@ export function useAgentLauncher() {
 /** Abre tu agente en una terminal con la orden escrita. No espera a que termine. `agent`: otro
  * agente solo para esta ejecución (fase 24.4). */
 export function useLaunchAgent() {
+  const client = useQueryClient()
   return useMutation({
     mutationFn: (body: LaunchTarget & { agent?: string }) => unwrap(api.POST('/agent/launch', { body })),
+    onSuccess: (_result, body) => {
+      if (body.action === 'search-jobs') void client.invalidateQueries({ queryKey: keys.searchRun })
+    },
+  })
+}
+
+/** La búsqueda de la que avisa la app. Sigue preguntando sin la pestaña a la vista: acaba cuando acaba. */
+export function useSearchRun() {
+  return useQuery({
+    queryKey: keys.searchRun,
+    queryFn: () => unwrap(api.GET('/agent/search-run')),
+    refetchInterval: (query) => (query.state.data?.run?.status === 'running' ? 4000 : 20000),
+    refetchIntervalInBackground: true,
+  })
+}
+
+/** Cierra el aviso de una búsqueda. */
+export function useDismissSearchRun() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (runId: number) =>
+      unwrap(api.POST('/agent/search-run/{run_id}/dismiss', { params: { path: { run_id: runId } }, body: {} })),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.searchRun }),
   })
 }
 

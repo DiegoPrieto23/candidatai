@@ -30,13 +30,15 @@
     "new_other": "{{count}} new",
     "known_one": "{{count}} already known",
     "known_other": "{{count}} already known",
-    "issues_one": "{{count}} issue",
-    "issues_other": "{{count}} issues",
     "afterFilters": "{{count}} after filters",
     "offers_one": "{{count}} job",
     "offers_other": "{{count}} jobs",
     "pages_one": "{{count}} page",
-    "pages_other": "{{count}} pages"
+    "pages_other": "{{count}} pages",
+    "problems_one": "{{count}} problem",
+    "problems_other": "{{count}} problems",
+    "notes_one": "{{count}} note",
+    "notes_other": "{{count}} notes"
   },
   "linkedinRisk": {
     "title": "Let the agent browse LinkedIn?",
@@ -102,7 +104,11 @@
     "maxOffersHint": "The maximum number of new jobs the agent adds each time it goes through this job board. Lower it if you get too many to review.",
     "maxOffersHintAria": "What jobs per run means",
     "settings": "Settings and log",
-    "log": "Last run"
+    "log": "Last run",
+    "problemsTitle": "Problems.",
+    "problemsHint": "What stopped part of the job board being read: a captcha, a login, a page that has changed.",
+    "notesTitle": "Notes from your agent.",
+    "notesHint": "Nothing failed: this is what it wrote down, like the searches it didn't get to."
   },
   "limits": "App limits: at most {{pages}} of results per search, {{delay}} s pause between pages and {{offers}} jobs per run on new platforms (change it on each one with “Jobs per run”).",
   "empty": {
@@ -139,8 +145,8 @@
     "submit": "Add",
     "button": "Add job board",
     "fromProfile": "Fill in from my profile",
-    "urlsHintGenerated": "They come from the roles and locations in your profile (“My profile → Search”). You can remove or add lines: one address per search.",
-    "urlsHintNoRoles": "Add the roles you're looking for in “My profile → Search” and they fill in by themselves. Or run the search on the job board and paste the results address here.",
+    "urlsHintGenerated": "They come from the roles and locations in your profile (“Search jobs → What you're after”). You can remove or add lines: one address per search.",
+    "urlsHintNoRoles": "Add the roles you're looking for in “Search jobs → What you're after” and they fill in by themselves. Or run the search on the job board and paste the results address here.",
     "willSearch": "It will search:"
   },
   "edit": {

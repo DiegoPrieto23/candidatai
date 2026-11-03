@@ -23,7 +23,7 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 
 # Rutas de la UI (`frontend/src/App.tsx`). Un test comprueba que no falta ninguna.
 UI_ROUTES = re.compile(
-    r"^/(|como-funciona|bandeja(/[a-z-]+)?|jobs/\d+|nueva|buscar|por-revisar|triaje"
+    r"^/(|como-funciona|bandeja(/[a-z-]+)?|jobs/\d+|nueva|buscar(/[a-z-]+)?|por-revisar|triaje"
     r"|procesos(/[a-z-]+)?|calendario|respuestas|embudo|skills|alertas|plantillas|perfil(/[a-z-]+)?"
     r"|fuentes(/[a-z-]+)?|empresas|plataformas|agente)/?$"
 )

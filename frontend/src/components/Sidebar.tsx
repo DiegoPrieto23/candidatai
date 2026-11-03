@@ -13,7 +13,6 @@ import {
   MagnifyingGlassIcon,
   MoonIcon,
   PlusIcon,
-  PlugsConnectedIcon,
   QuestionIcon,
   RobotIcon,
   SidebarSimpleIcon,
@@ -24,7 +23,6 @@ import {
   type IconProps,
 } from '@phosphor-icons/react'
 import { Dialog as DialogPrimitive } from 'radix-ui'
-import type { Stage } from '@/api/client'
 import { useAgentRuns, useEditableProfile, useFollowups, useReplies, useStatus } from '@/api/queries'
 import { LanguageFlag } from '@/components/LanguageFlag'
 import { Button } from '@/components/ui/button'
@@ -50,11 +48,6 @@ type CountLabel = 'toReview' | 'agent' | 'followUp'
 type Count = { value: number; strong: boolean; label: CountLabel | null }
 /** Lo que falta en una entrada sin cifra que dar: se ve como un punto y lo dice al lector de pantalla. */
 type Signal = 'noProfile' | 'unsaved'
-
-function useStageCount(stage: Stage, label: CountLabel, strong = true): Count {
-  const { data } = useStatus()
-  return { value: data?.by_stage[stage] ?? 0, strong, label }
-}
 
 /** Candidaturas que llevan días sin respuesta: toca un seguimiento. */
 function useFollowupsCount(): Count {
@@ -108,7 +101,6 @@ type EntryKey =
   | 'profile'
   | 'inbox'
   | 'search'
-  | 'sources'
   | 'processes'
   | 'calendar'
   | 'replies'
@@ -126,8 +118,6 @@ type Entry = {
   alsoActive?: string[]
 }
 
-const usePendingTriage = () => useStageCount('pending_triage', 'toReview')
-
 type GroupKey = 'search' | 'processes' | 'settings'
 
 const NAV_GROUPS: { title: GroupKey | null; entries: Entry[] }[] = [
@@ -141,9 +131,8 @@ const NAV_GROUPS: { title: GroupKey | null; entries: Entry[] }[] = [
   {
     title: 'search',
     entries: [
-      { to: '/bandeja', label: 'inbox', icon: TrayIcon, alsoActive: ['/jobs/'], useCount: usePendingTriage },
-      { to: '/buscar', label: 'search', icon: MagnifyingGlassIcon },
-      { to: '/fuentes', label: 'sources', icon: PlugsConnectedIcon },
+      { to: '/buscar', label: 'search', icon: MagnifyingGlassIcon, alsoActive: ['/fuentes'] },
+      { to: '/bandeja', label: 'inbox', icon: TrayIcon, alsoActive: ['/jobs/'] },
     ],
   },
   {
@@ -407,7 +396,7 @@ export function Sidebar() {
     <aside
       aria-label={t('sidebar')}
       className={cn(
-        'sticky top-0 hidden h-[100dvh] shrink-0 flex-col border-r bg-card transition-[width] duration-200 lg:flex',
+        'sidebar-ink sticky top-0 hidden h-[100dvh] shrink-0 flex-col border-r transition-[width] duration-200 lg:flex',
         collapsed ? 'w-16 items-center px-2' : 'w-60 px-3',
       )}
     >
@@ -438,7 +427,7 @@ function NewJobButton({ collapsed }: { collapsed: boolean }) {
     <Button
       asChild
       size={collapsed ? 'icon' : 'sm'}
-      className={cn('mb-2 shrink-0', !collapsed && 'w-full', here && 'ring-2 ring-ring/60 ring-offset-2 ring-offset-sidebar')}
+      className={cn('mb-2 shrink-0', !collapsed && 'w-full', here && 'ring-2 ring-ring/60 ring-offset-2 ring-offset-card')}
     >
       <Link
         to="/nueva"
@@ -557,7 +546,7 @@ export function MobileNav() {
         <DialogPrimitive.Overlay className="fixed inset-0 z-40 bg-black/40 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0" />
         <DialogPrimitive.Content
           aria-describedby={undefined}
-          className="fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-col border-r bg-background px-3 shadow-xl data-[state=open]:animate-in data-[state=open]:slide-in-from-left data-[state=closed]:animate-out data-[state=closed]:slide-out-to-left"
+          className="sidebar-ink fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-col border-r px-3 shadow-xl data-[state=open]:animate-in data-[state=open]:slide-in-from-left data-[state=closed]:animate-out data-[state=closed]:slide-out-to-left"
         >
           <div className="flex h-14 shrink-0 items-center justify-between px-1.5">
             <DialogPrimitive.Title asChild>

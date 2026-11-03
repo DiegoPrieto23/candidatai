@@ -30,13 +30,15 @@
     "new_other": "{{count}} nuevas",
     "known_one": "{{count}} ya conocida",
     "known_other": "{{count}} ya conocidas",
-    "issues_one": "{{count}} incidente",
-    "issues_other": "{{count}} incidentes",
     "afterFilters": "{{count}} tras filtros",
     "offers_one": "{{count}} oferta",
     "offers_other": "{{count}} ofertas",
     "pages_one": "{{count}} página",
-    "pages_other": "{{count}} páginas"
+    "pages_other": "{{count}} páginas",
+    "problems_one": "{{count}} problema",
+    "problems_other": "{{count}} problemas",
+    "notes_one": "{{count}} nota",
+    "notes_other": "{{count}} notas"
   },
   "linkedinRisk": {
     "title": "¿Dejar que el agente recorra LinkedIn?",
@@ -102,7 +104,11 @@
     "maxOffersHint": "Cuántas ofertas nuevas da de alta el agente, como mucho, cada vez que recorre esta plataforma. Bájalo si te llegan demasiadas para revisar.",
     "maxOffersHintAria": "Qué son las ofertas por recorrido",
     "settings": "Ajustes y registro",
-    "log": "Último recorrido"
+    "log": "Último recorrido",
+    "problemsTitle": "Problemas.",
+    "problemsHint": "Lo que impidió leer parte del portal: un captcha, un inicio de sesión, una página que ha cambiado.",
+    "notesTitle": "Notas de tu agente.",
+    "notesHint": "No ha fallado nada: es lo que apuntó, como las búsquedas que dejó sin recorrer."
   },
   "limits": "Límites de la app: como mucho {{pages}} de resultados por búsqueda, {{delay}} s de pausa entre páginas y {{offers}} ofertas por recorrido en las plataformas nuevas (en cada una lo cambias con «Ofertas por recorrido»).",
   "empty": {
@@ -139,8 +145,8 @@
     "submit": "Añadir",
     "button": "Añadir portal",
     "fromProfile": "Rellenar desde mi perfil",
-    "urlsHintGenerated": "Salen de los puestos y las ubicaciones de tu perfil («Mi perfil → Búsqueda»). Puedes quitar o añadir líneas: una dirección por búsqueda.",
-    "urlsHintNoRoles": "Añade en «Mi perfil → Búsqueda» los puestos que buscas y se rellenan solas. O haz la búsqueda en el portal y copia aquí la dirección de los resultados.",
+    "urlsHintGenerated": "Salen de los puestos y las ubicaciones de tu perfil («Buscar ofertas → Qué buscas»). Puedes quitar o añadir líneas: una dirección por búsqueda.",
+    "urlsHintNoRoles": "Añade en «Buscar ofertas → Qué buscas» los puestos que buscas y se rellenan solas. O haz la búsqueda en el portal y copia aquí la dirección de los resultados.",
     "willSearch": "Buscará:"
   },
   "edit": {
