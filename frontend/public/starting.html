@@ -3,30 +3,38 @@
   Lo primero que ves al abrir CandidatAI: el acceso directo (y `cai start`) abren esta página nada
   más pulsarlo, desde el disco, mientras la app arranca. Pregunta a la app cada medio segundo y,
   en cuanto responde, pasa a ella. Sin nada externo: tiene que funcionar sin la app en marcha.
+  El logo es el de `favicon.svg`, en línea para no depender de otro fichero.
 -->
 <html lang="es">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>CandidatAI</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <style>
       :root {
         color-scheme: light dark;
-        --bg: #fafafa;
-        --card: #ffffff;
-        --fg: #18181b;
-        --muted: #71717a;
-        --border: #e4e4e7;
-        --primary: #4f46e5;
+        --bg: #f4f8f7;
+        --glow: rgba(15, 118, 110, 0.14);
+        --card: rgba(255, 255, 255, 0.82);
+        --fg: #10211f;
+        --muted: #5b6b69;
+        --border: #d3e2df;
+        --primary: #0f766e;
+        --track: #d9e7e4;
+        --shadow: 0 1px 2px rgba(16, 33, 31, 0.05), 0 24px 48px -24px rgba(15, 118, 110, 0.35);
       }
       @media (prefers-color-scheme: dark) {
         :root {
-          --bg: #09090b;
-          --card: #18181b;
-          --fg: #fafafa;
-          --muted: #a1a1aa;
-          --border: #27272a;
-          --primary: #818cf8;
+          --bg: #071312;
+          --glow: rgba(45, 212, 191, 0.12);
+          --card: rgba(16, 32, 30, 0.82);
+          --fg: #ecf6f4;
+          --muted: #93a8a5;
+          --border: #1c3431;
+          --primary: #2dd4bf;
+          --track: #173230;
+          --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 24px 48px -24px rgba(0, 0, 0, 0.7);
         }
       }
       * { box-sizing: border-box; }
@@ -36,42 +44,109 @@
         display: grid;
         place-items: center;
         padding: 16px;
-        background: var(--bg);
         color: var(--fg);
-        font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        background:
+          radial-gradient(60rem 36rem at 50% -10%, var(--glow), transparent 70%),
+          radial-gradient(40rem 28rem at 50% 115%, var(--glow), transparent 70%),
+          var(--bg);
+        font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
       }
       main {
-        width: min(420px, 100%);
-        padding: 32px 28px;
+        width: min(440px, 100%);
+        padding: 44px 36px 32px;
         border: 1px solid var(--border);
-        border-radius: 16px;
+        border-radius: 20px;
         background: var(--card);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(8px);
         text-align: center;
+        animation: rise 0.5s ease-out both;
       }
-      .spinner {
-        width: 36px;
-        height: 36px;
-        margin: 0 auto 20px;
-        border: 3px solid var(--border);
-        border-top-color: var(--primary);
-        border-radius: 50%;
-        animation: spin 0.9s linear infinite;
+      @keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+
+      /* El logo, con un anillo que gira y un latido suave. */
+      .mark { position: relative; width: 112px; height: 112px; margin: 0 auto 26px; }
+      .logo {
+        position: absolute;
+        inset: 22px;
+        width: 68px;
+        height: 68px;
+        border-radius: 16px;
+        box-shadow: 0 10px 28px -8px rgba(15, 118, 110, 0.55);
+        animation: beat 2.4s ease-in-out infinite;
       }
-      .slow .spinner { animation-duration: 1.6s; }
-      .failed .spinner { display: none; }
+      .ring { position: absolute; inset: 0; width: 100%; height: 100%; }
+      .ring circle { fill: none; stroke-width: 3; }
+      .ring .track { stroke: var(--track); }
+      .ring .arc {
+        stroke: var(--primary);
+        stroke-linecap: round;
+        stroke-dasharray: 90 250;
+        transform-origin: 50% 50%;
+        animation: spin 1.5s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
+      }
       @keyframes spin { to { transform: rotate(360deg); } }
-      @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 3s; } }
-      h1 { margin: 0 0 6px; font-size: 18px; font-weight: 600; }
+      @keyframes beat { 50% { transform: scale(1.04); } }
+
+      h1 { margin: 0 0 8px; font-size: 21px; font-weight: 650; letter-spacing: -0.01em; }
       p { margin: 0; color: var(--muted); }
-      #note { margin-top: 14px; font-size: 13px; }
-      a { color: var(--primary); }
+      #body { max-width: 34ch; margin-inline: auto; }
+
+      /* Barra de espera sin fin. */
+      .bar {
+        position: relative;
+        height: 4px;
+        margin: 26px auto 0;
+        width: 100%;
+        max-width: 240px;
+        overflow: hidden;
+        border-radius: 99px;
+        background: var(--track);
+      }
+      .bar::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        width: 40%;
+        border-radius: 99px;
+        background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        animation: sweep 1.6s ease-in-out infinite;
+      }
+      @keyframes sweep { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+
+      #note { margin-top: 22px; font-size: 13px; }
+      a { color: var(--primary); text-underline-offset: 3px; }
+      a:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; border-radius: 4px; }
+
+      .slow .ring .arc { animation-duration: 2.6s; }
+      .slow .bar::before { animation-duration: 2.8s; }
+      .failed .ring, .failed .bar { display: none; }
+      .failed .logo { animation: none; filter: grayscale(0.85); opacity: 0.8; }
+
+      @media (prefers-reduced-motion: reduce) {
+        main { animation: none; }
+        .logo, .ring .arc, .bar::before { animation-duration: 6s; }
+        .logo { animation: none; }
+      }
     </style>
   </head>
   <body>
     <main>
-      <div class="spinner" aria-hidden="true"></div>
+      <div class="mark" aria-hidden="true">
+        <svg class="ring" viewBox="0 0 112 112" focusable="false">
+          <circle class="track" cx="56" cy="56" r="53" />
+          <circle class="arc" cx="56" cy="56" r="53" />
+        </svg>
+        <svg class="logo" viewBox="0 0 64 64" focusable="false">
+          <rect width="64" height="64" rx="14" fill="#0F766E" />
+          <path d="M12 64 C12 47 20.5 40.5 32 40.5 C43.5 40.5 52 47 52 64 Z" fill="#FFFFFF" />
+          <polygon points="32.00,9.40 34.74,11.76 38.30,11.09 39.50,14.50 42.91,15.70 42.24,19.26 44.60,22.00 42.24,24.74 42.91,28.30 39.50,29.50 38.30,32.91 34.74,32.24 32.00,34.60 29.26,32.24 25.70,32.91 24.50,29.50 21.09,28.30 21.76,24.74 19.40,22.00 21.76,19.26 21.09,15.70 24.50,14.50 25.70,11.09 29.26,11.76" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="2.6" stroke-linejoin="round" />
+          <path d="M26.4 21.6 L30.4 25.6 L37.8 18.2" fill="none" stroke="#0F766E" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </div>
       <h1 id="title">Arrancando CandidatAI…</h1>
       <p id="body" role="status">En unos segundos se abre aquí. La primera vez tras instalar o actualizar tarda algo más.</p>
+      <div class="bar" aria-hidden="true"></div>
       <p id="note"><a id="link" href="http://127.0.0.1:8000/">Abrir CandidatAI</a></p>
     </main>
     <script>

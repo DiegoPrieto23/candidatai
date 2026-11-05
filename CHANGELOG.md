@@ -123,6 +123,12 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   los colores de la app (claro y oscuro), en español e inglés, y no en el desplegable del navegador. La hora
   se escribe en dos casillas (con ↑ y ↓ para subir y bajar) y hay **Hoy**, **Ahora** y **Borrar**. Se maneja
   también con el teclado.
+- **Pantalla de arranque:** al abrir CandidatAI, mientras espera a la app, sale el logo con un anillo que
+  gira, el mensaje de carga y una barra de espera, en claro y en oscuro. Sigue pasando sola a la app en
+  cuanto responde.
+- **Ejemplo de modelo en «Agente»:** Claude Code, Codex y Qwen Code también enseñan, en el campo de modelo, un
+  ejemplo de cómo se escribe (`sonnet`, `gpt-6.1-sol`, `qwen3-coder-plus`), como ya hacían Antigravity CLI y
+  OpenCode.
 - **Plantillas:** una sola lista, **Todas las plantillas**, con **Usar por defecto** en cada tuya. Los
   bloques «Original / Con tu perfil» de cada CV subido desaparecen; en **Mi CV** solo queda lo que falta por
   convertir.
