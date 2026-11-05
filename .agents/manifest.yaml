@@ -109,6 +109,7 @@ targets:
       fast: haiku
       capable: sonnet
       flag: [--model, "{model}"]
+      example: sonnet             # un alias (`opus`, `sonnet`, `haiku`) o el nombre completo; ver `claude --help`
     launch:                       # botones «en tu agente» de la UI: sesión interactiva
       command: [claude, "{prompt}"]   # {prompt} = la orden del skill
       unset_env: [ANTHROPIC_API_KEY]  # sin clave de API, Claude Code usa tu suscripción
@@ -265,6 +266,7 @@ targets:
       fast: null
       capable: null
       flag: [-m, "{model}"]
+      example: gpt-6.1-sol        # según la página de modelos de Codex (oct. 2026); `/model` dentro de Codex lista los de tu plan
       presets:                    # comprobado con codex-cli 0.163.0 (--oss, --local-provider, -m)
         local: [--oss, -m, "gpt-oss:20b"]   # Ollama; con LM Studio, añade --local-provider lmstudio
     launch:                       # botones «en tu agente» de la UI: sesión interactiva
@@ -410,6 +412,7 @@ targets:
       fast: null
       capable: null
       flag: [-m, "{model}"]
+      example: qwen3-coder-plus   # el de la documentación de Qwen Code; depende del proveedor
     launch:
       command: [qwen, -i, "{prompt}"]   # -i: ejecuta la orden y sigue en interactivo
     tools:

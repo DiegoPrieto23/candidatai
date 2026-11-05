@@ -260,10 +260,17 @@ def test_cli_agents_list_json(db: None, fake_detect: list[str]) -> None:
     assert gemini["enabled"] is False and gemini["config"] == "none"
     assert "clave de pago" in gemini["info"]["note"]
     none = {"example": None, "fast": None, "capable": None}
-    assert agents["codex"]["models"] == {"by_name": True, "presets": ["local"], **none}
+    assert agents["codex"]["models"] == {
+        "by_name": True,
+        "presets": ["local"],
+        **{**none, "example": "gpt-6.1-sol"},
+    }
     assert agents["goose"]["models"] == {"by_name": False, "presets": [], **none}
     assert agents["claude"]["models"]["fast"] == "haiku"  # los roles no heredan el de la sesión
     assert agents["opencode"]["models"]["example"] == "ollama/qwen3:8b"
+    # Todos los que dejan elegir modelo por nombre enseñan un ejemplo en la UI.
+    assert agents["claude"]["models"]["example"] == "sonnet"
+    assert agents["antigravity"]["models"]["example"] and agents["qwen"]["models"]["example"]
     assert "preferences" in json.loads(result.output) and "effective" in json.loads(result.output)
     assert agents["claude"]["enabled"] is True and agents["claude"]["installed"] is True
     assert agents["goose"]["config"] == "none" and agents["goose"]["enabled"] is False
