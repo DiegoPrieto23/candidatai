@@ -362,10 +362,11 @@ texto y los comandos para que lo hagas tú. Las búsquedas de plataformas van po
 (MCP o CLI). Probado solo con los tests de su herramienta (`get_search_titles`); pendiente de la
 prueba manual con Claude Code.
 
-`expand` (fase 25.2) añade al perfil lo que aceptas de tus enlaces públicos de la misma forma, y
-además necesita web (lectura de páginas): el botón «Ampliar perfil desde mis enlaces» («Mi perfil»)
-se deshabilita con un agente sin `web`. Lee READMEs de terceros, así que con un agente de nivel C
-avisa de usar una sesión dedicada solo a eso.
+`expand` (fase 25.2) revisa el perfil y añade o mejora lo que aceptas, de la misma forma, y con tus
+enlaces públicos propone además proyectos, skills y certificaciones. Su botón es «Mejorar perfil»
+(«Mi perfil»). Leer los enlaces necesita web (lectura de páginas), pero la revisión no: con un agente
+sin `web` el botón sigue activo y el skill se salta los enlaces. Lee READMEs de terceros, así que con
+un agente de nivel C avisa de usar una sesión dedicada solo a eso.
 
 ### Botones «en tu agente» de la UI
 «Buscar ofertas», «Leer las ofertas nuevas», «Valorar las pendientes» (y «Valorar esta oferta» de una oferta),
@@ -373,7 +374,7 @@ avisa de usar una sesión dedicada solo a eso.
 y «Plan de formación», y desde la fase 15 «Revisar respuestas» (Inicio y «Respuestas»), «Redactar borradores» (Procesos) y
 «Redactar seguimiento» (ficha de una candidatura enviada), desde la fase 16 «Ampliar búsqueda»
 («Dónde buscar»), desde la 17 los de las entrevistas y desde la 18 «Redactar mensaje» e «Investigar
-empresa» (ficha), desde la 25.2 «Ampliar perfil desde mis enlaces» y «Crear mi perfil desde mi CV»
+empresa» (ficha), desde la 25.2 «Mejorar perfil» y «Crear mi perfil desde mi CV»
 («Mi perfil», sin perfil todavía), abren tu
 agente en una terminal (Windows Terminal o PowerShell) con la orden del skill ya escrita; tú
 ves, contestas y apruebas lo que haga. Qué programa se abre lo dice `launch` de cada agente en el

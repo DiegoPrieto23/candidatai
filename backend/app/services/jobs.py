@@ -153,6 +153,7 @@ def get_job(session: Session, job_id: int) -> JobDetail:
 # La UI muestra el texto a una persona (React lo escapa): va sin envoltorio. Ningún modelo lo lee.
 
 RemoteMode = Literal["onsite", "hybrid", "remote", "unknown"]
+REMOTE_MODES: tuple[str, ...] = get_args(RemoteMode)
 
 
 class JobRow(JobSummary):
@@ -203,6 +204,46 @@ def _annual_salary(extraction: type[JobExtractionRow]):
     return (func.coalesce(low, high) + func.coalesce(high, low)) / 2 * per_year
 
 
+def _extraction_filters(remote_mode: str | None, has_salary: bool | None) -> list:
+    """Filtros que salen de la extracción vigente (modalidad y salario).
+
+    Van como subconsultas sobre `jobs.id`, para valer igual en el recuento y en la página sin unir
+    la extracción a las dos. Una oferta sin extraer cuenta como «modalidad sin indicar» y «sin
+    salario»: aún no se sabe nada de ella."""
+    if remote_mode is not None and remote_mode not in REMOTE_MODES:
+        valid = ", ".join(REMOTE_MODES)
+        raise InvalidQueryError(f"Modalidad desconocida: «{remote_mode}». Válidas: {valid}.")
+    newest = (
+        select(func.max(JobExtractionRow.id)).group_by(JobExtractionRow.job_id).scalar_subquery()
+    )
+    current = aliased(JobExtractionRow)
+
+    def jobs_where(*conditions):
+        return select(current.job_id).where(current.id.in_(newest), *conditions)
+
+    filters = []
+    if remote_mode is not None:
+        mode = current.data["remote_mode"].as_string()
+        if remote_mode == "unknown":
+            filters.append(
+                or_(
+                    Job.id.not_in(select(JobExtractionRow.job_id)),
+                    Job.id.in_(jobs_where(or_(mode == "unknown", mode.is_(None)))),
+                )
+            )
+        else:
+            filters.append(Job.id.in_(jobs_where(mode == remote_mode)))
+    if has_salary is not None:
+        salary = current.data["salary"]
+        shown = Job.id.in_(
+            jobs_where(
+                func.coalesce(salary["min"].as_float(), salary["max"].as_float()).is_not(None)
+            )
+        )
+        filters.append(shown if has_salary else ~shown)
+    return filters
+
+
 def _ordering(sort: str, direction: str, salary):
     if sort not in JOB_SORTS:
         valid = ", ".join(JOB_SORTS)
@@ -227,9 +268,16 @@ def search_jobs(
     sort: JobSort = "date",
     direction: SortDirection = "desc",
     source_kind: str | None = None,
+    remote_mode: RemoteMode | None = None,
+    has_salary: bool | None = None,
+    has_score: bool | None = None,
+    min_score: int | None = None,
 ) -> JobPage:
-    """Página de ofertas para la bandeja: filtro por etapa, búsqueda en título y empresa, y orden
-    por fecha de alta, score, salario o fecha de cierre."""
+    """Página de ofertas para la bandeja: filtro por etapa, búsqueda en título y empresa, modalidad,
+    con o sin salario, con o sin encaje (score) y encaje mínimo, y orden por fecha de alta, score,
+    salario o fecha de cierre."""
+    if min_score is not None and not 0 <= min_score <= 100:
+        raise InvalidQueryError("`min_score` debe estar entre 0 y 100.")
     if not 1 <= limit <= MAX_LIMIT:
         raise InvalidQueryError(f"`limit` debe estar entre 1 y {MAX_LIMIT}.")
     if offset < 0:
@@ -246,6 +294,11 @@ def search_jobs(
         filters.append(Application.stage == parse_stage(stage).value)
     if source_kind is not None:
         filters.append(Job.source_id.in_(select(Source.id).where(Source.kind == source_kind)))
+    filters.extend(_extraction_filters(remote_mode, has_salary))
+    if has_score is not None:
+        filters.append(Match.score.is_not(None) if has_score else Match.score.is_(None))
+    if min_score is not None:
+        filters.append(Match.score >= min_score)
     searching = q is not None and bool(q.strip())
     if q is not None and searching:
         pattern = f"%{_escape_like(q.strip())}%"

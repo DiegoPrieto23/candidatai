@@ -126,7 +126,7 @@ describe('Respuestas', () => {
 
     await userEvent.click(await screen.findByRole('button', { name: 'Cambiar' }))
     const dialog = await screen.findByRole('dialog')
-    expect(within(dialog).getByLabelText('Fecha y hora (opcional)')).toHaveValue('2026-10-08T10:00')
+    expect(within(dialog).getByLabelText('Fecha y hora (opcional)')).toHaveTextContent('8 oct 2026 · 10:00')
     await userEvent.click(within(dialog).getByRole('radio', { name: 'Rechazo' }))
     await userEvent.type(within(dialog).getByLabelText('Nota (opcional)'), 'Lo leo así.')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Registrar' }))

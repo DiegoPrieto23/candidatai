@@ -49,6 +49,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { DatePicker, DateTimePicker } from '@/components/ui/date-time-picker'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -191,13 +192,11 @@ function MilestoneForm({
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="ms-date">{draft.allDay ? t('day') : t('dateTime')}</Label>
-          <Input
-            id="ms-date"
-            type={draft.allDay ? 'date' : 'datetime-local'}
-            required
-            value={draft.date}
-            onChange={(e) => set({ date: e.target.value })}
-          />
+          {draft.allDay ? (
+            <DatePicker id="ms-date" required value={draft.date} onChange={(date) => set({ date })} />
+          ) : (
+            <DateTimePicker id="ms-date" required value={draft.date} onChange={(date) => set({ date })} />
+          )}
           <label className="flex items-center gap-2 text-xs text-muted-foreground">
             <input
               type="checkbox"

@@ -1,9 +1,9 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeAll, describe, expect, it, vi } from 'vitest'
 import type { Calibration, CalibrationGroup, FunnelStats } from '@/api/client'
 import { i18n } from '@/lib/i18n'
-import { mockApi as mockRoutes, renderApp, status } from '@/test/utils'
+import { mockApi as mockRoutes, pickDate, renderApp, status } from '@/test/utils'
 
 /** «Tu embudo» pide sus cifras aparte: las mismas que las del embudo simulado. */
 function mockApi(routes: Record<string, unknown>) {
@@ -273,7 +273,7 @@ describe('Embudo', () => {
     await waitFor(() => expect(calls.filter((c) => c.path === '/stats/flow').at(-1)?.search.get('since')).toBe(funnelCalls()[1].search.get('since')))
     expect(screen.getByRole('button', { name: '30 días' })).toHaveAttribute('aria-pressed', 'true')
 
-    fireEvent.change(screen.getByLabelText('Desde'), { target: { value: '2026-09-01' } })
+    await pickDate(screen.getByLabelText('Desde'), '2026-09-01')
     await waitFor(() => expect(funnelCalls().at(-1)?.search.get('since')).toBe('2026-09-01'))
     expect(screen.getByRole('button', { name: '30 días' })).toHaveAttribute('aria-pressed', 'false')
   })
@@ -414,7 +414,7 @@ describe('¿Acierta el encaje?', () => {
     const calibrationCalls = () => calls.filter((c) => c.path === '/stats/calibration')
     expect(calibrationCalls()[0].search.get('since')).toBeNull()
 
-    fireEvent.change(screen.getByLabelText('Desde'), { target: { value: '2026-09-01' } })
+    await pickDate(screen.getByLabelText('Desde'), '2026-09-01')
     await waitFor(() => expect(calibrationCalls().at(-1)?.search.get('since')).toBe('2026-09-01'))
   })
 

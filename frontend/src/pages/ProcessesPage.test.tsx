@@ -2,7 +2,7 @@ import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { isForward } from '@/lib/moves'
-import { board, boardCard, jobView, mockApi, renderApp, status } from '@/test/utils'
+import { board, boardCard, jobView, mockApi, pickDate, renderApp, status } from '@/test/utils'
 
 const CARDS = [
   boardCard(1, 'approved'),
@@ -108,8 +108,9 @@ describe('Procesos (kanban)', () => {
     await userEvent.click(within(dialog).getByRole('radio', { name: /Entrevista programada/ }))
     const register = within(dialog).getByRole('button', { name: 'Registrar' })
     expect(within(dialog).getByLabelText('Hora (opcional)')).toBeDisabled() // sin fecha, no hay hora
-    await userEvent.type(within(dialog).getByLabelText('Fecha de la entrevista (opcional)'), '2026-10-07')
-    await userEvent.type(within(dialog).getByLabelText('Hora (opcional)'), '10:30')
+    await pickDate(within(dialog).getByLabelText('Fecha de la entrevista (opcional)'), '2026-10-07')
+    await userEvent.type(within(dialog).getByRole('textbox', { name: 'Horas' }), '10')
+    await userEvent.type(within(dialog).getByRole('textbox', { name: 'Minutos' }), '30')
     await userEvent.type(within(dialog).getByLabelText('Lugar o enlace (opcional)'), 'https://meet.example/x')
     await userEvent.selectOptions(within(dialog).getByLabelText('Tipo de entrevista'), 'hr')
     await userEvent.click(register)
@@ -126,13 +127,33 @@ describe('Procesos (kanban)', () => {
     expect(calls.some((c) => c.path === '/jobs/2/events')).toBe(false)
   })
 
-  it('una entrevista con fecha y sin hora cuenta todo el día', async () => {
+  it('una entrevista con fecha lleva las 14:00 si no sabes la hora', async () => {
     const calls = mockApi(routes({ 'POST /jobs/2/milestones': { id: 8 } }))
     renderApp('/procesos')
     await userEvent.click(await screen.findByRole('button', { name: 'Actualizar estado de «Oferta 2»' }))
     const dialog = await screen.findByRole('dialog')
     await userEvent.click(within(dialog).getByRole('radio', { name: /Entrevista programada/ }))
-    await userEvent.type(within(dialog).getByLabelText('Fecha de la entrevista (opcional)'), '2026-10-07')
+    await pickDate(within(dialog).getByLabelText('Fecha de la entrevista (opcional)'), '2026-10-07')
+    expect(within(dialog).getByRole('textbox', { name: 'Horas' })).toHaveValue('14')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Registrar' }))
+
+    await waitFor(() => expect(calls.some((c) => c.path === '/jobs/2/milestones')).toBe(true))
+    expect(calls.find((c) => c.path === '/jobs/2/milestones')?.body).toMatchObject({
+      starts_at: '2026-10-07T14:00:00+02:00',
+      all_day: false,
+    })
+  })
+
+  it('una entrevista con fecha y la hora borrada cuenta todo el día', async () => {
+    const calls = mockApi(routes({ 'POST /jobs/2/milestones': { id: 8 } }))
+    renderApp('/procesos')
+    await userEvent.click(await screen.findByRole('button', { name: 'Actualizar estado de «Oferta 2»' }))
+    const dialog = await screen.findByRole('dialog')
+    await userEvent.click(within(dialog).getByRole('radio', { name: /Entrevista programada/ }))
+    await pickDate(within(dialog).getByLabelText('Fecha de la entrevista (opcional)'), '2026-10-07')
+    await userEvent.clear(within(dialog).getByRole('textbox', { name: 'Horas' }))
+    await userEvent.clear(within(dialog).getByRole('textbox', { name: 'Minutos' }))
+    await userEvent.tab()
     await userEvent.click(within(dialog).getByRole('button', { name: 'Registrar' }))
 
     await waitFor(() => expect(calls.some((c) => c.path === '/jobs/2/milestones')).toBe(true))

@@ -33,8 +33,9 @@ export interface paths {
         };
         /**
          * List Jobs
-         * @description Bandeja: filtrada por etapa y texto (título o empresa), ordenada por fecha de alta, score
-         *     o salario anualizado (por defecto, las más recientes primero; sin el dato, al final).
+         * @description Bandeja: filtrada por etapa, texto (título o empresa), modalidad, salario y encaje, ordenada
+         *     por fecha de alta, score o salario anualizado (por defecto, las más recientes primero; sin el
+         *     dato, al final).
          */
         get: operations["list_jobs"];
         put?: never;
@@ -8891,6 +8892,14 @@ export interface operations {
                 sort?: "date" | "score" | "salary" | "closed";
                 dir?: "asc" | "desc";
                 source_kind?: string | null;
+                /** @description Modalidad de la extracción vigente. */
+                remote_mode?: ("onsite" | "hybrid" | "remote" | "unknown") | null;
+                /** @description `true`: indica salario; `false`: no lo indica. */
+                has_salary?: boolean | null;
+                /** @description `true`: con encaje (score); `false`: sin encaje. */
+                has_score?: boolean | null;
+                /** @description Encaje (score) mínimo. */
+                min_score?: number | null;
             };
             header?: never;
             path?: never;

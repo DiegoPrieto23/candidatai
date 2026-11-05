@@ -45,6 +45,119 @@ import {
 import { useRadioGroup } from '@/lib/radioGroup'
 import { cn } from '@/lib/utils'
 
+const MODE_FILTERS = ['onsite', 'hybrid', 'remote', 'unknown'] as const
+const SALARY_FILTERS = ['yes', 'no'] as const
+const FIT_FILTERS = ['none', '50', '70', '85'] as const
+
+interface Filters {
+  mode?: (typeof MODE_FILTERS)[number]
+  salary?: (typeof SALARY_FILTERS)[number]
+  fit?: (typeof FIT_FILTERS)[number]
+}
+
+/** Los filtros viven en la URL (`mode`, `salary`, `fit`), como la etapa y el orden; lo que no vale se ignora. */
+function parseFilters(params: URLSearchParams): Filters {
+  const mode = params.get('mode')
+  const salary = params.get('salary')
+  const fit = params.get('fit')
+  return {
+    mode: MODE_FILTERS.find((value) => value === mode),
+    salary: SALARY_FILTERS.find((value) => value === salary),
+    fit: FIT_FILTERS.find((value) => value === fit),
+  }
+}
+
+/** De los filtros de la URL a los parámetros de la API. */
+function filterQuery({ mode, salary, fit }: Filters) {
+  return {
+    remote_mode: mode,
+    has_salary: salary ? salary === 'yes' : undefined,
+    has_score: fit === 'none' ? false : undefined,
+    min_score: fit && fit !== 'none' ? Number(fit) : undefined,
+  }
+}
+
+const ANY = 'any'
+
+function FilterSelect({
+  label,
+  value,
+  any,
+  options,
+  onChange,
+}: {
+  label: string
+  value: string | undefined
+  any: string
+  options: { value: string; label: string }[]
+  onChange: (value: string | undefined) => void
+}) {
+  return (
+    <Select value={value ?? ANY} onValueChange={(next) => onChange(next === ANY ? undefined : next)}>
+      <SelectTrigger
+        aria-label={label}
+        className={cn('h-9 w-auto min-w-44 bg-card data-[size=default]:h-9', value && 'border-ring bg-secondary/40')}
+      >
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value={ANY}>{any}</SelectItem>
+        {options.map((option) => (
+          <SelectItem key={option.value} value={option.value}>
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  )
+}
+
+/** Modalidad, salario y encaje: filtros de la lista que se suman a la etapa y a la búsqueda. */
+function InboxFilters({
+  filters,
+  onChange,
+  onClear,
+}: {
+  filters: Filters
+  onChange: (changes: Record<string, string | null>) => void
+  onClear: () => void
+}) {
+  const { t } = useTranslation('inbox')
+  const active = Boolean(filters.mode || filters.salary || filters.fit)
+  const set = (key: string) => (value: string | undefined) => onChange({ [key]: value ?? null, page: null })
+  return (
+    <div role="group" aria-label={t('filters.label')} className="-mt-2 mb-4 flex flex-wrap items-center gap-2">
+      <FilterSelect
+        label={t('filters.mode')}
+        value={filters.mode}
+        any={t('filters.modeAny')}
+        options={MODE_FILTERS.map((value) => ({ value, label: REMOTE_LABEL[value] }))}
+        onChange={set('mode')}
+      />
+      <FilterSelect
+        label={t('filters.salary')}
+        value={filters.salary}
+        any={t('filters.salaryAny')}
+        options={SALARY_FILTERS.map((value) => ({ value, label: t(`filters.salary_${value}`) }))}
+        onChange={set('salary')}
+      />
+      <FilterSelect
+        label={t('filters.fit')}
+        value={filters.fit}
+        any={t('filters.fitAny')}
+        options={FIT_FILTERS.map((value) => ({ value, label: t(`filters.fit_${value}`) }))}
+        onChange={set('fit')}
+      />
+      {active && (
+        <Button variant="ghost" size="sm" onClick={onClear}>
+          <XIcon />
+          {t('filters.clear')}
+        </Button>
+      )}
+    </div>
+  )
+}
+
 function isStage(value: string | null): value is Stage {
   return value !== null && (STAGES as readonly string[]).includes(value)
 }
@@ -529,6 +642,7 @@ export function InboxPage() {
   const stage = isStage(stageParam) ? stageParam : undefined
   const page = Math.max(1, Number(params.get('page')) || 1)
   const sort = parseSort(params, stage)
+  const filters = parseFilters(params)
   const quick = stage !== undefined && QUICK_DISCARD.includes(stage)
   const event = useJobEvent()
   // Ofertas descartadas que se ocultan ya, antes de que la API responda.
@@ -556,7 +670,7 @@ export function InboxPage() {
     )
   }, [q, setParams])
 
-  const { data, isPending, isError, error, refetch, isPlaceholderData } = useJobs({ stage, q, page, ...sort })
+  const { data, isPending, isError, error, refetch, isPlaceholderData } = useJobs({ stage, q, page, ...sort, ...filterQuery(filters) })
 
   const update = (changes: Record<string, string | null>, replace = false) => {
     const next = new URLSearchParams(params)
@@ -574,7 +688,7 @@ export function InboxPage() {
   }
 
   const total = data?.total ?? 0
-  const filtered = Boolean(stage || q)
+  const filtered = Boolean(stage || q || filters.mode || filters.salary || filters.fit)
   const visible = (data?.items ?? []).filter((job) => !hidden.has(job.id))
   const picked = quick ? visible.filter((job) => selected.has(job.id)) : []
 
@@ -684,6 +798,12 @@ export function InboxPage() {
           </SelectContent>
         </Select>
       </div>
+
+      <InboxFilters
+        filters={filters}
+        onChange={(changes) => update(changes)}
+        onClear={() => update({ mode: null, salary: null, fit: null, page: null })}
+      />
 
       <div className="mb-4 space-y-3 empty:hidden">
         {done.length > 0 && (

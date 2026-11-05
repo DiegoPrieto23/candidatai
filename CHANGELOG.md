@@ -10,6 +10,10 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Filtros en la Bandeja:** bajo el buscador, tres desplegables para filtrar la lista: **Modalidad**
+  (presencial, híbrido, remoto o sin especificar), **Salario** (con o sin salario) y **Encaje** (sin encaje, o
+  de 50, 70 u 85 o más). Se suman a la etapa y a la búsqueda, se guardan en la dirección (se puede recargar o
+  compartir la vista) y **Limpiar filtros** los quita.
 - **Avisos de lo que hace tu agente:** lo que lanzas con un botón (leer ofertas, valorarlas, revisar
   respuestas, generar o corregir un CV, la carta, investigar la empresa, preparar una entrevista…) sale
   en un aviso en cualquier página, con lo que lleva hecho, y cambia cuando termina o si no ha podido. Se
@@ -104,6 +108,21 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   vez de 23).
 
 ### Cambiado
+- **Mejorar perfil:** el botón «Ampliar perfil desde mis enlaces» de **Mi perfil** pasa a llamarse **Mejorar
+  perfil** y hace más. Tu agente revisa el perfil entero (logros sin cifra, textos de relleno, huecos,
+  incoherencias) y te propone cambios; con tus enlaces públicos (GitHub, portfolio, Kaggle, Scholar) sigue
+  proponiendo proyectos, skills, logros y certificaciones, cada uno con su fuente. Solo escribe con tu OK:
+  los números y los niveles que falten te los pregunta, nunca los pone. Ya no hace falta que tu agente tenga
+  búsqueda web: sin ella, revisa el perfil y se salta los enlaces.
+- **Hora a las 14:00 si no sabes la hora:** al elegir un día en un selector de fecha y hora, la hora se pone
+  a las 14:00 y no se queda vacía; **Sin hora concreta (14:00)** la devuelve a esas horas. Al programar una
+  entrevista o una prueba desde un movimiento, «Hora (opcional)» viene también con las 14:00 (si la borras,
+  cuenta todo el día).
+- **Selector de fechas y horas:** al registrar un rechazo o una entrevista, programar un hito, aceptar la
+  propuesta de una respuesta o elegir «desde» en el embudo, la fecha se elige en un calendario propio, con
+  los colores de la app (claro y oscuro), en español e inglés, y no en el desplegable del navegador. La hora
+  se escribe en dos casillas (con ↑ y ↓ para subir y bajar) y hay **Hoy**, **Ahora** y **Borrar**. Se maneja
+  también con el teclado.
 - **Plantillas:** una sola lista, **Todas las plantillas**, con **Usar por defecto** en cada tuya. Los
   bloques «Original / Con tu perfil» de cada CV subido desaparecen; en **Mi CV** solo queda lo que falta por
   convertir.

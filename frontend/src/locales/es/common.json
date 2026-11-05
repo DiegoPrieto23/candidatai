@@ -7,6 +7,20 @@
     "goHome": "Ir al inicio"
   },
   "loading": "Cargando…",
+  "picker": {
+    "chooseDate": "Elegir fecha",
+    "chooseDateTime": "Elegir fecha y hora",
+    "prevMonth": "Mes anterior",
+    "nextMonth": "Mes siguiente",
+    "today": "Hoy",
+    "now": "Ahora",
+    "anytime": "Sin hora concreta ({{time}})",
+    "clear": "Borrar",
+    "done": "Listo",
+    "time": "Hora",
+    "hour": "Horas",
+    "minute": "Minutos"
+  },
   "retry": "Reintentar",
   "copy": {
     "label": "Copiar",

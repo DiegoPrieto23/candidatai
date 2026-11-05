@@ -53,9 +53,22 @@ def list_jobs(
     sort: jobs.JobSort = "date",
     dir: jobs.SortDirection = "desc",
     source_kind: Annotated[str | None, Query(max_length=32)] = None,
+    remote_mode: Annotated[
+        jobs.RemoteMode | None, Query(description="Modalidad de la extracción vigente.")
+    ] = None,
+    has_salary: Annotated[
+        bool | None, Query(description="`true`: indica salario; `false`: no lo indica.")
+    ] = None,
+    has_score: Annotated[
+        bool | None, Query(description="`true`: con encaje (score); `false`: sin encaje.")
+    ] = None,
+    min_score: Annotated[
+        int | None, Query(ge=0, le=100, description="Encaje (score) mínimo.")
+    ] = None,
 ) -> jobs.JobPage:
-    """Bandeja: filtrada por etapa y texto (título o empresa), ordenada por fecha de alta, score
-    o salario anualizado (por defecto, las más recientes primero; sin el dato, al final)."""
+    """Bandeja: filtrada por etapa, texto (título o empresa), modalidad, salario y encaje, ordenada
+    por fecha de alta, score o salario anualizado (por defecto, las más recientes primero; sin el
+    dato, al final)."""
     return jobs.search_jobs(
         session,
         stage=stage.value if stage else None,
@@ -65,6 +78,10 @@ def list_jobs(
         sort=sort,
         direction=dir,
         source_kind=source_kind,
+        remote_mode=remote_mode,
+        has_salary=has_salary,
+        has_score=has_score,
+        min_score=min_score,
     )
 
 
