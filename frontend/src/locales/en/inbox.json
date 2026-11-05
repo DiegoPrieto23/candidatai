@@ -56,7 +56,7 @@
   "empty": {
     "title": "Your inbox is empty",
     "addFirst": "Add the first one",
-    "body": "Add a job from its URL or by pasting the text. Then “Read new jobs” reads it and pulls out its details."
+    "body": "Add a job from its URL or by pasting the text. Then “Assess new jobs” reads it, pulls out its details and assesses whether it fits you."
   },
   "closedWhen": "Closed {{when}}",
   "quick": {
@@ -83,8 +83,8 @@
   "guide": {
     "label": "What this stage is and how to move on",
     "nextLabel": "To move on:",
-    "processJobs": "Read new jobs",
-    "assessFit": "Assess pending jobs",
+    "processJobs": "Assess new jobs",
+    "assessFit": "Assess the jobs to review",
     "openTriage": "Open quick review",
     "all": {
       "what": "All your jobs, whatever their stage. Each job moves along: To complete → To read → To review → Approved → CV ready → Applied → In process.",
@@ -101,11 +101,11 @@
     },
     "pending_extraction": {
       "what": "Jobs with their full description that your agent hasn't read yet.",
-      "next": "click “Read new jobs”. Your agent pulls out the role, skills, work mode and salary of each one, and the app calculates its fit (0 to 100) against your profile. Those that don't pass your filters (work mode, location…) close by themselves; the rest move to “To review”."
+      "next": "click “Assess new jobs”. Your agent pulls out the role, skills, work mode and salary of each one, the app calculates its fit (0 to 100) against your profile and your agent explains why it fits or not. Those that don't pass your filters (work mode, location…) close by themselves; the rest move to “To review”."
     },
     "pending_triage": {
       "what": "Jobs already read and with their fit calculated, waiting for your decision.",
-      "next": "go through them in <triage>Quick review</triage> and approve or discard them. If you'd like an opinion first, “Assess pending jobs” has your agent compare each one with your profile and write why it fits or not. It doesn't change the stage: you decide."
+      "next": "go through them in <triage>Quick review</triage> and approve or discard them. If any doesn't have an assessment yet, “Assess the jobs to review” has your agent compare it with your profile and write why it fits or not. It doesn't change the stage: you decide."
     },
     "approved": {
       "what": "Jobs you approved. They still need their tailored CV.",

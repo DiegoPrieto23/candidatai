@@ -10,7 +10,7 @@ function cost(changes: Partial<JobCost> = {}): JobCost {
       {
         run_id: 3,
         action: 'process-jobs',
-        label: 'Leer las ofertas nuevas',
+        label: 'Valorar las ofertas nuevas',
         agent: 'claude',
         model: null,
         finished_at: '2026-10-12T10:00:00Z',
@@ -55,7 +55,7 @@ describe('Coste del agente en la ficha (fase 25.4)', () => {
     const panel = await screen.findByRole('region', { name: 'Coste del agente' })
     expect(panel).toHaveTextContent(/3.?000 tokens · 0[.,]0500 USD en 2 ejecuciones en segundo plano/)
     const runs = within(panel).getByRole('list', { name: 'Ejecuciones' })
-    expect(runs).toHaveTextContent(/Leer las ofertas nuevas · claude · .* · repartida entre 2 ofertas/)
+    expect(runs).toHaveTextContent(/Valorar las ofertas nuevas · claude · .* · repartida entre 2 ofertas/)
     expect(runs).toHaveTextContent(/Generar CV · opencode · ollama\/qwen3:8b/)
     expect(within(panel).getByText(/No cuenta lo que hagas en una terminal/)).toBeInTheDocument()
   })

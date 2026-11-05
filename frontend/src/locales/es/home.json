@@ -17,8 +17,8 @@
     "nothing": "Nada pendiente por tu parte.",
     "forAgent": "Para tu agente: {{list}}.",
     "searchJobs": "Buscar ofertas",
-    "processJobs": "Leer las ofertas nuevas",
-    "assessFit": "Valorar las pendientes",
+    "processJobs": "Valorar las ofertas nuevas",
+    "assessFit": "Valorar las que están por revisar",
     "reviewReplies": "Revisar respuestas",
     "firstSteps_one": "Te queda un primer paso para empezar.",
     "firstSteps_other": "Te quedan {{count}} primeros pasos para empezar."

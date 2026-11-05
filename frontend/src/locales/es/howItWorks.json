@@ -29,7 +29,7 @@
     },
     "decide": {
       "title": "Decide cuáles merecen la pena",
-      "body": "En «{{home}}», pulsa «{{processJobs}}» y luego «{{assessFit}}» (aparecen cuando hay ofertas pendientes): tu agente lee cada oferta, la app le pone un encaje de 0 a 100 y tu agente explica por qué encaja contigo o no. Después, en «{{triage}}», apruebas o descartas cada una."
+      "body": "En «{{home}}», pulsa «{{processJobs}}» (aparece cuando hay ofertas pendientes): tu agente lee cada oferta, la app le pone un encaje de 0 a 100 y tu agente explica por qué encaja contigo o no. Después, en «{{triage}}», apruebas o descartas cada una."
     },
     "apply": {
       "title": "Prepara y envía la candidatura",

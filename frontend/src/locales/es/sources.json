@@ -14,7 +14,7 @@
   "nonePass": "Ninguna encaja con tus filtros.",
   "onlyPassing": "Ver solo las que pasan",
   "alsoFiltered": "Ver también las {{count}} filtradas",
-  "runHint": "Quedan en «Por leer»: pulsa «Leer las ofertas nuevas».",
+  "runHint": "Quedan en «Por leer»: pulsa «Valorar las ofertas nuevas».",
   "see": "Verlas",
   "form": {
     "label": "Añadir fuente",

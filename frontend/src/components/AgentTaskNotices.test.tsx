@@ -37,7 +37,7 @@ describe('Avisos de lo que lanzan los botones', () => {
   it('dice qué hace y cuánto lleva, en cualquier página', async () => {
     mockApi(routes([task()]))
     renderApp('/como-funciona')
-    expect(await screen.findByText('Leyendo las ofertas nuevas…')).toBeInTheDocument()
+    expect(await screen.findByText('Leyendo y valorando las ofertas nuevas…')).toBeInTheDocument()
     expect(screen.getByText('2 de 5')).toBeInTheDocument()
     expect(screen.getByText(/Si te pide permiso, contesta allí/)).toBeInTheDocument()
   })

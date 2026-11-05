@@ -14,7 +14,7 @@
   "nonePass": "None match your filters.",
   "onlyPassing": "Show only the ones that pass",
   "alsoFiltered": "Also show the {{count}} filtered",
-  "runHint": "They go to “To read”: press “Read new jobs”.",
+  "runHint": "They go to “To read”: press “Assess new jobs”.",
   "see": "See them",
   "form": {
     "label": "Add source",

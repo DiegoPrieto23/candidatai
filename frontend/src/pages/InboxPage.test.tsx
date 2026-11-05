@@ -236,18 +236,18 @@ describe('Qué es cada etapa y cómo avanzar', () => {
     expect(within(box).getByRole('link', { name: 'Por completar' })).toHaveAttribute('href', '/bandeja/por-completar')
   })
 
-  it('en «Por leer» ofrece «Leer las ofertas nuevas» y en «Por revisar», ir a revisarlas o «Valorar las pendientes»', async () => {
+  it('en «Por leer» ofrece «Valorar las ofertas nuevas» y en «Por revisar», ir a revisarlas o «Valorar las que están por revisar»', async () => {
     mockApi({ 'GET /status': status(0, 1), 'GET /jobs': page() })
     const { unmount } = renderApp('/bandeja?stage=pending_extraction')
     let box = await guide()
-    expect(within(box).getByRole('button', { name: 'Leer las ofertas nuevas' })).toBeInTheDocument()
+    expect(within(box).getByRole('button', { name: 'Valorar las ofertas nuevas' })).toBeInTheDocument()
     expect(box).toHaveTextContent('calcula su encaje (de 0 a 100)')
     unmount()
 
     renderApp('/bandeja?stage=pending_triage')
     box = await guide()
     expect(within(box).getByRole('link', { name: 'Abrir la revisión rápida' })).toHaveAttribute('href', '/bandeja/revision')
-    expect(within(box).getByRole('button', { name: 'Valorar las pendientes' })).toBeInTheDocument()
+    expect(within(box).getByRole('button', { name: 'Valorar las que están por revisar' })).toBeInTheDocument()
     expect(box).toHaveTextContent('No cambia la etapa')
   })
 })

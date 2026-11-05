@@ -112,7 +112,7 @@ describe('Primeros pasos (app recién instalada)', () => {
     const filled = screen.getAllByRole('button').filter((b) => b.getAttribute('data-variant') === 'default')
     expect(filled.map((b) => b.textContent)).toEqual(['Subir mi CV'])
     expect(screen.getByRole('button', { name: 'Buscar ofertas' })).toHaveAttribute('data-variant', 'outline')
-    expect(screen.getByRole('button', { name: 'Leer las ofertas nuevas' })).toHaveAttribute('data-variant', 'outline')
+    expect(screen.getByRole('button', { name: 'Valorar las ofertas nuevas' })).toHaveAttribute('data-variant', 'outline')
   })
 
   it('sin ningún agente instalado, avisa y explica cómo instalar uno', async () => {

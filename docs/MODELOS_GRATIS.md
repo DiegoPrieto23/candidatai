@@ -93,7 +93,7 @@ https://ollama.com/library:
 | Memoria disponible | Modelo | Tamaño | Para qué |
 |---|---|---|---|
 | 8 GB | `qwen3:8b` | 5,2 GB | Solo para probar. **Los modelos de unos 8B o menos suelen fallar con los esquemas estrictos** (extracción, CV): campos inventados, JSON roto, herramientas sin llamar |
-| 16 GB | `qwen3:14b` | 9,3 GB | Leer las ofertas nuevas y valorar el encaje, con 40K de contexto |
+| 16 GB | `qwen3:14b` | 9,3 GB | Valorar las ofertas nuevas (leerlas y valorar el encaje), con 40K de contexto |
 | 16 GB de vídeo, o 24 GB de RAM o más | `gpt-oss:20b` | 14 GB | Lo mismo, con 128K de contexto. **Con 16 GB de RAM no es viable**: cargado ocupa 14 GB, quedan menos de 1 GB libres, Windows tira del disco y el agente se queda minutos sin responder |
 | 24 GB | `devstral:24b` | 14 GB | Agente de código con herramientas, 128K de contexto |
 | 24 GB o más | `qwen3-coder:30b` | 19 GB | Lo más capaz de esta lista para agentes, 256K de contexto |

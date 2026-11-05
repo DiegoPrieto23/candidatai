@@ -337,7 +337,7 @@ If it's your first time, **How it works**, in the menu, covers the whole journey
 A typical day:
 
 1. Open **Home**: it tells you what's waiting (jobs to review, CVs ready, overdue follow-ups).
-2. Ask your agent for `process-jobs` and `assess-fit`, or press their buttons in the UI.
+2. Ask your agent for `process-jobs` (it reads and assesses the new ones), or press "Assess new jobs" in the UI.
 3. Approve or discard in **Quick review**, in the Inbox.
 4. `generate-cv` for the approved ones and, when you're ready, apply from the job page.
 5. `daily-summary` sums all of that up in one answer.
@@ -363,11 +363,11 @@ The worker runs the automatic sources every day at `connectors.daily_at`
 
 1. **Extract:** first, if a title or company doesn't interest you, remove it from the Inbox
    (**To complete** or **To read**) with **Discard**, one by one or selecting several: it costs
-   no agent time and can be undone. `process-jobs` turns each posting's text into structured data. Posting text is
+   no agent time and can be undone. `process-jobs` turns each posting's text into structured data (it is the first phase of "Assess new jobs", which continues with step 2). Posting text is
    untrusted content: if it carries hidden text or phrases aimed at an AI, the job page warns you.
 2. **Assess:** the app computes the fit (0 to 100: "good fit", "possible fit" or "low fit", and on
    hover, where it comes from) and applies your hard filters; `assess-fit` adds a reasoned
-   verdict: "Assess this job" on its page or "Assess pending jobs" for all of them. If a job has
+   verdict: "Assess new jobs" does it right after reading them, "Assess this job" on its page for a single one and "Assess the jobs to review" for those already read that don't have one yet. If a job has
    no fit, its page says what's missing: your profile, your agent reading it, or both.
 3. **Review:** in the Inbox, **Quick review** tab, `J`/`K` to move, `A` to approve, `D` to discard (with a reason)
    and `O` to open the job page. A discard can be undone from the notice; an approval, with

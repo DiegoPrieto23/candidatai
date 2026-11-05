@@ -29,7 +29,7 @@
   "saveFailed": "No se pudo guardar: {{error}}",
   "empty": {
     "title": "Nada por revisar",
-    "body": "Cuando tu agente lea ofertas nuevas («Leer las ofertas nuevas»), aparecerán aquí ordenadas por encaje."
+    "body": "Cuando tu agente lea ofertas nuevas («Valorar las ofertas nuevas»), aparecerán aquí ordenadas por encaje."
   },
   "queue": "Ofertas por revisar",
   "discardDialog": {

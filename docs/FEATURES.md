@@ -31,7 +31,7 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 | **"Send to CandidatAI" button**: a Chrome/Edge/Brave extension that sends the job you're viewing (LinkedIn included) or completes an alert summary. The “Browser button” tab guides you through loading it, warns if it's out of date and connects it in one click, without the terminal | `/fuentes/extension` | [Browser button](img/en/sources-extension.webp) |
 | **LinkedIn public search** (off by default, at your own risk): once a day, without your account or cookies; your agent can't turn it on | `/fuentes/plataformas` | |
 | **Find your companies' job boards** from a list of names | `cai sources discover` | |
-| **Extract each job** into structured data with an isolated subagent that only sees that job; text aimed at an AI is flagged, never obeyed | `process-jobs` | |
+| **Read and assess the new jobs in one step** ("Assess new jobs"): extracts each one into structured data with an isolated subagent that only sees that job, then assesses it against your profile; text aimed at an AI is flagged, never obeyed | `process-jobs` | |
 | **Still open? and reposts**: the app checks whether a job is still published (never closes it by itself) and marks "Reposted ×N" | `/jobs/:id` | |
 | **Dubious jobs in sight**: very wide salary range, hidden company or agency, temporary contract, old posting and AI screening, each explained; they don't change the fit | `/bandeja` | |
 

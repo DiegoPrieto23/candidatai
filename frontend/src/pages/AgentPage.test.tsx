@@ -16,7 +16,7 @@ function run(changes: Partial<AgentRunView> = {}): AgentRunView {
   return {
     id: 1,
     action: 'process-jobs',
-    label: 'Leer las ofertas nuevas',
+    label: 'Valorar las ofertas nuevas',
     job_id: null,
     milestone_id: null,
     agent: 'claude',
@@ -192,7 +192,7 @@ describe('Página «Agente» (fase 19)', () => {
           request({
             id: 5,
             action: 'process-jobs',
-            label: 'Leer las ofertas nuevas',
+            label: 'Valorar las ofertas nuevas',
             job_id: null,
             status: 'done',
             summary: 'Procesadas 3.',
@@ -265,7 +265,7 @@ describe('Página «Agente» (fase 19)', () => {
       days,
       since: '2026-10-01T00:00:00Z',
       total: totals(3, 30_000, 0.6),
-      by_action: [group('process-jobs', 'Leer las ofertas nuevas', 2, 20_000, 0.4, 251), group('assess-fit', 'Valorar las pendientes', 1, 10_000, null, 839)],
+      by_action: [group('process-jobs', 'Valorar las ofertas nuevas', 2, 20_000, 0.4, 251), group('assess-fit', 'Valorar las que están por revisar', 1, 10_000, null, 839)],
       by_agent: [group('claude', 'claude', 2, 20_000, 0.4), group('opencode', 'opencode', 1, 10_000, null)],
       by_model: [group('claude/default', 'claude · por defecto', 2, 20_000, 0.4)],
     })
@@ -288,12 +288,12 @@ describe('Página «Agente» (fase 19)', () => {
       renderApp('/agente')
       await userEvent.click(await screen.findByRole('button', { name: 'Umbral y coste' }))
       const actions = await screen.findByRole('table', { name: 'Por acción' })
-      const row = within(actions).getByRole('row', { name: /Leer las ofertas nuevas/ })
+      const row = within(actions).getByRole('row', { name: /Valorar las ofertas nuevas/ })
       const cells = within(row).getAllByRole('cell').map((c) => c.textContent)
       expect(cells[0]).toBe('2')
       expect(cells[3]).toMatch(/0[.,]4000 USD/)
       expect(cells[5]).toBe('251')
-      const assess = within(actions).getByRole('row', { name: /Valorar las pendientes/ })
+      const assess = within(actions).getByRole('row', { name: /Valorar las que están por revisar/ })
       expect(within(assess).getAllByRole('cell')[3]).toHaveTextContent('—')  // sin coste: no se estima
       expect(screen.getByRole('table', { name: 'Por agente' })).toHaveTextContent('opencode')
       expect(screen.getByRole('tab', { name: 'Últimos 30 días' })).toBeInTheDocument()
@@ -309,7 +309,7 @@ describe('Página «Agente» (fase 19)', () => {
       expect(screen.queryByRole('table')).not.toBeInTheDocument()
     })
 
-    it('cambia el umbral de «Valorar las pendientes»', async () => {
+    it('cambia el umbral de «Valorar las que están por revisar»', async () => {
       const calls = page({ 'PUT /agent/assess-threshold': { ...threshold, value: 60, source: 'ui' } })
       renderApp('/agente')
       await userEvent.click(await screen.findByRole('button', { name: 'Umbral y coste' }))

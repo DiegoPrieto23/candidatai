@@ -66,7 +66,7 @@ describe('Ficha de oferta', () => {
     expect(within(box).getByText('Crea tu perfil')).toHaveTextContent('Crea tu perfil: Hecho')
     expect(within(box).getByText('Que tu agente la lea')).toHaveTextContent('Que tu agente la lea: Falta')
     expect(within(box).queryByRole('link', { name: /Ir a «Mi perfil»/ })).not.toBeInTheDocument()
-    expect(within(box).getByRole('button', { name: 'Leer las ofertas nuevas' })).toBeInTheDocument()
+    expect(within(box).getByRole('button', { name: 'Valorar las ofertas nuevas' })).toBeInTheDocument()
   })
 
   it('sin perfil ni leer: los dos pasos pendientes, cada uno con su botón', async () => {
@@ -80,7 +80,7 @@ describe('Ficha de oferta', () => {
     expect(within(box).getByText('Crea tu perfil')).toHaveTextContent('Crea tu perfil: Falta')
     expect(within(box).getByRole('link', { name: /Ir a «Mi perfil»/ })).toHaveAttribute('href', '/perfil')
     expect(within(box).getByText('Que tu agente la lea')).toHaveTextContent('Que tu agente la lea: Falta')
-    expect(within(box).getByRole('button', { name: 'Leer las ofertas nuevas' })).toBeInTheDocument()
+    expect(within(box).getByRole('button', { name: 'Valorar las ofertas nuevas' })).toBeInTheDocument()
   })
 
   it('«Por completar»: dice que falta el texto, cómo completarla con la extensión y dónde instalarla', async () => {
@@ -172,7 +172,7 @@ describe('Ficha de oferta', () => {
     const box = await screen.findByRole('region', { name: 'Para saber si te encaja' })
     expect(within(box).getByText('Crea tu perfil')).toHaveTextContent('Crea tu perfil: Falta')
     expect(within(box).getByText('Que tu agente la lea')).toHaveTextContent('Que tu agente la lea: Hecho')
-    expect(within(box).queryByRole('button', { name: 'Leer las ofertas nuevas' })).not.toBeInTheDocument()
+    expect(within(box).queryByRole('button', { name: 'Valorar las ofertas nuevas' })).not.toBeInTheDocument()
   })
 
   it('aprueba desde la ficha', async () => {

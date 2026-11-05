@@ -125,11 +125,17 @@ def test_background_tools_exist_and_are_minimal() -> None:
         for tool in spec.background:
             assert tool in TOOLS_BY_NAME, f"{action}: {tool} no existe"
         assert not RISKY & set(spec.background), action
+    # «Valorar las ofertas nuevas»: leer (con el rol extractor, que lee el texto) y valorar.
     assert set(ACTIONS["process-jobs"].background) == {
         "get_status",
         "list_jobs",
         "get_job",
         "save_extraction",
+        "get_profile",
+        "get_context",
+        "get_match",
+        "get_extraction",
+        "save_fit_assessment",
     }
     # Solo process-jobs (su subagente extractor) lee el texto de las ofertas.
     assert "get_job" not in ACTIONS["assess-fit"].background
@@ -198,7 +204,10 @@ def test_start_queues_once_and_stores_the_command(db: None, fake: Path) -> None:
     assert row.status == "queued" and row.agent == "claude"
     assert row.prompt.startswith("Usa el skill process-jobs")
     assert "PREGUNTA:" in row.prompt and "segundo plano" in row.prompt
-    assert row.command[-4:] == [f"{PREFIX}{t}" for t in ACTIONS["process-jobs"].background]
+    tools = ACTIONS["process-jobs"].background
+    assert row.command[-len(tools) :] == [f"{PREFIX}{t}" for t in tools]
+    # Su fase 2 (valorar) lleva el umbral antes de gastar, como «Valorar las que están por revisar».
+    assert "score de" in row.prompt and "fase 2" in row.prompt
     assert row.unset_env == ["ANTHROPIC_API_KEY"]
 
 
@@ -377,7 +386,8 @@ def test_cancel_queued_and_finished(db: None, fake: Path) -> None:
 
 
 def test_one_run_at_a_time(db: None, fake: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    # Sin ofertas, «Valorar las pendientes» no se lanzaría (fase 25.4): aquí da igual con cuáles.
+    # Sin ofertas, «Valorar las que están por revisar» no se lanzaría (fase 25.4): aquí da igual
+    # con cuáles.
     monkeypatch.setattr(agent_runs, "_assess_prompt", lambda *_a: "Usa el skill assess-fit con 1.")
     first = start("process-jobs")
     second = start("assess-fit")
@@ -410,7 +420,7 @@ def test_open_in_terminal_resumes_the_session(
         result = agent_runs.open_in_terminal(session, run_id)
     assert "misma sesión" in result.message
     [(title, command)] = opened
-    assert title == "CandidatAI · Leer las ofertas nuevas"
+    assert title == "CandidatAI · Valorar las ofertas nuevas"
     assert command.endswith("& 'claude' '--resume' '0f7c2d1e-aaaa-bbbb-cccc-123456789abc'")
     assert "Remove-Item Env:ANTHROPIC_API_KEY" in command
 
@@ -445,7 +455,7 @@ def test_api_start_list_get_and_cancel(client: TestClient, fake: Path) -> None:
     response = client.post("/agent/runs", json={"action": "process-jobs"}, headers=JSON)
     assert response.status_code == 202
     run = response.json()
-    assert run["status"] == "queued" and run["label"] == "Leer las ofertas nuevas"
+    assert run["status"] == "queued" and run["label"] == "Valorar las ofertas nuevas"
     assert run["allowed_tools"] == list(ACTIONS["process-jobs"].background)
 
     listed = client.get("/agent/runs").json()

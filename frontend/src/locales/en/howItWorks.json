@@ -29,7 +29,7 @@
     },
     "decide": {
       "title": "Decide which are worth it",
-      "body": "In “{{home}}”, press “{{processJobs}}” and then “{{assessFit}}” (they appear when jobs are pending): your agent reads each job, the app gives it a 0-100 fit and your agent explains why it fits you or not. Then, in “{{triage}}”, approve or discard each one."
+      "body": "In “{{home}}”, press “{{processJobs}}” (it appears when jobs are pending): your agent reads each job, the app gives it a 0-100 fit and your agent explains why it fits you or not. Then, in “{{triage}}”, approve or discard each one."
     },
     "apply": {
       "title": "Prepare and send the application",

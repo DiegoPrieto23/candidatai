@@ -48,7 +48,8 @@ class _Track:
 
 
 TRACKED: dict[ActionId, _Track] = {
-    "process-jobs": _Track(("save_extraction",), batch=True),
+    # Un solo aviso para leer y valorar: cuenta lecturas y valoraciones guardadas.
+    "process-jobs": _Track(("save_extraction", "save_fit_assessment"), batch=True),
     "assess-fit": _Track(("save_fit_assessment",), batch=True),
     "assess-fit-job": _Track(("save_fit_assessment",)),
     "review-replies": _Track(("save_reply_proposal",), batch=True),
@@ -96,12 +97,20 @@ def _pending(session: Session, action: str) -> int:
     if action == "review-replies":
         count = session.scalar(select(func.count()).select_from(Reply).where(Reply.status == "new"))
         return count or 0
-    stage = Stage.PENDING_EXTRACTION if action == "process-jobs" else Stage.PENDING_TRIAGE
-    count = session.scalar(
-        select(func.count()).select_from(Application).where(Application.stage == stage)
-    )
-    # `process-jobs` lee 20 de cada vez: lo que espera esta tanda, no todo lo pendiente.
-    return min(count or 0, PROCESS_BATCH) if action == "process-jobs" else count or 0
+
+    def waiting(stage: Stage) -> int:
+        count = session.scalar(
+            select(func.count()).select_from(Application).where(Application.stage == stage)
+        )
+        return count or 0
+
+    if action == "process-jobs":
+        # Lee 20 de cada vez y valora esas más las que ya esperaban en «Por revisar»: lo que
+        # espera esta tanda, no todo lo pendiente. Es un máximo: lo que queda por debajo del
+        # umbral no se valora y el agente cierra el aviso con `finish_task`.
+        read = min(waiting(Stage.PENDING_EXTRACTION), PROCESS_BATCH)
+        return read + read + waiting(Stage.PENDING_TRIAGE)
+    return waiting(Stage.PENDING_TRIAGE)
 
 
 def start(

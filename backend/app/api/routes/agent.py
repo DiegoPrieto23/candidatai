@@ -185,7 +185,8 @@ def get_agent_costs(session: SessionDep) -> agent_costs.AgentCosts:
 
 @router.get("/assess-threshold", operation_id="get_assess_threshold")
 def get_assess_threshold(session: SessionDep) -> assess_threshold.AssessThreshold:
-    """El score mínimo con que «Valorar las pendientes» valora en segundo plano."""
+    """El score mínimo con que valora en segundo plano «Valorar las ofertas nuevas» (en su fase 2) y
+    «Valorar las que están por revisar»."""
     return assess_threshold.get_threshold(session)
 
 

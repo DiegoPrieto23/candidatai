@@ -42,7 +42,7 @@ def test_complete_and_cancel(client: TestClient) -> None:
         one = agent_requests.create(session, "process-jobs")
         two = agent_requests.create(session, "assess-fit")
         result = agent_requests.complete(session, one.id, "  Procesadas 3. ", "claude-code")
-        assert result.message == "Encargo 1 («Leer las ofertas nuevas») cerrado."
+        assert result.message == "Encargo 1 («Valorar las ofertas nuevas») cerrado."
         agent_requests.cancel(session, two.id)
         with pytest.raises(agent_requests.RequestClosedError):
             agent_requests.complete(session, two.id, "x")

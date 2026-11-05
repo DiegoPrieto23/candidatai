@@ -292,7 +292,7 @@ Una oferta puede encajar en el papel y aun así no merecer la pena. El código m
   Tiempo máximo: `background_runs.timeout_minutes` de `config/policies.yaml`.
 - **Varias a la vez y umbral** (fase 25.4): hasta `background_runs.max_parallel`
   ejecuciones a la vez (1 por defecto), nunca dos de la misma oferta ni dos lotes de la misma
-  acción, cada una con su techo de herramientas. «Valorar las pendientes» en segundo plano solo valora
+  acción, cada una con su techo de herramientas. La valoración en segundo plano («Valorar las ofertas nuevas» y «Valorar las que están por revisar») solo valora
   las ofertas con score ≥ el umbral de la página «Agente» (por defecto, el umbral de score menos 10).
   «Valorar esta oferta» (una sola, desde su ficha) no mira el umbral: lo pide el usuario para
   esa oferta. La UI solo lo ofrece si no tiene valoración o la tiene desfasada; con una vigente y
