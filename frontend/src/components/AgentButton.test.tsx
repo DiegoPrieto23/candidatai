@@ -12,7 +12,7 @@ const launcher = {
   background: { available: true, agent: 'claude', reason: null },
   actions: [
     { id: 'search-jobs', label: 'Buscar ofertas', needs_job: false, prompt: 'Usa el skill search-jobs…', background: false },
-    { id: 'process-jobs', label: 'Leer las ofertas nuevas', needs_job: false, prompt: 'Usa…', background: true },
+    { id: 'process-jobs', label: 'Valorar las ofertas nuevas', needs_job: false, prompt: 'Usa…', background: true },
   ],
 }
 
@@ -116,8 +116,23 @@ describe('Botones «en tu agente»', () => {
   it('en Inicio, «Procesar» y «Evaluar» solo salen si hay ofertas para ellos', async () => {
     home({ 'GET /status': status(2, 0) })
     renderApp('/')
-    expect(await screen.findByRole('button', { name: 'Leer las ofertas nuevas' })).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Valorar las pendientes' })).not.toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Valorar las ofertas nuevas' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Valorar las que están por revisar' })).not.toBeInTheDocument()
+  })
+
+  it('en Inicio, un solo botón valora las nuevas y las que esperan en «Por revisar»', async () => {
+    // Con ofertas por leer y otras ya leídas, «Valorar las ofertas nuevas» hace las dos cosas.
+    home({ 'GET /status': status(2, 3) })
+    const first = renderApp('/')
+    expect(await screen.findByRole('button', { name: 'Valorar las ofertas nuevas' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Valorar las que están por revisar' })).not.toBeInTheDocument()
+    first.unmount()
+
+    // Sin ninguna por leer, queda solo valorar las que esperan en «Por revisar».
+    home({ 'GET /status': status(0, 3) })
+    renderApp('/')
+    expect(await screen.findByRole('button', { name: 'Valorar las que están por revisar' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Valorar las ofertas nuevas' })).not.toBeInTheDocument()
   })
 
   it('«En segundo plano» deja la ejecución en cola y enlaza a «Agente» (fase 19)', async () => {
@@ -126,7 +141,7 @@ describe('Botones «en tu agente»', () => {
       'POST /agent/runs': { status: 202, body: { id: 1, status: 'queued' } },
     })
     renderApp('/')
-    const main = await screen.findByRole('button', { name: 'Leer las ofertas nuevas' })
+    const main = await screen.findByRole('button', { name: 'Valorar las ofertas nuevas' })
     await userEvent.click(within(group(main)).getByRole('button', { name: 'Más formas de lanzarlo' }))
     await userEvent.click(await screen.findByRole('menuitem', { name: /En segundo plano/ }))
     expect(await screen.findByText('En cola en segundo plano.', { exact: false })).toBeInTheDocument()
@@ -239,7 +254,7 @@ describe('Botones «en tu agente»', () => {
         'POST /agent/runs': { status: 202, body: { id: 2, status: 'queued' } },
       })
       renderApp('/')
-      const main = await screen.findByRole('button', { name: 'Leer las ofertas nuevas' })
+      const main = await screen.findByRole('button', { name: 'Valorar las ofertas nuevas' })
       await userEvent.click(await within(group(main)).findByRole('button', { name: /con OpenCode/ }))
       const own = await screen.findByRole('menuitem', { name: new RegExp(`En segundo plano.*${reason}`) })
       expect(own).toHaveAttribute('aria-disabled', 'true')

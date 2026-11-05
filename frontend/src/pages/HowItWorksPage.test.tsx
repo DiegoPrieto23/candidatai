@@ -45,7 +45,7 @@ describe('Cómo funciona', () => {
       'Prepara y envía la candidatura',
       'Sigue tus procesos y aprende',
     ])
-    expect(journey).toHaveTextContent('pulsa «Leer las ofertas nuevas» y luego «Valorar las pendientes»')
+    expect(journey).toHaveTextContent('pulsa «Valorar las ofertas nuevas»')
     expect(journey).toHaveTextContent('pulsa «Generar CV»')
     expect(journey).not.toHaveTextContent('{{')
   })

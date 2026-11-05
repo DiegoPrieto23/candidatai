@@ -104,6 +104,14 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   vez de 23).
 
 ### Cambiado
+- **Valorar las ofertas nuevas, en un solo paso:** «Leer las ofertas nuevas» y «Valorar las pendientes» se
+  unen en un botón, **Valorar las ofertas nuevas**. Tu agente lee cada oferta nueva (como antes, con un
+  subagente aislado que es el único que ve su texto), la app calcula su encaje de 0 a 100 y, a
+  continuación, tu agente deja una valoración explicada de por qué encaja contigo o no, también para las
+  que ya esperaban en **Por revisar**. Un solo aviso (**Leyendo y valorando las ofertas nuevas…**) y, en
+  segundo plano, el mismo umbral antes de gastar. Para solo las que ya están leídas queda **Valorar las que
+  están por revisar** (antes «Valorar las pendientes»), en la etapa **Por revisar**; en **Inicio** sale solo
+  cuando no hay ofertas por leer.
 - **Plantillas:** una sola lista, **Todas las plantillas**, con **Usar por defecto** en cada tuya. Los
   bloques «Original / Con tu perfil» de cada CV subido desaparecen; en **Mi CV** solo queda lo que falta por
   convertir.

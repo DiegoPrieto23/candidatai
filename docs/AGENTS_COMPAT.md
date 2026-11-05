@@ -170,6 +170,13 @@ enviar nada. Encima, cada agente añade lo que permite:
 Recomendación para todos: ejecuta `process-jobs` en su propia sesión y revisa en la UI las
 ofertas marcadas con riesgo antes de aprobarlas.
 
+«Valorar las ofertas nuevas» (`process-jobs`) hace además la valoración (`assess-fit`) en la misma
+ejecución. La sesión principal sigue sin leer el texto de ninguna oferta, pero ahora lleva también
+las herramientas de la valoración (`get_profile`, `get_context`, `get_match`, `get_extraction`,
+`save_fit_assessment`). Con un agente de nivel C, sin subagente que aísle la lectura, conviven con
+el texto no confiable en la misma sesión: usa una sesión dedicada, o lanza `assess-fit` aparte
+(«Valorar las que están por revisar»), que no lee texto de ofertas.
+
 El rol `classifier` (fase 15, skill `review-replies`) lee correos de empresas, igual de no
 confiables, y tiene el mismo aislamiento por nivel: en Claude Code solo `get_reply` y
 `save_reply_proposal`. Además, lo que guarda es una propuesta: no cambia nada hasta que la
@@ -368,7 +375,7 @@ se deshabilita con un agente sin `web`. Lee READMEs de terceros, así que con un
 avisa de usar una sesión dedicada solo a eso.
 
 ### Botones «en tu agente» de la UI
-«Buscar ofertas», «Leer las ofertas nuevas», «Valorar las pendientes» (y «Valorar esta oferta» de una oferta),
+«Buscar ofertas», «Valorar las ofertas nuevas», «Valorar las que están por revisar» (y «Valorar esta oferta» de una oferta),
 «Generar CV», en la página Skills (fase 14) «Añadir al perfil las que tengo» (`update-profile`)
 y «Plan de formación», y desde la fase 15 «Revisar respuestas» (Inicio y «Respuestas»), «Redactar borradores» (Procesos) y
 «Redactar seguimiento» (ficha de una candidatura enviada), desde la fase 16 «Ampliar búsqueda»

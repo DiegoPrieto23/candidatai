@@ -40,7 +40,7 @@
   "empty": {
     "title": "Tu bandeja está vacía",
     "addFirst": "Añadir la primera",
-    "body": "Da de alta una oferta desde su URL o pegando el texto. Después, «Leer las ofertas nuevas» la lee y saca sus datos."
+    "body": "Da de alta una oferta desde su URL o pegando el texto. Después, «Valorar las ofertas nuevas» la lee, saca sus datos y valora si encaja contigo."
   },
   "closedWhen": "Cerrada {{when}}",
   "quick": {
@@ -67,8 +67,8 @@
   "guide": {
     "label": "Qué es esta etapa y cómo avanzar",
     "nextLabel": "Para avanzar:",
-    "processJobs": "Leer las ofertas nuevas",
-    "assessFit": "Valorar las pendientes",
+    "processJobs": "Valorar las ofertas nuevas",
+    "assessFit": "Valorar las que están por revisar",
     "openTriage": "Abrir la revisión rápida",
     "all": {
       "what": "Todas tus ofertas, estén en la etapa que estén. Cada oferta avanza así: Por completar → Por leer → Por revisar → Aprobada → CV listo → Enviada → En proceso.",
@@ -85,11 +85,11 @@
     },
     "pending_extraction": {
       "what": "Ofertas con la descripción completa que tu agente aún no ha leído.",
-      "next": "pulsa «Leer las ofertas nuevas». Tu agente saca de cada una el puesto, las skills, la modalidad y el salario, y la app calcula su encaje (de 0 a 100) frente a tu perfil. Las que no pasan tus filtros (modalidad, ubicación…) se cierran solas; las demás pasan a «Por revisar»."
+      "next": "pulsa «Valorar las ofertas nuevas». Tu agente saca de cada una el puesto, las skills, la modalidad y el salario, la app calcula su encaje (de 0 a 100) frente a tu perfil y tu agente explica por qué encaja o no. Las que no pasan tus filtros (modalidad, ubicación…) se cierran solas; las demás pasan a «Por revisar»."
     },
     "pending_triage": {
       "what": "Ofertas ya leídas y con su encaje calculado, a la espera de que decidas.",
-      "next": "revísalas en <triage>Revisión rápida</triage> y apruébalas o descártalas. Si antes quieres una opinión, «Valorar las pendientes» hace que tu agente compare cada una con tu perfil y escriba por qué encaja o no. No cambia la etapa: decides tú."
+      "next": "revísalas en <triage>Revisión rápida</triage> y apruébalas o descártalas. Si alguna aún no tiene valoración, «Valorar las que están por revisar» hace que tu agente la compare con tu perfil y escriba por qué encaja o no. No cambia la etapa: decides tú."
     },
     "approved": {
       "what": "Ofertas que has aprobado. Les falta el CV a medida.",

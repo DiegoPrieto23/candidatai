@@ -145,11 +145,11 @@
     },
     "actions": {
       "process-jobs": {
-        "running": "Leyendo las ofertas nuevas…",
-        "done": "Ofertas leídas"
+        "running": "Leyendo y valorando las ofertas nuevas…",
+        "done": "Ofertas valoradas"
       },
       "assess-fit": {
-        "running": "Valorando las pendientes…",
+        "running": "Valorando las ofertas por revisar…",
         "done": "Ofertas valoradas"
       },
       "assess-fit-job": {

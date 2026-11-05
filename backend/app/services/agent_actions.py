@@ -105,14 +105,28 @@ ACTIONS: dict[ActionId, Action] = {
     # Las tres que admiten segundo plano (fase 19). Cada lista es lo mínimo que usan el skill y
     # sus roles: con un comodín, una oferta con una inyección podría llamar a herramientas que
     # escriben (`add_event`, `save_source`…).
+    # Un solo paso (fase 1: leer con el rol `extractor`; fase 2: valorar lo leído). La sesión no lee
+    # el texto de ninguna oferta, pero ahora lleva también las herramientas de la valoración.
     "process-jobs": Action(
-        "Leer las ofertas nuevas",
-        "Usa el skill process-jobs de CandidatAI con las ofertas pendientes de extraer.",
-        background=("get_status", "list_jobs", "get_job", "save_extraction"),
+        "Valorar las ofertas nuevas",
+        "Usa el skill process-jobs de CandidatAI: lee las ofertas pendientes de leer y valora "
+        "cuáles encajan conmigo.",
+        background=(
+            "get_status",
+            "list_jobs",
+            "get_job",
+            "save_extraction",
+            "get_profile",
+            "get_context",
+            "get_match",
+            "get_extraction",
+            "save_fit_assessment",
+        ),
         roles=("extractor",),
     ),
+    # Solo la valoración, para las que ya están leídas y esperan en «Por revisar».
     "assess-fit": Action(
-        "Valorar las pendientes",
+        "Valorar las que están por revisar",
         "Usa el skill assess-fit de CandidatAI con las ofertas pendientes de revisar.",
         background=(
             "list_jobs",

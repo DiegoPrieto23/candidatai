@@ -95,22 +95,29 @@ def test_a_batch_counts_against_what_was_pending(session: Session) -> None:
     first, second = job(session, title="Uno"), job(session, title="Dos")
     agent_tasks.start(session, "process-jobs")
     view = seen(session)
-    assert (view.total, view.done, view.status) == (2, 0, "running")
+    # Una sola tarea para leer y valorar: cada oferta cuenta dos guardados (lectura y valoración).
+    assert (view.total, view.done, view.status) == (4, 0, "running")
 
     call(session, "save_extraction", job_id=first)
     view = seen(session)
     assert (view.done, view.status) == (1, "running")
 
     call(session, "save_extraction", job_id=second)
+    call(session, "save_fit_assessment", job_id=first)
     view = seen(session)
-    assert (view.done, view.status, view.outcome) == (2, "finished", "done")
+    assert (view.done, view.status) == (3, "running")
+
+    call(session, "save_fit_assessment", job_id=second)
+    view = seen(session)
+    assert (view.done, view.status, view.outcome) == (4, "finished", "done")
 
 
 def test_process_jobs_waits_for_one_round_not_for_everything(session: Session) -> None:
     for index in range(agent_tasks.PROCESS_BATCH + 3):
         job(session, title=f"J{index}")
     agent_tasks.start(session, "process-jobs")
-    assert seen(session).total == agent_tasks.PROCESS_BATCH
+    # Lee y valora una tanda: el doble de lo que lee.
+    assert seen(session).total == 2 * agent_tasks.PROCESS_BATCH
 
 
 def test_the_agent_can_close_it_early(session: Session) -> None:
@@ -244,7 +251,7 @@ def test_launching_from_a_button_starts_the_notice(
 
     tasks = client.get("/agent/tasks").json()["tasks"]
     assert [(t["action"], t["total"], t["status"]) for t in tasks] == [
-        ("process-jobs", 1, "running")
+        ("process-jobs", 2, "running")  # una lectura y una valoración
     ]
 
 

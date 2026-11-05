@@ -2,7 +2,7 @@
   "added": {
     "exists": "This job was already added. Nothing has changed.",
     "duplicate": "Added, but it looks like a duplicate of <to>job {{id}}</to>, so it stays closed.",
-    "created": "Job added. Your agent will read it when you press “Read new jobs”.",
+    "created": "Job added. Your agent will read it when you press “Assess new jobs”.",
     "close": "Close"
   },
   "injection": {

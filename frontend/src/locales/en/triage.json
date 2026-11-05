@@ -29,7 +29,7 @@
   "saveFailed": "Couldn't save: {{error}}",
   "empty": {
     "title": "Nothing to review",
-    "body": "When your agent reads new jobs (“Read new jobs”), they'll show up here sorted by fit."
+    "body": "When your agent reads new jobs (“Assess new jobs”), they'll show up here sorted by fit."
   },
   "queue": "Jobs to review",
   "discardDialog": {

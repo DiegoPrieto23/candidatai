@@ -331,7 +331,7 @@ Si es tu primera vez, **Cómo funciona**, en el menú, cuenta el recorrido compl
 Un día normal:
 
 1. Abre **Inicio**: te dice qué tienes (ofertas por revisar, CVs listos, seguimientos vencidos).
-2. Pide a tu agente `process-jobs` y `assess-fit`, o pulsa sus botones en la UI.
+2. Pide a tu agente `process-jobs` (lee y valora las nuevas), o pulsa «Valorar las ofertas nuevas» en la UI.
 3. Aprueba o descarta en **Revisión rápida**, en la Bandeja.
 4. `generate-cv` para las aprobadas y, cuando quieras, envía desde la ficha.
 5. `daily-summary` resume todo eso en una respuesta.
@@ -357,12 +357,12 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
 
 1. **Extraer:** antes, si un título o una empresa no te interesa, quítala desde la Bandeja
    («Por completar» o «Por leer») con «Descartar», una a una o seleccionando varias: no gasta
-   agente y se puede deshacer. `process-jobs` convierte el texto de cada oferta en datos estructurados. El
+   agente y se puede deshacer. `process-jobs` convierte el texto de cada oferta en datos estructurados (es la primera fase de «Valorar las ofertas nuevas», que sigue con el paso 2). El
    texto de las ofertas es contenido no confiable: si trae texto oculto o frases dirigidas a una
    IA, la ficha lo avisa.
 2. **Valorar:** la app calcula el encaje (de 0 a 100: «buen encaje», «encaje posible» o «encaje
    bajo», y al pasar el ratón, de dónde sale) y aplica tus filtros duros; `assess-fit` añade una
-   valoración razonada: «Valorar esta oferta» en su ficha o «Valorar las pendientes» para todas.
+   valoración razonada: «Valorar las ofertas nuevas» la hace justo después de leerlas, «Valorar esta oferta» en su ficha para una sola y «Valorar las que están por revisar» para las ya leídas que aún no la tienen.
    Si una oferta no tiene encaje, su ficha dice qué falta: tu perfil, que tu agente la lea o las dos cosas.
 3. **Revisar:** en la Bandeja, pestaña «Revisión rápida», `J`/`K` para moverte, `A` para aprobar, `D` para descartar (con
    motivo) y `O` para abrir la ficha. Un descarte se deshace en el aviso; una aprobación, con

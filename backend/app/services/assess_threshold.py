@@ -1,6 +1,7 @@
-"""Umbral antes de gastar (fase 25.4): «Valorar las pendientes» en segundo plano solo valora las
-ofertas con score suficiente. Las demás se quedan sin valorar, con el motivo en la UI. El skill en
-una terminal sigue valorando lo que le pidas.
+"""Umbral antes de gastar (fase 25.4): «Valorar las que están por revisar» y la valoración de
+«Valorar las ofertas nuevas», en segundo plano, solo valoran las ofertas con score suficiente. Las
+demás se quedan sin valorar, con el motivo en la UI. El skill en una terminal sigue valorando lo
+que le pidas.
 
 El umbral sale, por este orden, de la página «Agente» (`agent_preferences`, `scope="setting"`, el
 número en `model`), de `background_runs.assess_min_score` de `config/policies.yaml` o, si no, del

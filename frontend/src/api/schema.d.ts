@@ -2148,7 +2148,8 @@ export interface paths {
         };
         /**
          * Get Assess Threshold
-         * @description El score mínimo con que «Valorar las pendientes» valora en segundo plano.
+         * @description El score mínimo con que valora en segundo plano «Valorar las ofertas nuevas» (en su fase 2) y
+         *     «Valorar las que están por revisar».
          */
         get: operations["get_assess_threshold"];
         /**

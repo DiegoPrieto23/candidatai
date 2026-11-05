@@ -35,7 +35,7 @@ Una fila por ejecución de una fuente; la usan los conectores y, desde la 09b, a
 | errors | JSON | `[{code, message, item?}]`: fallo de la fuente o de una oferta suelta |
 
 ### `agent_tasks` (fase 39g)
-Lo que acaba de lanzar un botón de la app: de ella salen los avisos «Leyendo ofertas…», «Generando el
+Lo que acaba de lanzar un botón de la app: de ella salen los avisos «Leyendo y valorando ofertas…», «Generando el
 CV…». Cómo va se calcula con `mcp_calls` (un guardado correcto posterior) y, en segundo plano, con
 `agent_runs`. Las conversaciones no se siguen: no tienen un final que avisar.
 | Columna | Tipo | Notas |

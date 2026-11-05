@@ -1,8 +1,8 @@
 {
   "search-jobs": "Tu agente recorre con tu navegador los portales que tienes activos en «Dónde buscar» y da de alta las ofertas que encuentra. Las verás en la Bandeja.",
   "configure-platforms": "Te pregunta en qué portales buscas, te recomienda otros según tu perfil y prepara sus búsquedas con tus puestos y ubicaciones. No guarda nada sin tu OK.",
-  "process-jobs": "Lee las ofertas nuevas y saca sus datos (puesto, requisitos, sueldo, modalidad…) para poder filtrarlas y valorarlas. No necesita nada tuyo.",
-  "assess-fit": "Compara cada oferta procesada con tu perfil y deja una valoración explicada en su ficha. Aprobar o descartar lo decides tú en «Por revisar».",
+  "process-jobs": "Lee las ofertas nuevas, saca sus datos (puesto, requisitos, sueldo, modalidad…), la app calcula su encaje de 0 a 100 con tu perfil y tu agente deja una valoración explicada de por qué encajan o no. Aprobar o descartar lo decides tú en «Por revisar».",
+  "assess-fit": "Para las ofertas que ya están leídas y esperan en «Por revisar»: compara cada una con tu perfil y deja una valoración explicada en su ficha. Aprobar o descartar lo decides tú.",
   "assess-fit-job": "Compara esta oferta con tu perfil y deja una valoración explicada aquí. Si ya tenía una desfasada, la sustituye.",
   "generate-cv": "Redacta un CV a medida para esta oferta, solo con datos de tu perfil, y lo verifica para que no lleve nada inventado. Quedan el Word y el PDF en la ficha.",
   "correct-cv": "Aplica solo lo que has pedido corregir, sin rehacer el CV ni añadir nada que no esté en tu perfil, y verifica la versión nueva. La anterior se conserva.",

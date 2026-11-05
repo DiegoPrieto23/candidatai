@@ -2,7 +2,7 @@
   "added": {
     "exists": "Esta oferta ya estaba dada de alta. No se ha cambiado nada.",
     "duplicate": "Dada de alta, pero parece un duplicado de la <to>oferta {{id}}</to>, así que queda cerrada.",
-    "created": "Oferta dada de alta. Tu agente la leerá cuando pulses «Leer las ofertas nuevas».",
+    "created": "Oferta dada de alta. Tu agente la leerá cuando pulses «Valorar las ofertas nuevas».",
     "close": "Cerrar"
   },
   "injection": {

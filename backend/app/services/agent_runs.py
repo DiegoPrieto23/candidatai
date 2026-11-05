@@ -124,8 +124,8 @@ def _cv_gaps_note(session: Session, job_id: int) -> str:
 
 
 def _assess_prompt(session: Session, min_score: int | None = None) -> str:
-    """«Valorar las pendientes» en segundo plano solo con las ofertas que llegan al umbral; si no
-    queda ninguna, no se lanza y dice por qué."""
+    """«Valorar las que están por revisar» en segundo plano solo con las ofertas que llegan al
+    umbral; si no queda ninguna, no se lanza y dice por qué."""
     plan = assess_threshold.plan(session, min_score)
     if not plan.eligible:
         below = len(plan.skipped)
@@ -138,6 +138,19 @@ def _assess_prompt(session: Session, min_score: int | None = None) -> str:
         )
         raise LaunchError("invalid_request", f"No hay ofertas pendientes de valorar.{detail}")
     return assess_threshold.prompt(plan)
+
+
+def _threshold_note(session: Session, min_score: int | None = None) -> str:
+    """«Valorar las ofertas nuevas» en segundo plano: la valoración (fase 2) solo con las ofertas
+    que llegan al umbral, como «Valorar las que están por revisar». Las leídas pero por debajo
+    quedan sin valorar, con el motivo en «Por revisar»."""
+    threshold = (
+        min_score if min_score is not None else assess_threshold.get_threshold(session).value
+    )
+    return (
+        f" Al valorar (fase 2), solo las ofertas con un score de {threshold} o más: las demás "
+        "no se valoran en segundo plano."
+    )
 
 
 def _active(session: Session, action: str, job_id: int | None) -> AgentRun | None:
@@ -178,6 +191,8 @@ def start(
         return view(existing)
     if action == "assess-fit":  # fase 25.4: umbral antes de gastar
         prompt = _assess_prompt(session, min_score)
+    elif action == "process-jobs":  # su fase 2 valora, con el mismo umbral
+        prompt += _threshold_note(session, min_score)
     note = _cv_gaps_note(session, job_id) if action == "generate-cv" and job_id else ""
     full_prompt = prompt + note + agent_launch.BACKGROUND_NOTE
     assert picked.headless is not None  # lo garantiza `pick_headless`

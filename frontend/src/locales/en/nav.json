@@ -145,11 +145,11 @@
     },
     "actions": {
       "process-jobs": {
-        "running": "Reading the new jobs…",
-        "done": "Jobs read"
+        "running": "Reading and assessing the new jobs…",
+        "done": "Jobs assessed"
       },
       "assess-fit": {
-        "running": "Assessing the pending jobs…",
+        "running": "Assessing the jobs to review…",
         "done": "Jobs assessed"
       },
       "assess-fit-job": {

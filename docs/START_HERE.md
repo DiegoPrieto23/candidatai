@@ -134,8 +134,8 @@ Their official pages: [Claude Code](https://code.claude.com/docs/en/setup),
 with your account the first time you open it.
 
 Back in **Agent**, the top says "Your agent: Claude Code, ready". If you have several, choose yours
-as the default agent in **Your agents in detail**. From then on, buttons such as **Read new jobs**,
-**Assess pending jobs** or **Generate CV** open it in a separate window with the instruction already typed:
+as the default agent in **Your agents in detail**. From then on, buttons such as **Assess new jobs**
+or **Generate CV** open it in a separate window with the instruction already typed:
 you watch what it does and approve it. If it can't be opened, the button shows you the whole
 instruction, with **Copy**, so you can paste it into your agent. Their small arrow also offers **In the background**
 (no window; you follow it in "Agent") and **Leave for my next session**.
@@ -221,8 +221,8 @@ Jobs can come in several ways; start with one or two:
 
 Then:
 
-1. On **Home**, press **Read new jobs** and then **Assess pending jobs**: your agent reads each
-   job, the app gives it a fit from 0 to 100 and your agent explains why it fits you or not.
+1. On **Home**, press **Assess new jobs**: your agent reads each job, the app gives it a fit from
+   0 to 100 and your agent explains why it fits you or not.
 2. In **Quick review**, in the Inbox, approve or discard each job.
 3. For an approved job, open it and press **Generate CV**. Then you choose the design and press
    **Generate**, and the app checks that every line comes from your profile.

@@ -117,7 +117,8 @@ function Today() {
             {t('today.processJobs')}
           </AgentButton>
         )}
-        {!!s?.pending_triage && (
+        {/* «Valorar las ofertas nuevas» ya valora también las que esperan en «Por revisar». */}
+        {!!s?.pending_triage && !s?.pending_extraction && (
           <AgentButton action="assess-fit" size="default" primary={primary === 'assess-fit'}>
             {t('today.assessFit')}
           </AgentButton>

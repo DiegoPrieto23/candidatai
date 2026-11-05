@@ -157,7 +157,7 @@ targets:
       cai_skills_cli: ["Bash(uv run --directory backend cai skills *)"]
     skill_extras:                 # campos de frontmatter que solo entiende Claude Code
       process-jobs:
-        allowed-tools: ["mcp:get_status", "mcp:list_jobs"]
+        allowed-tools: ["mcp:get_status", "mcp:list_jobs", "mcp:get_match", "mcp:get_extraction", "mcp:get_profile", "mcp:get_context"]
       assess-fit:
         allowed-tools: ["mcp:list_jobs", "mcp:get_match", "mcp:get_extraction", "mcp:get_profile", "mcp:get_context"]
       generate-cv:

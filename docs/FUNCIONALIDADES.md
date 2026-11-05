@@ -31,7 +31,7 @@ FEATURES.md dejan de coincidir fila a fila. -->
 | **Botón «Enviar a CandidatAI»**: extensión de Chrome/Edge/Brave que manda la oferta que estás viendo (LinkedIn incluido) o completa el resumen de una alerta. La pestaña «Botón del navegador» te guía para cargarla, avisa si está desactualizada y la conecta con un clic, sin terminal | `/fuentes/extension` | [Botón del navegador](img/es/sources-extension.webp) |
 | **Búsqueda pública de LinkedIn** (apagada por defecto, bajo tu riesgo): una vez al día, sin tu cuenta ni cookies; tu agente no puede activarla | `/fuentes/plataformas` | |
 | **Encontrar el tablero de empleo de tus empresas** a partir de una lista de nombres | `cai sources discover` | |
-| **Extraer cada oferta** a datos estructurados con un subagente aislado que solo ve esa oferta; el texto dirigido a una IA se marca y nunca se obedece | `process-jobs` | |
+| **Leer y valorar las ofertas nuevas en un solo paso** («Valorar las ofertas nuevas»): extrae cada una a datos estructurados con un subagente aislado que solo ve esa oferta y después la valora frente a tu perfil; el texto dirigido a una IA se marca y nunca se obedece | `process-jobs` | |
 | **¿Sigue abierta? y republicadas**: la app comprueba si una oferta sigue publicada (nunca la cierra sola) y marca «Republicada ×N» | `/jobs/:id` | |
 | **Ofertas dudosas a la vista**: rango salarial muy amplio, empresa oculta o agencia, contrato temporal, publicada hace meses y cribado con IA, cada una explicada; no cambian el encaje | `/bandeja` | |
 

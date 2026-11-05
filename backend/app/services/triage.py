@@ -27,7 +27,7 @@ class TriageQueue(BaseModel):
     items: list[TriageItem]
     total: int  # ofertas en `pending_triage` (puede haber más que `items`)
     triage_threshold: int
-    # Fase 25.4: «Valorar las pendientes» en segundo plano solo valora desde este score; la UI
+    # Fase 25.4: La valoración en segundo plano solo valora desde este score; la UI
     # dice por qué se queda sin valorar una oferta por debajo.
     assess_min_score: int
     profile_missing: bool  # sin perfil no hay score: la UI lo avisa
