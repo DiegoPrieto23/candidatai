@@ -1,4 +1,5 @@
-import { render } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter } from 'react-router'
 import { vi } from 'vitest'
@@ -684,4 +685,34 @@ export function assistedApplication(changes: Partial<AssistedApplication> = {}):
     reason: null,
     ...changes,
   }
+}
+
+/**
+ * Elige una fecha (y hora) en un selector de `date-time-picker`: abre su botón, pasa de mes hasta
+ * ver el día y lo pulsa; con `time`, escribe la hora y cierra con «Listo».
+ */
+export async function pickDate(trigger: HTMLElement, day: string, time?: string) {
+  const user = userEvent.setup()
+  await user.click(trigger)
+  const popup = await screen.findByRole('dialog', { name: /Elegir fecha/ })
+  for (let i = 0; i < 48; i++) {
+    const cell = popup.querySelector<HTMLElement>(`[data-day="${day}"]`)
+    if (cell) {
+      await user.click(cell)
+      break
+    }
+    const first = popup.querySelector<HTMLElement>('[data-day]')?.dataset.day ?? day
+    await user.click(within(popup).getByRole('button', { name: day < first ? 'Mes anterior' : 'Mes siguiente' }))
+  }
+  if (time) {
+    const [hour = '', minute = ''] = time.split(':')
+    const hours = within(popup).getByRole('textbox', { name: 'Horas' })
+    const minutes = within(popup).getByRole('textbox', { name: 'Minutos' })
+    await user.clear(hours)
+    await user.type(hours, hour)
+    await user.clear(minutes)
+    await user.type(minutes, minute)
+    await user.click(within(popup).getByRole('button', { name: 'Listo' }))
+  }
+  await waitFor(() => expect(screen.queryByRole('dialog', { name: /Elegir fecha/ })).not.toBeInTheDocument())
 }

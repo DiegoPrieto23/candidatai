@@ -30,6 +30,22 @@
   "matching": " matching “{{q}}”",
   "search": "Search by title or company",
   "filterStage": "Filter by stage",
+  "filters": {
+    "label": "List filters",
+    "mode": "Work mode",
+    "modeAny": "Any work mode",
+    "salary": "Salary",
+    "salaryAny": "With or without salary",
+    "salary_yes": "With salary",
+    "salary_no": "Without salary",
+    "fit": "Fit",
+    "fitAny": "Any fit",
+    "fit_none": "No fit",
+    "fit_50": "Fit of 50 or more",
+    "fit_70": "Fit of 70 or more",
+    "fit_85": "Fit of 85 or more",
+    "clear": "Clear filters"
+  },
   "allStages": "All",
   "sortLabel": "Sort",
   "noResults": {

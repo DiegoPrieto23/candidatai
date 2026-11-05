@@ -47,7 +47,7 @@
   "documents": "Documents",
   "documentsIntro": "Your source documents. Your agent can read them to create or expand your profile, always asking you before writing.",
   "openDocuments": "Open the documents folder",
-  "expand": "Expand profile from my links",
+  "expand": "Improve profile",
   "title": "My profile",
   "intro": "Everything a CV, letter or answer says comes from here. Each block is saved separately and can be undone.",
   "contextIntroHere": "Guides your agent: the tone of your CVs and letters, a job's risks and interview prep. <strong>It never backs a fact</strong>: whatever a CV or letter says must be in your profile. Create and edit them right here (each comes with a few guiding questions) or ask your agent.",

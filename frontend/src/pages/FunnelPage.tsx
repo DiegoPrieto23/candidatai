@@ -22,7 +22,7 @@ import { FunnelFlow } from '@/components/FunnelFlow'
 import { Reveal } from '@/components/Reveal'
 import { EmptyState, ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { DatePicker } from '@/components/ui/date-time-picker'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -100,13 +100,7 @@ function PeriodPicker({
         <Label htmlFor="funnel-since" className="text-xs text-muted-foreground">
           {t('since')}
         </Label>
-        <Input
-          id="funnel-since"
-          type="date"
-          className="h-8 w-40"
-          value={custom}
-          onChange={(e) => onCustom(e.target.value)}
-        />
+        <DatePicker id="funnel-since" className="h-8 w-44" value={custom} onChange={onCustom} />
       </div>
     </div>
   )

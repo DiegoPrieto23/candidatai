@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { DatePicker, DateTimePicker, DEFAULT_TIME, TimeInput } from '@/components/ui/date-time-picker'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -70,7 +71,7 @@ function MoveForm({ card, options, onDone, title }: { card: BoardCard; options: 
 
   const milestoneKind = choice ? MILESTONE_EVENTS[choice.event] : undefined
   const occurred = fromLocalInput(occurredAt)
-  // La fecha es opcional: sin ella se registra solo el evento; sin hora, cuenta todo el día.
+  // La fecha es opcional: sin ella se registra solo el evento. La hora viene a las 14:00; si se borra, cuenta todo el día.
   const starts = startsDate ? fromLocalInput(startsTime ? `${startsDate}T${startsTime}` : startsDate) : null
   const missing =
     !choice ||
@@ -203,17 +204,23 @@ function MoveForm({ card, options, onDone, title }: { card: BoardCard; options: 
               <Label htmlFor="move-starts">
                 {milestoneKind === 'interview' ? t('interviewDate') : t('dueDate')}
               </Label>
-              <Input id="move-starts" type="date" value={startsDate} onChange={(e) => setStartsDate(e.target.value)} />
+              <DatePicker
+                id="move-starts"
+                value={startsDate}
+                // Al poner el día, la hora no se queda vacía: si no la sabes, son las 14:00. Si la borras, cuenta todo el día.
+                onChange={(day) => {
+                  setStartsDate(day)
+                  setStartsTime((time) => (day ? time || DEFAULT_TIME : ''))
+                }}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="move-starts-time">{t('time')}</Label>
-              <Input
+              <TimeInput
                 id="move-starts-time"
-                type="time"
-                step={300}
                 disabled={!startsDate}
                 value={startsTime}
-                onChange={(e) => setStartsTime(e.target.value)}
+                onChange={setStartsTime}
               />
             </div>
           </div>
@@ -247,16 +254,10 @@ function MoveForm({ card, options, onDone, title }: { card: BoardCard; options: 
         </div>
       )}
 
-      <div className="grid gap-3 sm:grid-cols-[12rem_1fr]">
+      <div className="grid gap-3 sm:grid-cols-[16rem_1fr]">
         <div className="space-y-2">
           <Label htmlFor="move-at">{t('when')}</Label>
-          <Input
-            id="move-at"
-            type="datetime-local"
-            required
-            value={occurredAt}
-            onChange={(e) => setOccurredAt(e.target.value)}
-          />
+          <DateTimePicker id="move-at" required value={occurredAt} onChange={setOccurredAt} />
         </div>
         <div className="space-y-2">
           <Label htmlFor="move-note">

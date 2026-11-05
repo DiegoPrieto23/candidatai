@@ -191,7 +191,7 @@ describe('Mi perfil', () => {
     expect(screen.getByRole('button', { name: 'Copiar ruta' })).toBeInTheDocument()
   })
 
-  it('«Ampliar perfil desde mis enlaces» abre el agente y se deshabilita sin web (fase 25.2)', async () => {
+  it('«Mejorar perfil» abre el agente y se deshabilita si el agente no puede (fase 25.2)', async () => {
     const claude = {
       agent: 'claude',
       display_name: 'Claude Code',
@@ -203,7 +203,7 @@ describe('Mi perfil', () => {
       blocked_code: null,
       warning: null,
     }
-    const expand = { id: 'expand', label: 'Ampliar perfil desde mis enlaces', needs_job: false, prompt: 'Usa el skill expand…', background: false }
+    const expand = { id: 'expand', label: 'Mejorar perfil', needs_job: false, prompt: 'Usa el skill expand…', background: false }
     const launcher = (agent: Record<string, unknown>) => ({
       available: true,
       agent: 'claude',
@@ -221,24 +221,24 @@ describe('Mi perfil', () => {
       'POST /agent/launch': { ok: true, agent: 'claude', prompt: 'Usa el skill expand…', message: 'ok' },
     })
     const view = renderApp('/perfil')
-    const button = await screen.findByRole('button', { name: 'Ampliar perfil desde mis enlaces' })
+    const button = await screen.findByRole('button', { name: 'Mejorar perfil' })
     await waitFor(() => expect(button).toBeEnabled())
     await userEvent.click(button)
     expect(await screen.findByText('Abierto en claude: sigue en la ventana que se acaba de abrir.')).toBeInTheDocument()
     expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ action: 'expand' })
     view.unmount()
 
-    const noWeb = 'Codex no tiene búsqueda web, y esta acción lo necesita.'
+    const noAgent = 'Codex no tiene visión, y esta acción lo necesita.'
     mockApi({
       'GET /status': status(),
       'GET /context': contextStatus(),
       'GET /profile/editable': UNREADABLE,
-      'GET /agent': launcher({ ...claude, agent: 'codex', display_name: 'Codex', blocked: noWeb, blocked_code: 'capability' }),
+      'GET /agent': launcher({ ...claude, agent: 'codex', display_name: 'Codex', blocked: noAgent, blocked_code: 'capability' }),
     })
     renderApp('/perfil')
-    const blocked = await screen.findByRole('button', { name: 'Ampliar perfil desde mis enlaces' })
+    const blocked = await screen.findByRole('button', { name: 'Mejorar perfil' })
     await waitFor(() => expect(blocked).toBeDisabled())
-    expect(blocked).toHaveAccessibleDescription(new RegExp(noWeb))
+    expect(blocked).toHaveAccessibleDescription(new RegExp(noAgent))
     // Sin segundo plano: pregunta antes de escribir en el perfil.
     await userEvent.click(within(blocked.closest<HTMLElement>('[data-slot="agent-button"]')!).getByRole('button', { name: /con Codex/ }))
     expect(screen.queryByRole('menuitem', { name: /En segundo plano/ })).not.toBeInTheDocument()

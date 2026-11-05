@@ -155,10 +155,12 @@ def test_capabilities_block_when_false_and_warn_when_unchecked(manifest: Any) ->
         targets["codex"]["capabilities"]["web"] = False
 
     manifest(no_browser_or_web)
-    for action in ("search-jobs", "research-company", "training-plan", "expand"):
+    for action in ("search-jobs", "research-company", "training-plan"):
         res = resolve(action=action, agent="codex")
         assert not res.usable and res.blocked_code == "capability", action
     assert resolve(action="assess-fit", agent="codex").usable
+    # «Mejorar perfil» revisa el perfil sin web: sin ella solo se salta la lectura de los enlaces.
+    assert resolve(action="expand", agent="codex").usable
     assert agent_prefs.REQUIRES["import-cv-template"] == ("vision",)
 
 

@@ -7,6 +7,20 @@
     "goHome": "Go to home"
   },
   "loading": "Loading…",
+  "picker": {
+    "chooseDate": "Pick a date",
+    "chooseDateTime": "Pick a date and time",
+    "prevMonth": "Previous month",
+    "nextMonth": "Next month",
+    "today": "Today",
+    "now": "Now",
+    "anytime": "No specific time ({{time}})",
+    "clear": "Clear",
+    "done": "Done",
+    "time": "Time",
+    "hour": "Hours",
+    "minute": "Minutes"
+  },
   "retry": "Retry",
   "copy": {
     "label": "Copy",

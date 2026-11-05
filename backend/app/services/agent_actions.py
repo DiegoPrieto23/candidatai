@@ -229,12 +229,13 @@ ACTIONS: dict[ActionId, Action] = {
         "Usa el skill update-profile de CandidatAI para añadir a mi perfil las skills que he "
         "marcado como «La tengo» en la página Skills (get_skill_gaps con status have).",
     ),
-    # Perfil (fase 25.2): lee tus enlaces públicos y propone; pregunta antes de escribir, así que
-    # solo en terminal.
+    # Perfil (fase 25.2): revisa el perfil entero y, si hay enlaces públicos, propone lo que sale de
+    # ellos; pregunta antes de escribir, así que solo en terminal. El id sigue siendo `expand`.
     "expand": Action(
-        "Ampliar perfil desde mis enlaces",
-        "Usa el skill expand de CandidatAI para proponerme proyectos, skills, logros y "
-        "certificaciones a partir de los enlaces públicos de mi perfil.",
+        "Mejorar perfil",
+        "Usa el skill expand de CandidatAI para revisar mi perfil entero y proponerme mejoras "
+        "(logros más concretos, huecos, datos que faltan) y, con los enlaces públicos de mi "
+        "perfil, proyectos, skills, logros y certificaciones.",
     ),
     # «Mi perfil» sin perfil: crearlo desde el CV que se sube ahí (`data/documentos/cv/`).
     # Pregunta lo que el CV no dice y antes de escribir, así que solo en terminal.

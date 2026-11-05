@@ -1,7 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
-import { isUserPost, jobView, milestone, mockApi, processView, renderApp, status } from '@/test/utils'
+import { isUserPost, jobView, milestone, mockApi, pickDate, processView, renderApp, status } from '@/test/utils'
 
 describe('Sección Proceso de la ficha', () => {
   it('no aparece antes de aprobar la oferta', async () => {
@@ -66,15 +66,14 @@ describe('Sección Proceso de la ficha', () => {
     const section = await screen.findByRole('region', { name: 'Proceso' })
     const [addMilestone] = await within(section).findAllByRole('button', { name: 'Añadir' }) // hitos, primero
     await userEvent.click(addMilestone)
-    await userEvent.type(within(section).getByLabelText('Fecha y hora (Madrid)'), '2026-10-07T10:30')
+    await pickDate(within(section).getByLabelText('Fecha y hora (Madrid)'), '2026-10-07', '10:30')
     expect(within(section).getByRole('button', { name: 'Guardar hito' })).toBeDisabled()
     expect(within(section).getByText(/cuando la candidatura ya está enviada/)).toBeInTheDocument()
 
     await userEvent.selectOptions(within(section).getByLabelText('Tipo'), 'deadline')
     await userEvent.click(within(section).getByLabelText('Todo el día'))
-    expect(within(section).getByLabelText('Día')).toHaveValue('2026-10-07') // conserva el día
-    await userEvent.clear(within(section).getByLabelText('Día'))
-    await userEvent.type(within(section).getByLabelText('Día'), '2026-10-09')
+    expect(within(section).getByLabelText('Día')).toHaveTextContent('7 oct 2026') // conserva el día
+    await pickDate(within(section).getByLabelText('Día'), '2026-10-09')
     await userEvent.click(within(section).getByRole('button', { name: 'Guardar hito' }))
     await waitFor(() => expect(calls.some(isUserPost)).toBe(true))
     expect(calls.find(isUserPost)?.body).toMatchObject({
@@ -102,7 +101,7 @@ describe('Sección Proceso de la ficha', () => {
     const [addMilestone] = within(section).getAllByRole('button', { name: 'Añadir' })
     await userEvent.click(addMilestone)
     await userEvent.selectOptions(within(section).getByLabelText('Tipo de entrevista'), 'technical')
-    await userEvent.type(within(section).getByLabelText('Fecha y hora (Madrid)'), '2026-10-07T10:30')
+    await pickDate(within(section).getByLabelText('Fecha y hora (Madrid)'), '2026-10-07', '10:30')
     await userEvent.click(within(section).getByRole('button', { name: 'Guardar hito' }))
     await waitFor(() => expect(calls.some((c) => c.path === '/jobs/1/milestones')).toBe(true))
     expect(calls.find((c) => c.path === '/jobs/1/milestones')?.body).toMatchObject({

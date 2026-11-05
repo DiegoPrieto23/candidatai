@@ -30,6 +30,22 @@
   "matching": " que coinciden con «{{q}}»",
   "search": "Buscar por título o empresa",
   "filterStage": "Filtrar por etapa",
+  "filters": {
+    "label": "Filtros de la lista",
+    "mode": "Modalidad",
+    "modeAny": "Cualquier modalidad",
+    "salary": "Salario",
+    "salaryAny": "Con o sin salario",
+    "salary_yes": "Con salario",
+    "salary_no": "Sin salario",
+    "fit": "Encaje",
+    "fitAny": "Cualquier encaje",
+    "fit_none": "Sin encaje",
+    "fit_50": "Encaje de 50 o más",
+    "fit_70": "Encaje de 70 o más",
+    "fit_85": "Encaje de 85 o más",
+    "clear": "Limpiar filtros"
+  },
   "allStages": "Todas",
   "sortLabel": "Ordenar",
   "noResults": {

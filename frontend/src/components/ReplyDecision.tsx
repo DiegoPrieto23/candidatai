@@ -14,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { DatePicker, DateTimePicker, DEFAULT_TIME } from '@/components/ui/date-time-picker'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -350,19 +351,18 @@ function DecisionForm({ item, onDone }: { item: ReplyInboxItem; onDone: (decisio
             <Label htmlFor="reply-starts">
               {kind === 'interview' ? t('dateTime') : t('due')}
             </Label>
-            <Input
-              id="reply-starts"
-              type={allDay ? 'date' : 'datetime-local'}
-              value={allDay ? startsAt.slice(0, 10) : startsAt}
-              onChange={(e) => setStartsAt(e.target.value)}
-            />
+            {allDay ? (
+              <DatePicker id="reply-starts" value={startsAt.slice(0, 10)} onChange={setStartsAt} />
+            ) : (
+              <DateTimePicker id="reply-starts" value={startsAt} onChange={setStartsAt} />
+            )}
             <label className="flex items-center gap-2 text-xs text-muted-foreground">
               <input
                 type="checkbox"
                 checked={allDay}
                 onChange={(e) => {
                   setAllDay(e.target.checked)
-                  setStartsAt((v) => (e.target.checked ? v.slice(0, 10) : v ? `${v.slice(0, 10)}T09:00` : v))
+                  setStartsAt((v) => (e.target.checked ? v.slice(0, 10) : v ? `${v.slice(0, 10)}T${DEFAULT_TIME}` : v))
                 }}
               />
               {t('allDay')}
@@ -371,7 +371,7 @@ function DecisionForm({ item, onDone }: { item: ReplyInboxItem; onDone: (decisio
           {kind === 'interview' && !allDay && (
             <div className="space-y-2">
               <Label htmlFor="reply-ends">{t('end')}</Label>
-              <Input id="reply-ends" type="datetime-local" value={endsAt} onChange={(e) => setEndsAt(e.target.value)} />
+              <DateTimePicker id="reply-ends" value={endsAt} onChange={setEndsAt} />
             </div>
           )}
           <div className="space-y-2">

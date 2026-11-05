@@ -29,6 +29,49 @@ describe('Bandeja', () => {
     expect(within(rows[1]).getByText('Sin encaje')).toBeInTheDocument()
   })
 
+  it('filtra por modalidad, salario y encaje, y los guarda en la URL', async () => {
+    const calls = mockApi({ 'GET /status': status(1, 1), 'GET /jobs': page() })
+    renderApp('/bandeja')
+    await screen.findByRole('table')
+    const last = () => calls.filter((c) => c.path === '/jobs').at(-1)!.search
+    expect(last().get('remote_mode')).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Limpiar filtros' })).not.toBeInTheDocument()
+
+    const pick = async (filter: string, option: string) => {
+      await userEvent.click(screen.getByRole('combobox', { name: filter }))
+      await userEvent.click(await screen.findByRole('option', { name: option }))
+    }
+    await pick('Modalidad', 'Remoto')
+    await waitFor(() => expect(last().get('remote_mode')).toBe('remote'))
+    await pick('Salario', 'Con salario')
+    await waitFor(() => expect(last().get('has_salary')).toBe('true'))
+    await pick('Encaje', 'Encaje de 70 o más')
+    await waitFor(() => expect(last().get('min_score')).toBe('70'))
+    expect(last().get('has_score')).toBeNull()
+    await pick('Encaje', 'Sin encaje')
+    await waitFor(() => expect(last().get('has_score')).toBe('false'))
+    expect(last().get('min_score')).toBeNull()
+    await pick('Salario', 'Sin salario')
+    await waitFor(() => expect(last().get('has_salary')).toBe('false'))
+
+    await userEvent.click(screen.getByRole('button', { name: 'Limpiar filtros' }))
+    await waitFor(() => expect(last().get('remote_mode')).toBeNull())
+    expect(last().get('has_salary')).toBeNull()
+    expect(last().get('has_score')).toBeNull()
+  })
+
+  it('arranca con los filtros de la URL y los ignora si no valen', async () => {
+    const calls = mockApi({ 'GET /status': status(1, 1), 'GET /jobs': page() })
+    renderApp('/bandeja?mode=hybrid&salary=yes&fit=85')
+    await screen.findByRole('table')
+    const search = calls.find((c) => c.path === '/jobs')!.search
+    expect(search.get('remote_mode')).toBe('hybrid')
+    expect(search.get('has_salary')).toBe('true')
+    expect(search.get('min_score')).toBe('85')
+    expect(screen.getByRole('combobox', { name: 'Modalidad' })).toHaveTextContent('Híbrido')
+    expect(screen.getByRole('button', { name: 'Limpiar filtros' })).toBeInTheDocument()
+  })
+
   it('enseña el score del último match', async () => {
     mockApi({ 'GET /status': status(0, 1), 'GET /jobs': page([jobRow({ score: 81 })]) })
     renderApp('/bandeja')

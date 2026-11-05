@@ -90,6 +90,11 @@ export interface JobsParams {
   page: number
   sort?: JobSort
   dir?: SortDirection
+  /** Filtros de la Bandeja: modalidad, con o sin salario, con o sin encaje y encaje mínimo. */
+  remote_mode?: JobsQuery['remote_mode']
+  has_salary?: boolean
+  has_score?: boolean
+  min_score?: number
 }
 
 export function useStatus() {
@@ -117,6 +122,10 @@ export function useJobs(params: JobsParams, options: { refetchInterval?: number 
               sort: params.sort,
               dir: params.dir,
               source_kind: params.source_kind,
+              remote_mode: params.remote_mode,
+              has_salary: params.has_salary,
+              has_score: params.has_score,
+              min_score: params.min_score,
             },
           },
         }),

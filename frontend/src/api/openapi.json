@@ -114,7 +114,7 @@
           "jobs"
         ],
         "summary": "List Jobs",
-        "description": "Bandeja: filtrada por etapa y texto (título o empresa), ordenada por fecha de alta, score\no salario anualizado (por defecto, las más recientes primero; sin el dato, al final).",
+        "description": "Bandeja: filtrada por etapa, texto (título o empresa), modalidad, salario y encaje, ordenada\npor fecha de alta, score o salario anualizado (por defecto, las más recientes primero; sin el\ndato, al final).",
         "operationId": "list_jobs",
         "parameters": [
           {
@@ -219,6 +219,86 @@
               ],
               "title": "Source Kind"
             }
+          },
+          {
+            "name": "remote_mode",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "onsite",
+                    "hybrid",
+                    "remote",
+                    "unknown"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Modalidad de la extracción vigente.",
+              "title": "Remote Mode"
+            },
+            "description": "Modalidad de la extracción vigente."
+          },
+          {
+            "name": "has_salary",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "`true`: indica salario; `false`: no lo indica.",
+              "title": "Has Salary"
+            },
+            "description": "`true`: indica salario; `false`: no lo indica."
+          },
+          {
+            "name": "has_score",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "`true`: con encaje (score); `false`: sin encaje.",
+              "title": "Has Score"
+            },
+            "description": "`true`: con encaje (score); `false`: sin encaje."
+          },
+          {
+            "name": "min_score",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 100,
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Encaje (score) mínimo.",
+              "title": "Min Score"
+            },
+            "description": "Encaje (score) mínimo."
           }
         ],
         "responses": {

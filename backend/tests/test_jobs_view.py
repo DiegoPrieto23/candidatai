@@ -89,6 +89,62 @@ def test_search_jobs_sorts_by_score_salary_and_date(
         jobs.search_jobs(session, direction="up")  # type: ignore[arg-type]
 
 
+def _extract_with(
+    session: Session, job: Job, remote_mode: str, salary: dict[str, Any] | None
+) -> None:
+    session.add(
+        JobExtraction(
+            job_id=job.id, schema_version=1, data={"remote_mode": remote_mode, "salary": salary}
+        )
+    )
+    session.flush()
+
+
+def test_search_jobs_filters_by_mode_salary_and_score(
+    session: Session, make_job: Callable[..., Job]
+) -> None:
+    paid_remote, free_hybrid, onsite_range, unread, unknown = (
+        make_job(f"Oferta {i}") for i in range(5)
+    )
+    yearly = {"min": 40000, "max": 50000, "currency": "EUR", "period": "year"}
+    only_max = {"min": None, "max": 30000, "currency": "EUR", "period": "year"}
+    _extract_with(session, paid_remote, "remote", yearly)
+    _extract_with(session, free_hybrid, "hybrid", None)
+    _extract_with(session, onsite_range, "onsite", only_max)
+    _extract_with(session, unknown, "unknown", None)
+    _score(session, paid_remote, 85)
+    _score(session, onsite_range, 55)
+    _score(session, free_hybrid, 20)
+
+    def ids(**kw: Any) -> set[int]:
+        return {row.id for row in jobs.search_jobs(session, **kw).items}
+
+    # Modalidad: «unknown» incluye lo sin extraer.
+    assert ids(remote_mode="remote") == {paid_remote.id}
+    assert ids(remote_mode="hybrid") == {free_hybrid.id}
+    assert ids(remote_mode="unknown") == {unread.id, unknown.id}
+    # Salario: con mínimo o con máximo cuenta; sin extraer cuenta como sin salario.
+    assert ids(has_salary=True) == {paid_remote.id, onsite_range.id}
+    assert ids(has_salary=False) == {free_hybrid.id, unread.id, unknown.id}
+    # Encaje.
+    assert ids(has_score=False) == {unread.id, unknown.id}
+    assert ids(has_score=True) == {paid_remote.id, onsite_range.id, free_hybrid.id}
+    assert ids(min_score=50) == {paid_remote.id, onsite_range.id}
+    assert ids(min_score=85) == {paid_remote.id}
+    # Combinados, y el total cuenta lo mismo que la página.
+    page = jobs.search_jobs(session, remote_mode="onsite", has_salary=True, min_score=50)
+    assert [row.id for row in page.items] == [onsite_range.id] and page.total == 1
+    assert jobs.search_jobs(session, has_salary=True, has_score=False).total == 0
+    # Usa la extracción vigente: la última manda.
+    _extract_with(session, paid_remote, "hybrid", None)
+    assert ids(remote_mode="remote") == set()
+    assert ids(remote_mode="hybrid") == {paid_remote.id, free_hybrid.id}
+    with pytest.raises(jobs.InvalidQueryError):
+        jobs.search_jobs(session, remote_mode="moon")  # type: ignore[arg-type]
+    with pytest.raises(jobs.InvalidQueryError):
+        jobs.search_jobs(session, min_score=101)
+
+
 def test_get_job_view_not_found(session: Session) -> None:
     with pytest.raises(events.JobNotFoundError):
         jobs.get_job_view(session, 42)

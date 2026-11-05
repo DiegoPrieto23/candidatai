@@ -151,7 +151,7 @@ Los skills de `.agents/skills/` siguen `docs/POLICIES.md` y usan estas convencio
      importante por seguridad: ver `docs/AGENTS_COMPAT.md`.
 - **Preguntas**: si un skill lanzado desde la app necesita una respuesta para seguir, `ask_user` y
   `wait_user_action` la piden en un aviso del portal; si no la tienes o no contestan, pregunta en tu
-  ventana. Las conversaciones (un simulacro, ampliar el perfil) siguen en tu ventana.
+  ventana. Las conversaciones (un simulacro, mejorar el perfil) siguen en tu ventana.
 - **Argumentos**: cuando un skill habla de "los argumentos", son los que el usuario escribió al
   invocarlo (un `job_id`, una plantilla…).
 - **Idioma**: habla con el usuario en el idioma en que te escribe, aunque el skill, los documentos
