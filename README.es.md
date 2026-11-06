@@ -235,6 +235,23 @@ La comparativa completa, función a función y con sus fuentes, está en
 
 ## Rendimiento
 
+Medido el 6 de noviembre de 2026 en un portátil con un AMD Ryzen 7 5700U, 16 GB de RAM y sin tarjeta
+gráfica dedicada, con Windows 11 y con la app ya abierta una vez antes (mediana de tres vueltas, salvo la memoria):
+
+| Qué | Tiempo o tamaño |
+|---|---|
+| Arrancar la app, hasta que responde / hasta que ves Inicio | 4,0 s / 4,6 s |
+| Memoria de la app entera, en reposo / tras recorrer todas las páginas | ≈ 330 MB / ≈ 365 MB |
+| Un CV con otro diseño, a PDF: plantillas de Word (LibreOffice) / plantillas HTML | 11,7 s / 4,7 s |
+| Inicio, primera carga / recarga, con la demo (65 ofertas) | 0,28 s / 0,11 s |
+| Inicio, primera carga / recarga, con 10 veces más ofertas (650) | 0,28 s / 0,11 s |
+| Bandeja de ofertas, primera carga / recarga, con la demo | 0,49 s / 0,31 s |
+| Bandeja de ofertas, primera carga / recarga, con 650 ofertas | 0,53 s / 0,31 s |
+
+No incluye el trabajo de tu agente (leer una oferta, escribir un CV): depende del agente y de su
+modelo. Como referencia, Claude Code tardó 8,5 minutos en leer, valorar y escribir un CV verificado
+para cinco ofertas en la [matriz de agentes](evals/compat/REPORT.md).
+
 El eval de matching (80 casos inventados, sin embeddings): precision **0,88**, recall **0,95**,
 F1 **0,92** con el umbral de score por defecto ([`evals/REPORT.md`](evals/REPORT.md)).
 

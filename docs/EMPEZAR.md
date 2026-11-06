@@ -20,7 +20,7 @@ primer vistazo con la demo, tu perfil y tu primera búsqueda. Para todo lo demá
 
 | | Qué | Para qué |
 |---|---|---|
-| 💻 | **Un ordenador** con Windows 11, macOS o Linux, y conexión a internet | Windows es lo más probado; macOS y Linux son nuevos |
+| 💻 | **Un ordenador** con Windows 11, macOS o Linux, y conexión a internet | Windows 11 es lo más probado, también instalado desde cero; macOS y Linux tienen instalador y pasan los tests, pero aún no se han instalado a mano desde una release |
 | 📦 | **La app** (este proyecto, gratis) | Guarda tus ofertas, tu perfil, tus CVs y tus procesos, aplica las reglas y hace el trabajo automático |
 | 🤖 | **Un agente de IA** | Lee las ofertas, valora el encaje y redacta tus CVs y cartas. **La app nunca llama a una IA por su cuenta**, así que sin agente puedes revisar ofertas y hacer el seguimiento, pero no redactar |
 
@@ -28,12 +28,12 @@ Un **agente de IA** es un programa que habla con un modelo de IA y puede usar he
 las de CandidatAI. Funciona en una ventana de terminal, y los botones de CandidatAI te lo abren con
 la orden ya escrita. Tú eliges cuál, y eso decide cuánto cuesta y adónde van tus datos:
 
-| Agente | Lo que cuesta (octubre de 2026) | Adónde van las ofertas y tu perfil | Qué tal funciona aquí |
+| Agente | Lo que cuesta (comprobado el 6 de noviembre de 2026) | Adónde van las ofertas y tu perfil | Qué tal funciona aquí |
 |---|---|---|---|
 | **Claude Code** | Incluido en Claude Pro, unos 20 US$ al mes, o planes superiores | A Anthropic | **La referencia**: probado de principio a fin |
-| **Codex** | Incluido en ChatGPT Plus, unos 20 US$ al mes, o planes superiores | A OpenAI | Probado con una oferta |
-| **Antigravity CLI** | Incluido en Google AI Pro, unos 20 US$ al mes, o en Google AI Ultra; también gratis con una cuenta de Google, con un cupo semanal | A Google | Extrae y valora bien. Con el plan gratuito, el cupo se acaba al empezar con los CVs; con Google AI Pro, aún sin medir |
-| **OpenCode** o **Qwen Code** con un modelo gratuito en la nube (OpenRouter `:free`) | Gratis, unas 50 peticiones al día | Al proveedor del modelo | Configurado, aún sin medir con un modelo en la nube |
+| **Codex** | Incluido en ChatGPT Plus, unos 20 US$ al mes, o planes superiores; el plan gratuito tiene un acceso limitado | A OpenAI | Probado con una oferta |
+| **Antigravity CLI** | Incluido en Google AI Pro, 21,99 € al mes en España (unos 20 US$), o en Google AI Ultra; también gratis con una cuenta de Google, con un cupo semanal | A Google | Extrae y valora bien. Con el plan gratuito, el cupo se acaba al empezar con los CVs; con Google AI Pro, aún sin medir |
+| **OpenCode** o **Qwen Code** con un modelo gratuito en la nube (OpenRouter `:free`) | Gratis, unas 50 peticiones al día (1000 si alguna vez has comprado 10 US$ de crédito) | Al proveedor del modelo | Configurado, aún sin medir con un modelo en la nube |
 | **Un modelo local** (Ollama o LM Studio) con OpenCode, Codex o Qwen Code | Gratis | **A ningún sitio**: se queda en tu equipo | Pide un ordenador potente: medido con un modelo de 20B en 16 GB de memoria y sin tarjeta gráfica, no terminó la prueba |
 
 Los precios cambian: mira [claude.com/pricing](https://claude.com/pricing),
@@ -125,7 +125,7 @@ tengas ninguno, **Inicio** y **Agente** te avisan con «Necesitas un agente de I
 instalar Claude Code: abrir PowerShell (o Terminal en macOS), pegar la orden que te dan con
 **Copiar**, entrar con tu cuenta escribiendo `claude` y volver a abrir CandidatAI.
 
-Para otro agente, despliega **Tus agentes en detalle**, en **Agente**: lista los que conoce la app,
+Para otro agente, pulsa **Configurar agentes**, en **Agente**: lista los que conoce la app,
 marca los que no tienes como **No instalado** y te da el comando para instalar cada uno, listo para
 copiar.
 Sus páginas oficiales: [Claude Code](https://code.claude.com/docs/en/setup),
@@ -135,7 +135,7 @@ Sus páginas oficiales: [Claude Code](https://code.claude.com/docs/en/setup),
 vez que lo abras, entra con tu cuenta.
 
 De vuelta en **Agente**, arriba dice «Tu agente: Claude Code, listo». Si tienes varios, elige el
-tuyo como agente por defecto en **Tus agentes en detalle**. Desde ese momento, botones como
+tuyo como agente por defecto en **Configurar agentes**. Desde ese momento, botones como
 **Valorar las ofertas nuevas** o **Generar CV** lo abren en una ventana aparte con la orden
 ya escrita: ves lo que hace y lo apruebas. Si no puede abrirlo, el botón te enseña la orden entera,
 con **Copiar**, para que la pegues en tu agente. Su flechita ofrece además **En segundo plano** (sin ventana;
@@ -165,7 +165,7 @@ toca tus datos.
    `CAI_DATA_DIR=data-demo uv run cai start`.
 3. Se abre el navegador con un aviso de **«Modo demo»**. Prueba **Revisión rápida**, en la Bandeja (muévete con
    `J`/`K`, aprueba con `A`, descarta con `D`), abre una oferta, cambia la plantilla del CV y pulsa
-   **Generar**, y mira **Procesos** y **Embudo**.
+   **Generar**, y mira el **Tablero** y el **Embudo**.
 
 Para volver a tus datos, cierra esa ventana y abre CandidatAI como siempre.
 
@@ -184,7 +184,7 @@ perfil aparece solo en **Mi perfil**: sigue en el paso 3.
 Sin agente (o sin CV), pulsa **Empezar a mano** en **Mi perfil**: escribe tu nombre, tu titular, el
 puesto que buscas y los niveles que aceptas, y pulsa **Crear mi perfil**. Se abre el editor para que
 sigas bloque a bloque; lo que no te ha preguntado (modalidad, ubicaciones, foto en el CV) empieza
-abierto a todo y lo cambias en **Buscar ofertas → Qué buscas** y en **Documentos**.
+abierto a todo y lo cambias en **Buscar ofertas → Qué buscas** y en **Mi perfil**.
 
 Si prefieres hacerlo desde tu agente:
 

@@ -571,7 +571,7 @@ Un guardado del perfil que no cambia los datos (comentarios aparte) no crea vers
 ## Ampliaciones de la fase 14
 
 ### `skill_gap_marks`
-Lo que el usuario dijo, en la página «Skills», de una skill que piden las ofertas y su perfil no
+Lo que el usuario dijo, en «Mi perfil → Skills que te faltan», de una skill que piden las ofertas y su perfil no
 cubre (migración 0013). No es estado de una oferta: no lleva evento.
 
 | Columna | Tipo | Notas |

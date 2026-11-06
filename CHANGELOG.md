@@ -119,6 +119,10 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   cómo instalarla y abrirla paso a paso, documentación, cómo funciona, por qué CandidatAI (con la
   comparativa en un desplegable), limitaciones conocidas, rendimiento y seguridad. La comparativa
   con AI Job Search y career-ops está al día (6 de noviembre de 2026).
+- **Guías al día con la app:** la guía de uso, «Empieza aquí» y la lista de funcionalidades
+  describen el menú actual (nueve entradas y sus pestañas), el editor del CV con sus versiones, los
+  avisos de lo que hace tu agente y dónde está cada cosa ahora. Los precios de los agentes están
+  comprobados a 6 de noviembre de 2026 y el README trae cifras de rendimiento medidas.
 - **La candidata de la demo en inglés se llama ahora Olivia Smith.** Si ya tenías la demo cargada,
   `cai demo seed --lang en --force` la vuelve a crear con el nombre nuevo.
 - **Bandeja:** las pestañas de arriba pasan a «Bandeja de ofertas», «Por completar» y «Revisión

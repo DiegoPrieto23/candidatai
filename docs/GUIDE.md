@@ -255,9 +255,9 @@ photo, documents and emails. Keys go in `.env`, also outside git.
 
 | What | Where | How |
 |---|---|---|
-| **Profile** (the source of truth for anything written about you) | `data/profile.yaml` | To start, upload your CV in **My profile** and click **Create my profile from my CV** (or ask your agent): the `update-profile` skill reads it, asks for what's missing and validates it. With no agent, **Start by hand** creates a minimal profile (name, headline, role and levels) and opens the editor. Then **fill it in and refine it in My profile**: experience and achievements, projects, education, skills and languages, STAR stories, what you're looking for and your CV and letter preferences, block by block. Each block saves on its own, keeps your file's formatting and comments, warns you if you changed it outside the app, and can be undone. Every change creates a version. You can still edit the YAML if you prefer |
-| **Your CV as a design** | `data/templates/<id>/` | Upload a CV with the design you like in **Templates → Upload new template** and click **Turn into a template** (it uses the `import-cv-template` skill). Word, PDF, image or HTML (Canva, Google Docs…) |
-| **Photo** | `data/photo.jpg` (or png) | Each template crops it to its shape; it's included or not depending on the job's country |
+| **Profile** (the source of truth for anything written about you) | `data/profile.yaml` | To start, upload your CV in **My profile** and click **Create my profile from my CV** (or ask your agent): the `update-profile` skill reads it, asks for what's missing and validates it. With no agent, **Start by hand** creates a minimal profile (name, headline, role and levels) and opens the editor. Then **fill it in and refine it in My profile**: experience and achievements, projects, education, skills and languages, STAR stories, what you're looking for and your CV and letter preferences, block by block. Each block saves on its own, keeps your file's formatting and comments, warns you if you changed it outside the app, and can be undone. Every change creates a version. With a profile already made, **Import information from a CV** adds what's missing from another CV and shows you the differences before writing. You can still edit the YAML if you prefer |
+| **Your CV as a design** | `data/templates/<id>/` | Upload a CV with the design you like in **My profile → CV templates → Upload new template** and click **Turn into a template** (it uses the `import-cv-template` skill). Word, PDF, image or HTML (Canva, Google Docs…) |
+| **Photo** | `data/photo.jpg` (or png) | Upload, change or remove it in **My profile → About you**. Each template crops it to its shape; it's included or not depending on the job's country |
 | **Context** (style, narrative, criteria) | `data/contexto/*.md` | Edited in **My profile → Documents** (with a preview) or in your editor. Guides the agent, but never backs a CV claim |
 | **Writing samples** (letters, emails or posts of yours) | `data/documentos/estilo/` | Upload them in **My profile → Documents** (.txt, .md, .docx, .pdf). Your agent takes your tone from them, never facts, and reads them as data: if they contain someone else's text with instructions, it doesn't follow them |
 | **Source documents** (old CVs, degrees, references) | `data/documentos/` | Your CV and your LinkedIn export are uploaded in **My profile → Documents**; the rest, in their folder. `update-profile` can read them, confirming before writing |
@@ -332,13 +332,19 @@ recommended models by memory and what leaves your computer in each case:
 Start CandidatAI **outside your agent** (its own window or the shortcut): if the agent runs out of
 memory it may close what it started.
 
-If it's your first time, **How it works**, in the menu, covers the whole journey and who does what.
+If it's your first time, **How it works**, at the bottom of the menu, covers the whole journey and
+who does what.
+
+The menu has nine entries: **Home** and **My profile**; under Search, **Search jobs** and **Job
+inbox**; under Processes, **Board**, **Calendar**, **Replies** and **Funnel**; and **Agent**. The
+rest are tabs inside them: the Inbox has **Quick review** and **To complete**; Search jobs, **What
+you're after** and **Where to search**; and My profile, **Skills you lack** and **CV templates**.
 
 A typical day:
 
 1. Open **Home**: it tells you what's waiting (jobs to review, CVs ready, overdue follow-ups).
 2. Ask your agent for `process-jobs` (it reads and assesses the new ones), or press "Assess new jobs" in the UI.
-3. Approve or discard in **Quick review**, in the Inbox.
+3. Approve or discard in **Quick review**, in the Job inbox.
 4. `generate-cv` for the approved ones and, when you're ready, apply from the job page.
 5. `daily-summary` sums all of that up in one answer.
 
@@ -350,7 +356,7 @@ A typical day:
 | **Target companies** (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee) | In **Search jobs**, the **Where to search → Target companies** tab or `cai sources add --kind greenhouse --name "Acme" --slug acme`. `cai sources discover --file companies.txt` finds the board of each company in a list. How to find the slug: [`FUENTES_OFERTAS.md`](FUENTES_OFERTAS.md#cómo-encontrar-el-slug) (Spanish) |
 | **InfoJobs and Adzuna** | Their keys in `.env` (`CAI_INFOJOBS_CLIENT_ID`/`_SECRET`, `CAI_ADZUNA_APP_ID`/`_KEY`) and a search with `cai sources add` |
 | **Manfred and freehire.me** | No keys: a search on the same page or with `cai sources add --kind manfred --name Manfred --query "data engineer"` (for freehire, also `--country` and `--remote-only`) |
-| **Email alerts** | Create job alerts on LinkedIn, InfoJobs, Indeed… and have them land in a label of your mailbox. In **Where to search → Email alerts → Add mailbox**, connect one or more mailboxes (Gmail, Outlook, Yahoo, iCloud or other IMAP, always read-only) or a folder of `.eml` files; the wizard explains each provider and tests the connection before saving. The password is stored in your `.env` and never comes out again. Step by step in [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md) (Spanish). What comes in shows up in **Alerts** |
+| **Email alerts** | Create job alerts on LinkedIn, InfoJobs, Indeed… and have them land in a label of your mailbox. In **Where to search → Email alerts → Add mailbox**, connect one or more mailboxes (Gmail, Outlook, Yahoo, iCloud or other IMAP, always read-only) or a folder of `.eml` files; the wizard explains each provider and tests the connection before saving. The password is stored in your `.env` and never comes out again. Step by step in [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md) (Spanish). What comes in shows up in the **Job inbox**; the ones that only bring a title and a link wait in its **To complete** tab |
 | **"Send to CandidatAI" button** | In **Where to search → Browser button**: the app guides you through loading `extension/` in Chrome, Edge or Brave and connects it in one click. Instructions: [`extension/README.md`](../extension/README.md) (Spanish) |
 | **Your agent with your browser** | In **Where to search → Job boards**, **Set up with my agent** (`search-jobs configurar`) picks job boards and searches; or add them yourself: on InfoJobs, Tecnoempleo, Indeed and LinkedIn the searches come from the roles and locations in your profile, and each job board is edited with its pencil; `search-jobs` browses them. LinkedIn stays off until you turn it on. When you press **Search now**, a notice says “Searching…” on every page and changes when your agent finishes. On each job board, **problems** are what stopped it being read (a captcha, a login, a changed page) and **notes** are what your agent wrote down without anything failing, like the searches it didn't get to |
 | **LinkedIn's public search** | The **Public search without signing in** switch on the LinkedIn card in **Where to search → Job boards**. Off by default: it goes against LinkedIn's terms and may get your IP blocked for a while |
@@ -373,8 +379,18 @@ The worker runs the automatic sources every day at `connectors.daily_at`
    and `O` to open the job page. A discard can be undone from the notice; an approval, with
    **Reopen** on the job page.
 4. **CV:** `generate-cv 42` writes the content, the code validates and renders it, and the
-   `verifier` role reviews it. On the job page you change template, photo, colour and sections
-   without spending agent time, compare renders and mark the one to send.
+   `verifier` role reviews it. On the job page, the **Application** tab shows the CV at reading size
+   with a panel beside it:
+   - **Ask for changes:** write what to change ("a shorter summary", "drop project X") and your
+     agent (`correct-cv`) changes only that, without inventing anything, and verifies it. If you
+     ask for one page, a version that doesn't fit isn't saved.
+   - **Edit text:** change the summary, bullets or skills yourself, with no agent. The app warns you
+     about anything your profile doesn't back, and that version stays unverified until you press
+     **Verify this version** (`verify-cv`).
+   - **Design:** template, photo, colour and hidden sections, without spending agent time.
+
+   Every correction or edit is a new version: the job page shows what changed, section by
+   section, and **Go back to this version** deletes none.
 5. **Cover letter:** **Write letter** on the job page (or `generate-cover-letter 42`), with the same
    drop-down as **Generate CV**. It follows your general instructions (profile) and the job's (job
    page); in the background, if there are none, it uses the defaults. It matches the CV.
@@ -386,8 +402,10 @@ The worker runs the automatic sources every day at `connectors.daily_at`
 
 ## 9. Tracking, replies and funnel
 
-- **Processes:** a kanban by stage. A card only changes column by recording what
-  happened (reply, interview, test, offer, rejection). Interviews and tests create a dated
+- **Board:** a kanban by stage. A card only changes column by recording what
+  happened (reply, interview, test, offer, rejection), and cards only move to the right: while you
+  drag one, the columns where it can go are highlighted. Reopening a closed job is in **Update
+  status**. Interviews and tests create a dated
   milestone you can export to your calendar (`.ics`). On the job page, **What happened?** also
   records what doesn't change the stage (another reply, another interview, a test, the offer) and
   links to **Log offer** and **Milestones** for the details; **I accept the offer** shows up once
@@ -401,7 +419,10 @@ The worker runs the automatic sources every day at `connectors.daily_at`
   accept or ignore one, a notice says which job it ended up on, with its link; **Ignore** can be undone
   from there. With the keyboard: `J`/`K` to move between emails, `A` to accept, `I` to ignore. If you
   leave it off, note it on the job page or on the board with **Update status**.
-- **Funnel:** conversion by step, source, week and referral, and the discard reasons. Under
+- **Funnel:** **Your funnel** (also on Home) shows how far each application got and where the
+  ones that stopped are; each branch takes you to those applications. Below, one band per step
+  with its figure and two percentages, then conversion by source, week and referral, and the
+  discard reasons. Under
   **More analysis**, folded at the end: "Is the fit right?" (by fit, verdict, template, cover
   letter…), by role, the agent's cost and **Your search in numbers** (or `cai stats story`): your
   figures since the start, with no company names, with a line to share if you want to.
@@ -427,46 +448,56 @@ The worker runs the automatic sources every day at `connectors.daily_at`
   the web, asks you what is missing and leaves a **PDF guide** on the job page (the role, the
   responsibilities broken down, your fit, what you already answered, the company and the sector,
   concepts to review, likely questions with an answer outline, questions to ask, your pitch and the
-  plan), in the company's colour and the interview's language, plus the day-by-day plan.
+  plan), in the company's colour and the interview's language, plus the day-by-day plan. Under the
+  guide, **Ask for changes to the guide** (`correct-interview-guide`) changes only what you ask,
+  keeps the previous version and shows what changed; **Go back to the previous version** rebuilds
+  the PDF with no agent.
 - `mock-interview 42`: one question at a time, with feedback and a better version based on
   your profile.
 - `debrief-interview 42`: you tell it how it went; it saves notes and next steps and proposes new
   STAR stories for your profile (with your OK).
-- **Received offers:** you record them on the job page and compare them in **Processes → Offers
-  received** (shown once you have two or more) against your minimum and the advertised range. `prepare-negotiation 42` prepares
+- **Received offers:** you record them on the job page and compare them in **Offers received**, at
+  the bottom of the **Board** (shown once you have two or more) against your minimum and the advertised range. `prepare-negotiation 42` prepares
   arguments and a script without proposing figures.
 
 ## 11. The agent from the UI
 
 Many pages have buttons that open your agent with the instruction already written:
 
-- **In a terminal:** opens a window with your agent; you see and approve what it does.
-- **"Ready" notice:** after **Generate CV** or **Prepare** (on an interview), in a terminal or in
-  the background, the app checks every 5 seconds, for 30 minutes, whether the CV or the guide is
-  there. As soon as it is, the job page updates by itself and a notice appears at the bottom right
-  with **Open PDF**; if you allowed notifications and are in another window, a system notification
-  too. The PDF doesn't open by itself: browsers don't open tabs without a click from you. The CV
-  is also saved in `data/cvs/` and the guide in `data/entrevistas/`.
-- **In the background** (Claude Code; OpenCode for `process-jobs` and `assess-fit`): for skills
-  that don't ask questions (`process-jobs`, `assess-fit`, `generate-cv`,
-  `generate-cover-letter`). It runs without a
-  window, only with the app tools it needs, and you follow its progress and usage on the **Agent**
-  page. If your agent can't, the menu suggests one that can. Requires `cai worker`.
+- **In a separate window:** opens a window with your agent; you see and approve what it does. If
+  a button can't open your agent, it shows the whole command in a box with **Copy** and says where
+  to paste it.
+- **Notices of what your agent is doing:** what you launch with a button (reading and assessing
+  jobs, reviewing replies, generating or correcting a CV, the cover letter, company research,
+  preparing an interview…) shows up in a notice on every page, with what it has done so far, and
+  changes when it finishes or if it couldn't. You can minimise or close it; closing it doesn't
+  stop your agent. When a CV or an interview guide is ready, the notice offers **Open PDF**; if you
+  allowed notifications and are in another window, a system notification too. The CV is also
+  saved in `data/cvs/` and the guide in `data/entrevistas/`.
+- **Your agent asks you in the app:** if it needs to know something to write a CV, a cover letter
+  or a guide, a notice lets you answer right there. You can also answer in its window. Permission
+  requests and conversations (a mock interview, say) stay in its window.
+- **In the background** (Claude Code; OpenCode only for `process-jobs` and `assess-fit`): for skills that don't ask
+  questions (`process-jobs`, `assess-fit`, `generate-cv`, `correct-cv`, `verify-cv`,
+  `generate-cover-letter`). It runs without a window, only with the app tools it needs, and you
+  follow its progress and usage on the **Agent** page. If your agent can't, the menu suggests one
+  that can. Requires `cai worker`.
   - **Cost:** the **Cost** section of the **Agent** page adds up tokens, time and, if the agent
     reports it, money, by action, agent and model (7 and 30 days), with how much each skill
     weighs; the job page shows what was spent on that job and the funnel, per sent application and
     per interview. What you do in a terminal doesn't count: there the agent doesn't report usage.
-  - **Threshold before spending:** `assess-fit` in the background only assesses jobs with a
-    minimum fit (by default, the “To review” minimum minus 10; change it under **Cost**). **To review**
+  - **Threshold before spending:** in the background, "Assess new jobs" and `assess-fit` only
+    assess jobs with a minimum fit (by default, the “To review” minimum minus 10; change it under **Cost**). **To review**
     says why a job below it stays unassessed.
   - **Several at once:** one at a time by default. With `background_runs.max_parallel` (up to 4)
     in `config/policies.yaml` several run at once, never two for the same job; with
     `per_agent: {opencode: 1}` you cap a local model.
 - **Leave for my next session**: stores the request;
-  `handle-requests` does it when you open your agent.
+  `handle-requests` does it when you open your agent, or press **Handle requests** on the Agent page.
 
-**Which agent opens.** On the “Agent” page, the “Agents” section shows the agents you have, what
-each one can do and how to install the missing ones. There you pick the default agent, each
+**Which agent opens.** The **Agent** page starts with your agent and whether it's ready (or how to
+install one). **Configure agents** opens the agents you have, what each one can do and how to
+install the missing ones. There you pick the default agent, each
 agent's model and, in the “By action” table, a different agent or model for a specific action (e.g.
 OpenCode with a local model to process postings and Claude Code for the CV). Each button's dropdown
 (the ▾ arrow) says which agent it opens with and lets you use another one just this once.

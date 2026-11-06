@@ -77,7 +77,7 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 | `GET /stats/funnel?since=` | Página «Embudo» (fase 10.2): lo mismo que `get_funnel_stats` |
 | `GET /stats/calibration?since=&min_cases=` | Sección «¿Acierta el encaje?» del Embudo (fase 20): lo mismo que `get_calibration` |
 | `POST /jobs/{id}/check-open`, `POST /jobs/{id}/still-open` | ¿Sigue abierta? (fase 16): comprueba ahora (`{force}`; si la última es reciente, la devuelve) y «Sigue abierta» (quita el aviso). Solo desde la UI (`require_ui`); descartar va por `POST /jobs/{id}/events` con el motivo `closed` |
-| `GET /skills/gaps?days=` | Página «Skills» (fase 14): lo mismo que `get_skill_gaps`, más las skills del perfil para «Es lo mismo que…» |
+| `GET /skills/gaps?days=` | «Mi perfil → Skills que te faltan» (fase 14): lo mismo que `get_skill_gaps`, más las skills del perfil para «Es lo mismo que…» |
 | `POST /skills/aliases`, `POST /skills/marks` | «Es lo mismo que…» (`{skill, profile_skill}`: añade el sinónimo a `config/skill_aliases.yaml` y encola `rescore_all`; 422 si ya apunta a otra skill o el perfil ya la cubre) y «La tengo» / «No la tengo» (`{skill, status: have\|gap\|null}`). Solo desde la UI, como `POST /agent/launch` |
 | `GET /jobs/{id}/process` | Ficha de proceso: envío y canal, seguimiento, hitos, contactos, notas y CV enviado o seleccionado |
 | `POST /jobs/{id}/milestones`, `POST /milestones/{id}`, `POST /milestones/{id}/status` | Crear un hito (entrevista y prueba registran su evento; 409 si no es válido en la etapa), editarlo y marcarlo como hecho o cancelado |
@@ -109,7 +109,7 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 - La ficha devuelve el texto original **sin** el envoltorio `<untrusted_job_posting>`: lo lee una
   persona y React lo pinta como texto. El envoltorio es para los agentes (`get_job`).
 - Las llamadas de la UI no se auditan en `mcp_calls`: esa tabla registra a los agentes.
-- El cliente del frontend se genera desde el OpenAPI (`pnpm gen:api`) y se versiona
+- El cliente del frontend se genera desde el OpenAPI (`pnpm gen:api`, que lo lee de `cai openapi`) y se versiona
   (`frontend/src/api/`); un test del backend falla si se queda desfasado.
 
 ## Etapas de una oferta

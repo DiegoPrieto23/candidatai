@@ -13,7 +13,7 @@ foto para enviar por email), y tú marcas cuál se envía.
 
 ## Tu CV como base
 
-El camino habitual es usar **tu propio CV** como plantilla (página Plantillas → «Subir nueva plantilla», fase 08.3;
+El camino habitual es usar **tu propio CV** como plantilla («Mi perfil → Plantillas de CV → Subir nueva plantilla», fase 08.3;
 desde PDF o imagen, fase 08b): lo subes, pulsas «Convertir en plantilla» y tu agente lo convierte **una vez** con el skill
 `import-cv-template` (se abre en una terminal; también puedes copiar la orden) y lo marcas «Usar por defecto». A partir de ahí, cada CV a medida sale con
 tu diseño, tu orden de secciones y una extensión parecida a la del original (la `capacity` se mide
@@ -372,6 +372,21 @@ después de un render, la UI lo marca como «Plantilla cambiada».
 | `carta-simple` | docx | 08c | Solo carta: cabecera sobria sin foto y color de acento libre. Respaldo cuando la plantilla del CV no trae carta |
 
 Desde la 08c, `ats-simple`, `clasica-foto` y `moderna-2col` traen también su `letter.*`.
+
+## Renombrar, eliminar y restaurar
+
+En «Mi perfil → Plantillas de CV», todas las plantillas tienen «Usar por defecto» y «Eliminar»:
+
+- **Las tuyas** (`data/templates/`) se renombran con el lápiz (solo cambia el nombre que se ve: el
+  `id` sigue igual, porque los CVs ya hechos lo usan) y se eliminan de verdad, junto con el CV que
+  subiste para crearlas. Los CVs ya generados conservan su PDF y su Word.
+- **Las de la app** no se renombran ni se borran del disco: una actualización las repondría y son
+  el respaldo de la app. «Eliminar» las quita de tu lista, del selector de cada oferta y de lo que
+  ve tu agente (se apuntan en `data/templates-hidden.json`), y vuelven con «Restaurar», en
+  «Plantillas eliminadas». Un CV ya hecho con una de ellas se puede seguir regenerando.
+- Si la eliminada era tu plantilla por defecto, deja de serlo y la elige la app. Las reglas de
+  `template_rules` no se tocan: si piden una plantilla que falta, la app avisa y sigue con la
+  siguiente opción.
 
 ## Cartas de presentación (fase 08c)
 

@@ -112,7 +112,7 @@ duros no cambian el score. Por debajo de `triage_threshold`, la oferta se ve ate
 
 ### Sinónimos y huecos de skills (fase 14)
 
-El score mide experiencia, no vocabulario. La página «Skills» agrega las skills que piden las
+El score mide experiencia, no vocabulario. «Mi perfil → Skills que te faltan» agrega las skills que piden las
 ofertas (abiertas y aprobadas o enviadas en los últimos 60 días, ajustable) y el perfil no cubre,
 y para cada una el usuario decide:
 
