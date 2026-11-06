@@ -1,6 +1,8 @@
 # Lo que no va en el zip de las releases (`git archive`, fase 23.4): medios del README.
 docs/img/ export-ignore
 docs/video/ export-ignore
+# La web del proyecto (site/) se publica en GitHub Pages; la app no la necesita.
+site/ export-ignore
 
 # Scripts de shell (install.sh, fase 26.2): siempre con LF, también en un checkout de Windows.
 *.sh text eol=lf
@@ -9,6 +11,7 @@ Dockerfile text eol=lf
 # Barra de lenguajes de GitHub (fase 28.2): la documentación no cuenta y lo generado sale plegado
 # en los diffs. No oculta nada del árbol.
 docs/** linguist-documentation
+site/** linguist-documentation
 frontend/src/api/openapi.json linguist-generated
 frontend/src/api/schema.d.ts linguist-generated
 .claude/agents/** linguist-generated

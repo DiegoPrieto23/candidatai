@@ -1,0 +1,6 @@
+Logos de los portales, los ATS y los agentes con los que trabaja CandidatAI. Son marcas de sus dueños y se muestran
+solo para decir con qué funciona la app; CandidatAI no está afiliada a ninguno.
+
+- linkedin, indeed, greenhouse, personio (.svg): Simple Icons (CC0), en el color de cada marca.
+- El resto (.png, 96 px): el icono que publica la web de cada uno.
+- claude-code, codex, antigravity, opencode, qwen (.svg): el set «logos» de Iconify (svg-logos).

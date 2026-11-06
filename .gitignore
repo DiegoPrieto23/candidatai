@@ -34,3 +34,6 @@ Thumbs.db
 # Desarrollo interno: solo en el equipo del mantenedor
 dev/
 CLAUDE.local.md
+
+# Web del proyecto armada con scripts/build_site.py (se publica desde la CI, no se sube).
+_site/
