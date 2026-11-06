@@ -31,7 +31,16 @@ from app.schemas.llm_io import JobExtraction
 from app.schemas.profile import CandidateProfile
 from app.services import events, extractions
 from app.services import profile as profile_service
-from app.services.documents import checks, context, layout, options, pdf, photo, templates
+from app.services.documents import (
+    checks,
+    context,
+    layout,
+    options,
+    pdf,
+    photo,
+    template_visibility,
+    templates,
+)
 from app.services.documents.engines import render_files
 from app.services.documents.options import RenderWarning
 from app.services.pipeline import CV_STAGES, Actor, EventType, InvalidTransitionError, Stage
@@ -884,12 +893,26 @@ def template_info(template: templates.Template) -> TemplateInfo:
     )
 
 
+def _is_hidden(template: templates.Template, hidden: set[str]) -> bool:
+    """Una plantilla de la app que el usuario eliminó de su lista (las suyas nunca se ocultan)."""
+    user_dir = get_settings().user_templates_dir.resolve()
+    return template.meta.id in hidden and template.path.resolve().parent != user_dir
+
+
+def list_hidden_cv_templates() -> list[TemplateInfo]:
+    """Las plantillas de la app que el usuario eliminó de su lista y puede restaurar."""
+    found, _invalid = templates.list_templates()
+    hidden = template_visibility.hidden_ids()
+    return [template_info(t) for t in found if _is_hidden(t, hidden)]
+
+
 def list_cv_templates() -> TemplateList:
     from app.core.policies import get_policies
 
     found, invalid = templates.list_templates()
+    hidden = template_visibility.hidden_ids()
     return TemplateList(
-        templates=[template_info(t) for t in found],
+        templates=[template_info(t) for t in found if not _is_hidden(t, hidden)],
         invalid=invalid,
         fallback_template=get_policies().cv.fallback_template,
     )

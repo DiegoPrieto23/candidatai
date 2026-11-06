@@ -289,7 +289,7 @@ def _effective(client: TestClient, action: str) -> dict[str, Any]:
 def test_default_and_action_preferences_are_used_by_the_next_launch(
     client: TestClient, opened: list[str]
 ) -> None:
-    assert _effective(client, "assess-fit")["agent"]["agent"] == "claude"
+    assert _effective(client, "process-jobs")["agent"]["agent"] == "claude"
     body = {
         "default_agent": "codex",
         "agents": {"codex": {"preset": "local"}},
@@ -297,7 +297,7 @@ def test_default_and_action_preferences_are_used_by_the_next_launch(
     }
     assert _put(client, body).status_code == 200
 
-    effective = _effective(client, "assess-fit")
+    effective = _effective(client, "process-jobs")
     assert effective["agent"]["agent"] == "codex" and effective["agent"]["reason"] == "default"
     assert {a["agent"] for a in effective["alternatives"]} == {
         "claude",
@@ -320,7 +320,7 @@ def test_default_and_action_preferences_are_used_by_the_next_launch(
         "/agent/launch", json={"action": "assess-fit", "agent": "qwen"}, headers=JSON
     )
     assert once.json()["agent"] == "qwen" and "& 'qwen' '-i'" in decoded(opened[-1])
-    assert _effective(client, "assess-fit")["agent"]["agent"] == "codex"
+    assert _effective(client, "process-jobs")["agent"]["agent"] == "codex"
 
     overview = client.get("/agent/agents").json()
     assert overview["preferences"]["default_agent"] == "codex"
@@ -345,7 +345,7 @@ def test_background_uses_the_preferred_agent_and_model(
     _put(client, {"default_agent": "codex"})  # Codex no tiene segundo plano
     refused = client.post("/agent/runs", json={"action": "assess-fit"}, headers=JSON)
     assert refused.status_code == 503 and "headless" in refused.json()["error"]["message"]
-    assert _effective(client, "assess-fit")["background_agent"]["available"] is False
+    assert _effective(client, "process-jobs")["background_agent"]["available"] is False
 
 
 def test_a_missing_capability_cannot_launch_and_says_why(
@@ -372,12 +372,12 @@ def test_cai_agent_still_works_without_preferences(
     monkeypatch.setenv("CAI_AGENT", "qwen")
     get_settings.cache_clear()
     try:
-        effective = _effective(client, "assess-fit")["agent"]
+        effective = _effective(client, "process-jobs")["agent"]
         assert (effective["agent"], effective["reason"]) == ("qwen", "env")
         client.post("/agent/launch", json={"action": "assess-fit"}, headers=JSON)
         assert "& 'qwen'" in decoded(opened[-1])
         _put(client, {"default_agent": "claude"})  # una preferencia gana a CAI_AGENT
-        assert _effective(client, "assess-fit")["agent"]["agent"] == "claude"
+        assert _effective(client, "process-jobs")["agent"]["agent"] == "claude"
     finally:
         get_settings.cache_clear()
 

@@ -2,7 +2,7 @@
 <!--
   Lo primero que ves al abrir CandidatAI: el acceso directo (y `cai start`) abren esta página nada
   más pulsarlo, desde el disco, mientras la app arranca. Pregunta a la app cada medio segundo y,
-  en cuanto responde, pasa a ella. Sin nada externo: tiene que funcionar sin la app en marcha.
+  en cuanto responde, pasa a ella; si tarda demasiado, ofrece reintentar. Sin nada externo: tiene que funcionar sin la app en marcha.
   El logo es el de `favicon.svg`, en línea para no depender de otro fichero.
 -->
 <html lang="es">
@@ -14,27 +14,21 @@
     <style>
       :root {
         color-scheme: light dark;
-        --bg: #f4f8f7;
-        --glow: rgba(15, 118, 110, 0.14);
-        --card: rgba(255, 255, 255, 0.82);
+        --bg: #f6f9f8;
         --fg: #10211f;
-        --muted: #5b6b69;
-        --border: #d3e2df;
+        --muted: #586866;
         --primary: #0f766e;
-        --track: #d9e7e4;
-        --shadow: 0 1px 2px rgba(16, 33, 31, 0.05), 0 24px 48px -24px rgba(15, 118, 110, 0.35);
+        --on-primary: #ffffff;
+        --track: #dbe7e4;
       }
       @media (prefers-color-scheme: dark) {
         :root {
-          --bg: #071312;
-          --glow: rgba(45, 212, 191, 0.12);
-          --card: rgba(16, 32, 30, 0.82);
+          --bg: #0a1514;
           --fg: #ecf6f4;
           --muted: #93a8a5;
-          --border: #1c3431;
           --primary: #2dd4bf;
-          --track: #173230;
-          --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 24px 48px -24px rgba(0, 0, 0, 0.7);
+          --on-primary: #06201d;
+          --track: #1b3330;
         }
       }
       * { box-sizing: border-box; }
@@ -43,99 +37,68 @@
         min-height: 100dvh;
         display: grid;
         place-items: center;
-        padding: 16px;
+        padding: 24px;
         color: var(--fg);
-        background:
-          radial-gradient(60rem 36rem at 50% -10%, var(--glow), transparent 70%),
-          radial-gradient(40rem 28rem at 50% 115%, var(--glow), transparent 70%),
-          var(--bg);
+        background: var(--bg);
         font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
       }
-      main {
-        width: min(440px, 100%);
-        padding: 44px 36px 32px;
-        border: 1px solid var(--border);
-        border-radius: 20px;
-        background: var(--card);
-        box-shadow: var(--shadow);
-        backdrop-filter: blur(8px);
-        text-align: center;
-        animation: rise 0.5s ease-out both;
-      }
-      @keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+      main { width: min(380px, 100%); text-align: center; animation: rise 0.5s ease-out both; }
+      @keyframes rise { from { opacity: 0; transform: translateY(6px); } }
 
-      /* El logo, con un anillo que gira y un latido suave. */
-      .mark { position: relative; width: 112px; height: 112px; margin: 0 auto 26px; }
-      .logo {
-        position: absolute;
-        inset: 22px;
-        width: 68px;
-        height: 68px;
-        border-radius: 16px;
-        box-shadow: 0 10px 28px -8px rgba(15, 118, 110, 0.55);
-        animation: beat 2.4s ease-in-out infinite;
-      }
+      /* El logo con un anillo que gira: el único indicador de espera. */
+      .mark { position: relative; width: 96px; height: 96px; margin: 0 auto 28px; }
+      .logo { position: absolute; inset: 20px; width: 56px; height: 56px; border-radius: 14px; }
       .ring { position: absolute; inset: 0; width: 100%; height: 100%; }
-      .ring circle { fill: none; stroke-width: 3; }
+      .ring circle { fill: none; stroke-width: 2; }
       .ring .track { stroke: var(--track); }
       .ring .arc {
         stroke: var(--primary);
         stroke-linecap: round;
-        stroke-dasharray: 90 250;
+        stroke-dasharray: 72 200;
         transform-origin: 50% 50%;
-        animation: spin 1.5s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
+        animation: spin 1.4s linear infinite;
       }
       @keyframes spin { to { transform: rotate(360deg); } }
-      @keyframes beat { 50% { transform: scale(1.04); } }
 
-      h1 { margin: 0 0 8px; font-size: 21px; font-weight: 650; letter-spacing: -0.01em; }
-      p { margin: 0; color: var(--muted); }
-      #body { max-width: 34ch; margin-inline: auto; }
+      h1 { margin: 0 0 6px; font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+      p { margin: 0 auto; max-width: 36ch; color: var(--muted); }
+      .second { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--track); }
+      h2 { margin: 0 0 4px; font-size: 14px; font-weight: 600; color: var(--muted); }
+      .second p { font-size: 13px; }
 
-      /* Barra de espera sin fin. */
-      .bar {
-        position: relative;
-        height: 4px;
-        margin: 26px auto 0;
-        width: 100%;
-        max-width: 240px;
-        overflow: hidden;
-        border-radius: 99px;
-        background: var(--track);
+      button {
+        margin-top: 22px;
+        padding: 9px 18px;
+        border: 0;
+        border-radius: 10px;
+        background: var(--primary);
+        color: var(--on-primary);
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.15s ease;
       }
-      .bar::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        width: 40%;
-        border-radius: 99px;
-        background: linear-gradient(90deg, transparent, var(--primary), transparent);
-        animation: sweep 1.6s ease-in-out infinite;
-      }
-      @keyframes sweep { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+      button:active { transform: scale(0.98); }
+      button:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+      button[hidden] { display: none; }
 
-      #note { margin-top: 22px; font-size: 13px; }
-      a { color: var(--primary); text-underline-offset: 3px; }
-      a:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; border-radius: 4px; }
-
-      .slow .ring .arc { animation-duration: 2.6s; }
-      .slow .bar::before { animation-duration: 2.8s; }
-      .failed .ring, .failed .bar { display: none; }
-      .failed .logo { animation: none; filter: grayscale(0.85); opacity: 0.8; }
+      .slow .ring .arc { animation-duration: 2.4s; }
+      .failed .ring .arc { animation: none; stroke: transparent; }
+      .failed .logo { filter: grayscale(0.85); opacity: 0.8; }
 
       @media (prefers-reduced-motion: reduce) {
         main { animation: none; }
-        .logo, .ring .arc, .bar::before { animation-duration: 6s; }
-        .logo { animation: none; }
+        .ring .arc { animation: pulse 2.4s ease-in-out infinite; stroke-dasharray: none; }
+        @keyframes pulse { 50% { opacity: 0.25; } }
       }
     </style>
   </head>
   <body>
     <main>
       <div class="mark" aria-hidden="true">
-        <svg class="ring" viewBox="0 0 112 112" focusable="false">
-          <circle class="track" cx="56" cy="56" r="53" />
-          <circle class="arc" cx="56" cy="56" r="53" />
+        <svg class="ring" viewBox="0 0 96 96" focusable="false">
+          <circle class="track" cx="48" cy="48" r="46" />
+          <circle class="arc" cx="48" cy="48" r="46" />
         </svg>
         <svg class="logo" viewBox="0 0 64 64" focusable="false">
           <rect width="64" height="64" rx="14" fill="#0F766E" />
@@ -144,56 +107,72 @@
           <path d="M26.4 21.6 L30.4 25.6 L37.8 18.2" fill="none" stroke="#0F766E" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
       </div>
-      <h1 id="title">Arrancando CandidatAI…</h1>
-      <p id="body" role="status">En unos segundos se abre aquí. La primera vez tras instalar o actualizar tarda algo más.</p>
-      <div class="bar" aria-hidden="true"></div>
-      <p id="note"><a id="link" href="http://127.0.0.1:8000/">Abrir CandidatAI</a></p>
+      <section lang="es">
+        <h1 id="title-es"></h1>
+        <p id="body-es" role="status"></p>
+      </section>
+      <section lang="en" class="second">
+        <h2 id="title-en"></h2>
+        <p id="body-en"></p>
+      </section>
+      <button id="retry" type="button" hidden></button>
     </main>
     <script>
       var target = 'http://127.0.0.1:8000/' // la de siempre: con otro puerto, `cai start` no abre esta página
-      var en = !/^es\b/i.test(navigator.language || '')
-      var text = en
-        ? {
-            title: 'Starting CandidatAI…',
-            body: 'It opens here in a few seconds. The first time after installing or updating takes a bit longer.',
-            slow: 'Still starting: on a slow computer, or the first time after an update, it can take up to a minute.',
-            failedTitle: 'CandidatAI isn’t answering',
-            failed: 'Look at the CandidatAI window: if it shows an error, it says what to do. When it’s running, use the link below.',
-            link: 'Open CandidatAI',
-          }
-        : {
-            title: 'Arrancando CandidatAI…',
-            body: 'En unos segundos se abre aquí. La primera vez tras instalar o actualizar tarda algo más.',
-            slow: 'Sigue arrancando: en un equipo lento, o la primera vez tras actualizar, puede tardar hasta un minuto.',
-            failedTitle: 'CandidatAI no responde',
-            failed: 'Mira la ventana de CandidatAI: si muestra un error, dice qué hacer. Cuando esté en marcha, usa el enlace de abajo.',
-            link: 'Abrir CandidatAI',
-          }
-      document.documentElement.lang = en ? 'en' : 'es'
-      document.getElementById('title').textContent = text.title
-      document.getElementById('body').textContent = text.body
-      var link = document.getElementById('link')
-      link.textContent = text.link
-      link.href = target
+      // Los dos idiomas a la vez: esta página se abre desde el disco y no puede saber cuál usa la app.
+      var text = {
+        es: {
+          title: 'Arrancando CandidatAI',
+          body: 'Se abrirá sola en unos segundos.',
+          slow: 'Está tardando más de lo normal. La primera vez tras instalar o actualizar puede llegar al minuto.',
+          failedTitle: 'CandidatAI no ha arrancado',
+          failed: 'Revisa la ventana de CandidatAI: si muestra un error, indica qué hacer.',
+          retry: 'Reintentar',
+        },
+        en: {
+          title: 'Starting CandidatAI',
+          body: 'It will open on its own in a few seconds.',
+          slow: 'This is taking longer than usual. The first start after installing or updating can take up to a minute.',
+          failedTitle: 'CandidatAI didn’t start',
+          failed: 'Check the CandidatAI window: if it shows an error, it says what to do.',
+          retry: 'Try again',
+        },
+      }
+      var retry = document.getElementById('retry')
+      function show(titleKey, bodyKey) {
+        ;['es', 'en'].forEach(function (l) {
+          document.getElementById('title-' + l).textContent = text[l][titleKey]
+          document.getElementById('body-' + l).textContent = text[l][bodyKey]
+        })
+      }
+      show('title', 'body')
+      retry.textContent = text.es.retry + ' / ' + text.en.retry
 
       var started = Date.now()
       function check() {
         var seconds = (Date.now() - started) / 1000
         if (seconds > 120) {
           document.body.className = 'failed'
-          document.getElementById('title').textContent = text.failedTitle
-          document.getElementById('body').textContent = text.failed
+          show('failedTitle', 'failed')
+          retry.hidden = false
           return
         }
         if (seconds > 20) {
           document.body.className = 'slow'
-          document.getElementById('body').textContent = text.slow
+          show('title', 'slow')
         }
         // `no-cors`: no hace falta leer la respuesta, basta con que la app conteste.
         fetch(target + 'status?_=' + Date.now(), { mode: 'no-cors', cache: 'no-store' })
           .then(function () { location.replace(target) })
           .catch(function () { setTimeout(check, 500) })
       }
+      retry.addEventListener('click', function () {
+        document.body.className = ''
+        show('title', 'body')
+        retry.hidden = true
+        started = Date.now()
+        check()
+      })
       check()
     </script>
   </body>

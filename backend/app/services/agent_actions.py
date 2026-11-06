@@ -37,6 +37,7 @@ ActionId = Literal[
     "review-search",
     "expand",
     "create-profile",
+    "import-profile-from-cv",
     "improve-profile-item",
     "propose-stories",
     "import-cv-template",
@@ -85,6 +86,9 @@ class Action:
     upload: bool = False
     # «Buscar ofertas»: admite elegir plataformas y una búsqueda puntual (`SearchScope`).
     search_scope: bool = False
+    # Sigue existiendo (ejecuciones antiguas, preferencias guardadas), pero la UI no la ofrece: ni
+    # botón, ni fila en «Agente», ni en los niveles de gasto.
+    hidden: bool = False
 
 
 ACTIONS: dict[ActionId, Action] = {
@@ -124,7 +128,8 @@ ACTIONS: dict[ActionId, Action] = {
         ),
         roles=("extractor",),
     ),
-    # Solo la valoración, para las que ya están leídas y esperan en «Por revisar».
+    # Solo la valoración, para las que ya están leídas y esperan en «Por revisar». «Valorar las
+    # ofertas nuevas» ya la hace en su fase 2, así que ya no se ofrece como botón.
     "assess-fit": Action(
         "Valorar las que están por revisar",
         "Usa el skill assess-fit de CandidatAI con las ofertas pendientes de revisar.",
@@ -136,6 +141,7 @@ ACTIONS: dict[ActionId, Action] = {
             "get_extraction",
             "save_fit_assessment",
         ),
+        hidden=True,
     ),
     # La misma valoración para una sola oferta, desde su ficha: la UI solo la ofrece sin valoración
     # o con la valoración desfasada (con los mismos datos, repetirla solo gasta y varía al azar).
@@ -257,6 +263,16 @@ ACTIONS: dict[ActionId, Action] = {
         "Crear mi perfil desde mi CV",
         "Usa el skill update-profile de CandidatAI para crear mi perfil a partir del CV que he "
         "subido a data/documentos/cv/.",
+        skill="update-profile",
+    ),
+    # «Mi perfil» con perfil: traer a él lo que falte de un CV subido. Pregunta antes de escribir,
+    # así que solo en terminal.
+    "import-profile-from-cv": Action(
+        "Importar información desde un CV",
+        "Usa el skill update-profile de CandidatAI para añadir a mi perfil lo que le falte según "
+        "el CV que he subido a data/documentos/cv/ (experiencia, skills, logros, formación…). Ya "
+        "tengo perfil: no cambies ni borres lo que hay sin preguntarme, y enséñame las "
+        "diferencias antes de guardar.",
         skill="update-profile",
     ),
     # «Mi perfil» (fase 25.7b): mejorar un logro o una historia, o proponer historias. Preguntan

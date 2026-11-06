@@ -103,6 +103,18 @@ def set_default_template(
     return default_template.set_default_template(session, template_id)
 
 
+@router.get("/templates/hidden", operation_id="list_hidden_templates")
+def list_hidden_templates() -> list[service.TemplateInfo]:
+    """Las plantillas de la app que eliminaste de tu lista (se pueden restaurar)."""
+    return service.list_hidden_cv_templates()
+
+
+@router.post("/templates/{template_id}/restore", operation_id="restore_template")
+def restore_template(template_id: str) -> template_admin.RestoreTemplateResult:
+    """Devuelve a tu lista una plantilla de la app que habías eliminado."""
+    return template_admin.restore_template(template_id)
+
+
 @router.patch("/templates/{template_id}", operation_id="rename_template")
 def rename_template(
     template_id: str, body: template_admin.RenameTemplateInput
@@ -114,7 +126,8 @@ def rename_template(
 
 @router.delete("/templates/{template_id}", operation_id="delete_template")
 def delete_template(session: SessionDep, template_id: str) -> template_admin.DeleteTemplateResult:
-    """Elimina una plantilla tuya y el CV subido del que salió. Los CVs ya generados se quedan."""
+    """Elimina una plantilla tuya y el CV subido del que salió, o quita de tu lista una de la app
+    (no se borra del programa y se puede restaurar). Los CVs ya generados se quedan."""
     return template_admin.delete_template(session, template_id)
 
 

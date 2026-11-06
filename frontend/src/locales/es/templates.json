@@ -10,12 +10,12 @@
     "pending": "Pendiente de importar",
     "removeAria": "Quitar {{name}}",
     "remove": "Quitar",
-    "title": "Mi CV",
-    "intro": "Sube tu CV y tu agente lo convierte una vez en plantilla. A partir de ahí, cada CV a medida sale con tu diseño y tu orden de secciones, con el texto adaptado a la oferta desde tu perfil.",
-    "file": "Fichero del CV",
+    "title": "Crea una plantilla desde un CV",
+    "intro": "Sube un CV con el diseño que te gusta (el tuyo o uno de ejemplo) y tu agente lo convierte una vez en una plantilla nueva. A partir de ahí, cada CV a medida puede salir con ese diseño y ese orden de secciones, con el texto adaptado a la oferta desde tu perfil. Para rellenar tu perfil con la información de un CV, usa «Importar información desde un CV» en «Mi perfil».",
+    "file": "Fichero con el diseño de la plantilla",
     "uploading": "Subiendo…",
-    "upload": "Subir mi CV",
-    "none": "Aún no has subido tu CV",
+    "upload": "Subir nueva plantilla",
+    "none": "Aún no has subido ningún CV de ejemplo",
     "noneHint": "Mejor en Word (.docx): el diseño se conserva exacto. Máximo 10 MB."
   },
   "recreation": "Recreación",
@@ -76,6 +76,16 @@
     "confirmTitle": "¿Eliminar «{{name}}»?",
     "confirmBody": "Se borran la plantilla y el CV que subiste para crearla. Los CVs ya generados conservan sus PDF y su Word.",
     "confirmDefault": "Es tu plantilla por defecto: a partir de ahora la elegirá la app. Se borran la plantilla y el CV que subiste para crearla. Los CVs ya generados conservan sus PDF y su Word.",
-    "confirmDelete": "Eliminar"
+    "confirmDelete": "Eliminar",
+    "confirmTitleBuiltin": "¿Eliminar «{{name}}» de tu lista?",
+    "confirmBuiltin": "Es una plantilla de la app: se quita de tu lista y de las que elige tu agente, pero no se borra del programa y la puedes restaurar en «Plantillas eliminadas». Los CVs ya generados conservan sus PDF y su Word.",
+    "confirmBuiltinDefault": "Es tu plantilla por defecto: a partir de ahora la elegirá la app. Se quita de tu lista y de las que elige tu agente, pero no se borra del programa y la puedes restaurar en «Plantillas eliminadas»."
+  },
+  "hidden": {
+    "label": "Plantillas eliminadas",
+    "title": "Plantillas eliminadas ({{count}})",
+    "intro": "Plantillas de la app que quitaste de tu lista. Siguen en el programa: restáuralas cuando quieras.",
+    "restore": "Restaurar",
+    "restoreAria": "Restaurar {{name}}"
   }
 }

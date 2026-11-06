@@ -645,8 +645,8 @@ describe('Mi perfil editable', () => {
     })
     renderApp('/perfil')
     expect(await screen.findByRole('heading', { name: 'Empieza por tu CV' })).toBeInTheDocument()
-    // Sin perfil, «Mejorar perfil» todavía no toca.
-    expect(screen.queryByRole('button', { name: 'Mejorar perfil' })).not.toBeInTheDocument()
+    // Sin perfil, «Mejorar el contenido de mi perfil» todavía no toca.
+    expect(screen.queryByRole('button', { name: 'Mejorar el contenido de mi perfil' })).not.toBeInTheDocument()
     // Solo se suben el CV y LinkedIn; el resto de carpetas se rellenan a mano.
     const folders = await screen.findByRole('region', { name: 'Documentos' })
     expect(within(folders).getAllByRole('button', { name: /^Subir/ })).toHaveLength(1)

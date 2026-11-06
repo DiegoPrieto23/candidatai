@@ -10,6 +10,13 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Importar información desde un CV, en Mi perfil:** con tu perfil ya hecho, un botón nuevo sube un CV (PDF
+  o Word) y tu agente añade a tu perfil lo que le falte (experiencia, skills, logros, formación…). Te
+  enseña las diferencias y no cambia ni borra nada sin tu OK.
+- **Eliminar y restaurar plantillas de la app:** en **Plantillas de CV**, todas las plantillas ofrecen
+  **Eliminar**. Las tuyas se borran como hasta ahora; una de la app se quita de tu lista y de las que elige
+  tu agente (no se borra del programa, para que tus CVs ya hechos sigan funcionando) y vuelve desde
+  **Plantillas eliminadas**, con **Restaurar**.
 - **Filtros en la Bandeja:** bajo el buscador, tres desplegables para filtrar la lista: **Modalidad**
   (presencial, híbrido, remoto o sin especificar), **Salario** (con o sin salario) y **Encaje** (sin encaje, o
   de 50, 70 u 85 o más). Se suman a la etapa y a la búsqueda, se guardan en la dirección (se puede recargar o
@@ -108,8 +115,20 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   vez de 23).
 
 ### Cambiado
-- **Mejorar perfil:** el botón «Ampliar perfil desde mis enlaces» de **Mi perfil** pasa a llamarse **Mejorar
-  perfil** y hace más. Tu agente revisa el perfil entero (logros sin cifra, textos de relleno, huecos,
+- **Bandeja:** las pestañas de arriba pasan a «Bandeja de ofertas», «Por completar» y «Revisión
+  rápida» (el orden en que avanzan las ofertas), y en «Por revisar» se quita el botón «Valorar las que
+  están por revisar», porque «Valorar las ofertas nuevas» ya valora también esas ofertas. El botón desaparece también de
+  Inicio, y la acción ya no sale en la página «Agente» ni en los niveles de gasto.
+- **Pantalla de arranque más sobria:** un solo indicador de espera (el anillo alrededor del logo), sin
+  tarjeta ni barra, con un texto más corto y en español e inglés a la vez (la página se abre desde el
+  disco y no puede saber el idioma de la app). Se quita el enlace «Abrir CandidatAI», que llevaba a un
+  error si la app aún no respondía; si tarda más de dos minutos, aparece un botón «Reintentar».
+- **Plantillas: «Subir nueva plantilla» y «Usar por defecto» en todas:** el botón «Subir mi CV» de **Plantillas
+  de CV** pasa a llamarse **Subir nueva plantilla** y su sección explica que sirve para crear una plantilla a
+  partir de un CV de ejemplo, no para rellenar tu perfil (eso es **Importar información desde un CV**, en
+  **Mi perfil**). Todas las plantillas, también las de la app, tienen **Usar por defecto**.
+- **Mejorar el contenido de mi perfil:** el botón «Ampliar perfil desde mis enlaces» de **Mi perfil** pasa a llamarse **Mejorar
+  el contenido de mi perfil** y hace más. Tu agente revisa el perfil entero (logros sin cifra, textos de relleno, huecos,
   incoherencias) y te propone cambios; con tus enlaces públicos (GitHub, portfolio, Kaggle, Scholar) sigue
   proponiendo proyectos, skills, logros y certificaciones, cada uno con su fuente. Solo escribe con tu OK:
   los números y los niveles que falten te los pregunta, nunca los pone. Ya no hace falta que tu agente tenga

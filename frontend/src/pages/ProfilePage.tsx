@@ -26,6 +26,7 @@ import { PhotoBlock } from '@/components/profile/PhotoBlock'
 import { CvPreferencesBlock, LetterPreferencesBlock } from '@/components/profile/PreferencesBlocks'
 import { LanguagesBlock, SkillsBlock } from '@/components/profile/SkillsBlock'
 import { StartByHand } from '@/components/profile/StartByHand'
+import { ImportFromCv } from '@/components/profile/ImportFromCv'
 import { StartFromCv } from '@/components/profile/StartFromCv'
 import { StoriesBlock } from '@/components/profile/StoriesBlock'
 import { errorMessage } from '@/lib/errors'
@@ -466,7 +467,8 @@ export function ProfilePage() {
         {/* Fase 25.2: skill `expand`. Pregunta antes de escribir, así que solo en terminal. Sin
             perfil todavía, lo primero es crearlo desde el CV. */}
         {editable.data?.exists && (
-          <div className="mt-4">
+          <div className="mt-4 flex flex-wrap items-start gap-2">
+            <ImportFromCv />
             <AgentButton action="expand">
               {t('expand')}
             </AgentButton>

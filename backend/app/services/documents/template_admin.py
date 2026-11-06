@@ -1,6 +1,8 @@
-"""Renombrar y eliminar desde la página Plantillas las plantillas propias (`data/templates/`).
+"""Renombrar y eliminar desde la página Plantillas.
 
-Las integradas no se tocan: viven en el repositorio y una actualización las repondría.
+Las propias (`data/templates/`) se renombran y se eliminan de verdad. Las integradas viven en el
+repositorio y una actualización las repondría: eliminar una la quita de tu lista (ver
+`template_visibility`) y se puede restaurar; ni se renombran ni se borran de disco.
 """
 
 import shutil
@@ -13,7 +15,7 @@ from sqlalchemy.orm import Session
 from app.core.config import get_settings
 from app.services import profile as profile_service
 from app.services import profile_editor
-from app.services.documents import templates, uploads
+from app.services.documents import template_visibility, templates, uploads
 from app.services.documents.templates import META_FILE
 
 MAX_NAME = 80
@@ -30,6 +32,13 @@ class RenameTemplateInput(BaseModel):
 class DeleteTemplateResult(BaseModel):
     template_id: str
     default_cleared: bool  # era la plantilla por defecto: ahora la elige la app
+    # Era una plantilla de la app: se quitó de tu lista, no se borró del programa (se restaura).
+    hidden: bool = False
+
+
+class RestoreTemplateResult(BaseModel):
+    template_id: str
+    restored: bool  # `False`: no estaba eliminada
 
 
 def is_user_template(template: templates.Template) -> bool:
@@ -90,9 +99,27 @@ def _clear_default(session: Session, template_id: str, path: Path | None = None)
     return True
 
 
+def restore_template(template_id: str) -> RestoreTemplateResult:
+    """Devuelve a la lista una plantilla de la app que habías eliminado."""
+    return RestoreTemplateResult(
+        template_id=template_id, restored=template_visibility.restore(template_id)
+    )
+
+
 def delete_template(session: Session, template_id: str) -> DeleteTemplateResult:
     """Elimina una plantilla propia y el CV subido del que salió (si no, volvería a salir como
-    «pendiente de convertir»). Los CVs ya generados conservan sus PDF y su Word."""
+    «pendiente de convertir»). Los CVs ya generados conservan sus PDF y su Word. Una plantilla de
+    la app se quita de tu lista y se puede restaurar."""
+    try:
+        existing = templates.get(template_id)
+    except templates.TemplateNotFoundError:
+        existing = None
+    if existing is not None and not is_user_template(existing):
+        default_cleared = _clear_default(session, template_id)
+        template_visibility.hide(template_id)
+        return DeleteTemplateResult(
+            template_id=template_id, default_cleared=default_cleared, hidden=True
+        )
     folder = _own_folder(template_id)
     source_uploads = [
         upload.name for upload in uploads.list_uploads() if upload.template_id == template_id

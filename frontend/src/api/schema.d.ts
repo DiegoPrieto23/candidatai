@@ -404,6 +404,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/templates/hidden": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Hidden Templates
+         * @description Las plantillas de la app que eliminaste de tu lista (se pueden restaurar).
+         */
+        get: operations["list_hidden_templates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/templates/{template_id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Restore Template
+         * @description Devuelve a tu lista una plantilla de la app que habías eliminado.
+         */
+        post: operations["restore_template"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/templates/{template_id}": {
         parameters: {
             query?: never;
@@ -416,7 +456,8 @@ export interface paths {
         post?: never;
         /**
          * Delete Template
-         * @description Elimina una plantilla tuya y el CV subido del que salió. Los CVs ya generados se quedan.
+         * @description Elimina una plantilla tuya y el CV subido del que salió, o quita de tu lista una de la app
+         *     (no se borra del programa y se puede restaurar). Los CVs ya generados se quedan.
          */
         delete: operations["delete_template"];
         options?: never;
@@ -3263,7 +3304,7 @@ export interface components {
              * Id
              * @enum {string}
              */
-            id: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "improve-profile-item" | "propose-stories" | "import-cv-template";
+            id: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "propose-stories" | "import-cv-template";
             /** Label */
             label: string;
             /** Needs Job */
@@ -3521,7 +3562,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "improve-profile-item" | "propose-stories" | "import-cv-template";
+            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "propose-stories" | "import-cv-template";
             /** Label */
             label: string;
             /** Job Id */
@@ -3562,7 +3603,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "improve-profile-item" | "propose-stories" | "import-cv-template";
+            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "propose-stories" | "import-cv-template";
             /** Label */
             label: string;
             /** Job Id */
@@ -3635,7 +3676,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "improve-profile-item" | "propose-stories" | "import-cv-template";
+            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "propose-stories" | "import-cv-template";
             /** Job Id */
             job_id: number | null;
             /** Milestone Id */
@@ -4895,6 +4936,11 @@ export interface components {
             template_id: string;
             /** Default Cleared */
             default_cleared: boolean;
+            /**
+             * Hidden
+             * @default false
+             */
+            hidden: boolean;
         };
         /** DocumentFolderInfo */
         DocumentFolderInfo: {
@@ -5021,7 +5067,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "improve-profile-item" | "propose-stories" | "import-cv-template";
+            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "propose-stories" | "import-cv-template";
             /** Label */
             label: string;
             terminal: components["schemas"]["Resolution"];
@@ -5880,7 +5926,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "improve-profile-item" | "propose-stories" | "import-cv-template";
+            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "propose-stories" | "import-cv-template";
             /** Job Id */
             job_id?: number | null;
             /** Milestone Id */
@@ -7680,7 +7726,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "improve-profile-item" | "propose-stories" | "import-cv-template";
+            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "propose-stories" | "import-cv-template";
             /** Job Id */
             job_id?: number | null;
             /** Milestone Id */
@@ -7801,6 +7847,13 @@ export interface components {
             awaiting_reply: number;
             /** Closed Without Reply */
             closed_without_reply: number;
+        };
+        /** RestoreTemplateResult */
+        RestoreTemplateResult: {
+            /** Template Id */
+            template_id: string;
+            /** Restored */
+            restored: boolean;
         };
         /** Salary */
         Salary: {
@@ -8607,7 +8660,7 @@ export interface components {
         /** TiersView */
         TiersView: {
             /** Actions */
-            actions: ("search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "improve-profile-item" | "propose-stories" | "import-cv-template")[];
+            actions: ("search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "propose-stories" | "import-cv-template")[];
             /** Tiers */
             tiers: components["schemas"]["TierView"][];
             /** Can Undo */
@@ -10617,6 +10670,192 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DefaultTemplateResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_hidden_templates: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TemplateInfo"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    restore_template: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                template_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RestoreTemplateResult"];
                 };
             };
             /** @description Unauthorized */

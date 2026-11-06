@@ -47,7 +47,14 @@
   "documents": "Documents",
   "documentsIntro": "Your source documents. Your agent can read them to create or expand your profile, always asking you before writing.",
   "openDocuments": "Open the documents folder",
-  "expand": "Improve profile",
+  "expand": "Improve my profile content",
+  "import": {
+    "button": "Import information from a CV",
+    "title": "Import information from a CV",
+    "intro": "Upload a CV (PDF or Word) and your agent adds to your profile what it is missing: experience, skills, achievements, education… It shows you the differences and saves nothing without your OK.",
+    "stepUpload": "Upload the CV",
+    "stepAgent": "Your agent reads it and compares it with your profile"
+  },
   "title": "My profile",
   "intro": "Everything a CV, letter or answer says comes from here. Each block is saved separately and can be undone.",
   "contextIntroHere": "Guides your agent: the tone of your CVs and letters, a job's risks and interview prep. <strong>It never backs a fact</strong>: whatever a CV or letter says must be in your profile. Create and edit them right here (each comes with a few guiding questions) or ask your agent.",

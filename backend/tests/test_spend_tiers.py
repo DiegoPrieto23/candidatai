@@ -76,7 +76,7 @@ def test_proposal_uses_local_preset(client: TestClient, installed: Any) -> None:
 def test_proposal_without_local_agent(client: TestClient, installed: Any) -> None:
     installed("claude")
     economy = _tiers(client)["economy"]
-    assert economy["actions"]["assess-fit"] == _pref("claude", "haiku")
+    assert economy["actions"]["assess-fit-job"] == _pref("claude", "haiku")
     assert economy["notes"] == ["no_local_agent"]
 
 
@@ -85,7 +85,7 @@ def test_apply_and_undo(client: TestClient) -> None:
         default_agent="claude",
         actions={
             "research-company": ActionPref(agent="claude", model="opus"),
-            "assess-fit": ActionPref(agent="codex"),
+            "assess-fit-job": ActionPref(agent="codex"),
         },
     )
     assert (
@@ -101,7 +101,7 @@ def test_apply_and_undo(client: TestClient) -> None:
         prefs = agent_prefs.get_preferences(session)
     assert prefs.default_agent == "claude"  # no se toca
     assert prefs.actions["research-company"].model == "opus"  # fuera del nivel: no se toca
-    assert prefs.actions["assess-fit"] == ActionPref(agent="claude", model="haiku")
+    assert prefs.actions["assess-fit-job"] == ActionPref(agent="claude", model="haiku")
     assert prefs.actions["generate-cv"] == ActionPref(agent="claude")
     # El agente efectivo de la acción cambia.
     effective = {e["action"]: e for e in client.get("/agent/agents").json()["effective"]}
@@ -145,7 +145,9 @@ def test_economy_needs_its_local_model(client: TestClient) -> None:
     assert applied.status_code == 200, applied.text
     with session_scope() as session:
         prefs = agent_prefs.get_preferences(session)
-    assert prefs.actions["assess-fit"] == ActionPref(agent="opencode", model="ollama/gpt-oss:20b")
+    assert prefs.actions["assess-fit-job"] == ActionPref(
+        agent="opencode", model="ollama/gpt-oss:20b"
+    )
 
 
 def test_edit_and_reset(client: TestClient) -> None:
@@ -155,7 +157,7 @@ def test_edit_and_reset(client: TestClient) -> None:
     economy = {t["id"]: t for t in saved.json()["tiers"]}["economy"]
     assert economy["custom"] and economy["notes"] == []
     assert economy["actions"]["process-jobs"]["model"] == "ollama/gpt-oss:20b"
-    assert economy["actions"]["assess-fit"] == _pref("opencode")  # el resto, la propuesta
+    assert economy["actions"]["assess-fit-job"] == _pref("opencode")  # el resto, la propuesta
     reset = client.post("/agent/tiers/economy/reset", json={}, headers=JSON)
     assert not {t["id"]: t for t in reset.json()["tiers"]}["economy"]["custom"]
 

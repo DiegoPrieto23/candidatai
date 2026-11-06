@@ -2399,6 +2399,225 @@
         }
       }
     },
+    "/templates/hidden": {
+      "get": {
+        "tags": [
+          "cv"
+        ],
+        "summary": "List Hidden Templates",
+        "description": "Las plantillas de la app que eliminaste de tu lista (se pueden restaurar).",
+        "operationId": "list_hidden_templates",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TemplateInfo"
+                  },
+                  "type": "array",
+                  "title": "Response List Hidden Templates"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/templates/{template_id}/restore": {
+      "post": {
+        "tags": [
+          "cv"
+        ],
+        "summary": "Restore Template",
+        "description": "Devuelve a tu lista una plantilla de la app que habías eliminado.",
+        "operationId": "restore_template",
+        "parameters": [
+          {
+            "name": "template_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Template Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestoreTemplateResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
     "/templates/{template_id}": {
       "patch": {
         "tags": [
@@ -2526,7 +2745,7 @@
           "cv"
         ],
         "summary": "Delete Template",
-        "description": "Elimina una plantilla tuya y el CV subido del que salió. Los CVs ya generados se quedan.",
+        "description": "Elimina una plantilla tuya y el CV subido del que salió, o quita de tu lista una de la app\n(no se borra del programa y se puede restaurar). Los CVs ya generados se quedan.",
         "operationId": "delete_template",
         "parameters": [
           {
@@ -20316,6 +20535,7 @@
               "review-search",
               "expand",
               "create-profile",
+              "import-profile-from-cv",
               "improve-profile-item",
               "propose-stories",
               "import-cv-template"
@@ -21078,6 +21298,7 @@
               "review-search",
               "expand",
               "create-profile",
+              "import-profile-from-cv",
               "improve-profile-item",
               "propose-stories",
               "import-cv-template"
@@ -21236,6 +21457,7 @@
               "review-search",
               "expand",
               "create-profile",
+              "import-profile-from-cv",
               "improve-profile-item",
               "propose-stories",
               "import-cv-template"
@@ -21531,6 +21753,7 @@
               "review-search",
               "expand",
               "create-profile",
+              "import-profile-from-cv",
               "improve-profile-item",
               "propose-stories",
               "import-cv-template"
@@ -25142,6 +25365,11 @@
           "default_cleared": {
             "type": "boolean",
             "title": "Default Cleared"
+          },
+          "hidden": {
+            "type": "boolean",
+            "title": "Hidden",
+            "default": false
           }
         },
         "type": "object",
@@ -25479,6 +25707,7 @@
               "review-search",
               "expand",
               "create-profile",
+              "import-profile-from-cv",
               "improve-profile-item",
               "propose-stories",
               "import-cv-template"
@@ -28189,6 +28418,7 @@
               "review-search",
               "expand",
               "create-profile",
+              "import-profile-from-cv",
               "improve-profile-item",
               "propose-stories",
               "import-cv-template"
@@ -31649,6 +31879,7 @@
                 "review-search",
                 "expand",
                 "create-profile",
+                "import-profile-from-cv",
                 "improve-profile-item",
                 "propose-stories",
                 "import-cv-template"
@@ -33628,6 +33859,7 @@
               "review-search",
               "expand",
               "create-profile",
+              "import-profile-from-cv",
               "improve-profile-item",
               "propose-stories",
               "import-cv-template"
@@ -34041,6 +34273,24 @@
           "closed_without_reply"
         ],
         "title": "ResponseTime"
+      },
+      "RestoreTemplateResult": {
+        "properties": {
+          "template_id": {
+            "type": "string",
+            "title": "Template Id"
+          },
+          "restored": {
+            "type": "boolean",
+            "title": "Restored"
+          }
+        },
+        "type": "object",
+        "required": [
+          "template_id",
+          "restored"
+        ],
+        "title": "RestoreTemplateResult"
       },
       "Salary": {
         "properties": {
@@ -36290,6 +36540,7 @@
                 "review-search",
                 "expand",
                 "create-profile",
+                "import-profile-from-cv",
                 "improve-profile-item",
                 "propose-stories",
                 "import-cv-template"
@@ -36355,6 +36606,7 @@
                 "review-search",
                 "expand",
                 "create-profile",
+                "import-profile-from-cv",
                 "improve-profile-item",
                 "propose-stories",
                 "import-cv-template"
@@ -36428,6 +36680,7 @@
                 "review-search",
                 "expand",
                 "create-profile",
+                "import-profile-from-cv",
                 "improve-profile-item",
                 "propose-stories",
                 "import-cv-template"

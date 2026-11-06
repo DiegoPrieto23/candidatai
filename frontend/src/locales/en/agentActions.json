@@ -25,6 +25,7 @@
   "handle-requests": "Shows you the tasks you left with «Leave for my next session», does the ones you choose and closes each one when done.",
   "review-search": "Retrospective: checks whether the fit is right and which sources, templates and habits work, and suggests what to change. It doesn't touch weights or filters: that's your call.",
   "create-profile": "Reads the CV you uploaded and fills in your profile section by section. It asks about what the CV doesn't say and saves nothing without your OK.",
+  "import-profile-from-cv": "Reads the CV you uploaded and suggests adding to your profile what it is missing (experience, skills, achievements, education…). It shows you the differences and changes or deletes nothing without your OK.",
   "expand": "Reviews your whole profile and suggests improvements: more concrete achievements, gaps and missing details, plus projects, skills and certifications from your public links (GitHub, portfolio…), with their source. Writes only with your OK and never makes anything up.",
   "improve-profile-item": "Suggests a clearer, more concrete version of this item of your profile, without making anything up. It shows you the change and asks before saving it.",
   "propose-stories": "Suggests interview stories (situation, task, action, result) from your experience and achievements. Adds them to your profile only with your OK.",

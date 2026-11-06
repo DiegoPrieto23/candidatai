@@ -32,18 +32,18 @@ export function InboxHubPage() {
         tabs={[
           { to: '/bandeja', label: t('inbox'), icon: TrayIcon, end: true },
           {
-            to: '/bandeja/revision',
-            label: t('review'),
-            icon: ListChecksIcon,
-            count: toReview,
-            countLabel: t('withCount', { label: t('review'), count: toReview }),
-          },
-          {
             to: '/bandeja/por-completar',
             label: t('complete'),
             icon: LightningIcon,
             count: toComplete,
             countLabel: t('withCount', { label: t('complete'), count: toComplete }),
+          },
+          {
+            to: '/bandeja/revision',
+            label: t('review'),
+            icon: ListChecksIcon,
+            count: toReview,
+            countLabel: t('withCount', { label: t('review'), count: toReview }),
           },
         ]}
       />

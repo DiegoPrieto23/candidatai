@@ -1,11 +1,22 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { CheckIcon, ImageIcon, PencilSimpleIcon, StarIcon, TrashIcon, WarningIcon, XIcon } from '@phosphor-icons/react'
+import {
+  ArrowCounterClockwiseIcon,
+  CheckIcon,
+  ImageIcon,
+  PencilSimpleIcon,
+  StarIcon,
+  TrashIcon,
+  WarningIcon,
+  XIcon,
+} from '@phosphor-icons/react'
 import { fileUrls, type TemplateInfo } from '@/api/client'
 import {
   useDefaultTemplate,
   useDeleteTemplate,
+  useHiddenTemplates,
   useRenameTemplate,
+  useRestoreTemplate,
   useSetDefaultTemplate,
   useTemplates,
 } from '@/api/queries'
@@ -140,7 +151,10 @@ function TemplateName({ template }: { template: TemplateInfo }) {
   )
 }
 
-/** Usar por defecto y eliminar: solo en las tuyas. */
+/**
+ * Usar por defecto y eliminar, en todas. Eliminar una tuya la borra; una de la app se quita de tu lista
+ * (no se borra del programa) y se restaura desde «Plantillas eliminadas».
+ */
 function TemplateActions({ template, isDefault }: { template: TemplateInfo; isDefault: boolean }) {
   const { t } = useTranslation('templates', { keyPrefix: 'actions' })
   const text = useTemplateText()
@@ -182,8 +196,16 @@ function TemplateActions({ template, isDefault }: { template: TemplateInfo; isDe
       <Dialog open={confirming} onOpenChange={setConfirming}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t('confirmTitle', { name })}</DialogTitle>
-            <DialogDescription>{isDefault ? t('confirmDefault') : t('confirmBody')}</DialogDescription>
+            <DialogTitle>{t(template.editable ? 'confirmTitle' : 'confirmTitleBuiltin', { name })}</DialogTitle>
+            <DialogDescription>
+              {template.editable
+                ? isDefault
+                  ? t('confirmDefault')
+                  : t('confirmBody')
+                : isDefault
+                  ? t('confirmBuiltinDefault')
+                  : t('confirmBuiltin')}
+            </DialogDescription>
           </DialogHeader>
           {remove.isError && (
             <p role="alert" className="text-sm text-destructive">
@@ -249,17 +271,49 @@ function TemplateCard({ template, isDefault }: { template: TemplateInfo; isDefau
           {template.accent_colors && <Tag>{t('colors', { count: template.accent_colors.choices.length })}</Tag>}
           <Tag>{template.from_user_cv ? t('yourCv') : template.origin === 'builtin' ? t('builtin') : t('yours')}</Tag>
         </ul>
-        {template.editable ? (
-          <TemplateActions template={template} isDefault={isDefault} />
-        ) : (
-          isDefault && (
-            <span className="inline-flex items-center gap-1 text-xs font-medium text-primary">
-              <StarIcon weight="fill" /> {t('actions.default')}
-            </span>
-          )
-        )}
+        <TemplateActions template={template} isDefault={isDefault} />
       </div>
     </article>
+  )
+}
+
+/** Las de la app que eliminaste de tu lista, con su botón para restaurarlas. */
+function HiddenTemplates() {
+  const { t } = useTranslation('templates')
+  const text = useTemplateText()
+  const hidden = useHiddenTemplates()
+  const restore = useRestoreTemplate()
+  const items = hidden.data ?? []
+  if (items.length === 0) return null
+  return (
+    <section aria-label={t('hidden.label')} className="rounded-xl border border-dashed p-5">
+      <h2 className="font-semibold tracking-tight">{t('hidden.title', { count: items.length })}</h2>
+      <p className="mt-1 text-sm text-muted-foreground">{t('hidden.intro')}</p>
+      <ul className="mt-3 divide-y text-sm">
+        {items.map((template) => {
+          const name = text.name(template)
+          return (
+            <li key={template.id} className="flex items-center justify-between gap-3 py-2">
+              <span className="min-w-0 truncate font-medium">{name}</span>
+              <Button
+                size="xs"
+                variant="outline"
+                aria-label={t('hidden.restoreAria', { name })}
+                disabled={restore.isPending}
+                onClick={() => restore.mutate(template.id)}
+              >
+                <ArrowCounterClockwiseIcon /> {t('hidden.restore')}
+              </Button>
+            </li>
+          )
+        })}
+      </ul>
+      {restore.isError && (
+        <p role="alert" className="mt-2 text-sm text-destructive">
+          {errorMessage(restore.error)}
+        </p>
+      )}
+    </section>
   )
 }
 
@@ -295,6 +349,7 @@ export function TemplatesPage() {
               <TemplateCard key={template.id} template={template} isDefault={defaultTemplate.data?.template_id === template.id} />
             ))}
           </div>
+          <HiddenTemplates />
           {data.invalid.length > 0 && (
             <section
               aria-label={t('invalidLabel')}

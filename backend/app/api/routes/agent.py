@@ -99,6 +99,8 @@ def get_agent_launcher(session: SessionDep) -> AgentStatus:
     ctx = agent_launch.Context(session)
     actions = []
     for action_id, spec in agent_launch.ACTIONS.items():
+        if spec.hidden:
+            continue
         _, res = agent_launch.choose(session, action_id, ctx=ctx)
         others = [name for name in ctx.by_name if name != res.agent]
         background = None

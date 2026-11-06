@@ -174,8 +174,7 @@ ofertas marcadas con riesgo antes de aprobarlas.
 ejecución. La sesión principal sigue sin leer el texto de ninguna oferta, pero ahora lleva también
 las herramientas de la valoración (`get_profile`, `get_context`, `get_match`, `get_extraction`,
 `save_fit_assessment`). Con un agente de nivel C, sin subagente que aísle la lectura, conviven con
-el texto no confiable en la misma sesión: usa una sesión dedicada, o lanza `assess-fit` aparte
-(«Valorar las que están por revisar»), que no lee texto de ofertas.
+el texto no confiable en la misma sesión: usa una sesión dedicada.
 
 El rol `classifier` (fase 15, skill `review-replies`) lee correos de empresas, igual de no
 confiables, y tiene el mismo aislamiento por nivel: en Claude Code solo `get_reply` y
@@ -370,18 +369,18 @@ texto y los comandos para que lo hagas tú. Las búsquedas de plataformas van po
 prueba manual con Claude Code.
 
 `expand` (fase 25.2) revisa el perfil y añade o mejora lo que aceptas, de la misma forma, y con tus
-enlaces públicos propone además proyectos, skills y certificaciones. Su botón es «Mejorar perfil»
+enlaces públicos propone además proyectos, skills y certificaciones. Su botón es «Mejorar el contenido de mi perfil»
 («Mi perfil»). Leer los enlaces necesita web (lectura de páginas), pero la revisión no: con un agente
 sin `web` el botón sigue activo y el skill se salta los enlaces. Lee READMEs de terceros, así que con
 un agente de nivel C avisa de usar una sesión dedicada solo a eso.
 
 ### Botones «en tu agente» de la UI
-«Buscar ofertas», «Valorar las ofertas nuevas», «Valorar las que están por revisar» (y «Valorar esta oferta» de una oferta),
+«Buscar ofertas», «Valorar las ofertas nuevas» (y «Valorar esta oferta» de una oferta),
 «Generar CV», en la página Skills (fase 14) «Añadir al perfil las que tengo» (`update-profile`)
 y «Plan de formación», y desde la fase 15 «Revisar respuestas» (Inicio y «Respuestas»), «Redactar borradores» (Procesos) y
 «Redactar seguimiento» (ficha de una candidatura enviada), desde la fase 16 «Ampliar búsqueda»
 («Dónde buscar»), desde la 17 los de las entrevistas y desde la 18 «Redactar mensaje» e «Investigar
-empresa» (ficha), desde la 25.2 «Mejorar perfil» y «Crear mi perfil desde mi CV»
+empresa» (ficha), desde la 25.2 «Mejorar el contenido de mi perfil» y «Crear mi perfil desde mi CV» (y, con perfil, «Importar información desde un CV», que usa `update-profile`)
 («Mi perfil», sin perfil todavía), abren tu
 agente en una terminal (Windows Terminal o PowerShell) con la orden del skill ya escrita; tú
 ves, contestas y apruebas lo que haga. Qué programa se abre lo dice `launch` de cada agente en el

@@ -40,7 +40,6 @@ TIER_LABELS: dict[Tier, str] = {
 # local o pequeño puede con ellas, y el esquema estricto lo comprueba.
 CLOSED_ACTIONS: tuple[ActionId, ...] = (
     "process-jobs",
-    "assess-fit",
     "assess-fit-job",
     "review-replies",
 )
