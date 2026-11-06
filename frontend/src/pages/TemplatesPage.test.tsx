@@ -91,8 +91,8 @@ describe('Galería de plantillas', () => {
         'GET /templates/default': { template_id: null },
       })
       renderApp('/plantillas')
-      expect(await screen.findByText('Aún no has subido tu CV')).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /Subir mi CV/ })).toBeInTheDocument()
+      expect(await screen.findByText('Aún no has subido ningún CV de ejemplo')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /Subir nueva plantilla/ })).toBeInTheDocument()
     })
 
     it('sube el fichero a la API', async () => {
@@ -118,11 +118,11 @@ describe('Galería de plantillas', () => {
         'POST /uploads': pending,
       })
       renderApp('/plantillas')
-      await screen.findByText('Aún no has subido tu CV')
+      await screen.findByText('Aún no has subido ningún CV de ejemplo')
       const file = new File(['docx'], 'Mi CV.docx', {
         type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       })
-      await userEvent.upload(screen.getByLabelText('Fichero del CV'), file)
+      await userEvent.upload(screen.getByLabelText('Fichero con el diseño de la plantilla'), file)
       await waitFor(() => expect(calls.some((c) => c.method === 'POST' && c.path === '/uploads')).toBe(true))
       const upload = calls.find((c) => c.method === 'POST' && c.path === '/uploads')
       expect(String(upload?.body)).toContain('Mi CV.docx')
@@ -226,7 +226,7 @@ describe('Galería de plantillas', () => {
       expect(within(rules).getByText(/ATS workday/)).toBeInTheDocument()
     })
 
-    it('una integrada no se puede renombrar ni eliminar', async () => {
+    it('una de la app no se renombra, pero se puede usar por defecto', async () => {
       mockApi({
         'GET /status': status(),
         'GET /templates': templateList({ templates: [templateInfo()] }),
@@ -235,9 +235,63 @@ describe('Galería de plantillas', () => {
       })
       renderApp('/plantillas')
       const card = await screen.findByRole('article', { name: 'ATS sencilla' })
-      expect(within(card).queryByRole('button', { name: /Eliminar/ })).not.toBeInTheDocument()
       expect(within(card).queryByRole('button', { name: /Cambiar el nombre/ })).not.toBeInTheDocument()
       expect(await within(card).findByText('Plantilla por defecto')).toBeInTheDocument()
+      // Y las demás, también las de la app, ofrecen «Usar por defecto» y «Eliminar».
+      expect(within(card).getByRole('button', { name: 'Eliminar ATS sencilla' })).toBeInTheDocument()
+    })
+
+    it('todas las plantillas, también las de la app, ofrecen «Usar por defecto»', async () => {
+      const calls = mockApi({
+        'GET /status': status(),
+        'GET /templates': templateList(),
+        'GET /uploads': [],
+        'GET /templates/default': { template_id: 'ats-simple' },
+        'POST /templates/clasica-foto/default': { template_id: 'clasica-foto', profile_version_id: 3, created: true, conflicts: [] },
+      })
+      renderApp('/plantillas')
+      const card = await screen.findByRole('article', { name: 'Clásica con foto' })
+      await userEvent.click(within(card).getByRole('button', { name: /Usar por defecto/ }))
+      expect(calls.some((c) => c.method === 'POST' && c.path === '/templates/clasica-foto/default')).toBe(true)
+    })
+
+    it('eliminar una de la app la quita de tu lista, lo dice y se puede restaurar', async () => {
+      const calls = mockApi({
+        'GET /status': status(),
+        'GET /templates': templateList(),
+        'GET /uploads': [],
+        'GET /templates/default': { template_id: null },
+        'GET /templates/hidden': [],
+        'DELETE /templates/clasica-foto': { template_id: 'clasica-foto', default_cleared: false, hidden: true },
+      })
+      renderApp('/plantillas')
+      const card = await screen.findByRole('article', { name: 'Clásica con foto' })
+      await userEvent.click(within(card).getByRole('button', { name: 'Eliminar Clásica con foto' }))
+      const dialog = await screen.findByRole('dialog')
+      expect(within(dialog).getByText('¿Eliminar «Clásica con foto» de tu lista?')).toBeInTheDocument()
+      expect(within(dialog).getByText(/no se borra del programa y la puedes restaurar/)).toBeInTheDocument()
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Eliminar' }))
+      await waitFor(() =>
+        expect(calls.some((c) => c.method === 'DELETE' && c.path === '/templates/clasica-foto')).toBe(true),
+      )
+    })
+
+    it('las eliminadas salen aparte con «Restaurar»', async () => {
+      const calls = mockApi({
+        'GET /status': status(),
+        'GET /templates': templateList({ templates: [templateInfo()] }),
+        'GET /uploads': [],
+        'GET /templates/default': { template_id: null },
+        'GET /templates/hidden': [templateInfo({ id: 'clasica-foto', name: 'Clásica con foto' })],
+        'POST /templates/clasica-foto/restore': { template_id: 'clasica-foto', restored: true },
+      })
+      renderApp('/plantillas')
+      const section = await screen.findByRole('region', { name: 'Plantillas eliminadas' })
+      expect(within(section).getByText('Plantillas eliminadas (1)')).toBeInTheDocument()
+      await userEvent.click(within(section).getByRole('button', { name: 'Restaurar Clásica con foto' }))
+      await waitFor(() =>
+        expect(calls.some((c) => c.method === 'POST' && c.path === '/templates/clasica-foto/restore')).toBe(true),
+      )
     })
 
     it('renombra una plantilla tuya', async () => {

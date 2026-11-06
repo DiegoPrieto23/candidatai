@@ -66,15 +66,12 @@ export function StageGuide({ stage }: { stage: Stage | undefined }) {
     )
   } else if (stage === 'pending_triage') {
     actions = (
-      <>
-        <Button asChild size="sm">
-          <Link to="/bandeja/revision">
-            {t('openTriage')}
-            <ArrowRightIcon />
-          </Link>
-        </Button>
-        <AgentButton action="assess-fit">{t('assessFit')}</AgentButton>
-      </>
+      <Button asChild size="sm">
+        <Link to="/bandeja/revision">
+          {t('openTriage')}
+          <ArrowRightIcon />
+        </Link>
+      </Button>
     )
   }
 

@@ -19,6 +19,7 @@ export const keys = {
   templates: ['templates'] as const,
   uploads: ['uploads'] as const,
   defaultTemplate: ['templates', 'default'] as const,
+  hiddenTemplates: ['templates', 'hidden'] as const,
   sources: ['sources'] as const,
   extension: ['extension'] as const,
   alerts: ['alerts'] as const,
@@ -424,7 +425,25 @@ export function useRenameTemplate() {
   })
 }
 
-/** Elimina una plantilla tuya y el CV subido del que salió. */
+/** Las plantillas de la app que eliminaste de tu lista y se pueden restaurar. */
+export function useHiddenTemplates() {
+  return useQuery({
+    queryKey: keys.hiddenTemplates,
+    queryFn: () => unwrap(api.GET('/templates/hidden')),
+  })
+}
+
+/** Devuelve a tu lista una plantilla de la app que habías eliminado. */
+export function useRestoreTemplate() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (templateId: string) =>
+      unwrap(api.POST('/templates/{template_id}/restore', { params: { path: { template_id: templateId } } })),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.templates }),
+  })
+}
+
+/** Elimina una plantilla tuya y el CV subido del que salió; una de la app, la quita de tu lista. */
 export function useDeleteTemplate() {
   const client = useQueryClient()
   return useMutation({

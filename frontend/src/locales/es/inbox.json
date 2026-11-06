@@ -84,7 +84,6 @@
     "label": "Qué es esta etapa y cómo avanzar",
     "nextLabel": "Para avanzar:",
     "processJobs": "Valorar las ofertas nuevas",
-    "assessFit": "Valorar las que están por revisar",
     "openTriage": "Abrir la revisión rápida",
     "all": {
       "what": "Todas tus ofertas, estén en la etapa que estén. Cada oferta avanza así: Por completar → Por leer → Por revisar → Aprobada → CV listo → Enviada → En proceso.",
@@ -105,7 +104,7 @@
     },
     "pending_triage": {
       "what": "Ofertas ya leídas y con su encaje calculado, a la espera de que decidas.",
-      "next": "revísalas en <triage>Revisión rápida</triage> y apruébalas o descártalas. Si alguna aún no tiene valoración, «Valorar las que están por revisar» hace que tu agente la compare con tu perfil y escriba por qué encaja o no. No cambia la etapa: decides tú."
+      "next": "revísalas en <triage>Revisión rápida</triage> y apruébalas o descártalas. Si alguna aún no tiene valoración, «Valorar las ofertas nuevas» también la valora. Ninguna cambia de etapa sin tu decisión."
     },
     "approved": {
       "what": "Ofertas que has aprobado. Les falta el CV a medida.",

@@ -86,9 +86,7 @@ function Today() {
       ? 'process-jobs'
       : unclassified
         ? 'review-replies'
-        : s?.pending_triage
-          ? 'assess-fit'
-          : 'search-jobs'
+        : 'search-jobs'
 
   return (
     <section aria-labelledby="hoy" className="max-w-3xl">
@@ -115,12 +113,6 @@ function Today() {
         {!!s?.pending_extraction && (
           <AgentButton action="process-jobs" size="default" primary={primary === 'process-jobs'}>
             {t('today.processJobs')}
-          </AgentButton>
-        )}
-        {/* «Valorar las ofertas nuevas» ya valora también las que esperan en «Por revisar». */}
-        {!!s?.pending_triage && !s?.pending_extraction && (
-          <AgentButton action="assess-fit" size="default" primary={primary === 'assess-fit'}>
-            {t('today.assessFit')}
           </AgentButton>
         )}
         {unclassified > 0 && (

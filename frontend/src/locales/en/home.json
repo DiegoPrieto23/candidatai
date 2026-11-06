@@ -18,7 +18,6 @@
     "forAgent": "For your agent: {{list}}.",
     "searchJobs": "Search jobs",
     "processJobs": "Assess new jobs",
-    "assessFit": "Assess the jobs to review",
     "reviewReplies": "Review replies",
     "firstSteps_one": "One first step left to get started.",
     "firstSteps_other": "{{count}} first steps left to get started."

@@ -70,13 +70,58 @@ def test_blank_name_is_rejected(client: TestClient) -> None:
     assert response.status_code in (400, 422)
 
 
-def test_builtin_templates_are_not_touched(client: TestClient) -> None:
-    assert client.delete("/templates/ats-simple", headers=UI).status_code in (400, 422)
+def test_builtin_templates_are_not_renamed(client: TestClient) -> None:
     assert client.patch("/templates/ats-simple", json={"name": "x"}, headers=UI).status_code in (
         400,
         422,
     )
     assert templates.get("ats-simple").meta.name != "x"
+
+
+def listed(client: TestClient) -> set[str]:
+    return {t["id"] for t in client.get("/templates").json()["templates"]}
+
+
+def test_deleting_a_builtin_hides_it_and_it_can_be_restored(client: TestClient) -> None:
+    assert "clasica-foto" in listed(client)
+    response = client.delete("/templates/clasica-foto", headers=UI)
+    assert response.status_code == 200, response.text
+    assert response.json()["hidden"] is True and response.json()["default_cleared"] is False
+    # Fuera de la lista (y de lo que ve el agente), pero sigue en el programa y se puede restaurar.
+    assert "clasica-foto" not in listed(client)
+    assert templates.get("clasica-foto").meta.id == "clasica-foto"
+    assert [t["id"] for t in client.get("/templates/hidden").json()] == ["clasica-foto"]
+
+    restored = client.post("/templates/clasica-foto/restore", headers=UI)
+    assert restored.status_code == 200 and restored.json()["restored"] is True
+    assert "clasica-foto" in listed(client)
+    assert client.get("/templates/hidden").json() == []
+    assert client.post("/templates/clasica-foto/restore", headers=UI).json()["restored"] is False
+
+
+def test_deleting_a_builtin_default_clears_it_and_a_hidden_one_cannot_be_default(
+    client: TestClient,
+) -> None:
+    with session_scope() as session:
+        path = get_settings().data_dir / "profile.yaml"
+        path.write_bytes(profile.EXAMPLE_PATH.read_bytes())
+        profile.import_profile(session, path)
+        default_template.set_default_template(session, "clasica-foto", path)
+    response = client.delete("/templates/clasica-foto", headers=UI)
+    assert response.json()["default_cleared"] is True and response.json()["hidden"] is True
+    assert client.get("/templates/default").json()["template_id"] is None
+    refused = client.post("/templates/clasica-foto/default", headers=UI)
+    assert refused.status_code in (400, 422) and "restáurala" in refused.text
+    client.post("/templates/clasica-foto/restore", headers=UI)
+    assert client.post("/templates/clasica-foto/default", headers=UI).status_code == 200
+
+
+def test_a_hidden_builtin_still_renders_so_old_cvs_and_fallbacks_keep_working(
+    client: TestClient,
+) -> None:
+    client.delete("/templates/ats-simple", headers=UI)
+    assert "ats-simple" not in listed(client)
+    assert templates.get("ats-simple").meta.engine == "docx"
 
 
 def test_only_your_templates_are_editable(client: TestClient) -> None:

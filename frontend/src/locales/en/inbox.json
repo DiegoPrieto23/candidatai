@@ -84,7 +84,6 @@
     "label": "What this stage is and how to move on",
     "nextLabel": "To move on:",
     "processJobs": "Assess new jobs",
-    "assessFit": "Assess the jobs to review",
     "openTriage": "Open quick review",
     "all": {
       "what": "All your jobs, whatever their stage. Each job moves along: To complete → To read → To review → Approved → CV ready → Applied → In process.",
@@ -105,7 +104,7 @@
     },
     "pending_triage": {
       "what": "Jobs already read and with their fit calculated, waiting for your decision.",
-      "next": "go through them in <triage>Quick review</triage> and approve or discard them. If any doesn't have an assessment yet, “Assess the jobs to review” has your agent compare it with your profile and write why it fits or not. It doesn't change the stage: you decide."
+      "next": "go through them in <triage>Quick review</triage> and approve or discard them. If any doesn't have an assessment yet, “Assess new jobs” assesses it too. None changes stage without your decision."
     },
     "approved": {
       "what": "Jobs you approved. They still need their tailored CV.",

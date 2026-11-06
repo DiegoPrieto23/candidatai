@@ -13,7 +13,7 @@ foto para enviar por email), y tú marcas cuál se envía.
 
 ## Tu CV como base
 
-El camino habitual es usar **tu propio CV** como plantilla (página Plantillas → «Mi CV», fase 08.3;
+El camino habitual es usar **tu propio CV** como plantilla (página Plantillas → «Subir nueva plantilla», fase 08.3;
 desde PDF o imagen, fase 08b): lo subes, pulsas «Convertir en plantilla» y tu agente lo convierte **una vez** con el skill
 `import-cv-template` (se abre en una terminal; también puedes copiar la orden) y lo marcas «Usar por defecto». A partir de ahí, cada CV a medida sale con
 tu diseño, tu orden de secciones y una extensión parecida a la del original (la `capacity` se mide

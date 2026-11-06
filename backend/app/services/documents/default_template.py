@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 from app.schemas.profile import TemplateRule
 from app.services import profile as profile_service
 from app.services import profile_editor
-from app.services.documents import templates
+from app.services.documents import template_visibility, templates
 
 
 class DefaultTemplateResult(BaseModel):
@@ -42,6 +42,11 @@ def set_default_template(
     session: Session, template_id: str, path: Path | None = None
 ) -> DefaultTemplateResult:
     templates.validate(template_id)  # que exista y sea válida antes de apuntar a ella
+    if template_id in template_visibility.hidden_ids():
+        raise ValueError(
+            f"«{template_id}» está eliminada de tu lista: restáurala en Plantillas antes de "
+            "usarla por defecto."
+        )
     path = path or profile_service.default_path()
     state = profile_editor.get_editable(session, path)
     if not state.exists:

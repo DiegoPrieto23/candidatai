@@ -852,6 +852,7 @@ def effective_actions(session: Session | None, ctx: Context | None = None) -> li
             else None,
         )
         for action_id, spec in ACTIONS.items()
+        if not spec.hidden
     ]
 
 

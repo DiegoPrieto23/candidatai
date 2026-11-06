@@ -128,10 +128,11 @@ describe('Botones «en tu agente»', () => {
     expect(screen.queryByRole('button', { name: 'Valorar las que están por revisar' })).not.toBeInTheDocument()
     first.unmount()
 
-    // Sin ninguna por leer, queda solo valorar las que esperan en «Por revisar».
+    // Sin ninguna por leer, ya no hay botón de valorar: lo único que queda es buscar.
     home({ 'GET /status': status(0, 3) })
     renderApp('/')
-    expect(await screen.findByRole('button', { name: 'Valorar las que están por revisar' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Buscar ofertas' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Valorar las que están por revisar' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Valorar las ofertas nuevas' })).not.toBeInTheDocument()
   })
 

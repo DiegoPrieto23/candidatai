@@ -10,12 +10,12 @@
     "pending": "Pending import",
     "removeAria": "Remove {{name}}",
     "remove": "Remove",
-    "title": "My CV",
-    "intro": "Upload your CV and your agent turns it into a template once. From then on, every tailored CV comes out with your design and your section order, with the text adapted to the job from your profile.",
-    "file": "CV file",
+    "title": "Create a template from a CV",
+    "intro": "Upload a CV with the design you like (yours or a sample) and your agent turns it into a new template once. From then on, every tailored CV can come out with that design and section order, with the text adapted to the job from your profile. To fill in your profile with the information from a CV, use “Import information from a CV” in “My profile”.",
+    "file": "File with the template design",
     "uploading": "Uploading…",
-    "upload": "Upload my CV",
-    "none": "You haven't uploaded your CV yet",
+    "upload": "Upload new template",
+    "none": "You haven't uploaded any sample CV yet",
     "noneHint": "Ideally in Word (.docx): the design is kept exactly. Maximum 10 MB."
   },
   "recreation": "Recreation",
@@ -76,6 +76,16 @@
     "confirmTitle": "Delete “{{name}}”?",
     "confirmBody": "This deletes the template and the CV you uploaded to create it. CVs already generated keep their PDF and Word files.",
     "confirmDefault": "This is your default template: from now on the app will choose one. This deletes the template and the CV you uploaded to create it. CVs already generated keep their PDF and Word files.",
-    "confirmDelete": "Delete"
+    "confirmDelete": "Delete",
+    "confirmTitleBuiltin": "Remove “{{name}}” from your list?",
+    "confirmBuiltin": "This is one of the app's templates: it leaves your list and the ones your agent picks, but it isn't deleted from the program and you can restore it in “Deleted templates”. CVs already generated keep their PDF and Word files.",
+    "confirmBuiltinDefault": "This is your default template: from now on the app will choose one. It leaves your list and the ones your agent picks, but it isn't deleted from the program and you can restore it in “Deleted templates”."
+  },
+  "hidden": {
+    "label": "Deleted templates",
+    "title": "Deleted templates ({{count}})",
+    "intro": "App templates you removed from your list. They are still in the program: restore them any time.",
+    "restore": "Restore",
+    "restoreAria": "Restore {{name}}"
   }
 }

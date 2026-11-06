@@ -191,7 +191,7 @@ describe('Mi perfil', () => {
     expect(screen.getByRole('button', { name: 'Copiar ruta' })).toBeInTheDocument()
   })
 
-  it('«Mejorar perfil» abre el agente y se deshabilita si el agente no puede (fase 25.2)', async () => {
+  it('«Mejorar el contenido de mi perfil» abre el agente y se deshabilita si el agente no puede (fase 25.2)', async () => {
     const claude = {
       agent: 'claude',
       display_name: 'Claude Code',
@@ -203,7 +203,7 @@ describe('Mi perfil', () => {
       blocked_code: null,
       warning: null,
     }
-    const expand = { id: 'expand', label: 'Mejorar perfil', needs_job: false, prompt: 'Usa el skill expand…', background: false }
+    const expand = { id: 'expand', label: 'Mejorar el contenido de mi perfil', needs_job: false, prompt: 'Usa el skill expand…', background: false }
     const launcher = (agent: Record<string, unknown>) => ({
       available: true,
       agent: 'claude',
@@ -221,7 +221,7 @@ describe('Mi perfil', () => {
       'POST /agent/launch': { ok: true, agent: 'claude', prompt: 'Usa el skill expand…', message: 'ok' },
     })
     const view = renderApp('/perfil')
-    const button = await screen.findByRole('button', { name: 'Mejorar perfil' })
+    const button = await screen.findByRole('button', { name: 'Mejorar el contenido de mi perfil' })
     await waitFor(() => expect(button).toBeEnabled())
     await userEvent.click(button)
     expect(await screen.findByText('Abierto en claude: sigue en la ventana que se acaba de abrir.')).toBeInTheDocument()
@@ -236,12 +236,57 @@ describe('Mi perfil', () => {
       'GET /agent': launcher({ ...claude, agent: 'codex', display_name: 'Codex', blocked: noAgent, blocked_code: 'capability' }),
     })
     renderApp('/perfil')
-    const blocked = await screen.findByRole('button', { name: 'Mejorar perfil' })
+    const blocked = await screen.findByRole('button', { name: 'Mejorar el contenido de mi perfil' })
     await waitFor(() => expect(blocked).toBeDisabled())
     expect(blocked).toHaveAccessibleDescription(new RegExp(noAgent))
     // Sin segundo plano: pregunta antes de escribir en el perfil.
     await userEvent.click(within(blocked.closest<HTMLElement>('[data-slot="agent-button"]')!).getByRole('button', { name: /con Codex/ }))
     expect(screen.queryByRole('menuitem', { name: /En segundo plano/ })).not.toBeInTheDocument()
+  })
+
+  it('«Importar información desde un CV» sube el CV y lanza a tu agente sobre el perfil que ya tienes', async () => {
+    const claude = {
+      agent: 'claude',
+      display_name: 'Claude Code',
+      model: null,
+      preset: null,
+      reason: 'default',
+      reason_text: 'tu agente por defecto',
+      blocked: null,
+      blocked_code: null,
+      warning: null,
+    }
+    const action = {
+      id: 'import-profile-from-cv',
+      label: 'Importar información desde un CV',
+      needs_job: false,
+      prompt: 'Usa el skill update-profile…',
+      background: false,
+    }
+    const calls = mockApi({
+      'GET /status': status(),
+      'GET /context': contextStatus(),
+      'GET /profile/editable': UNREADABLE,
+      'GET /context/documents/cv': [],
+      'GET /agent': {
+        available: true,
+        agent: 'claude',
+        reason: null,
+        background: { available: true, agent: 'claude', reason: null },
+        actions: [{ ...action, agent: claude, alternatives: [] }],
+      },
+      'POST /agent/launch': { ok: true, agent: 'claude', prompt: 'Usa el skill update-profile…', message: 'ok' },
+    })
+    renderApp('/perfil')
+    // El botón de la página abre un diálogo con los dos pasos: subir el CV y lanzar a tu agente.
+    await userEvent.click(await screen.findByRole('button', { name: 'Importar información desde un CV' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Importar información desde un CV' })
+    expect(within(dialog).getByRole('button', { name: 'Subir mi CV' })).toBeInTheDocument()
+    const launch = await within(dialog).findByRole('button', { name: 'Importar información desde un CV' })
+    await waitFor(() => expect(launch).toBeEnabled())
+    await userEvent.click(launch)
+    await screen.findByText('Abierto en claude: sigue en la ventana que se acaba de abrir.')
+    expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ action: 'import-profile-from-cv' })
   })
 
   it('está en el menú', async () => {

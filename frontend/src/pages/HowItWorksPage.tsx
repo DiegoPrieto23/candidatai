@@ -91,7 +91,6 @@ export function HowItWorksPage() {
     skills: tNav('tabs.skills'),
     searchJobs: tHome('today.searchJobs'),
     processJobs: tHome('today.processJobs'),
-    assessFit: tHome('today.assessFit'),
     generateCv: tAgent('actions.generate-cv'),
   }
   const docsLanguage = i18n.language === SOURCE_LANGUAGE ? 'es' : 'en'

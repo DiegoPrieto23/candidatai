@@ -250,12 +250,12 @@ documentos y correos. Las claves van en `.env`, también fuera de git.
 | Qué | Dónde | Cómo |
 |---|---|---|
 | **Perfil** (la fuente de verdad de todo lo que se escribe sobre ti) | `data/profile.yaml` | Para empezar, sube tu CV en «Mi perfil» y pulsa «Crear mi perfil desde mi CV» (o pídeselo a tu agente): el skill `update-profile` lo lee, te pregunta lo que falte y lo valida. Sin agente, «Empezar a mano» crea un perfil mínimo (nombre, titular, puesto y niveles) y abre el editor. Después, **rellénalo y retócalo en «Mi perfil»**: experiencia y logros, proyectos, formación, skills e idiomas, historias STAR, qué buscas y tus preferencias de CV y carta, por bloques. Cada bloque se guarda solo, conserva el formato y los comentarios de tu fichero, avisa si lo cambiaste por fuera y se puede deshacer. Cada cambio crea una versión. Si prefieres, sigue valiendo editar el YAML |
-| **Tu CV como diseño** | `data/templates/<id>/` | Sube tu CV en «Plantillas → Mi CV» y pulsa «Convertir en plantilla» (usa el skill `import-cv-template`). Vale Word, PDF, imagen o HTML (Canva, Google Docs…) |
+| **Tu CV como diseño** | `data/templates/<id>/` | Sube un CV con el diseño que te gusta en «Plantillas → Subir nueva plantilla» y pulsa «Convertir en plantilla» (usa el skill `import-cv-template`). Vale Word, PDF, imagen o HTML (Canva, Google Docs…) |
 | **Foto** | `data/photo.jpg` (o png) | Cada plantilla la recorta a su forma; se incluye o no según el país de la oferta |
 | **Contexto** (estilo, narrativa, criterios) | `data/contexto/*.md` | Se edita en «Mi perfil → Documentos» (con vista previa) o en tu editor. Orienta al agente, pero nunca respalda un hecho del CV |
 | **Muestras de estilo** (cartas, correos o posts tuyos) | `data/documentos/estilo/` | Súbelas en «Mi perfil → Documentos» (.txt, .md, .docx, .pdf). Tu agente toma de ellas el tono, nunca los hechos, y las lee como dato: si traen texto de otros con órdenes, no las sigue |
 | **Documentos fuente** (CVs antiguos, títulos, referencias) | `data/documentos/` | Tu CV y tu exportación de LinkedIn se suben en «Mi perfil → Documentos»; el resto, en su carpeta. `update-profile` los puede leer, confirmando antes de escribir |
-| **Lo que has hecho en público** (repositorios, portfolio, Kaggle, Scholar, certificaciones verificables) | `data/profile.yaml` | Skill `expand`, o «Mejorar perfil» en «Mi perfil». Úsalo **justo después de crear el perfil** y cuando quieras pulirlo: revisa el perfil entero (logros sin cifra, textos de relleno, huecos) y propone proyectos, skills (sin nivel: lo pones tú), logros con los números que da la fuente y certificaciones, cada uno con su enlace en `source`, y solo escribe lo que aceptes. Solo web pública: ni LinkedIn ni nada con login. Leer los enlaces necesita un agente con búsqueda web; revisar el perfil, no |
+| **Lo que has hecho en público** (repositorios, portfolio, Kaggle, Scholar, certificaciones verificables) | `data/profile.yaml` | Skill `expand`, o «Mejorar el contenido de mi perfil» en «Mi perfil». Úsalo **justo después de crear el perfil** y cuando quieras pulirlo: revisa el perfil entero (logros sin cifra, textos de relleno, huecos) y propone proyectos, skills (sin nivel: lo pones tú), logros con los números que da la fuente y certificaciones, cada uno con su enlace en `source`, y solo escribe lo que aceptes. Solo web pública: ni LinkedIn ni nada con login. Leer los enlaces necesita un agente con búsqueda web; revisar el perfil, no |
 
 Tu mínimo salarial va en «Buscar ofertas → Qué buscas» (o en `private.salary_floor_eur` del perfil): la
 app descarta las ofertas que publican un sueldo por debajo y lo usa para comparar las ofertas
@@ -362,7 +362,7 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
    IA, la ficha lo avisa.
 2. **Valorar:** la app calcula el encaje (de 0 a 100: «buen encaje», «encaje posible» o «encaje
    bajo», y al pasar el ratón, de dónde sale) y aplica tus filtros duros; `assess-fit` añade una
-   valoración razonada: «Valorar las ofertas nuevas» la hace justo después de leerlas, «Valorar esta oferta» en su ficha para una sola y «Valorar las que están por revisar» para las ya leídas que aún no la tienen.
+   valoración razonada: «Valorar las ofertas nuevas» la hace justo después de leerlas y «Valorar esta oferta» en su ficha, para una sola.
    Si una oferta no tiene encaje, su ficha dice qué falta: tu perfil, que tu agente la lea o las dos cosas.
 3. **Revisar:** en la Bandeja, pestaña «Revisión rápida», `J`/`K` para moverte, `A` para aprobar, `D` para descartar (con
    motivo) y `O` para abrir la ficha. Un descarte se deshace en el aviso; una aprobación, con
@@ -450,7 +450,7 @@ Muchas pantallas tienen botones que abren tu agente con la orden ya escrita:
     dinero, por acción, agente y modelo (7 y 30 días), con lo que pesa cada skill; la ficha dice lo
     gastado en esa oferta y el embudo, por candidatura enviada y por entrevista. Lo que hagas en una
     terminal no cuenta: ahí el agente no devuelve su uso.
-  - **Umbral antes de gastar:** `assess-fit` en segundo plano solo valora las ofertas con un encaje
+  - **Umbral antes de gastar:** la valoración en segundo plano solo valora las ofertas con un encaje
     mínimo (por defecto, el mínimo de «Por revisar» menos 10; lo cambias en «Coste»). «Por revisar» dice por qué se
     queda sin valorar una oferta por debajo.
   - **Varias a la vez:** por defecto, de una en una. Con `background_runs.max_parallel` (hasta 4)
