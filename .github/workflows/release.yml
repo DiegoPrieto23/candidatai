@@ -27,7 +27,7 @@ jobs:
   notes:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Notas de la release desde CHANGELOG.md
         env:
           TAG: ${{ inputs.tag || github.ref_name }}
@@ -45,11 +45,11 @@ jobs:
     needs: [notes, audit]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
         with:
           package_json_file: frontend/package.json
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: lts/*
           cache: pnpm
@@ -78,7 +78,7 @@ jobs:
           sha256sum -c candidatai.zip.sha256
           { echo "## SHA-256"; echo; echo '```'; cat candidatai.zip.sha256; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
       - name: Deja el zip como artefacto
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: candidatai-zip
           path: |
@@ -94,8 +94,8 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
         with:
           name: candidatai-zip
       - name: Publica la release
