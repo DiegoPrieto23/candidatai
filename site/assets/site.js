@@ -1,23 +1,24 @@
-// Interacción de la web: cambiar de tema, las pestañas y los botones de copiar.
-// Sin JS la página se lee entera: los paneles se ven uno detrás de otro y estos botones no salen.
+// Interacción de la web: tema, pestañas, botones de copiar, la cabecera al bajar y la aparición
+// de las secciones. Sin JS la página se lee entera: los paneles se ven uno detrás de otro.
 (function () {
   var root = document.documentElement;
   var KEY = "candidatai-theme";
+  var scheme = window.matchMedia("(prefers-color-scheme: dark)");
 
   function currentTheme() {
-    var chosen = root.getAttribute("data-theme");
-    if (chosen) return chosen;
-    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    return root.getAttribute("data-theme") || (scheme.matches ? "dark" : "light");
   }
 
   function syncToggle(button) {
     var dark = currentTheme() === "dark";
+    var label = dark ? button.dataset.labelLight : button.dataset.labelDark;
     button.setAttribute("aria-pressed", dark ? "true" : "false");
-    button.setAttribute("aria-label", dark ? button.dataset.labelLight : button.dataset.labelDark);
-    button.title = button.getAttribute("aria-label");
+    button.setAttribute("aria-label", label);
+    button.dataset.tip = label;
   }
 
-  document.querySelectorAll(".theme-toggle").forEach(function (button) {
+  var toggles = document.querySelectorAll(".theme-toggle");
+  toggles.forEach(function (button) {
     syncToggle(button);
     button.addEventListener("click", function () {
       var next = currentTheme() === "dark" ? "light" : "dark";
@@ -27,16 +28,13 @@
       } catch (e) {
         /* Se aplica igual; solo no se recuerda. */
       }
-      syncToggle(button);
+      toggles.forEach(syncToggle);
     });
   });
-
   // Si cambia el tema del sistema y no se ha elegido uno, el botón se pone al día.
-  var scheme = window.matchMedia("(prefers-color-scheme: dark)");
   if (scheme.addEventListener) {
     scheme.addEventListener("change", function () {
-      if (root.getAttribute("data-theme")) return;
-      document.querySelectorAll(".theme-toggle").forEach(syncToggle);
+      if (!root.getAttribute("data-theme")) toggles.forEach(syncToggle);
     });
   }
 
@@ -73,13 +71,14 @@
 
   // Copiar un bloque de código.
   document.querySelectorAll(".copy").forEach(function (button) {
-    var label = button.textContent;
+    var label = button.querySelector("span");
+    var original = label.textContent;
     button.addEventListener("click", function () {
       var text = button.parentElement.querySelector("pre").textContent.trim();
       function done(message) {
-        button.textContent = message;
+        label.textContent = message;
         setTimeout(function () {
-          button.textContent = label;
+          label.textContent = original;
         }, 1800);
       }
       if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -95,5 +94,66 @@
         done(button.dataset.failed);
       }
     });
+  });
+
+  if (!("IntersectionObserver" in window)) {
+    document.querySelectorAll(".reveal").forEach(function (el) {
+      el.classList.add("is-in");
+    });
+    return;
+  }
+
+  // La cabecera gana su borde en cuanto la página deja de estar arriba del todo.
+  var nav = document.querySelector(".nav");
+  if (nav) {
+    var sentinel = document.createElement("div");
+    sentinel.setAttribute("aria-hidden", "true");
+    sentinel.className = "sentinel";
+    document.body.insertBefore(sentinel, document.body.firstChild);
+    new IntersectionObserver(function (entries) {
+      nav.classList.toggle("is-scrolled", !entries[0].isIntersecting);
+    }).observe(sentinel);
+  }
+
+  // Cómo funciona: el paso que cruza el centro de la pantalla se activa y la ventana enseña su imagen.
+  var steps = document.querySelectorAll("[data-step]");
+  var shots = document.querySelectorAll("[data-shot]");
+  function activate(index) {
+    steps.forEach(function (step) {
+      step.classList.toggle("is-active", step.dataset.step === index);
+    });
+    shots.forEach(function (shot) {
+      shot.classList.toggle("is-active", shot.dataset.shot === index);
+    });
+  }
+  if (steps.length) {
+    activate(steps[0].dataset.step);
+    var center = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) activate(entry.target.dataset.step);
+        });
+      },
+      { rootMargin: "-48% 0px -48% 0px" }
+    );
+    steps.forEach(function (step) {
+      center.observe(step);
+    });
+  }
+
+  // Cada bloque aparece una vez, al entrar en pantalla.
+  var reveal = new IntersectionObserver(
+    function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-in");
+          reveal.unobserve(entry.target);
+        }
+      });
+    },
+    { rootMargin: "0px 0px -8% 0px" }
+  );
+  document.querySelectorAll(".reveal").forEach(function (el) {
+    reveal.observe(el);
   });
 })();

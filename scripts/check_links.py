@@ -62,7 +62,9 @@ def site_missing(root: Path = ROOT) -> tuple[int, list[str]]:
                 continue
             origin = build_site.mounted(target, root) or site / target
             anchor = ref.split("#", 1)[1] if "#" in ref else ""
-            if not origin.is_file() or (anchor and anchor not in ids.get(target, set())):
+            if not origin.is_file() or (
+                anchor and target.endswith(".html") and anchor not in ids.get(target, set())
+            ):
                 missing.append(where)
     return len(pages), missing
 

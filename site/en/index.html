@@ -13,13 +13,14 @@
   <link rel="alternate" hreflang="en" href="https://diegoprieto23.github.io/candidatai/en/">
   <link rel="alternate" hreflang="x-default" href="https://diegoprieto23.github.io/candidatai/">
   <link rel="icon" href="../brand/mark.svg" type="image/svg+xml">
+  <link rel="preload" href="../assets/fonts/source-serif-4-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="CandidatAI">
   <meta property="og:locale" content="en_US">
   <meta property="og:locale:alternate" content="es_ES">
   <meta property="og:url" content="https://diegoprieto23.github.io/candidatai/en/">
   <meta property="og:title" content="CandidatAI · Your whole job search in one app">
-  <meta property="og:description" content="You decide, your AI agent reads and writes, and nothing is sent without you. Free, open source, with your data on your computer.">
+  <meta property="og:description" content="Your AI agent reads and writes. You decide, and nothing is sent without your click. Free, open source, with your data on your computer.">
   <!-- media:provisional -->
   <meta property="og:image" content="https://diegoprieto23.github.io/candidatai/img/social-en.png">
   <meta property="og:image:width" content="1280">
@@ -27,7 +28,7 @@
   <meta property="og:image:alt" content="CandidatAI: your whole job search in one app">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="CandidatAI · Your whole job search in one app">
-  <meta name="twitter:description" content="You decide, your AI agent reads and writes, and nothing is sent without you.">
+  <meta name="twitter:description" content="Your AI agent reads and writes. You decide, and nothing is sent without your click.">
   <!-- media:provisional -->
   <meta name="twitter:image" content="https://diegoprieto23.github.io/candidatai/img/social-en.png">
   <link rel="stylesheet" href="../assets/site.css">
@@ -37,209 +38,322 @@
 <body>
   <a class="skip" href="#main">Skip to content</a>
 
-  <header class="site-header">
-    <div class="wrap">
-      <a class="logo" href="#top" aria-label="CandidatAI, back to top">
-        <img src="../brand/mark.svg" alt="" width="32" height="32">
-        <span>Candidat<span>AI</span></span>
+  <header class="nav">
+    <div class="wrap nav__inner">
+      <a class="brand" href="#top" aria-label="CandidatAI, back to top">
+        <img src="../brand/mark.svg" alt="" width="30" height="30">
+        <span>Candidat<b>AI</b></span>
       </a>
-      <nav class="nav" aria-label="Sections">
+      <nav class="nav__links" aria-label="Sections">
         <a href="#how">How it works</a>
         <a href="#features">Features</a>
         <a href="#privacy">Privacy</a>
         <a href="#install">Install</a>
-        <a href="https://github.com/DiegoPrieto23/candidatai/blob/main/docs/README.md">Docs</a>
+        <a href="#faq">FAQ</a>
       </nav>
-      <div class="header-tools">
-        <a class="lang" href="../" hreflang="es" lang="es">Español</a>
-        <button class="icon-btn theme-toggle" type="button" data-label-dark="Switch to dark mode" data-label-light="Switch to light mode" aria-label="Switch to dark mode">
-          <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-          <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      <div class="nav__end">
+        <a class="lang" data-tip="Leer en español" data-tip-align="end" href="../" hreflang="es" lang="es" aria-label="Leer en español">ES</a>
+        <button class="icon-button theme-toggle" type="button" data-tip="" data-tip-align="end" data-label-dark="Switch to dark mode" data-label-light="Switch to light mode" aria-label="Switch to dark mode">
+          <svg class="icon icon--sun" aria-hidden="true"><use href="../assets/icons.svg#sun"/></svg>
+          <svg class="icon icon--moon" aria-hidden="true"><use href="../assets/icons.svg#moon"/></svg>
         </button>
-        <a class="icon-btn" href="https://github.com/DiegoPrieto23/candidatai" aria-label="CandidatAI on GitHub" title="GitHub">
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.7.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.2c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5z"/></svg>
+        <a class="gh" href="https://github.com/DiegoPrieto23/candidatai" data-tip="Source code, releases and issues, on GitHub" data-tip-align="end" aria-label="CandidatAI on GitHub">
+          <svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#github-mark"/></svg><span>GitHub</span>
         </a>
+        <a class="button button--primary nav__cta" href="#install" data-tip="Instructions for Windows, macOS, Linux and Docker" data-tip-align="end"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#download-simple"/></svg>Install</a>
       </div>
     </div>
   </header>
 
   <main id="main">
-    <section class="hero" id="top">
-      <div class="wrap">
-        <div>
-          <a class="badge" href="https://github.com/DiegoPrieto23/candidatai/releases/latest"><b>v{{version}}</b> Free and open source</a>
-          <h1>Your whole job search, <em>in one app</em></h1>
-          <p class="lead">You decide, your AI agent reads and writes, and nothing is sent without you. From
-            a new job posting to an offer: jobs from many sources, how well each one fits you, a tailored
-            CV and cover letter with nothing made up, the application filled in and every process tracked
-            to the end.</p>
+    <section class="hero" id="top" aria-labelledby="hero-title">
+      <div class="wrap hero__grid">
+        <div class="hero__text">
+          <a class="release-pill" data-tip="The notes of the latest release, on GitHub" data-tip-align="start" href="https://github.com/DiegoPrieto23/candidatai/releases/latest"><span class="release-pill__tag" aria-label="Version {{version}}">v{{version}}</span>See what's new<svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#arrow-right"/></svg></a>
+          <h1 class="display" id="hero-title">Your whole job search, <em>in one app</em></h1>
+          <p class="lede">Your AI agent searches job boards, assesses each job against your profile, tailors your CV and tracks every process up to the offer, without making anything up. You decide: nothing is sent without your click.</p>
           <div class="actions">
-            <a class="btn btn-primary" href="#install">Install</a>
-            <a class="btn btn-secondary" href="#how">See how it works</a>
+            <a class="button button--primary" href="#install" data-tip="Free: one installer for Windows, macOS and Linux" data-tip-align="start"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#download-simple"/></svg>Install</a>
+            <a class="button button--secondary" href="#tour" data-tip="Look around the app with a fictional search">See the demo</a>
           </div>
-          <p class="note">Windows, macOS and Linux. You need an AI agent, which the app doesn't include.
-            Your data stays on your computer.</p>
         </div>
-        <div class="frame">
-          <!-- media:provisional -->
-          <img class="media shot-light" src="../img/en/home.webp" alt="CandidatAI's Home: what's waiting for you today, the journey of your jobs and the best fits to review" width="1440" height="900" fetchpriority="high">
-          <!-- media:provisional -->
-          <img class="media shot-dark" src="../img/en/dark/home.webp" alt="CandidatAI's Home in dark mode: what's waiting for you today, the journey of your jobs and the best fits to review" width="1440" height="900" loading="lazy">
+        <div class="hero__stage">
+          <div class="window">
+            <div class="window__bar" aria-hidden="true">
+              <span class="window__dots"><i></i><i></i><i></i></span>
+              <span class="window__url">127.0.0.1:8000</span>
+            </div>
+            <!-- media:provisional -->
+            <img class="media shot-light" src="../img/en/home.webp" alt="CandidatAI's Home: what's waiting for you today, the journey of your jobs and the best fits to review" width="1440" height="900" fetchpriority="high">
+            <!-- media:provisional -->
+            <img class="media shot-dark" src="../img/en/dark/home.webp" alt="CandidatAI's Home in dark mode: what's waiting for you today, the journey of your jobs and the best fits to review" width="1440" height="900" loading="lazy">
+          </div>
         </div>
       </div>
     </section>
 
     <section class="agents" id="agents" aria-labelledby="agents-title">
       <div class="wrap">
-        <h2 id="agents-title">With the agent you already use</h2>
+        <h2 id="agents-title">Works with the AI agent you already use</h2>
         <ul>
-          <li>Claude Code <small>· tested end to end</small></li>
-          <li>Codex <small>· tested with one job</small></li>
-          <li>Antigravity CLI <small>· tested in part</small></li>
-          <li>OpenCode <small>· configured, not tested end to end</small></li>
-          <li>Qwen Code <small>· configured, untested</small></li>
+          <li><span class="agent-logo"><img src="../assets/logos/claude-code.svg" alt="" width="28" height="28"></span>Claude Code</li>
+          <li><span class="agent-logo"><img src="../assets/logos/codex.svg" alt="" width="28" height="28"></span>Codex</li>
+          <li><span class="agent-logo"><img src="../assets/logos/antigravity.svg" alt="" width="28" height="28"></span>Antigravity CLI</li>
+          <li><span class="agent-logo"><img src="../assets/logos/opencode.svg" alt="" width="28" height="28"></span>OpenCode</li>
+          <li><span class="agent-logo"><img src="../assets/logos/qwen.svg" alt="" width="28" height="28"></span>Qwen Code</li>
         </ul>
-        <p>The app never calls an AI itself: the reading and writing is done by your agent, with a
-          subscription you may already pay, a free account or a local model. MIT licence.</p>
       </div>
     </section>
 
-    <section id="how" aria-labelledby="how-title">
+    <section class="section" id="how" aria-labelledby="how-title">
       <div class="wrap">
-        <div class="section-head">
-          <span class="eyebrow">How it works</span>
-          <h2 id="how-title">Everyone does their part</h2>
-          <p class="lead"><b>You</b> decide, <b>your agent</b> reasons, <b>the app</b> stores, checks and
-            automates. The agent can only fill strict schemas that the code validates.</p>
+        <div class="head reveal">
+          <p class="eyebrow">How it works</p>
+          <h2 class="display" id="how-title">You decide. Your agent reasons. <em>The app checks.</em></h2>
+          <p class="lede">Every step has an owner, and your agent can only fill strict schemas that the code validates.</p>
         </div>
-        <div class="steps">
-          <article class="step">
-            <span class="step-num">01</span>
-            <div class="who"><span class="chip you">You</span><span class="chip agent">Your agent</span></div>
-            <h3>Your profile, from your CV</h3>
-            <p>Your agent creates it from your CV and what you tell it. It's the only source of what goes
-              in a CV.</p>
-            <!-- media:provisional -->
-            <img class="media" src="../img/en/profile-experience.webp" alt="My profile: experience and skills, edited by blocks" width="1440" height="900" loading="lazy">
-          </article>
-          <article class="step">
-            <span class="step-num">02</span>
-            <div class="who"><span class="chip app">The app</span><span class="chip agent">Your agent</span><span class="chip you">You</span></div>
-            <h3>Jobs come in and get assessed</h3>
-            <p>Paste a link, follow your target companies, read your email alerts or let your agent
-              search. Each job comes with an explained fit; approve or discard with one key.</p>
-            <!-- media:provisional -->
-            <img class="media" src="../img/en/triage.webp" alt="Quick review: a list of jobs by fit and, beside it, the selected job with its fit breakdown and skills" width="1440" height="900" loading="lazy">
-          </article>
-          <article class="step">
-            <span class="step-num">03</span>
-            <div class="who"><span class="chip agent">Your agent</span><span class="chip app">The app</span><span class="chip you">You</span></div>
-            <h3>CV, letter and application</h3>
-            <p>Your agent writes the CV, a separate verifier checks it and the app renders it in your
-              design. Then it fills the form and stops for you to press Send.</p>
-            <!-- media:provisional -->
-            <img class="media" src="../img/en/job-cv.webp" alt="The CV of a job: verified, with its templates, photo and sections to hide" width="1440" height="900" loading="lazy">
-          </article>
-          <article class="step">
-            <span class="step-num">04</span>
-            <div class="who"><span class="chip app">The app</span><span class="chip you">You</span></div>
+        <div class="how">
+          <ol class="how__list">
+          <li class="how__step" data-step="1">
+            <span class="how__num">01</span>
+            <h3>Your profile, once</h3>
+            <p>Your agent creates it from your CV and what you tell it. It's the only source of what goes in a CV.</p>
+            <ul class="who" aria-label="Who does it"><li>You</li><li>Your agent</li></ul>
+            <div class="how__media window">
+              <!-- media:provisional -->
+              <img class="media" src="../img/en/anim/profile.webp" alt="My profile: experience blocks fold and unfold to edit them" width="1280" height="800" loading="lazy">
+            </div>
+          </li>
+          <li class="how__step" data-step="2">
+            <span class="how__num">02</span>
+            <h3>Jobs come in</h3>
+            <p>Paste a link, follow your companies' job boards, read your email alerts or let your agent search. Duplicates merge on their own.</p>
+            <ul class="who" aria-label="Who does it"><li>The app</li><li>Your agent</li><li>You</li></ul>
+            <div class="how__media window">
+              <!-- media:provisional -->
+              <img class="media" src="../img/en/inbox.webp" alt="Job inbox with filters by stage, work mode, salary and fit" width="1440" height="900" loading="lazy">
+            </div>
+          </li>
+          <li class="how__step" data-step="3">
+            <span class="how__num">03</span>
+            <h3>See how well they fit, and decide</h3>
+            <p>Your agent reads each job and reasons about the fit; the app applies your filters and scores it from 0 to 100. You approve or discard with one key.</p>
+            <ul class="who" aria-label="Who does it"><li>Your agent</li><li>The app</li><li>You</li></ul>
+            <div class="how__media window">
+              <!-- media:provisional -->
+              <img class="media" src="../img/en/anim/triage.webp" alt="Keyboard review: moving between jobs, approving one and discarding another" width="1280" height="800" loading="lazy">
+            </div>
+          </li>
+          <li class="how__step" data-step="4">
+            <span class="how__num">04</span>
+            <h3>A tailored, verified CV</h3>
+            <p>Your agent writes it from your profile only, a separate verifier checks it and the app renders it in your template. Changing the design doesn't need the agent.</p>
+            <ul class="who" aria-label="Who does it"><li>Your agent</li><li>The app</li></ul>
+            <div class="how__media window">
+              <!-- media:provisional -->
+              <img class="media" src="../img/en/anim/cv.webp" alt="The same CV in another template and colour, rendered in seconds" width="1280" height="800" loading="lazy">
+            </div>
+          </li>
+          <li class="how__step" data-step="5">
+            <span class="how__num">05</span>
+            <h3>The application, up to your click</h3>
+            <p>The app fills the Greenhouse, Lever, Ashby or generic form, shows where each answer comes from and stops. It only sends when you type the company's name.</p>
+            <ul class="who" aria-label="Who does it"><li>The app</li><li>You</li></ul>
+            <div class="how__media window">
+              <!-- media:provisional -->
+              <img class="media" src="../img/en/anim/apply.webp" alt="Assisted application: the filled form and the confirmation with the company's name" width="1280" height="800" loading="lazy">
+            </div>
+          </li>
+          <li class="how__step" data-step="6">
+            <span class="how__num">06</span>
             <h3>Every process, up to the offer</h3>
-            <p>A board that only moves with recorded steps, the calendar, follow-ups and company replies
-              read from your mailbox.</p>
-            <!-- media:provisional -->
-            <img class="media" src="../img/en/processes.webp" alt="Processes board with one column per stage" width="1440" height="900" loading="lazy">
+            <p>A board that only moves with recorded steps. The app reads replies from your mailbox, your agent sorts them and prepares your interviews, and you accept each step.</p>
+            <ul class="who" aria-label="Who does it"><li>The app</li><li>Your agent</li><li>You</li></ul>
+            <div class="how__media window">
+              <!-- media:provisional -->
+              <img class="media" src="../img/en/processes.webp" alt="Processes board with one column per stage" width="1440" height="900" loading="lazy">
+            </div>
+          </li>
+          </ol>
+          <div class="how__stage window" aria-hidden="true">
+            <div class="window__bar">
+              <span class="window__dots"><i></i><i></i><i></i></span>
+              <span class="window__url">127.0.0.1:8000</span>
+            </div>
+            <div class="how__frame">
+              <!-- media:provisional -->
+              <img class="media" data-shot="1" src="../img/en/anim/profile.webp" alt="My profile: experience blocks fold and unfold to edit them" width="1280" height="800" loading="lazy">
+              <!-- media:provisional -->
+              <img class="media" data-shot="2" src="../img/en/inbox.webp" alt="Job inbox with filters by stage, work mode, salary and fit" width="1440" height="900" loading="lazy">
+              <!-- media:provisional -->
+              <img class="media" data-shot="3" src="../img/en/anim/triage.webp" alt="Keyboard review: moving between jobs, approving one and discarding another" width="1280" height="800" loading="lazy">
+              <!-- media:provisional -->
+              <img class="media" data-shot="4" src="../img/en/anim/cv.webp" alt="The same CV in another template and colour, rendered in seconds" width="1280" height="800" loading="lazy">
+              <!-- media:provisional -->
+              <img class="media" data-shot="5" src="../img/en/anim/apply.webp" alt="Assisted application: the filled form and the confirmation with the company's name" width="1280" height="800" loading="lazy">
+              <!-- media:provisional -->
+              <img class="media" data-shot="6" src="../img/en/processes.webp" alt="Processes board with one column per stage" width="1440" height="900" loading="lazy">
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--sunken" id="honest" aria-labelledby="honest-title">
+      <div class="wrap split">
+        <div class="reveal">
+          <h2 class="display" id="honest-title">What isn't in your profile <em>doesn't go in your CV</em></h2>
+          <p class="lede">Every line of a CV must point to evidence in your profile, or the code rejects it. Whichever agent you use.</p>
+          <ul class="ticks">
+            <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#check"/></svg><span>A separate verifier checks every CV and cover letter before you get them.</span></li>
+            <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#check"/></svg><span>What the job asks for and you don't have stays a gap; it isn't filled in.</span></li>
+            <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#check"/></svg><span>Posting text is only data: hidden instructions aimed at an AI are flagged.</span></li>
+            <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#check"/></svg><span>Messages and emails are drafts you send yourself.</span></li>
+          </ul>
+        </div>
+        <div class="report reveal" role="img" aria-label="Example fit: three requirements covered with their evidence and one that is a gap and stays out of the CV">
+          <div class="report__head">
+            <h3>Data Engineer<small>Example job</small></h3>
+            <span class="report__fit">78<small>/100</small></span>
+          </div>
+          <ul>
+            <li class="req"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#seal-check"/></svg><b>Python</b><span>Evidence: 4 years in your most recent role</span></li>
+            <li class="req"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#seal-check"/></svg><b>SQL and data modelling</b><span>Evidence: an achievement with a number from your profile</span></li>
+            <li class="req"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#seal-check"/></svg><b>Airflow</b><span>Evidence: a project from your profile</span></li>
+            <li class="req req--gap"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#warning"/></svg><b>Kafka</b><span>Gap: not in your profile, so it isn't written. You note it in Skills for your training plan.</span></li>
+          </ul>
+          <p class="report__foot">A made-up example to explain the idea, not a screenshot.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="features" aria-labelledby="features-title">
+      <div class="wrap">
+        <div class="head reveal">
+          <p class="eyebrow">Features</p>
+          <h2 class="display" id="features-title">From a new posting <em>to a job offer</em></h2>
+        </div>
+        <div class="bento">
+          <article class="tile tile--full tile--sources reveal">
+            <div class="tile__text">
+              <h3>Jobs from many sources</h3>
+              <p>The job boards where you already look, the ATS of the companies you're interested in, your email alerts or a single job from your browser. Duplicates merge on their own.</p>
+            </div>
+            <div class="sources">
+              <p class="sources__label">Job boards</p>
+              <ul class="logos"><li><img src="../assets/logos/linkedin.svg" alt="" width="28" height="28" loading="lazy">LinkedIn</li><li><img src="../assets/logos/infojobs.png" alt="" width="28" height="28" loading="lazy">InfoJobs</li><li><img src="../assets/logos/indeed.svg" alt="" width="28" height="28" loading="lazy">Indeed</li><li><img src="../assets/logos/tecnoempleo.png" alt="" width="28" height="28" loading="lazy">Tecnoempleo</li><li><img src="../assets/logos/manfred.png" alt="" width="28" height="28" loading="lazy">Manfred</li></ul>
+              <p class="sources__label">Your companies' ATS</p>
+              <ul class="logos"><li><img src="../assets/logos/greenhouse.svg" alt="" width="28" height="28" loading="lazy">Greenhouse</li><li><img src="../assets/logos/lever.png" alt="" width="28" height="28" loading="lazy">Lever</li><li><img src="../assets/logos/ashby.png" alt="" width="28" height="28" loading="lazy">Ashby</li><li><img src="../assets/logos/workable.png" alt="" width="28" height="28" loading="lazy">Workable</li><li><img src="../assets/logos/personio.svg" alt="" width="28" height="28" loading="lazy">Personio</li><li><img src="../assets/logos/teamtailor.png" alt="" width="28" height="28" loading="lazy">Teamtailor</li><li><img src="../assets/logos/smartrecruiters.png" alt="" width="28" height="28" loading="lazy">SmartRecruiters</li><li><img src="../assets/logos/recruitee.png" alt="" width="28" height="28" loading="lazy">Recruitee</li></ul>
+              <p class="sources__label">And also</p>
+              <ul class="logos"><li><span class="logo-icon"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#envelope-simple"/></svg></span>Email alerts</li><li><span class="logo-icon"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#cursor-click"/></svg></span>Browser button</li><li><span class="logo-icon"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#robot"/></svg></span>Your agent</li></ul>
+            </div>
+          </article>
+          <article class="tile tile--half reveal">
+            <div class="tile__text">
+              <h3>Every interview, prepared</h3>
+              <p>Your agent leaves you a PDF guide: the role broken down, your fit, the company, likely questions with an idea for each answer and a day-by-day plan. And mock interviews whenever you want.</p>
+            </div>
+            <div class="tile__shot">
+              <!-- media:provisional -->
+              <div class="media media--pending" role="img" aria-label="Interview preparation guide in PDF (screenshot pending)"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#chalkboard-teacher"/></svg><span>Screenshot pending: the interview guide in PDF</span></div>
+            </div>
+          </article>
+          <article class="tile tile--half tile--brand reveal">
+            <div class="tile__text">
+              <h3>Your own CV design</h3>
+              <p>Import any CV (Word, PDF, an image, Canva) as a template and change colour or sections without the agent.</p>
+            </div>
+            <div class="tile__shot">
+              <!-- media:provisional -->
+              <img class="media" src="../img/en/templates.webp" alt="CV templates: the built-in and the imported ones, with their preview" width="1440" height="900" loading="lazy">
+            </div>
+          </article>
+          <article class="tile tile--half reveal">
+            <div class="tile__text">
+              <h3>A funnel that tells you what works</h3>
+              <p>Where each application stopped, by source, role and template, and whether the fit predicted what happened.</p>
+            </div>
+            <div class="tile__shot">
+              <!-- media:provisional -->
+              <img class="media" src="../img/en/funnel.webp" alt="Funnel with the applications at each stage" width="1440" height="900" loading="lazy">
+            </div>
+          </article>
+          <article class="tile tile--half reveal">
+            <div class="tile__text">
+              <h3>Company replies, sorted</h3>
+              <p>The app reads your mailbox, your agent sorts each email (interview, test, offer or rejection) and you accept the step it proposes.</p>
+            </div>
+            <div class="tile__shot">
+              <!-- media:provisional -->
+              <img class="media" src="../img/en/replies.webp" alt="Company replies read from the mailbox, each with a proposed step to accept" width="1440" height="900" loading="lazy">
+            </div>
           </article>
         </div>
+
+        <ul class="more reveal">
+          <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#envelope-simple"/></svg><b>Cover letters and form answers</b><span>That match the CV and the job, from your own instructions.</span></li>
+          <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#briefcase"/></svg><b>Offers you receive</b><span>Compared with your minimum salary without the agent seeing it, with the negotiation prepared.</span></li>
+          <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#file-text"/></svg><b>Company research</b><span>A dossier with sources before you message someone or interview.</span></li>
+          <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#shield-warning"/></svg><b>Text aimed at an AI is caught</b><span>A job with hidden instructions is flagged and never comes out as a strong fit.</span></li>
+          <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#target"/></svg><b>A training plan</b><span>From the skills you mark as gaps, with checked resources and an order.</span></li>
+          <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#desktop"/></svg><b>Useful without your agent open</b><span>Reviewing jobs, the board, the calendar, the funnel and CV designs.</span></li>
+        </ul>
+        <p class="more__all"><a class="link" href="https://github.com/DiegoPrieto23/candidatai/blob/main/docs/FEATURES.md">Every feature, page by page <svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#arrow-up-right"/></svg></a></p>
       </div>
     </section>
 
-    <section id="honest" aria-labelledby="honest-title">
-      <div class="wrap split">
-        <div>
-          <span class="eyebrow">Nothing made up</span>
-          <h2 id="honest-title">What isn't in your profile doesn't go in your CV</h2>
-          <p class="lead">Every line of a CV must point to evidence in your profile, or the code rejects
-            it. The app checks it, whichever agent you use.</p>
-          <ul class="checks">
-            <li>A separate verifier checks every CV and cover letter before you get them.</li>
-            <li>Skills the job asks for that you don't have are marked as gaps, not filled in.</li>
-            <li>Posting text is only data: hidden instructions aimed at an AI are detected and flagged.</li>
-            <li>Nothing leaves without your click: messages and emails are drafts you send yourself.</li>
+    <section class="section" id="linkedin" aria-labelledby="linkedin-title">
+      <div class="wrap linkedin">
+        <div class="reveal">
+          <h2 class="display" id="linkedin-title">LinkedIn doesn't allow bots. <em>Your click is fine.</em></h2>
+          <p class="lede">LinkedIn doesn't allow bots or AI agents to browse its site, and CandidatAI respects that: no scraping and no automated applications. For its jobs there's the "Send to CandidatAI" button, a browser extension that only acts when you press it.</p>
+          <ol class="steps">
+            <li><p><b>Open the job on LinkedIn</b><span>Signed in, as usual.</span></p></li>
+            <li><p><b>Press "Send to CandidatAI"</b><span>The extension reads that page and nothing else.</span></p></li>
+            <li><p><b>The job lands in your inbox</b><span>If it already came in as a summary from an email alert, it's completed.</span></p></li>
+          </ol>
+          <ul class="linkedin__facts">
+            <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#check"/></svg>It doesn't read cookies, browse pages or run in the background.</li>
+            <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#check"/></svg>It can only talk to your app, at <code>127.0.0.1:8000</code>.</li>
+            <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#check"/></svg>For Chrome, Edge and Brave; the app guides you to load and connect it.</li>
+            <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#check"/></svg>It also works on InfoJobs, Indeed, Tecnoempleo and any company's careers page.</li>
           </ul>
+          <p class="linkedin__note">LinkedIn job alerts by email come in on their own too. Letting your agent search LinkedIn is off by default: only you can turn it on, at your own risk.</p>
         </div>
-        <div class="report" role="img" aria-label="Example fit: three requirements covered with their evidence and one that is a gap and stays out of the CV">
-          <header>
-            <h3>Data Engineer · example</h3>
-            <span class="fit">Fit 78/100</span>
-          </header>
-          <ul>
-            <li class="req"><span class="mark" aria-hidden="true">✓</span><b>Python</b><span>Evidence: 4 years in your most recent role</span></li>
-            <li class="req"><span class="mark" aria-hidden="true">✓</span><b>SQL and data modelling</b><span>Evidence: an achievement with a number from your profile</span></li>
-            <li class="req"><span class="mark" aria-hidden="true">✓</span><b>Airflow</b><span>Evidence: a project from your profile</span></li>
-            <li class="req gap"><span class="mark" aria-hidden="true">!</span><b>Kafka</b><span>Gap: not in your profile, so it isn't written. You note it in Skills for your training plan.</span></li>
-          </ul>
-          <p class="note">A made-up example to explain the idea, not a screenshot.</p>
+        <div class="linkedin__stage reveal">
+          <div class="window">
+            <div class="window__bar" aria-hidden="true">
+              <span class="window__dots"><i></i><i></i><i></i></span>
+              <span class="window__url">127.0.0.1:8000</span>
+            </div>
+            <!-- media:provisional -->
+            <img class="media" src="../img/en/sources-extension.webp" alt="Where to search, Browser button: the guide to load and connect the extension" width="1440" height="900" loading="lazy">
+          </div>
+          <div class="float float--ext">
+            <span class="float__icon"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#cursor-click"/></svg></span>
+            <p><b>Send to CandidatAI</b><span>One click, in the tab you have open</span></p>
+          </div>
         </div>
       </div>
     </section>
 
-    <section id="features" aria-labelledby="features-title">
+    <section class="section section--sunken tour" id="tour" aria-labelledby="tour-title">
       <div class="wrap">
-        <div class="section-head">
-          <span class="eyebrow">Features</span>
-          <h2 id="features-title">From a new posting to an offer</h2>
+        <div class="head reveal">
+          <h2 class="display" id="tour-title">This is what it looks like, <em>with the demo</em></h2>
+          <p class="lede">A fictional candidate, companies and jobs, so you can look around before adding anything of yours.</p>
         </div>
-        <div class="grid">
-          <article class="card"><h3>Jobs from many sources</h3><p>A link or the text, your target companies' public job boards (Greenhouse, Lever, Ashby and five more), your email alerts, a browser button or your agent searching the job boards you choose. Duplicates are merged.</p></article>
-          <article class="card"><h3>An explained fit</h3><p>Hard filters, a 0-100 fit that says where each point comes from, and your agent's reasoned verdict. Approve or discard from the keyboard.</p></article>
-          <article class="card"><h3>A tailored CV for each job</h3><p>With your template, photo and colour, and checked by a separate verifier. Ask for changes in plain words, edit it yourself or go back to any version.</p></article>
-          <article class="card"><h3>Your own CV design</h3><p>Import any CV (Word, PDF, an image, Canva) as a template, and change template, colour or sections in seconds without using your agent.</p></article>
-          <article class="card"><h3>Cover letters and form answers</h3><p>That match the CV and the job, from your own instructions.</p></article>
-          <article class="card"><h3>Assisted applications</h3><p>The app fills Greenhouse, Lever, Ashby or generic forms and stops at captchas and logins.</p></article>
-          <article class="card key"><h3>Nothing leaves without your confirmation</h3><p>Submitting takes your click, application by application. Messages and emails are drafts you send yourself.</p></article>
-          <article class="card"><h3>Every process on one board</h3><p>A board moved by recorded steps, a calendar, follow-up reminders and company replies sorted for you to accept.</p></article>
-          <article class="card"><h3>Interviews and offers</h3><p>A prep guide in PDF with a day-by-day plan, mock interviews, debriefs and company research with sources.</p></article>
-          <article class="card"><h3>A funnel that tells you what works</h3><p>Where each application stopped, by source, role, template and referral, and whether the fit score predicted what really happened.</p></article>
-          <article class="card"><h3>Text aimed at an AI is caught</h3><p>A job with hidden instructions is flagged and can never come out as a strong fit.</p></article>
-          <article class="card"><h3>Useful without your agent open</h3><p>Reviewing jobs, the board, the calendar, the funnel, your profile and CV designs all work without an agent.</p></article>
-        </div>
-        <p class="note"><a href="https://github.com/DiegoPrieto23/candidatai/blob/main/docs/FEATURES.md">Every feature, page by page and skill by skill</a></p>
-      </div>
-    </section>
-
-    <section id="privacy" aria-labelledby="privacy-title">
-      <div class="wrap">
-        <div class="section-head">
-          <span class="eyebrow">Privacy</span>
-          <h2 id="privacy-title">Your data, on your computer</h2>
-          <p class="lead">No accounts and nobody's servers: the app runs on your computer and only you
-            decide what leaves it.</p>
-        </div>
-        <div class="grid four">
-          <article class="card"><h3>On your computer</h3><p>Profile, jobs, CVs and processes are kept in a folder on your computer. The app only listens on <code>127.0.0.1</code>, your own machine.</p></article>
-          <article class="card"><h3>Your agent, your choice</h3><p>What your agent reads is processed by its provider, with your account and its terms. With a local model, nothing leaves.</p></article>
-          <article class="card"><h3>What the agent never sees</h3><p>Your minimum salary and the amounts of an offer you receive are compared in the app: the agent never gets them.</p></article>
-          <article class="card"><h3>Open source</h3><p>MIT licence: you can read every line that runs on your computer.</p></article>
-        </div>
-        <p class="note"><a href="https://github.com/DiegoPrieto23/candidatai/blob/main/docs/POLICIES.md">The rules on truthfulness, privacy and applying</a> (in Spanish)</p>
-      </div>
-    </section>
-
-    <section id="tour" aria-labelledby="tour-title">
-      <div class="wrap">
-        <div class="section-head">
-          <span class="eyebrow">Tour</span>
-          <h2 id="tour-title">Take a look around</h2>
-        </div>
-        <div data-tabs>
-          <div class="tablist" role="tablist" aria-label="App screens">
-            <button class="tab" role="tab" id="tab-demo" aria-controls="panel-demo" aria-selected="true" type="button">Demo</button>
-            <button class="tab" role="tab" id="tab-triage" aria-controls="panel-triage" aria-selected="false" type="button">Review</button>
-            <button class="tab" role="tab" id="tab-cv" aria-controls="panel-cv" aria-selected="false" type="button">CV</button>
-            <button class="tab" role="tab" id="tab-processes" aria-controls="panel-processes" aria-selected="false" type="button">Processes</button>
-            <button class="tab" role="tab" id="tab-replies" aria-controls="panel-replies" aria-selected="false" type="button">Replies</button>
-            <button class="tab" role="tab" id="tab-calendar" aria-controls="panel-calendar" aria-selected="false" type="button">Calendar</button>
-            <button class="tab" role="tab" id="tab-funnel" aria-controls="panel-funnel" aria-selected="false" type="button">Funnel</button>
+        <div class="window reveal" data-tabs>
+          <div class="window__bar">
+            <div class="tablist" role="tablist" aria-label="App screens">
+              <button class="tab" role="tab" id="tab-demo" aria-controls="panel-demo" aria-selected="true" type="button">Demo</button>
+              <button class="tab" role="tab" id="tab-triage" aria-controls="panel-triage" aria-selected="false" type="button">Review</button>
+              <button class="tab" role="tab" id="tab-cv" aria-controls="panel-cv" aria-selected="false" type="button">CV</button>
+              <button class="tab" role="tab" id="tab-processes" aria-controls="panel-processes" aria-selected="false" type="button">Processes</button>
+              <button class="tab" role="tab" id="tab-replies" aria-controls="panel-replies" aria-selected="false" type="button">Replies</button>
+              <button class="tab" role="tab" id="tab-calendar" aria-controls="panel-calendar" aria-selected="false" type="button">Calendar</button>
+              <button class="tab" role="tab" id="tab-search" aria-controls="panel-search" aria-selected="false" type="button">Search jobs</button>
+            </div>
           </div>
           <figure class="panel" role="tabpanel" id="panel-demo" aria-labelledby="tab-demo">
             <picture>
@@ -248,9 +362,7 @@
               <!-- media:provisional -->
               <img class="media" src="../img/en/anim/tour.webp" alt="A tour of the app: approving and discarding jobs, a verified CV in another design, the application form filled in and waiting for confirmation, processes and the funnel" width="1280" height="800" loading="lazy">
             </picture>
-            <figcaption>Everything you see is the demo: a fictional candidate, companies and jobs. The
-              agent's work (reading jobs, writing the CV) is already done in it; with a real agent each
-              step takes from seconds to a few minutes.</figcaption>
+            <figcaption>The agent's work (reading jobs, writing the CV) is already done in the demo; with a real agent each step takes from seconds to a few minutes.</figcaption>
           </figure>
           <figure class="panel" role="tabpanel" id="panel-triage" aria-labelledby="tab-triage">
             <!-- media:provisional -->
@@ -277,110 +389,144 @@
             <img class="media" src="../img/en/calendar.webp" alt="Calendar with interviews, tests and follow-ups" width="1440" height="900" loading="lazy">
             <figcaption>Interviews, deadlines and follow-ups in one calendar.</figcaption>
           </figure>
-          <figure class="panel" role="tabpanel" id="panel-funnel" aria-labelledby="tab-funnel">
+          <figure class="panel" role="tabpanel" id="panel-search" aria-labelledby="tab-search">
             <!-- media:provisional -->
-            <img class="media" src="../img/en/funnel.webp" alt="Funnel with the applications at each stage" width="1440" height="900" loading="lazy">
-            <figcaption>See where your applications stop.</figcaption>
+            <img class="media" src="../img/en/search.webp" alt="Search jobs: the job boards to search and what to prepare before starting" width="1440" height="900" loading="lazy">
+            <figcaption>Choose where your agent searches, and what to prepare first.</figcaption>
           </figure>
         </div>
-        <p class="note">All images use the demo's fictional data.</p>
+        <p class="tour__note">All images use the demo's fictional data.</p>
       </div>
     </section>
 
-    <section id="install" aria-labelledby="install-title">
+    <section class="section" id="privacy" aria-labelledby="privacy-title">
       <div class="wrap">
-        <div class="section-head">
-          <span class="eyebrow">Install</span>
-          <h2 id="install-title">Run it on your computer</h2>
-          <p class="lead">No Python, Node or admin rights: the installer brings what it needs, checks the
-            SHA-256 checksum of what it downloads and creates a "CandidatAI" shortcut. To update, run it
-            again: your data isn't touched.</p>
+        <div class="head reveal">
+          <h2 class="display" id="privacy-title">Your data, <em>on your computer</em></h2>
+          <p class="lede">No accounts and nobody's servers: the app runs on your computer and only you decide what leaves it.</p>
         </div>
-        <div data-tabs>
+        <ul class="cols reveal">
+          <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#hard-drives"/></svg><h3>On your computer</h3><p>Profile, jobs, CVs and processes are kept in a folder on your computer. The app only listens on <code>127.0.0.1</code>.</p></li>
+          <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#robot"/></svg><h3>Your agent, your choice</h3><p>What your agent reads is processed by its provider, with your account and its terms. With a local model, nothing leaves.</p></li>
+          <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#eye-slash"/></svg><h3>What the agent never sees</h3><p>Your minimum salary and the amounts of an offer you receive are compared in the app: the agent never gets them.</p></li>
+          <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#code"/></svg><h3>Open source</h3><p>MIT licence: you can read every line that runs on your computer.</p></li>
+        </ul>
+        <p class="cols__link"><a class="link" href="https://github.com/DiegoPrieto23/candidatai/blob/main/docs/POLICIES.md">The rules on truthfulness, privacy and applying (in Spanish) <svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#arrow-up-right"/></svg></a></p>
+      </div>
+    </section>
+
+    <section class="section section--sunken" id="install" aria-labelledby="install-title">
+      <div class="wrap install">
+        <div class="reveal">
+          <p class="eyebrow">Install</p>
+          <h2 class="display" id="install-title">Run it on <em>your computer</em></h2>
+          <ol class="steps">
+            <li><p><b>Run the installer</b><span>No Python, Node or admin rights. It downloads the latest release, checks its SHA-256 checksum and creates a "CandidatAI" shortcut.</span></p></li>
+            <li><p><b>Open it</b><span>A window starts the app and your browser opens at <code>127.0.0.1:8000</code>, your own computer.</span></p></li>
+            <li><p><b>Try the demo, then make it yours</b><span>Create your profile from your CV and connect your agent. <a class="link" href="https://github.com/DiegoPrieto23/candidatai/blob/main/docs/START_HERE.md">Start here</a> walks you through it, with what each agent costs.</span></p></li>
+          </ol>
+          <p class="release">Latest release: <a class="link" href="https://github.com/DiegoPrieto23/candidatai/releases/latest">v{{version}}</a>. To update, run the installer again: your data isn't touched.</p>
+        </div>
+        <div class="terminal reveal" data-tabs>
           <div class="tablist" role="tablist" aria-label="System">
-            <button class="tab" role="tab" id="tab-windows" aria-controls="panel-windows" aria-selected="true" type="button">Windows</button>
-            <button class="tab" role="tab" id="tab-unix" aria-controls="panel-unix" aria-selected="false" type="button">macOS and Linux</button>
-            <button class="tab" role="tab" id="tab-docker" aria-controls="panel-docker" aria-selected="false" type="button">Docker</button>
+            <button class="tab" role="tab" id="tab-windows" aria-controls="panel-windows" aria-selected="true" type="button"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#windows-logo"/></svg>Windows</button>
+            <button class="tab" role="tab" id="tab-unix" aria-controls="panel-unix" aria-selected="false" type="button"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#apple-logo"/></svg>macOS and Linux</button>
+            <button class="tab" role="tab" id="tab-docker" aria-controls="panel-docker" aria-selected="false" type="button"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#package"/></svg>Docker</button>
           </div>
           <div class="panel" role="tabpanel" id="panel-windows" aria-labelledby="tab-windows">
-            <h3>Windows 11</h3>
-            <ol class="install-steps">
-              <li>Open PowerShell and paste these two lines:
-                <div class="code"><pre>iwr -useb https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.ps1 -OutFile $env:TEMP\cai-install.ps1
-powershell -ExecutionPolicy Bypass -File $env:TEMP\cai-install.ps1</pre><button class="copy" type="button" data-copied="Copied" data-failed="Copy it by hand">Copy</button></div>
-                To see first what it would do, add <code>-WhatIf</code> to the second line.</li>
-              <li>Open the "CandidatAI" shortcut on the desktop or in the Start menu. A window starts the app
-                and your browser opens at <code>http://127.0.0.1:8000</code>.</li>
-            </ol>
+            <h3>Windows 11, in PowerShell</h3>
+            <p>Paste these two lines. To see first what it would do, add <code>-WhatIf</code> to the second one.</p>
+            <div class="code"><pre>iwr -useb https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.ps1 -OutFile $env:TEMP\cai-install.ps1
+powershell -ExecutionPolicy Bypass -File $env:TEMP\cai-install.ps1</pre><button class="copy" type="button" data-copied="Copied" data-failed="Copy it by hand"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#copy"/></svg><span>Copy</span></button></div>
+            <p>Then open "CandidatAI" from the desktop or the Start menu.</p>
           </div>
           <div class="panel" role="tabpanel" id="panel-unix" aria-labelledby="tab-unix">
-            <h3>macOS and Linux</h3>
-            <ol class="install-steps">
-              <li>In a terminal, no <code>sudo</code>:
-                <div class="code"><pre>curl -fsSL https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.sh | bash</pre><button class="copy" type="button" data-copied="Copied" data-failed="Copy it by hand">Copy</button></div>
-                To see first what it would do, use <code>| bash -s -- --dry-run</code>.</li>
-              <li>Open "CandidatAI" from <code>~/Applications</code> on macOS (Spotlight finds it) or from the
-                applications menu on Linux.</li>
-            </ol>
+            <h3>macOS and Linux, in a terminal</h3>
+            <p>No <code>sudo</code>. To see first what it would do, end it with <code>| bash -s -- --dry-run</code>.</p>
+            <div class="code"><pre>curl -fsSL https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.sh | bash</pre><button class="copy" type="button" data-copied="Copied" data-failed="Copy it by hand"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#copy"/></svg><span>Copy</span></button></div>
+            <p>Then open "CandidatAI" from <code>~/Applications</code> on macOS or the applications menu on Linux.</p>
           </div>
           <div class="panel" role="tabpanel" id="panel-docker" aria-labelledby="tab-docker">
-            <h3>Docker (optional)</h3>
-            <ol class="install-steps">
-              <li>From a copy of the repository:
-                <div class="code"><pre>git clone https://github.com/DiegoPrieto23/candidatai.git
+            <h3>Docker, optional</h3>
+            <p>From a copy of the repository. Your agent stays outside the container, with <a href="https://github.com/DiegoPrieto23/candidatai/blob/main/docs/GUIDE.md#with-docker-optional">some limits</a>.</p>
+            <div class="code"><pre>git clone https://github.com/DiegoPrieto23/candidatai.git
 cd candidatai
-docker compose up -d --build</pre><button class="copy" type="button" data-copied="Copied" data-failed="Copy it by hand">Copy</button></div></li>
-              <li>Open it at <code>http://127.0.0.1:8000</code>. Your agent stays outside the container, with
-                some limits: <a href="https://github.com/DiegoPrieto23/candidatai/blob/main/docs/GUIDE.md#with-docker-optional">With Docker</a>.</li>
-            </ol>
+docker compose up -d --build</pre><button class="copy" type="button" data-copied="Copied" data-failed="Copy it by hand"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#copy"/></svg><span>Copy</span></button></div>
+            <p>Then open it at <code>http://127.0.0.1:8000</code>.</p>
           </div>
         </div>
-        <p>Then try the demo and make it yours: create your profile from your CV and connect your agent.
-          <a href="https://github.com/DiegoPrieto23/candidatai/blob/main/docs/START_HERE.md">Start here</a>
-          walks you through it, without being technical, with what each agent costs.</p>
       </div>
     </section>
 
-    <section id="limits" aria-labelledby="limits-title">
+    <section class="section" id="limits" aria-labelledby="limits-title">
       <div class="wrap">
-        <div class="section-head">
-          <span class="eyebrow">Maturity</span>
-          <h2 id="limits-title">Good to know</h2>
-          <p class="lead">It's a young project with one maintainer. This is what it doesn't do today, or
-            what hasn't been tested yet.</p>
+        <div class="head reveal">
+          <h2 class="display" id="limits-title">Good to know</h2>
+          <p class="lede">It's a young project with one maintainer. This is what it doesn't do today.</p>
         </div>
-        <div class="limits">
-          <article class="card"><h3>Desktop only</h3><p>It's made for a computer screen; it isn't designed for a phone.</p></article>
-          <article class="card"><h3>One person, one computer</h3><p>It runs on your own machine, with no accounts and no sync between devices.</p></article>
-          <article class="card"><h3>You need an AI agent</h3><p>Without one you can review jobs, track processes and change CV designs, but reading jobs and writing CVs, letters or guides needs an agent.</p></article>
-          <article class="card"><h3>What has really been tested</h3><p>Windows 11 the most; macOS and Linux have an installer and pass the tests, but haven't been installed by hand yet. Claude Code, end to end. <a href="https://github.com/DiegoPrieto23/candidatai/blob/main/docs/AGENTS_COMPAT.md">Details per agent</a>.</p></article>
-          <article class="card"><h3>English and Spanish</h3><p>In the app and in the guides, only these two languages.</p></article>
-          <article class="card"><h3>No scraping, no automated LinkedIn</h3><p>By design: those jobs come in through email alerts, the browser button or your agent searching with your browser.</p></article>
+        <ul class="limits reveal">
+          <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#desktop"/></svg><b>Desktop only</b><span>It's made for a computer screen, not for a phone.</span></li>
+          <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#user"/></svg><b>One person, one computer</b><span>It runs on your own machine, with no accounts and no sync between devices.</span></li>
+          <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#robot"/></svg><b>You need an AI agent</b><span>Without one you can review jobs, track processes and change CV designs, but not read jobs or write CVs, letters or guides.</span></li>
+          <li><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#translate"/></svg><b>English and Spanish</b><span>In the app and in the guides, only these two languages.</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section section--sunken" id="faq" aria-labelledby="faq-title">
+      <div class="wrap faq">
+        <div class="reveal">
+          <h2 class="display" id="faq-title">Questions</h2>
+          <p class="lede">Something else? <a class="link" href="https://github.com/DiegoPrieto23/candidatai/issues">Ask it on GitHub</a>.</p>
+        </div>
+        <div class="reveal">
+          <details>
+            <summary>How much does it cost?<svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#plus"/></svg></summary>
+            <p>The app is free and open source. What may cost money is your agent: a subscription you may already pay (Claude, ChatGPT or Google AI Pro), Antigravity CLI with a free Google account, or a local model.</p>
+          </details>
+          <details>
+            <summary>Does it send applications on its own?<svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#plus"/></svg></summary>
+            <p>No. It fills the form and stops: sending takes your click, application by application. Messages to recruiters and follow-ups are drafts you copy and send yourself.</p>
+          </details>
+          <details>
+            <summary>Can it make up experience?<svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#plus"/></svg></summary>
+            <p>No. Every line of a CV must point to evidence in your profile, and the code rejects any line that doesn't. A separate verifier also checks every CV and letter.</p>
+          </details>
+          <details>
+            <summary>What data leaves my computer?<svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#plus"/></svg></summary>
+            <p>The app sends nothing to third parties without your confirmation. What your agent reads (your profile, the jobs) is processed by that agent's provider under your terms; with a local model, nothing leaves.</p>
+          </details>
+          <details>
+            <summary>Do I need to know how to code?<svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#plus"/></svg></summary>
+            <p>No. The installer brings everything it needs and creates a shortcut, and you use the app in your browser. Start here walks you through it, including installing your agent.</p>
+          </details>
+          <details>
+            <summary>Does it work on Mac and Linux?<svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#plus"/></svg></summary>
+            <p>Yes. They have their own installer, like Windows, and the app opens the same way in your browser.</p>
+          </details>
         </div>
       </div>
     </section>
 
-    <section class="cta" id="get-started" aria-labelledby="cta-title">
+    <section class="closing" id="get-started" aria-labelledby="cta-title">
       <div class="wrap">
-        <h2 id="cta-title">Try it with the demo in two minutes</h2>
-        <p class="lead">A fictional candidate, companies and jobs to look around before adding anything of
-          yours.</p>
+        <img class="closing__mark" src="../brand/mark.svg" alt="" width="56" height="56">
+        <h2 class="display" id="cta-title">Try it <em>with the demo</em></h2>
+        <p class="lede">Install it, load the fictional search and see how it works before adding anything of yours.</p>
         <div class="actions">
-          <a class="btn btn-primary" href="#install">Install</a>
-          <a class="btn btn-secondary" href="https://github.com/DiegoPrieto23/candidatai">Star on GitHub</a>
-          <a class="btn btn-secondary" href="https://github.com/DiegoPrieto23/candidatai/blob/main/docs/START_HERE.md">Start here</a>
+          <a class="button button--primary" href="#install" data-tip="Free: one installer for Windows, macOS and Linux"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#download-simple"/></svg>Install</a>
+          <a class="button button--secondary" href="https://github.com/DiegoPrieto23/candidatai" data-tip="The source code; if you like it, give it a star"><svg class="icon" aria-hidden="true"><use href="../assets/icons.svg#github-mark"/></svg>View on GitHub</a>
         </div>
       </div>
     </section>
   </main>
 
-  <footer>
+  <footer class="footer">
     <div class="wrap">
-      <div class="foot">
+      <div class="footer__grid">
         <div>
-          <a class="logo" href="#top"><img src="../brand/mark.svg" alt="" width="32" height="32"><span>Candidat<span>AI</span></span></a>
-          <p>Your whole job search in one app. Version {{version}}, under the
-            <a href="https://github.com/DiegoPrieto23/candidatai/blob/main/LICENSE">MIT</a> licence.</p>
+          <a class="brand" href="#top"><img src="../brand/mark.svg" alt="" width="30" height="30"><span>Candidat<b>AI</b></span></a>
+          <p>Your whole job search in one app. Open source under the <a href="https://github.com/DiegoPrieto23/candidatai/blob/main/LICENSE">MIT</a> licence.</p>
         </div>
         <nav aria-labelledby="foot-project">
           <h2 id="foot-project">Project</h2>
@@ -409,9 +555,7 @@ docker compose up -d --build</pre><button class="copy" type="button" data-copied
           </ul>
         </nav>
       </div>
-      <p class="fineprint">This site uses no cookies, no analytics and nothing from other domains; it only
-        remembers in your browser whether you chose light or dark mode. Not affiliated with Anthropic,
-        OpenAI, Google, LinkedIn or any job portal.</p>
+      <p class="fineprint">This site uses no cookies, no analytics and nothing from other domains; it only remembers in your browser whether you chose light or dark mode. Icons by Phosphor (MIT); Schibsted Grotesk and Geist Mono typefaces (OFL). Not affiliated with Anthropic, OpenAI, Google, LinkedIn or any job portal.</p>
     </div>
   </footer>
 </body>
