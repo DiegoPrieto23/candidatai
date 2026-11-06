@@ -112,7 +112,7 @@ def test_new_redirect_needs_no_mention(repo: Path) -> None:
 
 def test_exceptions_are_exempt(repo: Path) -> None:
     # `ats-simple` se cita y no es un skill.
-    _replace(repo / "README.md", "## Guarantees", "Templates: `ats-simple`.\n\n## Guarantees")
+    _replace(repo / "README.md", "## Security", "Templates: `ats-simple`.\n\n## Security")
     assert coverage.check(repo) == []
 
 
@@ -175,7 +175,7 @@ def test_readme_must_link_its_feature_list(repo: Path) -> None:
 
 
 def test_readmes_with_different_sections_fail(repo: Path) -> None:
-    _replace(repo / "README.md", "## License and credits", "## License\n\n### Credits")
+    _replace(repo / "README.md", "## License\n", "## License\n\n### Credits\n")
     assert any("secciones distintas" in e for e in coverage.check(repo))
 
 

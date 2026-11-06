@@ -45,4 +45,4 @@ the rest are in Spanish only.
 | [`../CONTRIBUTING.md`](../CONTRIBUTING.md) | Cómo contribuir (en inglés): reglas, preparar el entorno y tres caminos fáciles (un conector de ATS, un idioma de la UI, probar un agente) |
 | [`../CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md) | Código de conducta (Contributor Covenant 2.1, en inglés) |
 | 🌐 [`../CHANGELOG.md`](../CHANGELOG.md) | Qué cambia en cada versión (de ahí salen las notas de cada release) |
-| [`../scripts/readme_media/`](../scripts/readme_media/) | Cómo se generan las capturas, los GIF, el vídeo y las ilustraciones del README |
+| [`../scripts/readme_media/`](../scripts/readme_media/) | Cómo se generan las capturas, las animaciones y las ilustraciones del README y de las guías |

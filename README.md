@@ -1,236 +1,271 @@
 <p align="center">
-  <img src="docs/img/banner-en.svg" alt="CandidatAI: your job search, end to end, on your own machine" width="100%">
+  <img src="docs/brand/mark.svg" alt="" width="80" height="80">
+</p>
+
+<h1 align="center">CandidatAI</h1>
+
+<p align="center">
+  Your whole job search in one app: you decide, your AI agent reads and writes, and nothing is sent without you.
 </p>
 
 <p align="center">
   <b>English</b> · <a href="README.es.md">Español</a>
 </p>
 
-<h3 align="center">Your whole job search in one app: you decide, your AI reads and writes, and nothing is sent without you.</h3>
-
-<p align="center">
-  <img src="docs/img/en/anim/tour.webp" alt="A tour of the app: approving and discarding jobs, a verified CV in another design, the application form filled in and waiting for confirmation, processes and the funnel" width="100%">
-  <br><sub>From a new job to the application, in 50 seconds. Everything you see is the <b>demo</b>: a fictional candidate, companies and jobs.</sub>
-</p>
-
-<p align="center">
-  <a href="#windows"><img alt="Install on Windows" src="https://img.shields.io/badge/Install-Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white"></a>
-  <a href="#macos-and-linux"><img alt="Install on macOS or Linux" src="https://img.shields.io/badge/Install-macOS%20%C2%B7%20Linux-333333?style=for-the-badge&logo=linux&logoColor=white"></a>
-  <a href="#docker"><img alt="Run with Docker" src="https://img.shields.io/badge/Run-Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white"></a>
-</p>
-
 <p align="center">
   <a href="https://github.com/DiegoPrieto23/candidatai/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/DiegoPrieto23/candidatai?color=0F6E69"></a>
   <a href="https://github.com/DiegoPrieto23/candidatai/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/DiegoPrieto23/candidatai/actions/workflows/ci.yml/badge.svg?branch=main"></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/DiegoPrieto23/candidatai?color=0F6E69"></a>
+  <img alt="Python 3.12" src="https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white">
+  <img alt="React" src="https://img.shields.io/badge/React-UI-149ECA?logo=react&logoColor=white">
+  <img alt="MCP" src="https://img.shields.io/badge/MCP-server-555555">
 </p>
 
-> [!NOTE]
-> **Where it stands (v0.1, October 2026):** Windows 11 is the most tested, including a clean
-> install from the release; macOS and Linux have an installer but are new. Claude Code is tested
-> end to end, Codex with one job and Antigravity CLI in part; OpenCode was only tried
-> with a small local model, which didn't finish the test, and Qwen Code is configured but untested. The UI is in English and Spanish.
+CandidatAI takes you from a new job posting to an offer: it gathers jobs from many sources, shows
+how well each one fits you, writes a tailored CV and cover letter with nothing made up, fills the
+application form and waits for you to press Send, and then tracks every process with its
+interviews, replies and follow-ups.
 
-<!--
-  Your search in numbers. `cai stats story` or the "Your search in numbers" card in
-  the Funnel gives you this line with your real figures: aggregated counts only, no companies.
-  To publish it, paste it below, write what worked in one line and remove this comment.
+It's for anyone looking for a job who wants their search in one place, with their data on their own
+computer. The reading and writing is done by an AI agent you already use (Claude Code, Codex,
+Antigravity CLI…), which the app doesn't include. It's a young project with one maintainer, most
+tested on Windows 11 with Claude Code: see the [known limitations](#known-limitations).
 
-> **My search with CandidatAI** (D Mon YYYY → D Mon YYYY, N weeks): N postings evaluated,
-> N approved, N applications, N replies, N interviews, N offers.
-> What worked: …
--->
+**Get started:** [install it](#run-it-on-your-computer) · [Start here](docs/START_HERE.md), if
+you're not technical.
 
-## What you need
+## Demo
 
-1. **A computer** with Windows, macOS or Linux. No Python, Node or admin rights: the installer
-   brings what it needs.
-2. **The app**, which keeps your jobs, profile, CVs and processes on your machine.
-3. **An AI agent** to do the reading and writing: Claude Code, Codex or Antigravity CLI with the
-   subscription you may already pay (Claude, ChatGPT or Google AI Pro), Antigravity CLI also with a
-   free Google account, or a local model. **The app never calls an
-   AI itself.** Which one to pick and what each costs: **[Start here](docs/START_HERE.md)**.
+<p align="center">
+  <!-- media:provisional -->
+  <img src="docs/img/en/anim/tour.webp" alt="A tour of the app: approving and discarding jobs, a verified CV in another design, the application form filled in and waiting for confirmation, processes and the funnel" width="100%">
+  <br><sub>Everything you see is the demo: a fictional candidate, companies and jobs. The agent's work
+  (reading jobs, writing the CV) is already done in it; with a real agent each step takes from
+  seconds to a few minutes.</sub>
+</p>
 
-## What it does
+## Features
 
-Jobs come in from several sources, you review them with an explained score, each one gets a
-**tailored, verified CV and cover letter**, the app fills the application form and **waits for you
-to press Send**, and then it tracks the process all the way to the offer.
-
-| | |
-|---|---|
-| 📥 **Jobs from many sources** | Paste a URL or text; public ATS APIs (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee); InfoJobs, Adzuna, Manfred and freehire.me; **job alerts by email**; a browser button; your agent browsing portals; and, opt-in, LinkedIn's public search. Deduplicated, with **detection of text aimed at an AI** |
-| 🎯 **Review with an explained score** | Hard filters and a 0-100 score from skill coverage and your preferences; your agent adds a reasoned verdict, and "Is the fit right?" checks it against real outcomes |
-| 📄 **Tailored CV and cover letter** | The agent cites **evidence from your profile for every line**; the code checks it, renders it with your template, photo and colour, and a separate role verifies it. **Import your own CV design** as a template |
-| 📝 **Assisted applications** | Fills Greenhouse, Lever, Ashby or generic forms, stops at captchas and logins, and **only submits after you confirm** |
-| 📊 **Tracking and analytics** | A kanban that only moves through recorded events, a calendar, follow-up reminders, and a funnel by source, role, template and referral |
-| 🎤 **Interviews and offers** | Prep guides and plans, mock interviews, debriefs, company research with sources, and offers compared against your minimum **without the agent ever seeing it** |
+- **Jobs from many sources:** paste a link or the text, follow your target companies through their
+  public job boards (Greenhouse, Lever, Ashby and five more), read your email job alerts, send the
+  page you're on with a browser button, or let your agent search the job boards you choose.
+  Duplicates are merged.
+- **Text aimed at an AI is caught:** posting text is only ever data. Hidden instructions are
+  detected and flagged, and such a job can never come out as a strong fit.
+- **An explained fit for every job:** hard filters, a 0-100 fit that says where each point comes
+  from, and your agent's reasoned verdict. Approve or discard from the keyboard.
+- **A tailored CV for each job:** your agent writes it from your profile, the app renders it with
+  your template, photo and colour, and a separate verifier checks it. Ask for changes
+  in plain words, edit it yourself or go back to any version.
+- **Your own CV design:** import any CV (Word, PDF, an image, Canva) as a template, and change
+  template, colour or sections in seconds without using your agent.
+- **No made-up experience:** every line of a CV must point to evidence in your profile, or the code
+  rejects it.
+- **Cover letters and form answers** that match the CV and the job, from your own instructions.
+- **Assisted applications:** the app fills Greenhouse, Lever, Ashby or generic forms and stops at
+  captchas and logins.
+- **Nothing leaves without your confirmation:** submitting takes your click, application by
+  application. Messages and emails are drafts you send yourself.
+- **Every process on one board:** a board that only moves with recorded steps, a calendar, follow-up
+  reminders and company replies read from your mailbox and sorted for you to accept.
+- **Interviews and offers:** a prep guide in PDF with a day-by-day plan, mock interviews, debriefs,
+  company research with sources, and offers compared with your minimum salary without the agent
+  ever seeing it.
+- **A funnel that tells you what works:** where each application stopped, by source, role, template
+  and referral, and whether the fit score predicted what really happened.
 
 **Every feature, page by page and skill by skill:** [`docs/FEATURES.md`](docs/FEATURES.md).
 
-| Home | Processes (kanban) |
-|---|---|
-| <picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/en/dark/home.webp"><img src="docs/img/en/home.webp" alt="Home"></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/img/en/dark/processes.webp"><img src="docs/img/en/processes.webp" alt="Processes"></picture> |
-| **Inbox: discard with Undo** | **Funnel** |
-| <img src="docs/img/en/anim/discard.webp" alt="Discarding jobs from the Inbox and undoing it"> | <img src="docs/img/en/funnel.webp" alt="Funnel"> |
+## Screenshots
 
-<details>
-<summary><b>Tailored CV: same verified content, any design, in seconds</b></summary>
-<br>
-<p align="center"><img src="docs/img/en/anim/cv.webp" alt="Changing the CV template and colour and rendering it again" width="88%"></p>
+<!-- media:provisional -->
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/img/en/dark/home.webp">
+  <img src="docs/img/en/home.webp" alt="Home: what's waiting for you today, the journey of your jobs and the best fits to review" width="100%">
+</picture>
+<p align="center"><sub>Home tells you what's waiting for you and for your agent, and the next step.</sub></p>
 
-The agent writes the content once. You choose the template, photo, colour and hidden sections and
-press "Generate": it takes seconds and **uses no agent quota**.
-</details>
+<table>
+  <tr>
+    <td width="50%"><!-- media:provisional --><img src="docs/img/en/triage.webp" alt="Quick review: a list of jobs by fit and, beside it, the selected job with its fit breakdown and skills" width="100%"><br><sub>Review jobs by fit and decide with one key.</sub></td>
+    <td width="50%"><!-- media:provisional --><img src="docs/img/en/job-cv.webp" alt="The CV of a job: verified, with its templates, photo and sections to hide" width="100%"><br><sub>A verified CV, in the design you choose.</sub></td>
+  </tr>
+  <tr>
+    <td><!-- media:provisional --><img src="docs/img/en/processes.webp" alt="Processes board with one column per stage" width="100%"><br><sub>Every application on one board, moved by recorded steps.</sub></td>
+    <td><!-- media:provisional --><img src="docs/img/en/funnel.webp" alt="Funnel with the applications at each stage" width="100%"><br><sub>See where your applications stop.</sub></td>
+  </tr>
+  <tr>
+    <td><!-- media:provisional --><img src="docs/img/en/replies.webp" alt="Company replies read from the mailbox, each with a proposed step to accept" width="100%"><br><sub>Company emails, sorted for you to accept.</sub></td>
+    <td><!-- media:provisional --><img src="docs/img/en/calendar.webp" alt="Calendar with interviews, tests and follow-ups" width="100%"><br><sub>Interviews, deadlines and follow-ups in one calendar.</sub></td>
+  </tr>
+  <tr>
+    <td><!-- media:provisional --><img src="docs/img/en/search.webp" alt="Search jobs: the job boards to search and what to prepare before starting" width="100%"><br><sub>Choose where your agent searches, and what to prepare first.</sub></td>
+    <td><!-- media:provisional --><img src="docs/img/en/profile-experience.webp" alt="My profile: experience and skills, edited by blocks" width="100%"><br><sub>Your profile, the only source of what goes in a CV.</sub></td>
+  </tr>
+</table>
 
-<details>
-<summary><b>Assisted application</b>: the app fills the form, you check every field and send it</summary>
-<br>
-<p align="center"><img src="docs/img/en/anim/apply.webp" alt="The app fills a test application form, shows where each answer comes from and stops at the confirmation dialog with the company name" width="88%"></p>
-</details>
+<sub>All screenshots use the demo's fictional data. The short animations of each feature are in
+[`docs/FEATURES.md`](docs/FEATURES.md).</sub>
 
-<details>
-<summary><b>The job page</b>: extraction, fit, CV, cover letter, package and interviews</summary>
-<br>
-<img src="docs/img/en/job.webp" alt="Job page with extraction and fit">
-<img src="docs/img/en/job-package.webp" alt="Application package: CV, cover letter and screening answers ready to send">
-<img src="docs/img/en/job-interview.webp" alt="A job in process: interview with its day-by-day prep plan">
-</details>
+## Run it on your computer
 
-## Why CandidatAI
+1. **What you need.** A computer with Windows, macOS or Linux; no Python, Node or admin rights,
+   because the installer brings what it needs. And an AI agent: Claude Code, Codex or Antigravity
+   CLI with a subscription you may already pay (Claude, ChatGPT or Google AI Pro), Antigravity CLI
+   also with a free Google account, or a local model. **The app never calls an AI itself.** Which
+   one to pick and what each costs: [Start here](docs/START_HERE.md).
+2. **Install it.**
+   - **Windows** (Windows 11), in PowerShell:
 
-There are two well-known open projects that also use an AI agent for the job search, and both
-inspired this one. Checked on **25 October 2026** in their repositories
-([AI Job Search](https://github.com/MadsLorentzen/ai-job-search),
-[career-ops](https://github.com/career-ops-hq/career-ops)):
+     ```powershell
+     iwr -useb https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.ps1 -OutFile $env:TEMP\cai-install.ps1
+     powershell -ExecutionPolicy Bypass -File $env:TEMP\cai-install.ps1
+     ```
 
-| | CandidatAI | AI Job Search | career-ops |
-|---|---|---|---|
-| What it is | An **app** with a web UI, a database and a background worker | Instructions and commands for Claude Code over files | An agent with many modes and Node scripts over files, a terminal dashboard and a web UI in alpha |
-| Installing | One command, a desktop shortcut, nothing installed beforehand | Fork, then Claude Code, Python, Bun and LaTeX | `npx … init` with Node installed |
-| Without the agent open | Reviewing jobs, kanban, calendar, funnel, profile, re-render CVs | Nothing | Scanning, the dashboard and the web UI |
-| Rules | **Enforced by code**: a CV line without evidence in your profile is rejected; sending needs your click | Instructions, plus an injection filter in code | Instructions, plus a fact check of the PDF in code |
-| Agents | 5 configured; Claude Code fully tested | Claude Code | 12 CLIs, free and local models |
-| Community | Just released, one maintainer | ~65k stars, ~90 contributors, the author's real search | ~77k stars, ~460 contributors, Discord, many success stories |
+   - **macOS and Linux**, in a terminal (no `sudo`):
 
-**What they do better, today:** career-ops works with more agents and models, covers more job
-sources and countries and is far more battle-tested; AI Job Search is simpler (fork it and run
-`/setup`) and has a real hiring story behind it. Both have communities this project doesn't have
-yet. The full feature-by-feature comparison is in [`docs/COMPARATIVA.md`](docs/COMPARATIVA.md)
-(Spanish).
+     ```bash
+     curl -fsSL https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.sh | bash
+     ```
 
-## Install
+   - **Docker** (optional): from a copy of the repository, `docker compose up -d --build`. Your
+     agent stays outside the container, with some limits: see
+     [With Docker](docs/GUIDE.md#with-docker-optional).
 
-### Windows
+   The installers download the [latest release](https://github.com/DiegoPrieto23/candidatai/releases/latest),
+   **check its SHA-256 checksum** and create a "CandidatAI" shortcut. To update, run them again:
+   your data isn't touched. To see first what they'd do, add `-WhatIf` to the second Windows line
+   or use `| bash -s -- --dry-run`.
+3. **Open it.** Use the "CandidatAI" shortcut: on the desktop and in the Start menu on Windows, in
+   `~/Applications` on macOS (Spotlight finds it) and in the applications menu on Linux. A terminal
+   window starts the app and your browser opens at `http://127.0.0.1:8000`, which is your own
+   computer. Keep that window open while you use it. From a terminal, it's `uv run cai start` in
+   the app's `backend` folder:
 
-In PowerShell (Windows 11; no admin rights needed):
+   ```bash
+   cd $env:LOCALAPPDATA\CandidatAI\app\backend               # Windows (PowerShell)
+   cd ~/"Library/Application Support/CandidatAI/app/backend"   # macOS
+   cd ~/.local/share/candidatai/app/backend                    # Linux
+   uv run cai start
+   ```
 
-```powershell
-iwr -useb https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.ps1 -OutFile $env:TEMP\cai-install.ps1
-powershell -ExecutionPolicy Bypass -File $env:TEMP\cai-install.ps1
-```
+   `uv run cai --help` lists the other commands: `cai doctor` checks that nothing is missing. With
+   Docker, the app starts with the container and you open it at that same address.
+4. **Try the demo, then make it yours.** `uv run cai demo seed` loads a fictional search to look
+   around. Then create your profile from your CV and connect your agent:
+   [Start here](docs/START_HERE.md) step by step, or the [user guide](docs/GUIDE.md).
 
-### macOS and Linux
+## Documentation
 
-In a terminal (no `sudo`):
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.sh | bash
-```
-
-### Docker
-
-From a copy of the repository, `docker compose up -d --build`. Your agent stays outside the
-container, with some limits: see [With Docker](docs/GUIDE.md#with-docker-optional).
-
-The installers download the [latest release](https://github.com/DiegoPrieto23/candidatai/releases/latest),
-**check its SHA-256 checksum** and create the shortcut described in the next section. To update,
-run them again: your data isn't touched. To see first what they'd do, add `-WhatIf` to the second
-Windows line or use `| bash -s -- --dry-run`.
-
-## How to start it
-
-The installers create a **"CandidatAI"** shortcut, like any other app:
-
-| System | Where it is |
-|---|---|
-| Windows | On the desktop and in the Start menu |
-| macOS | In your user's Applications folder (`~/Applications`); Spotlight finds it too |
-| Linux | In your desktop's applications menu |
-
-When you open it, a terminal window starts the app and your browser opens at
-`http://127.0.0.1:8000`, which is your own computer. Keep that window open while you use it:
-closing it stops the app.
-
-**From a terminal** it's the same: `uv run cai start` in the app's `backend` folder.
-
-```bash
-cd $env:LOCALAPPDATA\CandidatAI\app\backend               # Windows (PowerShell)
-cd ~/"Library/Application Support/CandidatAI/app/backend"   # macOS
-cd ~/.local/share/candidatai/app/backend                    # Linux
-uv run cai start
-```
-
-`uv run cai --help` lists the other commands: `cai doctor` checks that nothing is missing and
-`cai status` sums up your search. With **Docker**, the app starts with the container
-(`docker compose up -d`) and you open it at that same address.
-
-Then try the demo (`cai demo seed`), create your profile from your CV and connect your agent:
-**[Start here](docs/START_HERE.md)** step by step, or the full **[user guide](docs/GUIDE.md)**.
-To develop it, see [Development](docs/GUIDE.md#15-development).
-
-## Guarantees
-
-These are rules enforced by code, whichever agent you use:
-
-- **Nothing leaves without your confirmation.** The app fills forms and stops; submitting takes
-  your click, application by application. Messages and emails are drafts you send yourself.
-- **No made-up experience.** Every CV claim must point to evidence in your profile, or the code
-  rejects it; an independent verifier role reviews the rest.
-- **Untrusted content stays data.** Text from postings, emails and websites is never treated as
-  instructions; text aimed at an AI is detected and flagged.
-- **Your data stays with you.** Everything lives on your machine. The agent never receives your
-  email, phone or salary minimum.
-- **LinkedIn and captchas.** No automated applications on LinkedIn, and captchas are never solved or
-  bypassed. Searching LinkedIn only happens if you turn it on in the UI.
+- [Start here](docs/START_HERE.md): what you need and how to install it, without being technical.
+- [User guide](docs/GUIDE.md): every page and how to use it day to day.
+- [Features](docs/FEATURES.md): everything the app does, page by page and skill by skill.
+- [Policies](docs/POLICIES.md): the rules on truthfulness, privacy and applying.
+- [Agents](docs/AGENTS_COMPAT.md): which agents are supported and how well they've been tested.
+- [All documents](docs/README.md), grouped. Technical documents are in Spanish; the guides
+  exist in English and Spanish.
+- [Changelog](CHANGELOG.md): what changed in each version.
 
 ## How it works
 
 <p align="center">
+  <!-- media:provisional -->
   <img src="docs/img/how-it-works-en.svg" alt="How it works: jobs come in, the agent extracts and assesses, you approve or discard, the agent writes the CV, the app verifies and renders it, the app fills the form and you send it, the app tracks the process" width="100%">
 </p>
 
 Each colour is who does the step: **you** decide, **your agent** reasons, **the app** stores,
 checks and automates. The agent works through a dedicated interface (MCP tools plus an equivalent
 `cai … --json` CLI) and can only fill strict schemas that the code validates. Skills such as
-`generate-cv 42` or `assess-fit` run from your agent or from a button in the UI. Every skill and
-source: [`docs/FEATURES.md`](docs/FEATURES.md); agents: [`docs/AGENTS_COMPAT.md`](docs/AGENTS_COMPAT.md)
-and the measured matrix in [`evals/compat/REPORT.md`](evals/compat/REPORT.md); architecture:
+`generate-cv 42` or `process-jobs` run from your agent or from a button in the app. More in
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) (Spanish).
 
-**Quality:** backend tests on Windows, Linux and macOS and frontend tests in CI. The matching eval
-(80 fictional cases, no embeddings): precision **0.88**, recall **0.95**,
+## Why CandidatAI
+
+Two well-known open projects also use an AI agent for the job search, and both inspired this one:
+[AI Job Search](https://github.com/ai-job-search-dev/ai-job-search) and
+[career-ops](https://github.com/career-ops-hq/career-ops). CandidatAI is different in three ways:
+it's an **app** you install like any program and can use without opening your agent; its rules
+(no made-up CV lines, nothing sent without you, posting text is only data) are **enforced by
+code**, whichever agent you use; and it covers the whole search, **up to the offer**, in one place.
+
+**What they do better, today:** career-ops works with more agents and models, covers more job
+sources and countries and is far more battle-tested; AI Job Search is simpler (fork it and run
+`/setup`) and has a real hiring story behind it. Both have large communities that this project
+doesn't have yet.
+
+<details>
+<summary><b>Side by side</b> (checked on 6 November 2026)</summary>
+<br>
+
+| | CandidatAI | AI Job Search | career-ops |
+|---|---|---|---|
+| What it is | An **app** with a web UI, a database and a background worker | Instructions and commands for Claude Code over files | An agent with many modes and Node scripts over files, a terminal dashboard and a web UI |
+| Installing | One command, a desktop shortcut, nothing installed beforehand | Fork, then Claude Code, Python, Bun and LaTeX | `npx … init` with Node installed |
+| Without the agent open | Reviewing jobs, board, calendar, funnel, profile, CV designs | Nothing | Scanning, the dashboard and the web UI |
+| Rules | **Enforced by code**: a CV line without evidence in your profile is rejected; sending needs your click | Instructions, least-privilege permissions and an injection filter in code | Instructions, plus fact and wording checks of the CV in code |
+| Agents | 5 configured; Claude Code fully tested | Claude Code | 12 CLIs, free and local models |
+| Community | One maintainer, just released | ~70k stars, ~90 contributors, the author's real search | ~81k stars, ~470 contributors, Discord, many success stories |
+
+The full comparison, feature by feature and with its sources, is in
+[`docs/COMPARATIVA.md`](docs/COMPARATIVA.md) (Spanish).
+</details>
+
+## Known limitations
+
+- **Desktop only.** The app is made for a computer screen; it isn't designed for a phone.
+- **One person, one computer.** It runs on your own machine at `127.0.0.1`, with no accounts and
+  no sync between devices.
+- **You need an AI agent.** Without one you can review jobs, track processes and change CV designs,
+  but reading jobs and writing CVs, letters or interview guides needs an agent, which the app
+  doesn't include.
+- **What has really been tested:** Windows 11 the most, including a clean install from the release;
+  macOS and Linux have an installer and run the tests in CI, but haven't been installed by hand from
+  a release. Claude Code is tested end to end, Codex with one job and Antigravity CLI in part;
+  OpenCode was only tried with a small local model, which didn't finish the test, and Qwen Code is
+  configured but untested. Details in [`docs/AGENTS_COMPAT.md`](docs/AGENTS_COMPAT.md).
+- **English and Spanish only**, in the app and in the guides.
+- **No scraping of job boards without an API** and no automated LinkedIn applications, by design:
+  those jobs come in through email alerts, the browser button or your agent searching with your
+  browser.
+
+## Performance
+
+Measured on 6 November 2026 on a laptop with an AMD Ryzen 7 5700U, 16 GB of RAM and no dedicated
+graphics card, running Windows 11, with the app already opened once before (median of three runs, except memory):
+
+| What | Time or size |
+|---|---|
+| Starting the app, until it answers / until you see Home | 4.0 s / 4.6 s |
+| Memory of the whole app, idle / after going through every page | ≈ 330 MB / ≈ 365 MB |
+| A CV in another design, to PDF: Word templates (LibreOffice) / HTML templates | 11.7 s / 4.7 s |
+| Home, first load / reload, with the demo (65 jobs) | 0.28 s / 0.11 s |
+| Home, first load / reload, with 10 times as many jobs (650) | 0.28 s / 0.11 s |
+| Job inbox, first load / reload, with the demo | 0.49 s / 0.31 s |
+| Job inbox, first load / reload, with 650 jobs | 0.53 s / 0.31 s |
+
+Your agent's work (reading a job, writing a CV) isn't included: it depends on the agent and its
+model. As a reference, Claude Code took 8.5 minutes to read, assess and write a verified CV for five
+jobs in the [agent matrix](evals/compat/REPORT.md).
+
+The matching eval (80 fictional cases, no embeddings): precision **0.88**, recall **0.95**,
 F1 **0.92** at the default score threshold ([`evals/REPORT.md`](evals/REPORT.md)).
 
-## Documentation
+## Security
 
-| I want to… | Read |
-|---|---|
-| Install it without being technical | [Start here](docs/START_HERE.md) · [Empieza aquí](docs/EMPEZAR.md) |
-| Use it day to day | [User guide](docs/GUIDE.md) · [Guía de uso](docs/GUIA.md) |
-| See everything it does | [`docs/FEATURES.md`](docs/FEATURES.md) |
-| Know the rules (truthfulness, privacy, applying) | [`docs/POLICIES.md`](docs/POLICIES.md), [`SECURITY.md`](SECURITY.md) |
-| Contribute | [`CONTRIBUTING.md`](CONTRIBUTING.md) |
-| See what changed | [`CHANGELOG.md`](CHANGELOG.md) |
+Nothing leaves your computer without your confirmation, and posting or email text is never followed
+as instructions. To report a vulnerability, see [`SECURITY.md`](SECURITY.md); the rules the app
+enforces are in [`docs/POLICIES.md`](docs/POLICIES.md).
 
-All documents, grouped: [`docs/README.md`](docs/README.md). Technical docs are in Spanish; this
-README, the guides and the code are in English.
+## Development
 
-## License and credits
+To contribute, read [`CONTRIBUTING.md`](CONTRIBUTING.md) and the
+[development section of the guide](docs/GUIDE.md#15-development).
+
+## License
 
 [MIT](LICENSE) © 2026 Diego Prieto.
 
 Inspired by [ackyer/job-search-agent-template](https://github.com/ackyer/job-search-agent-template)
-(MIT), and by ideas from [AI Job Search](https://github.com/MadsLorentzen/ai-job-search) and
+(MIT), and by ideas from [AI Job Search](https://github.com/ai-job-search-dev/ai-job-search) and
 [career-ops](https://github.com/career-ops-hq/career-ops) (both MIT). Not affiliated with
-Anthropic, OpenAI, LinkedIn or any job portal.
+Anthropic, OpenAI, Google, LinkedIn or any job portal.

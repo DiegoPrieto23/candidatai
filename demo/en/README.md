@@ -1,6 +1,6 @@
 # English demo
 
-FICTITIOUS data for `cai demo seed --lang en`: a candidate in Dublin (Aoife Brennan) and Irish
+FICTITIOUS data for `cai demo seed --lang en`: a candidate in Dublin (Olivia Smith) and Irish
 companies, all made up. Same structure as the Spanish demo in `demo/` (see `demo/jobs/README.md`):
 
 | Path | What it is |

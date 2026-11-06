@@ -249,9 +249,9 @@ documentos y correos. Las claves van en `.env`, también fuera de git.
 
 | Qué | Dónde | Cómo |
 |---|---|---|
-| **Perfil** (la fuente de verdad de todo lo que se escribe sobre ti) | `data/profile.yaml` | Para empezar, sube tu CV en «Mi perfil» y pulsa «Crear mi perfil desde mi CV» (o pídeselo a tu agente): el skill `update-profile` lo lee, te pregunta lo que falte y lo valida. Sin agente, «Empezar a mano» crea un perfil mínimo (nombre, titular, puesto y niveles) y abre el editor. Después, **rellénalo y retócalo en «Mi perfil»**: experiencia y logros, proyectos, formación, skills e idiomas, historias STAR, qué buscas y tus preferencias de CV y carta, por bloques. Cada bloque se guarda solo, conserva el formato y los comentarios de tu fichero, avisa si lo cambiaste por fuera y se puede deshacer. Cada cambio crea una versión. Si prefieres, sigue valiendo editar el YAML |
-| **Tu CV como diseño** | `data/templates/<id>/` | Sube un CV con el diseño que te gusta en «Plantillas → Subir nueva plantilla» y pulsa «Convertir en plantilla» (usa el skill `import-cv-template`). Vale Word, PDF, imagen o HTML (Canva, Google Docs…) |
-| **Foto** | `data/photo.jpg` (o png) | Cada plantilla la recorta a su forma; se incluye o no según el país de la oferta |
+| **Perfil** (la fuente de verdad de todo lo que se escribe sobre ti) | `data/profile.yaml` | Para empezar, sube tu CV en «Mi perfil» y pulsa «Crear mi perfil desde mi CV» (o pídeselo a tu agente): el skill `update-profile` lo lee, te pregunta lo que falte y lo valida. Sin agente, «Empezar a mano» crea un perfil mínimo (nombre, titular, puesto y niveles) y abre el editor. Después, **rellénalo y retócalo en «Mi perfil»**: experiencia y logros, proyectos, formación, skills e idiomas, historias STAR, qué buscas y tus preferencias de CV y carta, por bloques. Cada bloque se guarda solo, conserva el formato y los comentarios de tu fichero, avisa si lo cambiaste por fuera y se puede deshacer. Cada cambio crea una versión. Con el perfil ya hecho, «Importar información desde un CV» añade lo que le falte desde otro CV y te enseña las diferencias antes de escribir. Si prefieres, sigue valiendo editar el YAML |
+| **Tu CV como diseño** | `data/templates/<id>/` | Sube un CV con el diseño que te gusta en «Mi perfil → Plantillas de CV → Subir nueva plantilla» y pulsa «Convertir en plantilla» (usa el skill `import-cv-template`). Vale Word, PDF, imagen o HTML (Canva, Google Docs…) |
+| **Foto** | `data/photo.jpg` (o png) | La subes, la cambias o la quitas en «Mi perfil → Sobre ti». Cada plantilla la recorta a su forma; se incluye o no según el país de la oferta |
 | **Contexto** (estilo, narrativa, criterios) | `data/contexto/*.md` | Se edita en «Mi perfil → Documentos» (con vista previa) o en tu editor. Orienta al agente, pero nunca respalda un hecho del CV |
 | **Muestras de estilo** (cartas, correos o posts tuyos) | `data/documentos/estilo/` | Súbelas en «Mi perfil → Documentos» (.txt, .md, .docx, .pdf). Tu agente toma de ellas el tono, nunca los hechos, y las lee como dato: si traen texto de otros con órdenes, no las sigue |
 | **Documentos fuente** (CVs antiguos, títulos, referencias) | `data/documentos/` | Tu CV y tu exportación de LinkedIn se suben en «Mi perfil → Documentos»; el resto, en su carpeta. `update-profile` los puede leer, confirmando antes de escribir |
@@ -326,13 +326,20 @@ Guía completa, con los modelos recomendados según tu memoria y qué sale de tu
 Arranca CandidatAI **fuera de tu agente** (una ventana propia o el acceso directo): si el agente se
 queda sin memoria, puede cerrar lo que haya lanzado él.
 
-Si es tu primera vez, **Cómo funciona**, en el menú, cuenta el recorrido completo y quién hace qué.
+Si es tu primera vez, **Cómo funciona**, al pie del menú, cuenta el recorrido completo y quién hace
+qué.
+
+El menú tiene nueve entradas: **Inicio** y **Mi perfil**; en Búsqueda, **Buscar ofertas** y
+**Bandeja de ofertas**; en Procesos, **Tablero**, **Calendario**, **Respuestas** y **Embudo**; y
+**Agente**. Lo demás son pestañas dentro de ellas: la Bandeja tiene **Revisión rápida** y **Por
+completar**; Buscar ofertas, **Qué buscas** y **Dónde buscar**; y Mi perfil, **Skills que te
+faltan** y **Plantillas de CV**.
 
 Un día normal:
 
 1. Abre **Inicio**: te dice qué tienes (ofertas por revisar, CVs listos, seguimientos vencidos).
 2. Pide a tu agente `process-jobs` (lee y valora las nuevas), o pulsa «Valorar las ofertas nuevas» en la UI.
-3. Aprueba o descarta en **Revisión rápida**, en la Bandeja.
+3. Aprueba o descarta en **Revisión rápida**, en la Bandeja de ofertas.
 4. `generate-cv` para las aprobadas y, cuando quieras, envía desde la ficha.
 5. `daily-summary` resume todo eso en una respuesta.
 
@@ -344,7 +351,7 @@ Un día normal:
 | **Empresas objetivo** (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee) | En «Buscar ofertas», pestaña «Dónde buscar → Empresas objetivo» o `cai sources add --kind greenhouse --name "Acme" --slug acme`. `cai sources discover --file empresas.txt` busca el tablero de cada empresa de una lista. Cómo encontrar el slug, en [`FUENTES_OFERTAS.md`](FUENTES_OFERTAS.md#cómo-encontrar-el-slug) |
 | **InfoJobs y Adzuna** | Sus claves en `.env` (`CAI_INFOJOBS_CLIENT_ID`/`_SECRET`, `CAI_ADZUNA_APP_ID`/`_KEY`) y una búsqueda con `cai sources add` |
 | **Manfred y freehire.me** | Sin claves: una búsqueda en la misma página o con `cai sources add --kind manfred --name Manfred --query "data engineer"` (en freehire, también `--country` y `--remote-only`) |
-| **Alertas por correo** | Crea alertas en LinkedIn, InfoJobs, Indeed… y que lleguen a una etiqueta de tu correo. En «Dónde buscar → Alertas por correo → Añadir buzón» conecta uno o varios buzones (Gmail, Outlook, Yahoo, iCloud u otro IMAP, siempre en solo lectura) o una carpeta de `.eml`; el asistente explica cada proveedor y prueba la conexión antes de guardar. La contraseña se guarda en tu `.env` y no vuelve a salir. Paso a paso en [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md). Lo que llega aparece en «Alertas» |
+| **Alertas por correo** | Crea alertas en LinkedIn, InfoJobs, Indeed… y que lleguen a una etiqueta de tu correo. En «Dónde buscar → Alertas por correo → Añadir buzón» conecta uno o varios buzones (Gmail, Outlook, Yahoo, iCloud u otro IMAP, siempre en solo lectura) o una carpeta de `.eml`; el asistente explica cada proveedor y prueba la conexión antes de guardar. La contraseña se guarda en tu `.env` y no vuelve a salir. Paso a paso en [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md). Lo que llega aparece en la **Bandeja de ofertas**; las que solo traen título y enlace esperan en su pestaña «Por completar» |
 | **Botón «Enviar a CandidatAI»** | En **Dónde buscar → Botón del navegador**: la app te guía para cargar `extension/` en Chrome, Edge o Brave y la conecta con un clic. Instrucciones: [`extension/README.md`](../extension/README.md) |
 | **Tu agente con tu navegador** | En «Dónde buscar → Portales de empleo», «Configurar con mi agente» (`search-jobs configurar`) elige portales y búsquedas; o añádelos tú: en InfoJobs, Tecnoempleo, Indeed y LinkedIn las búsquedas salen solas de los puestos y las ubicaciones de tu perfil, y cada portal se edita con su lápiz; `search-jobs` los recorre. LinkedIn queda desactivado hasta que lo actives tú. Al pulsar «Buscar ahora», un aviso dice «Buscando…» en todas las páginas y cambia cuando tu agente termina. En cada portal, los **problemas** son lo que impidió leerlo (captcha, inicio de sesión, página cambiada) y las **notas**, lo que tu agente apuntó sin que fallara nada, como las búsquedas que dejó sin recorrer |
 | **Búsqueda pública de LinkedIn** | Interruptor «Búsqueda pública sin sesión» en la tarjeta de LinkedIn de «Dónde buscar → Portales de empleo». Apagado por defecto: va contra las condiciones de LinkedIn y puede bloquear tu IP un tiempo |
@@ -367,9 +374,19 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
 3. **Revisar:** en la Bandeja, pestaña «Revisión rápida», `J`/`K` para moverte, `A` para aprobar, `D` para descartar (con
    motivo) y `O` para abrir la ficha. Un descarte se deshace en el aviso; una aprobación, con
    «Reabrir» en la ficha.
-4. **CV:** `generate-cv 42` redacta el contenido, el código lo valida y renderiza y el rol
-   `verifier` lo revisa. En la ficha cambias plantilla, foto, color y secciones sin gastar
-   agente, comparas renders y marcas cuál envías.
+4. **CV:** `generate-cv 42` redacta el contenido, el código lo valida y lo genera y el rol
+   `verifier` lo revisa. En la ficha, la pestaña «Candidatura» enseña el CV a tamaño de lectura y,
+   a su lado, un panel con:
+   - **Pedir cambios:** escribe qué cambiar («el resumen más corto», «quita el proyecto X») y tu
+     agente (`correct-cv`) toca solo eso, sin inventar nada, y lo verifica. Si pides que ocupe una
+     página, una versión que no cabe no se guarda.
+   - **Editar texto:** cambia tú el resumen, las viñetas o las skills, sin agente. La app avisa de
+     lo que tu perfil no respalda, y esa versión queda sin verificar hasta que pulses «Verificar
+     esta versión» (`verify-cv`).
+   - **Diseño:** plantilla, foto, color y secciones ocultas, sin gastar agente.
+
+   Cada corrección o edición es una versión nueva: la ficha enseña qué cambió, sección a sección,
+   y «Volver a esta versión» no borra ninguna.
 5. **Carta:** «Escribir carta» en la ficha (o `generate-cover-letter 42`), con el mismo desplegable
    que «Generar CV». Sigue tus indicaciones generales (perfil) y las de la oferta (ficha); en segundo
    plano, si no hay ninguna, usa las de por defecto. Sale a juego con el CV.
@@ -381,8 +398,10 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
 
 ## 9. Seguimiento, respuestas y embudo
 
-- **Procesos:** kanban por etapas. Una tarjeta solo cambia de columna registrando lo que pasó
-  (respuesta, entrevista, prueba, oferta, rechazo). Entrevistas y pruebas crean un hito con fecha,
+- **Tablero:** kanban por etapas. Una tarjeta solo cambia de columna registrando lo que pasó
+  (respuesta, entrevista, prueba, oferta, rechazo), y las tarjetas solo van hacia la derecha: al
+  arrastrar una, se marcan las columnas a las que puede ir. Reabrir una oferta cerrada está en
+  «Actualizar estado». Entrevistas y pruebas crean un hito con fecha,
   exportable a tu calendario (`.ics`). En la ficha, «¿Qué ha pasado?» registra también lo que no
   cambia de etapa (otra respuesta, otra entrevista, una prueba, la oferta) y enlaza a «Anotar
   oferta» y a «Hitos» para los detalles; «Acepto la oferta» sale cuando ya hay una oferta.
@@ -396,7 +415,10 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
   Con el teclado: `J`/`K` para pasar de un correo a otro, `A` para aceptar, `I` para ignorar. Si no lo
   activas, anótalo en su ficha o en el tablero con «Actualizar estado». Qué lee exactamente:
   [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md#respuestas-de-las-empresas).
-- **Embudo:** conversión por paso, fuente, semana y referencia, y los motivos de descarte. En «Más
+- **Embudo:** «Tu embudo» (también en Inicio) enseña hasta dónde ha llegado cada candidatura y
+  dónde están las que pararon; cada rama lleva a esas candidaturas. Debajo, una franja por paso con
+  su cifra y dos porcentajes, la conversión por fuente, semana y referencia, y los motivos de
+  descarte. En «Más
   análisis», plegado al final: «¿Acierta el encaje?» (por encaje, veredicto, plantilla, carta…), por
   tipo de puesto, el coste del agente y «Tu búsqueda en números» (o `cai stats story`): tus cifras
   desde el principio, sin empresas, con una línea para compartir si quieres. `review-search` hace
@@ -421,46 +443,55 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
   te pregunta lo que falte y te deja en la ficha una **guía en PDF** (el rol, las responsabilidades
   desglosadas, tu encaje, lo que ya respondiste, la empresa y el sector, conceptos a repasar,
   preguntas probables con idea de respuesta, preguntas que hacer, tu presentación y el plan), con
-  el color de la empresa y en el idioma de la entrevista, y el plan por días.
+  el color de la empresa y en el idioma de la entrevista, y el plan por días. Bajo la guía, «Pedir
+  cambios a la guía» (`correct-interview-guide`) toca solo lo que pides, conserva la versión
+  anterior y enseña qué cambió; «Volver a la versión anterior» rehace el PDF sin agente.
 - `mock-interview 42`: una pregunta cada vez, con feedback y una versión mejor basada en tu
   perfil.
 - `debrief-interview 42`: cuentas cómo fue; guarda notas y próximos pasos y propone historias STAR
   nuevas para tu perfil (con tu OK).
-- **Ofertas recibidas:** las anotas en la ficha y las comparas en «Procesos → Ofertas recibidas»
-  (aparece con dos o más) con tu mínimo y con el rango publicado. `prepare-negotiation 42` prepara argumentos y guion sin
+- **Ofertas recibidas:** las anotas en la ficha y las comparas en «Ofertas recibidas», al pie
+  del **Tablero** (aparece con dos o más) con tu mínimo y con el rango publicado. `prepare-negotiation 42` prepara argumentos y guion sin
   proponer cifras.
 
 ## 11. El agente desde la UI
 
 Muchas pantallas tienen botones que abren tu agente con la orden ya escrita:
 
-- **En terminal:** abre una ventana con tu agente; tú ves y apruebas lo que hace.
-- **Aviso de «listo»:** tras «Generar CV» o «Preparar» (de una entrevista), en terminal o en
-  segundo plano, la app comprueba cada 5 segundos, durante 30 minutos, si ya está el CV o la guía.
-  En cuanto está, la ficha se pone al día sola y sale un aviso abajo a la derecha con **Abrir PDF**;
-  si diste permiso de notificaciones y estás en otra ventana, también una notificación del
-  sistema. El PDF no se abre solo: el navegador no deja abrir pestañas sin un clic tuyo. El CV
-  queda además en `data/cvs/` y la guía en `data/entrevistas/`.
-- **En segundo plano** (Claude Code; OpenCode en `process-jobs` y `assess-fit`): para los skills
-  que no preguntan (`process-jobs`, `assess-fit`, `generate-cv`,
-  `generate-cover-letter`). Corre sin ventana, solo con las
-  herramientas de la app que necesita, y ves el progreso y el uso en la página «Agente». Si tu
-  agente no puede, el desplegable propone uno que sí. Necesita `cai worker` en marcha.
+- **En una ventana aparte:** abre una ventana con tu agente; tú ves y apruebas lo que hace. Si un
+  botón no puede abrir tu agente, enseña la orden entera en un recuadro con «Copiar» y dice dónde
+  pegarla.
+- **Avisos de lo que hace tu agente:** lo que lanzas con un botón (leer y valorar ofertas, revisar
+  respuestas, generar o corregir un CV, la carta, investigar la empresa, preparar una entrevista…)
+  sale en un aviso en cualquier página, con lo que lleva hecho, y cambia cuando termina o si no ha
+  podido. Se puede minimizar o cerrar; cerrarlo no para a tu agente. Cuando un CV o una guía de
+  entrevista está listo, el aviso ofrece **Abrir PDF**; si diste permiso de notificaciones y estás
+  en otra ventana, también una notificación del sistema. El CV queda además en `data/cvs/` y la
+  guía en `data/entrevistas/`.
+- **Tu agente te pregunta en la app:** si necesita saber algo para escribir un CV, una carta o una
+  guía, un aviso te deja contestar ahí mismo. También puedes contestarle en su ventana. Los
+  permisos que pide y las conversaciones (un simulacro, p. ej.) siguen en su ventana.
+- **En segundo plano** (Claude Code; OpenCode solo en `process-jobs` y `assess-fit`): para los skills que no preguntan
+  (`process-jobs`, `assess-fit`, `generate-cv`, `correct-cv`, `verify-cv`,
+  `generate-cover-letter`). Corre sin ventana, solo con las herramientas de la app que necesita, y
+  ves el progreso y el uso en la página «Agente». Si tu agente no puede, el desplegable propone
+  uno que sí. Necesita `cai worker` en marcha.
   - **Coste:** la sección «Coste» de la página «Agente» suma tokens, tiempo y, si el agente lo da,
     dinero, por acción, agente y modelo (7 y 30 días), con lo que pesa cada skill; la ficha dice lo
     gastado en esa oferta y el embudo, por candidatura enviada y por entrevista. Lo que hagas en una
     terminal no cuenta: ahí el agente no devuelve su uso.
-  - **Umbral antes de gastar:** la valoración en segundo plano solo valora las ofertas con un encaje
-    mínimo (por defecto, el mínimo de «Por revisar» menos 10; lo cambias en «Coste»). «Por revisar» dice por qué se
+  - **Umbral antes de gastar:** en segundo plano, «Valorar las ofertas nuevas» y `assess-fit` solo
+    valoran las ofertas con un encaje mínimo (por defecto, el mínimo de «Por revisar» menos 10; lo cambias en «Coste»). «Por revisar» dice por qué se
     queda sin valorar una oferta por debajo.
   - **Varias a la vez:** por defecto, de una en una. Con `background_runs.max_parallel` (hasta 4)
     en `config/policies.yaml` van varias a la vez, nunca dos de la misma oferta; con
     `per_agent: {opencode: 1}` limitas un modelo local.
 - **Dejar para mi próxima sesión:** guarda el encargo; `handle-requests` lo hace cuando abras tu
-  agente.
+  agente, o pulsa «Atender encargos» en la página «Agente».
 
-**Qué agente se abre.** En la página «Agente», la sección «Agentes» enseña los agentes que tienes,
-qué sabe hacer cada uno y cómo instalar los que faltan. Ahí eliges el agente por defecto, el modelo
+**Qué agente se abre.** La página «Agente» empieza por tu agente y si está listo (o cómo instalar
+uno). «Configurar agentes» abre los agentes que tienes, qué sabe hacer cada uno y cómo instalar los
+que faltan. Ahí eliges el agente por defecto, el modelo
 de cada agente y, en la tabla «Por acción», otro agente o modelo para una acción concreta (p. ej.
 OpenCode con un modelo local para procesar ofertas y Claude Code para el CV). El desplegable de cada
 botón (la flecha ▾) dice con qué agente se abre y te deja usar otro solo esa vez. Si un agente

@@ -1,18 +1,20 @@
 # CandidatAI frente a AI Job Search y career-ops
 
-Comparativa revisada el **25 de octubre de 2026**, con la primera release de CandidatAI (`v0.1.0`)
-publicada, entre este repositorio y los dos proyectos abiertos de los que más ideas ha tomado:
+Comparativa revisada el **6 de noviembre de 2026**, con CandidatAI en la `v0.3.0` (y la `v1.0.0` en
+preparación), entre este repositorio y los dos proyectos abiertos de los que más ideas ha tomado:
 
-- **[AI Job Search](https://github.com/MadsLorentzen/ai-job-search)** (Mads Lorentzen, MIT): un
-  marco de instrucciones, skills y comandos para Claude Code, con CVs en LaTeX y portales daneses.
-  Versión `v1.7.3` (19 de octubre).
+- **[AI Job Search](https://github.com/ai-job-search-dev/ai-job-search)** (Mads Lorentzen, MIT; desde
+  noviembre, en la organización `ai-job-search-dev`): un marco de instrucciones, skills y comandos
+  para Claude Code, con CVs en LaTeX y portales daneses. Versión `v1.7.4` (2 de noviembre); desde
+  ella publica una versión automática cada lunes y su `CHANGELOG` queda congelado.
 - **[career-ops](https://github.com/career-ops-hq/career-ops)** (Santiago Fernández, MIT): un agente
   de búsqueda de empleo para una docena de CLIs de IA, con más de 140 scripts Node, un dashboard de
-  terminal y una web en alfa. Versión `1.38.0` y web `0.16.0` (23 de octubre).
+  terminal y una web en alfa. Versión `1.39.0` y web `0.17.0` (5 de noviembre).
 
-Los datos de los otros dos salen de sus repositorios, sus guías y sus `CHANGELOG` a esta fecha (los
-dos tenían commits de esa semana; career-ops, del mismo día). Cambian deprisa: revisa sus README
-antes de citar una cifra.
+Los datos de los otros dos salen de sus repositorios, sus guías, sus `CHANGELOG` y las notas de sus
+últimas releases a esta fecha, y las cifras de comunidad, de la API de GitHub ese mismo día (los dos
+tenían commits del 5 o el 6 de noviembre). Cambian deprisa: revisa sus README antes de citar una
+cifra.
 
 ## En una frase
 
@@ -37,14 +39,14 @@ estrellas, cientos de contribuidores e historias reales de gente contratada. Y c
 
 | | CandidatAI | AI Job Search | career-ops |
 |---|---|---|---|
-| Estrellas / forks en GitHub | 0 / 0 (recién publicado) | ~65 000 / ~20 000 | ~77 000 / ~14 000 |
-| Contribuidores | 1 (con agentes de IA) | ~90 | ~460 (y una flota de agentes que mantiene el repo) |
-| Primera release | `v0.1.0`, 24 de octubre de 2026 | 2026 (va por la `v1.7.3`) | 2026 (va por la `1.38.0`, una cada ~semana) |
-| Releases | Zip con suma SHA-256 desde el `CHANGELOG` | Etiquetas con `CHANGELOG` | release-please, npm y web por separado |
+| Estrellas / forks en GitHub | Recién publicado | ~70 000 / ~22 600 | ~80 600 / ~14 800 |
+| Contribuidores | 1 (con agentes de IA) | ~90 | ~470 con cuenta (unos 600 contando los commits sin cuenta), y una flota de agentes que mantiene el repo; 99 personas en las dos semanas de la `1.39.0` |
+| Primera release | `v0.1.0`, 24 de octubre de 2026 (va por la `v0.3.0`) | 2026 (va por la `v1.7.4`) | 2026 (va por la `1.39.0`, una cada una o dos semanas) |
+| Releases | Zip con suma SHA-256 desde el `CHANGELOG` | Automáticas cada lunes, con las notas sacadas de los PR | release-please, npm y web por separado |
 | Historia del autor | 🟡 `cai stats story` da la línea; publicarla es decisión tuya | ✅ 69 candidaturas, 20 entrevistas, 1 contrato | ✅ 740 ofertas, 68 candidaturas, 12 entrevistas, 1 oferta |
-| Comunidad | ❌ | 🟡 Discussions e índice de forks por país | ✅ Discord, muro de contratados, manifiesto con firmas, prensa (WIRED, Business Insider), patrocinador |
+| Comunidad | ❌ | 🟡 Discussions e índice de forks por país | ✅ Discord (más de 5 000 personas), muro de contratados, manifiesto con firmas, prensa (WIRED, Business Insider), patrocinador |
 | README en varios idiomas | 🟡 español e inglés | ❌ inglés | ✅ 19 idiomas |
-| Tests y CI | ✅ ~3 000 tests de backend y ~340 de frontend; CI en Windows, Linux y macOS | ✅ CI con LaTeX, lint de skills y tests de Python (también en Windows desde octubre) | ✅ tests de Node, web y navegador |
+| Tests y CI | ✅ ~3 200 tests de backend y ~440 de frontend, más E2E en Chromium; CI en Windows, Linux y macOS | ✅ CI con LaTeX, lint de skills y tests de Python, también en Windows | ✅ tests de Node, web y navegador |
 
 ## Instalación, una a una
 
@@ -75,10 +77,10 @@ chat del agente. career-ops lo compensa con `npx … init`, que es un solo coman
 | Forma | App: FastAPI + SQLite + React + worker | Instrucciones + comandos + utilidades en Python y Bun | Modos de agente + scripts Node + TUI en Go + web en Next.js |
 | Dónde viven los datos | SQLite con eventos (`data/`, fuera de git) | CSV, Markdown y JSON en el repo (aviso: un fork es público) | Markdown, YAML y TSV (`data/`, fuera de git, o una carpeta externa) |
 | Interfaz para el usuario | **UI web completa** en español e inglés | Chat con el agente + informe HTML + vista en Notion opcional | Chat + dashboard de terminal + web en alfa (pipeline, exploración, escaneos programados, rellenado de formularios, hoy, analítica, CV) |
-| Interfaz para el agente | **MCP (casi 60 herramientas) + CLI `cai --json` con paridad comprobada** | Comandos `/…` y ficheros | Un router `/career-ops <modo>` y scripts |
-| ¿La app llama a un LLM? | **Nunca** | No (lo hace Claude Code) | Opcional: scripts que llaman a Gemini, a cualquier API compatible con OpenAI, a OpenRouter o a Ollama |
+| Interfaz para el agente | **MCP (más de 60 herramientas) + CLI `cai --json` con paridad comprobada** | Comandos `/…` y ficheros | Un router `/career-ops <modo>` y scripts |
+| ¿La app llama a un LLM? | **Nunca** | No (lo hace Claude Code) | Opcional: scripts que llaman a Gemini, a cualquier API compatible con OpenAI, a OpenRouter o a Ollama (desde la `1.39.0`, pueden quitar del prompt tu nombre y tu contacto si lo activas) |
 | Estado de cada oferta | Eventos validados contra una tabla de transiciones | Fila de un CSV | Fila de una tabla Markdown con estados canónicos |
-| Defensas | En código: validación de esquemas, verificación determinista del CV, detección de inyección, techo de herramientas en segundo plano | Instrucciones + filtro determinista de la oferta (`posting_guard.py`: texto oculto, caracteres invisibles, líneas con forma de instrucción) + guardas de CI | Instrucciones + comprobación de hechos del PDF y de títulos del CV en código + el agente del CV en la web sin herramientas de escritura (en Claude Code) |
+| Defensas | En código: validación de esquemas, verificación determinista del CV, detección de inyección, techo de herramientas en segundo plano | Instrucciones + filtro determinista de la oferta (`posting_guard.py`: texto oculto, caracteres invisibles, líneas con forma de instrucción) + permisos mínimos por skill y reglas `deny` que valen en cualquier modo (desde la `v1.7.3`) + guardas de CI | Instrucciones + comprobación de hechos del PDF, de títulos y de frases hechas del CV en código + el agente del CV en la web sin herramientas de escritura (en Claude Code) |
 | Sistema principal | Windows 11 nativo; macOS, Linux y Docker también | Cualquiera con LaTeX y Bun | Cualquiera con Node (Windows con Git Bash) |
 | Licencia | MIT | MIT | MIT (+ política de marca) |
 
@@ -89,7 +91,7 @@ Leyenda: ✅ lo tiene · 🟡 en parte · ❌ no lo tiene · 🚫 no lo tendrá 
 | | CandidatAI | AI Job Search | career-ops |
 |---|---|---|---|
 | Fuente única de instrucciones | ✅ `AGENTS.md` (+ `CLAUDE.md`, que lo importa, y `GEMINI.md`, vacío a propósito) | 🟡 `CLAUDE.md` es la fuente; `AGENTS.md` apunta a él | ✅ `AGENTS.md` + un envoltorio por CLI |
-| Skills en el estándar Agent Skills | ✅ 24 skills y 5 roles en `.agents/` (+ copias generadas) | 🟡 solo los portales | ✅ un skill router en `.agents/skills/career-ops/` |
+| Skills en el estándar Agent Skills | ✅ 26 skills y 5 roles en `.agents/` (+ copias generadas) | 🟡 solo los portales | ✅ un skill router en `.agents/skills/career-ops/` |
 | Configuración nativa generada desde una fuente | ✅ `sync_agents.py` (Claude Code, Codex, OpenCode, Qwen Code y Antigravity), comprobado en la CI | ❌ | 🟡 envoltorios y enlaces por CLI, mantenidos a mano |
 | Claude Code | ✅ referencia; matriz completa (53/55 campos, 5/5 valoraciones, 5/5 CVs que pasan `eval cv`) | ✅ referencia, el único oficial | ✅ |
 | Codex | ✅ matriz con una oferta (11/11 campos, 1/1 valoración, 1/1 CV) | 🟡 los portales; el resto, en forks de la comunidad | ✅ con guía propia |
@@ -147,7 +149,7 @@ tres proyectos han llegado a lo mismo: `GEMINI.md` vacío o de paso, y Antigravi
 | Valoración razonada del agente | ✅ `assess-fit` | ✅ | ✅ informe A-H con veredicto |
 | Revisar ofertas rápido con el teclado | ✅ J/K, A, D, deshacer; descartar también desde la Bandeja | ❌ | 🟡 en la TUI |
 | Señales de oferta dudosa | 🟡 rango ancho, empresa oculta o agencia, temporal, antigua y cribado con IA, sin puntuar | ❌ | ✅ 18 señales (también tasas que paga el candidato, prácticas sin pagar o identidad del recruiter) |
-| Autorización de trabajo / patrocinio de visado | ❌ | ❌ | ✅ |
+| Autorización de trabajo / patrocinio de visado | ❌ | ❌ | ✅ (y, desde la `1.39.0`, comprueba si una empresa patrocina visados en el Reino Unido) |
 | Estrategia de nivel y arquetipo del puesto | 🟡 | ❌ | ✅ |
 | Calibración por región (p. ej. ingeniería en Europa) | ❌ | ❌ | ✅ `eu-swe` |
 | Eval publicado del matching | ✅ 80 casos, precision 0,88 / recall 0,95 | ❌ | 🟡 `eval-golden` |
@@ -169,6 +171,9 @@ tres proyectos han llegado a lo mismo: `GEMINI.md` vacío o de paso, y Antigravi
 | Foto, color y secciones por oferta sin gastar agente | ✅ | ❌ | ❌ |
 | Foto según el país | ✅ | ❌ | 🟡 tamaño de papel según el país |
 | Fijar secciones para que el agente no las toque | ❌ | ❌ | ✅ |
+| Corregir un CV ya hecho con tus palabras, con versiones y «Volver» | ✅ `correct-cv`, que solo toca lo pedido y lo verifica | 🟡 pidiéndoselo al agente | 🟡 «CV studio» en la web |
+| Editar tú el texto del CV sin agente | ✅ con avisos de lo que el perfil no respalda | 🟡 editando el LaTeX | ✅ editor en la web |
+| Frases hechas que no escribiste tú | 🟡 el verificador las señala | ❌ | ✅ el PDF se para si aparecen (`1.39.0`) |
 | Control de páginas | ✅ aviso `too_long` | ✅ páginas exactas y recorte por relevancia | 🟡 |
 | Verificar la maquetación del PDF | ✅ cinco avisos con página y arreglo, en CV y carta | ✅ `verify_layout.py` | 🟡 `verify-cv-structure` |
 | Comprobación ATS del texto del PDF | ✅ cobertura de keywords | ✅ | ✅ `verify-ats` (y en la web) |
@@ -185,14 +190,15 @@ tres proyectos han llegado a lo mismo: `GEMINI.md` vacío o de paso, y Antigravi
 | Kanban de procesos | ✅ solo se mueve con eventos | ❌ | 🟡 TUI y web |
 | Pruebas técnicas y plazos | ✅ hitos con fecha en la ficha y el calendario | ❌ | ✅ `assessment-log` |
 | Calendario `.ics` | ✅ un `.ics` por hito y feed para Google Calendar | ❌ | 🟡 lee el `.ics` de una invitación |
+| Leer una invitación de entrevista y lo que pide | 🟡 la respuesta clasificada propone el hito | ❌ | ✅ `invite-match` (sin IA, grabación, cámara, panel) y borrador para aclararlo |
 | Seguimientos (máx. 2) y agradecimientos | ✅ borradores | ✅ borradores | ✅ con cadencia, desactivables |
 | Clasificar las respuestas de las empresas | ✅ IMAP, propuesta que aceptas | ✅ Gmail, propuesta que aceptas | ✅ `reply-watch` |
 | Tu red de LinkedIn cruzada con las ofertas | ✅ «Conoces a N» en bandeja, revisión rápida y ficha | ❌ | ✅ `linkedin-join` (script) |
 | Mensaje a un recruiter o compañero (≤ 300 caracteres) | ✅ | ❌ | ✅ |
 | Correo de candidatura | ✅ | ❌ | ✅ |
 | Dosier de empresa con fuentes | ✅ | ✅ dentro de `/apply` | ✅ `deep` |
-| Embudo y analítica | ✅ por fuente, puesto, semana, plantilla, carta, referencia | ✅ informe HTML | ✅ patrones, velocidad, latencia de rechazo, Sankey en la web |
-| Exportar el tracker a una hoja de cálculo | ❌ | ✅ es un CSV | ✅ `query --csv` |
+| Embudo y analítica | ✅ gráfico de embudo por etapa, por fuente, puesto, semana, plantilla, carta, referencia | ✅ informe HTML | ✅ patrones, velocidad, latencia de rechazo, Sankey en la web |
+| Exportar el tracker a una hoja de cálculo | ❌ | ✅ es un CSV | ✅ `query --csv` y en la web |
 | Exportar a Notion | 🚫 descartado | ✅ solo lectura | ✅ plugin |
 
 ### Entrevistas y ofertas
@@ -213,8 +219,8 @@ tres proyectos han llegado a lo mismo: `GEMINI.md` vacío o de paso, y Antigravi
 |---|---|---|---|
 | Perfil validado y versionado | ✅ YAML con esquema | 🟡 Markdown | 🟡 YAML + Markdown + perfil maestro |
 | Contexto que orienta sin respaldar hechos (estilo, narrativa…) | ✅ `data/contexto/` | ✅ perfil conductual y estilo | ✅ |
-| Editar el perfil desde una UI, sin YAML | ✅ «Mi perfil» por bloques, con diff y deshacer | n/a | ✅ editor de perfil en la web |
-| Crear el perfil desde tus documentos | ✅ `update-profile` con tu CV | ✅ `/setup` lee una carpeta (CV, LinkedIn, títulos, cartas de referencia) | ✅ en el chat |
+| Editar el perfil desde una UI, sin YAML | ✅ «Mi perfil» por bloques, con diff y deshacer, y crearlo a mano sin agente | n/a | ✅ editor de perfil en la web |
+| Crear el perfil desde tus documentos | ✅ `update-profile` con tu CV, y «Importar información desde un CV» en «Mi perfil» | ✅ `/setup` lee una carpeta (CV, LinkedIn, títulos, cartas de referencia) | ✅ en el chat, y en la web importando un CV en PDF o TeX |
 | Enriquecer el perfil desde GitHub, portfolio, Scholar… | ✅ `expand`, con fuente y tu OK | ✅ `/expand` | ✅ `expand`, también con tus PRs y commits |
 | Revisar tu perfil de LinkedIn | ✅ | ❌ | ❌ |
 | Lanzar el agente desde la UI (terminal o segundo plano) | ✅ | ❌ | 🟡 workers en la web |
@@ -248,24 +254,24 @@ tres proyectos han llegado a lo mismo: `GEMINI.md` vacío o de paso, y Antigravi
 
 ## Lo que nos falta (y se podría hacer)
 
-Reordenado el 2026-10-25, con todo lo de la revisión anterior (fases 24 a 26) ya hecho. Lo primero
-ya no son funciones sino **que la gente lo conozca y lo pruebe**: es justo lo que preparan las fases
-28.4 y 28.6.
+Revisado el 2026-11-06. Lo primero siguen sin ser funciones sino **que la gente lo conozca y lo
+pruebe**: es lo que prepara la fase 40 (portada, web, `v1.0.0` y lanzamiento).
 
 | # | Qué | Lo tiene | Por qué merece la pena | Esfuerzo | Dónde |
 |---|---|---|---|---|---|
-| 1 | **Portada, historia y lanzamiento** (README con gancho, la historia con números reales, publicarlo en listas y canales) | ambos | Lo que hace famosos a los otros dos no son las funciones, sino la historia y la comunidad | Medio | 28.4 y 28.6 |
-| 2 | **Comunidad** (Discussions o Discord, muro de contratados, plantillas de issues) | career-ops | Sin ella, todo el mantenimiento depende de una persona | Bajo para empezar | 28.4 (plantillas) |
+| 1 | **Portada, web y lanzamiento** (README con demo y capturas, una web del proyecto, la historia del autor sin cifras, publicarlo en listas y canales) | ambos | Lo que hace famosos a los otros dos no son las funciones, sino la historia y la comunidad | Medio | 40 |
+| 2 | **Comunidad** (Discussions o Discord, muro de contratados; las plantillas de issues ya están) | career-ops | Sin ella, todo el mantenimiento depende de una persona | Bajo para empezar | 40.4 (Discussions) |
 | 3 | **Instalador más robusto con red mala** (avisar de que es la red y reintentar Chromium) y sin las herramientas de desarrollo (`uv sync --no-dev`) | — | Lo encontró la prueba en un Windows limpio | Bajo | Sin fecha |
 | 4 | **Probar más agentes de verdad**: OpenCode y Qwen Code con un modelo en la nube, y Pi, Grok Build, Copilot CLI y Cursor | career-ops | Hoy solo Claude Code, Codex y Antigravity están medidos | Medio | Sin fecha |
 | 5 | **Exportar ofertas y candidaturas a CSV** | ambos | Para quien quiere su hoja de cálculo o irse con sus datos | Bajo | Sin fecha |
 | 6 | **Lista de empresas objetivo de ejemplo**, con su ATS ya resuelto | career-ops | Arrancar con fuentes sin buscar a mano | Bajo | Sin fecha |
 | 7 | **Más señales de oferta dudosa** (tasas al candidato, prácticas sin pagar, identidad del recruiter) y que cuenten en el score | career-ops | Hoy se avisan pero no pesan | Bajo | Sin fecha |
 | 8 | **Fijar secciones del CV** que el agente no puede tocar | career-ops | Útil para un resumen o una sección que quieres siempre igual | Bajo | Sin fecha |
-| 9 | **Leer el `.ics` de una invitación** de entrevista y crear el hito | career-ops | Menos tecleo; hoy el hito se crea a mano o por la respuesta clasificada | Bajo | Sin fecha |
+| 9 | **Leer una invitación de entrevista** (su `.ics` o su texto): crear el hito y avisar de lo que pide (grabación, cámara, panel) | career-ops | Menos tecleo; hoy el hito se crea a mano o por la respuesta clasificada | Bajo | Sin fecha |
 | 10 | Autorización de trabajo y visado como filtro duro, y calibración por región | career-ops | Solo si se busca fuera de la UE | Bajo | Sin fecha |
 | 11 | README en más idiomas | career-ops | Llegar a más gente; la UI ya está preparada para más idiomas | Bajo por idioma | Sin fecha |
-| 12 | Probar macOS y Linux desde la release real | — | Hoy solo la CI y los tests del instalador | Bajo (con un equipo) | 28.1 |
+| 12 | Probar macOS y Linux desde la release real | — | Hoy solo la CI y los tests del instalador | Bajo (con un equipo) | 40.4 |
+| 13 | **Rechazar frases hechas** que no están en tu perfil ni en tu forma de escribir | career-ops | Hoy el verificador las señala, pero no paran el CV | Bajo | Sin fecha |
 
 ## Lo que no vamos a hacer (y qué regla lo impide)
 
@@ -298,5 +304,7 @@ modelos y niveles de gasto, matriz medida).
 
 Donde se queda atrás ahora es en **alcance**: career-ops cubre más fuentes, más países y más señales,
 y los dos tienen una comunidad, historias reales y decenas de miles de estrellas, mientras que
-CandidatAI acaba de publicar su primera versión. Lo que más rinde a partir de aquí no es otra
-función, sino la portada, la historia y el lanzamiento (28.4 y 28.6).
+CandidatAI va por su tercera versión y aún no se ha dado a conocer. career-ops, además, sigue
+sumando lo que viene después de buscar (leer invitaciones de entrevista, CVs sin frases hechas,
+patrocinio de visados) a un ritmo de decenas de personas por semana. Lo que más rinde a partir de
+aquí no es otra función, sino la portada, la web y el lanzamiento de la `v1.0.0` (fase 40).

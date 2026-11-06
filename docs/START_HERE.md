@@ -19,7 +19,7 @@ the demo, your profile and your first search. For everything else, the [user gui
 
 | | What | Why |
 |---|---|---|
-| 💻 | **A computer** with Windows 11, macOS or Linux, and an internet connection | Windows is the most tested; macOS and Linux are new |
+| 💻 | **A computer** with Windows 11, macOS or Linux, and an internet connection | Windows 11 is the most tested, also installed from scratch; macOS and Linux have an installer and pass the tests, but haven't been installed by hand from a release yet |
 | 📦 | **The app** (this project, free) | It keeps your jobs, profile, CVs and processes, applies the rules and does the automatic work |
 | 🤖 | **An AI agent** | It reads the postings, judges the fit and writes your CV and letters. **The app never calls an AI itself**, so without an agent you can review jobs and track, but not write |
 
@@ -27,12 +27,12 @@ An **AI agent** is a program that talks to an AI model and can use tools: here, 
 in a terminal window, and CandidatAI's buttons open it for you with the right instructions. You
 choose which one, and that decides what it costs and where your data goes:
 
-| Agent | What it costs (October 2026) | Where the postings and your profile go | How well it works here |
+| Agent | What it costs (checked on 6 November 2026) | Where the postings and your profile go | How well it works here |
 |---|---|---|---|
 | **Claude Code** | Included in Claude Pro, about US$20 a month, or higher plans | To Anthropic | **The reference**: tested end to end |
-| **Codex** | Included in ChatGPT Plus, about US$20 a month, or higher plans | To OpenAI | Tested with one job |
-| **Antigravity CLI** | Included in Google AI Pro, about US$20 a month, or Google AI Ultra; also free with a Google account, with a weekly quota | To Google | Extracts and assesses well. On the free plan, the quota runs out when it starts on CVs; with Google AI Pro, not measured yet |
-| **OpenCode** or **Qwen Code** with a free cloud model (OpenRouter `:free`) | Free, about 50 requests a day | To the model's provider | Configured, not yet measured with a cloud model |
+| **Codex** | Included in ChatGPT Plus, about US$20 a month, or higher plans; the free plan has limited access | To OpenAI | Tested with one job |
+| **Antigravity CLI** | Included in Google AI Pro, about US$20 a month (€21.99 in Spain), or Google AI Ultra; also free with a Google account, with a weekly quota | To Google | Extracts and assesses well. On the free plan, the quota runs out when it starts on CVs; with Google AI Pro, not measured yet |
+| **OpenCode** or **Qwen Code** with a free cloud model (OpenRouter `:free`) | Free, about 50 requests a day (1,000 if you've ever bought US$10 of credit) | To the model's provider | Configured, not yet measured with a cloud model |
 | **A local model** (Ollama or LM Studio) with OpenCode, Codex or Qwen Code | Free | **Nowhere**: it stays on your computer | Needs a powerful computer: measured with a 20B model on 16 GB of memory and no graphics card, it didn't finish the test |
 
 Prices change: check [claude.com/pricing](https://claude.com/pricing),
@@ -124,7 +124,7 @@ none, **Home** and **Agent** warn you with "You need an AI agent" and the steps 
 Code: open PowerShell (or Terminal on macOS), paste the command they give you with **Copy**, sign in
 by typing `claude` and open CandidatAI again.
 
-For another agent, expand **Your agents in detail**, in **Agent**: it lists the agents the app
+For another agent, press **Configure agents**, in **Agent**: it lists the agents the app
 knows, marks the ones you don't have as **Not installed** and gives you the command to install each
 one, ready to copy.
 Their official pages: [Claude Code](https://code.claude.com/docs/en/setup),
@@ -134,12 +134,13 @@ Their official pages: [Claude Code](https://code.claude.com/docs/en/setup),
 with your account the first time you open it.
 
 Back in **Agent**, the top says "Your agent: Claude Code, ready". If you have several, choose yours
-as the default agent in **Your agents in detail**. From then on, buttons such as **Assess new jobs**
+as the default agent in **Configure agents**. From then on, buttons such as **Assess new jobs**
 or **Generate CV** open it in a separate window with the instruction already typed:
 you watch what it does and approve it. If it can't be opened, the button shows you the whole
 instruction, with **Copy**, so you can paste it into your agent. Their small arrow also offers **In the background**
 (no window; you follow it in "Agent") and **Leave for my next session**.
 
+<!-- media:provisional -->
 <img src="img/en/agent.webp" alt="Agent page: default agent, one per action and background runs" width="88%">
 
 ## 4. First run: the demo
@@ -163,7 +164,7 @@ data.
    `CAI_DATA_DIR=data-demo-en uv run cai start`.
 3. Your browser opens with a **"Demo mode"** banner. Try **Quick review**, in the Inbox (move with `J`/`K`, approve
    with `A`, discard with `D`), open a job, change the CV template and press **Generate**, and look at
-   **Processes** and **Funnel**.
+   the **Board** and the **Funnel**.
 
 To go back to your own data, close that window and open CandidatAI as usual.
 
@@ -183,7 +184,7 @@ own in **My profile**: carry on with step 3.
 With no agent (or no CV), click **Start by hand** in **My profile**: write your name, your headline,
 the role you're looking for and the levels you accept, and click **Create my profile**. The editor
 opens so you can carry on block by block; what it didn't ask (work mode, locations, photo on the CV)
-starts open to anything and you change it in **Search jobs → What you're after** and **Documents**.
+starts open to anything and you change it in **Search jobs → What you're after** and in **My profile**.
 
 If you'd rather do it from your agent:
 
@@ -204,6 +205,7 @@ If you'd rather do it from your agent:
    have them), skills and languages; and in **Search jobs → What you're after**, what you're looking for: roles, locations,
    remote work and your salary minimum. Each block saves on its own and can be undone.
 
+<!-- media:provisional -->
 <img src="img/en/search-settings.webp" alt="“What you're after”, in Search jobs" width="88%">
 
 Your salary minimum is used to discard jobs below it and to compare offers, but **your agent never
