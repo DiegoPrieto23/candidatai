@@ -3,11 +3,11 @@
 schema_version: 1
 
 personal:
-  name: Aoife Brennan
-  email: aoife.brennan@example.com         # get_profile doesn't return it
+  name: Olivia Smith
+  email: olivia.smith@example.com         # get_profile doesn't return it
   phone: "+353 80 000 0000"                # get_profile doesn't return it; only in the delivered CV
-  linkedin: linkedin.com/in/aoife-brennan-demo
-  github: github.com/aoife-brennan-demo
+  linkedin: linkedin.com/in/olivia-smith-demo
+  github: github.com/olivia-smith-demo
   city: Dublin
   profile_location: Dublin, Ireland
   availability: 2 weeks
@@ -66,7 +66,7 @@ projects:
     name: Anomaly detection in household energy use (final-year project)
     date: 2022-06
     text: Anomaly detection model on energy-consumption time series from 500 homes.
-    url: github.com/aoife-brennan-demo/fyp-anomalies   # optional; shown in the CV as a link
+    url: github.com/olivia-smith-demo/fyp-anomalies   # optional; shown in the CV as a link
     skills: [Python, scikit-learn, Time series]
 
 education:

@@ -140,6 +140,7 @@ you watch what it does and approve it. If it can't be opened, the button shows y
 instruction, with **Copy**, so you can paste it into your agent. Their small arrow also offers **In the background**
 (no window; you follow it in "Agent") and **Leave for my next session**.
 
+<!-- media:provisional -->
 <img src="img/en/agent.webp" alt="Agent page: default agent, one per action and background runs" width="88%">
 
 ## 4. First run: the demo
@@ -204,6 +205,7 @@ If you'd rather do it from your agent:
    have them), skills and languages; and in **Search jobs → What you're after**, what you're looking for: roles, locations,
    remote work and your salary minimum. Each block saves on its own and can be undone.
 
+<!-- media:provisional -->
 <img src="img/en/search-settings.webp" alt="“What you're after”, in Search jobs" width="88%">
 
 Your salary minimum is used to discard jobs below it and to compare offers, but **your agent never

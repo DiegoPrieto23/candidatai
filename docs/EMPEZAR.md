@@ -141,6 +141,7 @@ ya escrita: ves lo que hace y lo apruebas. Si no puede abrirlo, el botón te ens
 con **Copiar**, para que la pegues en tu agente. Su flechita ofrece además **En segundo plano** (sin ventana;
 lo sigues en «Agente») y **Dejar para mi próxima sesión**.
 
+<!-- media:provisional -->
 <img src="img/es/agent.webp" alt="Página Agente: agente por defecto, uno por acción y ejecuciones en segundo plano" width="88%">
 
 ## 4. La primera vez: la demo
@@ -203,6 +204,7 @@ Si prefieres hacerlo desde tu agente:
    skills e idiomas; y en **Buscar ofertas → Qué buscas**, lo que buscas: puestos, ubicaciones, teletrabajo y tu mínimo
    salarial. Cada bloque se guarda solo y se puede deshacer.
 
+<!-- media:provisional -->
 <img src="img/es/search-settings.webp" alt="«Qué buscas», en Buscar ofertas" width="88%">
 
 Tu mínimo salarial sirve para descartar ofertas que pagan menos y para comparar ofertas recibidas,

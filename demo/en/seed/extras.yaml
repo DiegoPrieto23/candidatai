@@ -142,7 +142,7 @@ replies:
     sender_name: Careers {company}
     subject: "Interview: {title}"
     body: |
-      Hi Aoife,
+      Hi Olivia,
 
       Thank you for applying for the {title} role. We would like to meet you on a 45-minute video
       call. Would {date} at {hour}:00 work for you?
@@ -157,7 +157,7 @@ replies:
     sender_name: HR {company}
     subject: "Your application: {title}"
     body: |
-      Hi Aoife,
+      Hi Olivia,
 
       Thank you for your interest. We have decided to move forward with other candidates who
       better match what we need right now. We wish you the best.
@@ -195,7 +195,7 @@ style_sample:
     what I would like to bring to your team.
 
     Best,
-    Aoife
+    Olivia
 
 # Job alerts (phase 28.3b): two folder mailboxes (`inbox/<folder>/`) with one alert each; their jobs
 # come in as summaries in "Alerts". Made-up companies, links that are never opened.

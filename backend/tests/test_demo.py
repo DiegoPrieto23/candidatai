@@ -268,7 +268,7 @@ def test_seed_in_english(tmp_path: Path, isolated_env: Path) -> None:
     assert summary.jobs == 65  # 60 de la historia y 5 de las alertas por correo
     assert summary.cvs == 2
     assert summary.warnings == []
-    assert "Aoife Brennan" in (target / "profile.yaml").read_text(encoding="utf-8")
+    assert "Olivia Smith" in (target / "profile.yaml").read_text(encoding="utf-8")
     with demo.use_data_dir(target), session_scope() as session:
         jobs = session.scalars(select(Job)).all()
         # Salvo las fijas y las de las alertas, que solo traen título, empresa y ubicación.

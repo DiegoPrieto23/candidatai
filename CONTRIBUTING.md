@@ -161,7 +161,9 @@ tests and a review.
   1. Rename `## [Sin publicar]` to `## [X.Y.Z] - YYYY-MM-DD`, add a new empty `## [Sin publicar]`
      above it and update the links at the end of the file.
   2. Set the same version in `backend/pyproject.toml` (a test checks they match).
-  3. Check the notes: `python scripts/release_notes.py vX.Y.Z`.
+  3. Check the notes: `python scripts/release_notes.py vX.Y.Z`, and that no placeholder image
+     is left in the READMEs, guides or website: `python scripts/check_media_final.py` (it lists
+     each `<!-- media:provisional -->` marker and fails while any remains).
   4. Commit, then `git tag vX.Y.Z && git push origin vX.Y.Z`. The `Release` workflow publishes
      `candidatai.zip` with that section of the changelog as its notes, and fails if it is missing.
   To try the notes without publishing, run the `Release` workflow by hand ("Run workflow") on the

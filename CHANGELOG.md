@@ -115,6 +115,12 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   vez de 23).
 
 ### Cambiado
+- **README nuevo, en inglés y en español:** se lee en dos minutos. Demo, funcionalidades, capturas,
+  cómo instalarla y abrirla paso a paso, documentación, cómo funciona, por qué CandidatAI (con la
+  comparativa en un desplegable), limitaciones conocidas, rendimiento y seguridad. La comparativa
+  con AI Job Search y career-ops está al día (6 de noviembre de 2026).
+- **La candidata de la demo en inglés se llama ahora Olivia Smith.** Si ya tenías la demo cargada,
+  `cai demo seed --lang en --force` la vuelve a crear con el nombre nuevo.
 - **Bandeja:** las pestañas de arriba pasan a «Bandeja de ofertas», «Por completar» y «Revisión
   rápida» (el orden en que avanzan las ofertas), y en «Por revisar» se quita el botón «Valorar las que
   están por revisar», porque «Valorar las ofertas nuevas» ya valora también esas ofertas. El botón desaparece también de
