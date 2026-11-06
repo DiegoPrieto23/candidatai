@@ -143,6 +143,10 @@ the command can't launch, do the three skills by hand in the demo and use `--imp
   `locales/en`, never in components. The README, the start guide, the user guide and the feature
   list exist in English and Spanish: update both. Technical docs are in Spanish; writing them in
   English is fine, and the maintainer will translate.
+- **Project website:** plain HTML, CSS and JS in `site/`, Spanish at `/` and English at `/en/`
+  with the same sections. No dependencies, no build step, nothing loaded from other domains.
+  Preview it with `uv run --no-project python scripts/build_site.py --serve` from the repository
+  root; images come from `docs/img/`, so don't copy them into `site/`.
 
 For larger changes, open an issue first to agree on the approach: then a short plan, a branch,
 tests and a review.

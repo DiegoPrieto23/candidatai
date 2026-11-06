@@ -1,0 +1,66 @@
+name: Pages
+
+# La web del proyecto (site/) en GitHub Pages: https://diegoprieto23.github.io/candidatai/
+# `scripts/build_site.py` la arma en `_site/` igual que en local: copia site/, solo las imágenes de
+# docs/img/ que usa y la versión de backend/pyproject.toml.
+#
+# Se arma en cada push que toque la web, sus imágenes o la versión, en cualquier rama: fuera de
+# `main` es la prueba en seco (arma y comprueba la web y la deja como artefacto, sin publicar nada).
+# Solo se publica desde `main` y con la variable del repositorio `PUBLISH_SITE` a `true` (Settings →
+# Secrets and variables → Actions → Variables), además de Pages activado (Settings → Pages → Source:
+# GitHub Actions). Sin la variable, `main` también se queda en la prueba en seco: así la web no sale
+# antes de tiempo ni falla el deploy con Pages sin activar. «Run workflow» en Actions sirve una vez
+# que este fichero está en `main`.
+on:
+  push:
+    paths:
+      - "site/**"
+      - "docs/img/**"
+      - "docs/brand/**"
+      - "scripts/build_site.py"
+      - "scripts/check_links.py"
+      - "backend/pyproject.toml"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Una publicación cada vez; la que está en marcha termina antes de empezar la siguiente.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Comprueba los enlaces de la web
+        run: python scripts/check_links.py --site
+      - name: Arma la web
+        run: python scripts/build_site.py
+      - name: Resumen
+        run: |
+          { echo "## Web armada"; echo; echo '```'; (cd _site && find . -type f | sort); echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  # Solo desde `main` y con PUBLISH_SITE: el único job con permiso para publicar.
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/main' && vars.PUBLISH_SITE == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

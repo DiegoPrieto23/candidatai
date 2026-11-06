@@ -49,6 +49,8 @@ config/           policies.yaml y listas genéricas (sin datos personales)
 demo/             candidato y ofertas ficticios
 docs/             documentación para quien usa la app o contribuye
 evals/            eval de matching (lo lee `cai eval`)
+site/             web del proyecto (GitHub Pages): HTML, CSS y JS sin dependencias; la arma
+                  scripts/build_site.py con las imágenes de docs/img/
 install.ps1       instalador para Windows: descarga la release, prepara todo y crea el acceso directo
 install.sh        el mismo instalador para macOS y Linux
 Dockerfile, docker-compose*.yml   Docker opcional: la app en un contenedor, tu agente fuera
@@ -76,6 +78,7 @@ cd frontend && pnpm dev            # UI en desarrollo en http://127.0.0.1:5173
 cd frontend && pnpm build          # UI compilada (frontend/dist) que sirve `cai start`
 uv run scripts/sync_agents.py      # regenerar configuración de agentes (desde la raíz)
 uv run scripts/sync_agents.py --check   # CI: falla si lo generado no está al día
+uv run --no-project python scripts/build_site.py --serve   # web del proyecto en http://127.0.0.1:8001
 ```
 
 ## Convenciones
