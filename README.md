@@ -13,6 +13,12 @@
 </p>
 
 <p align="center">
+  <a href="#windows"><img alt="Install on Windows" src="https://img.shields.io/badge/Install-Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white"></a>
+  <a href="#macos-and-linux"><img alt="Install on macOS or Linux" src="https://img.shields.io/badge/Install-macOS%20%C2%B7%20Linux-333333?style=for-the-badge&logo=linux&logoColor=white"></a>
+  <a href="#docker"><img alt="Run with Docker" src="https://img.shields.io/badge/Run-Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white"></a>
+</p>
+
+<p align="center">
   <a href="https://github.com/DiegoPrieto23/candidatai/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/DiegoPrieto23/candidatai?color=0F6E69"></a>
   <a href="https://github.com/DiegoPrieto23/candidatai/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/DiegoPrieto23/candidatai/actions/workflows/ci.yml/badge.svg?branch=main"></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/DiegoPrieto23/candidatai?color=0F6E69"></a>
@@ -115,20 +121,20 @@ you're not technical.
    also with a free Google account, or a local model. **The app never calls an AI itself.** Which
    one to pick and what each costs: [Start here](docs/START_HERE.md).
 2. **Install it.**
-   - **Windows** (Windows 11), in PowerShell:
+   - <a id="windows"></a>**Windows** (Windows 11), in PowerShell:
 
      ```powershell
      iwr -useb https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.ps1 -OutFile $env:TEMP\cai-install.ps1
      powershell -ExecutionPolicy Bypass -File $env:TEMP\cai-install.ps1
      ```
 
-   - **macOS and Linux**, in a terminal (no `sudo`):
+   - <a id="macos-and-linux"></a>**macOS and Linux**, in a terminal (no `sudo`):
 
      ```bash
      curl -fsSL https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.sh | bash
      ```
 
-   - **Docker** (optional): from a copy of the repository, `docker compose up -d --build`. Your
+   - <a id="docker"></a>**Docker** (optional): from a copy of the repository, `docker compose up -d --build`. Your
      agent stays outside the container, with some limits: see
      [With Docker](docs/GUIDE.md#with-docker-optional).
 

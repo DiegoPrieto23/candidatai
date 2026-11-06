@@ -13,6 +13,12 @@
 </p>
 
 <p align="center">
+  <a href="#windows"><img alt="Instalar en Windows" src="https://img.shields.io/badge/Instalar-Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white"></a>
+  <a href="#macos-y-linux"><img alt="Instalar en macOS o Linux" src="https://img.shields.io/badge/Instalar-macOS%20%C2%B7%20Linux-333333?style=for-the-badge&logo=linux&logoColor=white"></a>
+  <a href="#docker"><img alt="Arrancar con Docker" src="https://img.shields.io/badge/Arrancar-Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white"></a>
+</p>
+
+<p align="center">
   <a href="https://github.com/DiegoPrieto23/candidatai/releases/latest"><img alt="Última versión" src="https://img.shields.io/github/v/release/DiegoPrieto23/candidatai?color=0F6E69"></a>
   <a href="https://github.com/DiegoPrieto23/candidatai/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/DiegoPrieto23/candidatai/actions/workflows/ci.yml/badge.svg?branch=main"></a>
   <a href="LICENSE"><img alt="Licencia" src="https://img.shields.io/github/license/DiegoPrieto23/candidatai?color=0F6E69"></a>
@@ -116,20 +122,20 @@ funcionalidad están en [`docs/FUNCIONALIDADES.md`](docs/FUNCIONALIDADES.md).</s
    Antigravity CLI también con una cuenta gratuita de Google, o un modelo local. **La app nunca
    llama a una IA por su cuenta.** Cuál elegir y cuánto cuesta cada uno: [Empieza aquí](docs/EMPEZAR.md).
 2. **Instálala.**
-   - **Windows** (Windows 11), en PowerShell:
+   - <a id="windows"></a>**Windows** (Windows 11), en PowerShell:
 
      ```powershell
      iwr -useb https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.ps1 -OutFile $env:TEMP\cai-install.ps1
      powershell -ExecutionPolicy Bypass -File $env:TEMP\cai-install.ps1
      ```
 
-   - **macOS y Linux**, en una terminal (sin `sudo`):
+   - <a id="macos-y-linux"></a>**macOS y Linux**, en una terminal (sin `sudo`):
 
      ```bash
      curl -fsSL https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.sh | bash
      ```
 
-   - **Docker** (opcional): desde una copia del repositorio, `docker compose up -d --build`. Tu
+   - <a id="docker"></a>**Docker** (opcional): desde una copia del repositorio, `docker compose up -d --build`. Tu
      agente se queda fuera del contenedor, con algunos límites: mira
      [Con Docker](docs/GUIA.md#con-docker-opcional).
 
