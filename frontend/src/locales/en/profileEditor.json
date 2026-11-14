@@ -182,12 +182,24 @@
       "choose": "Choose a photo",
       "upload": "Upload photo",
       "replace": "Change photo",
-      "uploading": "Uploading…",
       "remove": "Remove",
       "confirmRemove": "Yes, remove the photo",
       "cancel": "Cancel",
-      "formats": "JPG, PNG or WebP, up to 10 MB. Square works best: it's cropped from the centre.",
-      "policyOff": "To include it in your CVs, turn on “Put a photo on the CV” in the “Documents” tab."
+      "formats": "JPG, PNG or WebP, up to 10 MB. You frame it after choosing it.",
+      "policyOff": "To include it in your CVs, turn on “Put a photo on the CV” in the “Documents” tab.",
+      "reframe": "Reframe",
+      "opening": "Opening…",
+      "originalFailed": "The photo couldn't be opened for framing. Please try again.",
+      "crop": {
+        "title": "Frame your photo",
+        "description": "Drag the photo to position it and use the zoom to get closer. This is how it will appear on your CVs.",
+        "area": "Photo framing area",
+        "zoom": "Zoom",
+        "cancel": "Cancel",
+        "save": "Save photo",
+        "saving": "Saving…",
+        "failed": "The photo couldn't be cropped. Try another image."
+      }
     }
   },
   "fields": {
@@ -408,5 +420,14 @@
     "saveFirst": "Save or discard the blocks with changes first.",
     "copies_one": "{{count}} copy saved",
     "copies_other": "{{count}} copies saved"
+  },
+  "summarySuggestion": {
+    "generate": "Generate English summary",
+    "label": "Your agent's suggestion",
+    "outdated": "It was made from another version of your Spanish summary.",
+    "use": "Use in the field",
+    "discard": "Discard",
+    "saveFirst": "Your agent translates the saved summary. Save your changes to the Spanish summary first.",
+    "saveFirstLabel": "Why it's disabled"
   }
 }

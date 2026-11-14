@@ -3,9 +3,13 @@
 Se guardan en `data/uploads/` con un nombre saneado y nunca se sobrescriben. Una subida está
 «importada» cuando alguna plantilla del usuario tiene como `source.*` un fichero idéntico (mismo
 sha256): así no hace falta apuntar el origen en ningún sitio y sobrevive a cambios de nombre.
+
+El nombre que el usuario elige al subirlo («Mi CV») se guarda aparte, en `data/uploads/names.json`
+(fichero → nombre), y lo lee el agente al convertirlo para no volver a preguntarlo.
 """
 
 import hashlib
+import json
 import re
 import unicodedata
 from datetime import UTC, datetime
@@ -18,6 +22,8 @@ from app.services.documents import templates
 from app.services.documents.importer import paths
 
 MAX_BYTES = 10 * 1024 * 1024
+MAX_NAME_CHARS = 80
+NAMES_FILE = "names.json"
 FORMATS = (".docx", ".pdf", ".png", ".jpg", ".jpeg", ".html")
 SUPPORTED_NOW = FORMATS  # desde la 08b: Word con el motor docx; PDF, imagen y HTML con el html
 # Firma de los primeros bytes: una extensión cambiada se rechaza al subir, no al importar.
@@ -48,6 +54,7 @@ class UploadInfo(BaseModel):
     format: str
     supported: bool  # se puede importar (todos los formatos admitidos desde la 08b)
     template_id: str | None  # plantilla creada desde este fichero, si la hay
+    template_name: str | None = None  # el nombre que eligió el usuario para la plantilla
     agent_command: str
     uploaded_at: datetime
 
@@ -92,7 +99,52 @@ def _agent_path(path: Path) -> str:
         return str(path.resolve())
 
 
-def _info(path: Path, sources: dict[str, str]) -> UploadInfo:
+def _names_path() -> Path:
+    return paths.uploads_dir() / NAMES_FILE
+
+
+def _load_names() -> dict[str, str]:
+    try:
+        raw = json.loads(_names_path().read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    if not isinstance(raw, dict):
+        return {}
+    return {str(k): str(v) for k, v in raw.items() if isinstance(v, str) and v.strip()}
+
+
+def _save_names(names: dict[str, str]) -> None:
+    target = _names_path()
+    if not names:
+        target.unlink(missing_ok=True)
+        return
+    target.parent.mkdir(parents=True, exist_ok=True)
+    tmp = target.with_name(f"{target.name}.tmp")
+    tmp.write_text(json.dumps(names, ensure_ascii=False, indent=2), encoding="utf-8")
+    tmp.replace(target)
+
+
+def clean_template_name(name: str | None) -> str | None:
+    """El nombre en una línea y sin espacios de más; `None` si queda vacío."""
+    if name is None:
+        return None
+    cleaned = " ".join(name.split())[:MAX_NAME_CHARS]
+    return cleaned or None
+
+
+def requested_name(path: Path) -> str | None:
+    """El nombre elegido al subir `path`, si está en `data/uploads/` y se eligió alguno."""
+    folder = paths.uploads_dir().resolve()
+    try:
+        resolved = path.resolve()
+    except OSError:
+        return None
+    if resolved.parent != folder:
+        return None
+    return _load_names().get(resolved.name)
+
+
+def _info(path: Path, sources: dict[str, str], names: dict[str, str]) -> UploadInfo:
     stat = path.stat()
     agent_path = _agent_path(path)
     return UploadInfo(
@@ -102,12 +154,13 @@ def _info(path: Path, sources: dict[str, str]) -> UploadInfo:
         format=path.suffix.lstrip(".").casefold(),
         supported=path.suffix.casefold() in SUPPORTED_NOW,
         template_id=sources.get(_digest(path)),
+        template_name=names.get(path.name),
         agent_command=f"import-cv-template {agent_path}",
         uploaded_at=datetime.fromtimestamp(stat.st_mtime, tz=UTC),
     )
 
 
-def save_upload(filename: str, data: bytes) -> UploadInfo:
+def save_upload(filename: str, data: bytes, template_name: str | None = None) -> UploadInfo:
     if len(data) > MAX_BYTES:
         raise UploadTooLargeError(
             f"El fichero ocupa {len(data) / 1_048_576:.1f} MB; el máximo es "
@@ -129,7 +182,12 @@ def save_upload(filename: str, data: bytes) -> UploadInfo:
         target = folder / f"{Path(name).stem}-{counter}{Path(name).suffix}"
         counter += 1
     target.write_bytes(data)
-    return _info(target, _sources_by_hash())
+    names = _load_names()
+    chosen = clean_template_name(template_name)
+    if chosen:
+        names[target.name] = chosen
+        _save_names(names)
+    return _info(target, _sources_by_hash(), names)
 
 
 def list_uploads() -> list[UploadInfo]:
@@ -138,7 +196,8 @@ def list_uploads() -> list[UploadInfo]:
         return []
     sources = _sources_by_hash()
     files = [p for p in folder.iterdir() if p.is_file() and p.suffix.casefold() in FORMATS]
-    infos = [_info(p, sources) for p in files]
+    names = _load_names()
+    infos = [_info(p, sources, names) for p in files]
     return sorted(infos, key=lambda i: i.uploaded_at, reverse=True)
 
 
@@ -149,3 +208,6 @@ def delete_upload(name: str) -> None:
     if target.parent != folder or not target.is_file():
         raise FileNotFoundError(f"No existe la subida «{name}».")
     target.unlink()
+    names = _load_names()
+    if names.pop(target.name, None) is not None:
+        _save_names(names)

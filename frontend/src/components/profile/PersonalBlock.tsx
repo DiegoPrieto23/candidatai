@@ -1,8 +1,9 @@
 import { LockIcon } from '@phosphor-icons/react'
 import { useTranslation } from 'react-i18next'
 import { Block, BlockActions, TextField } from './fields'
-import { useBlockEditor } from './editor'
+import { useBlockEditor, useProfileState } from './editor'
 import type { Localized, Personal, ProfileData } from './types'
+import { SummarySuggestion } from './SummarySuggestion'
 
 interface Draft {
   personal: Personal
@@ -28,6 +29,7 @@ const PUBLIC_FIELDS = ['linkedin', 'github', 'city', 'profile_location', 'availa
 export function PersonalBlock() {
   const { t } = useTranslation('profileEditor')
   const block = useBlockEditor('personal', read, write)
+  const { profile } = useProfileState()
   const { personal, headline, summary } = block.draft
   const err = (path: string) => block.errors.get(path)
   const setPersonal = (key: string, value: string) => block.update((d) => ({ ...d, personal: { ...d.personal, [key]: value } }))
@@ -73,6 +75,11 @@ export function PersonalBlock() {
             onChange={(v) => block.update((d) => ({ ...d, summary: { ...d.summary, [lang]: v } }))}
           />
         ))}
+        <SummarySuggestion
+          spanish={summary.es}
+          saved={profile?.summary?.es}
+          onUse={(text) => block.update((d) => ({ ...d, summary: { ...d.summary, en: text } }))}
+        />
       </div>
       <BlockActions block={block} />
     </Block>

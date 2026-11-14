@@ -103,7 +103,7 @@ describe('Barra lateral (fase 23.3)', () => {
     ['/triaje', /^Revisión rápida/],
     ['/alertas', /^Por completar/],
     ['/procesos/calendario?view=agenda', /^Calendario/],
-    ['/skills', /^Skills que te faltan/],
+    ['/skills', /^Habilidades por desarrollar/],
     ['/plantillas', /^Plantillas de CV/],
   ])('la ruta antigua %s abre su pestaña nueva', async (from, tab) => {
     mockApi(routes())

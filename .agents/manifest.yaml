@@ -75,6 +75,7 @@ policy:
     - mcp:list_agent_requests
     - mcp:get_assistant_request
     - mcp:save_assistant_answer
+    - mcp:save_profile_suggestion
   # Rutas (relativas a la raíz, con comodines) que ningún agente lee o edita.
   deny_read: [.env, .env.*, data/browser-profile/**]
   deny_edit: [data/browser-profile/**]
@@ -189,7 +190,7 @@ targets:
         argument-hint: "[job_id] [milestone_id], o 'dudas' con una oferta recibida"
         allowed-tools: ["mcp:get_interviews", "mcp:get_extraction", "mcp:get_profile", "mcp:get_context", "mcp:get_timeline", "mcp:save_interview_notes"]
       update-profile:
-        allowed-tools: ["read", "cai_profile_cli", "cai_context_cli", "cai_skills_cli"]
+        allowed-tools: ["read", "cai_profile_cli", "cai_context_cli", "cai_skills_cli", "mcp:get_profile", "mcp:save_profile_suggestion"]
       # Fase 25.2: revisa tu perfil y lee tus enlaces públicos; editar data/profile.yaml sigue pidiendo permiso.
       expand:
         argument-hint: "[nada para revisar el perfil y leer sus enlaces, «sin enlaces» para solo revisarlo, o URLs públicas: GitHub, portfolio, Kaggle, Scholar]"

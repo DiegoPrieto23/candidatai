@@ -52,6 +52,7 @@ from app.services import (
     mail_sources,
     network,
     profile,
+    profile_suggestions,
     prompts,
     received_offers,
     replies,
@@ -562,6 +563,10 @@ class SaveAssistantAnswerInput(_Input, assistant.SaveAnswerInput):
     request_id: int = Field(ge=1, description="Id de la petición.")
 
 
+class SaveProfileSuggestionInput(_Input, profile_suggestions.SuggestionInput):
+    pass
+
+
 class JobList(BaseModel):
     jobs: list[jobs.JobSummary]
 
@@ -954,6 +959,13 @@ def _save_assistant_answer(
     session: Session, args: SaveAssistantAnswerInput, ctx: CallContext
 ) -> assistant.SaveAnswerResult:
     return assistant.save_answer(session, args.request_id, args.answer, args.links, ctx.client_name)
+
+
+def _save_profile_suggestion(
+    session: Session, args: SaveProfileSuggestionInput, ctx: CallContext
+) -> profile_suggestions.SaveSuggestionResult:
+    data = profile_suggestions.SuggestionInput(field=args.field, text=args.text)
+    return profile_suggestions.save(session, data, ctx.client_name)
 
 
 def _save_application_answers(
@@ -1894,6 +1906,23 @@ TOOLS: tuple[ToolSpec, ...] = (
             arguments=("request_id",),
             file_keys=("answer", "links"),
         ),
+    ),
+    # «Mi perfil» (fase 41.2): una propuesta para un campo, que el usuario usa o descarta.
+    ToolSpec(
+        name="save_profile_suggestion",
+        description=(
+            "Deja una propuesta para un campo del perfil (`summary.en`: el resumen en inglés, "
+            "traducido del resumen en español del perfil vigente). No escribe en el perfil: el "
+            "usuario la ve en «Mi perfil» y decide si la usa, la edita o la descarta. Una nueva "
+            "sustituye a la anterior del mismo campo."
+        ),
+        input_model=SaveProfileSuggestionInput,
+        output_model=profile_suggestions.SaveSuggestionResult,
+        handler=_save_profile_suggestion,
+        cli=CliSpec(
+            path=("profile", "suggest"), option_names={"field": "--field"}, file_field="text"
+        ),
+        audit_fields=("field",),
     ),
 )
 

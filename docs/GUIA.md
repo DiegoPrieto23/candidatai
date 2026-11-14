@@ -220,7 +220,7 @@ Trae también lo que habrían dejado ella y su agente, para que ninguna pantalla
 valoración del encaje, carta y respuestas de screening de una oferta, un mensaje de LinkedIn y un
 seguimiento, dos dosieres de empresa (uno con bandera roja), el plan de una entrevista y el repaso
 de dos, los datos de la oferta recibida, tres correos de empresas en «Respuestas» (dos con
-propuesta y uno sin clasificar, con texto oculto para una IA), dos huecos en «Skills», un encargo
+propuesta y uno sin clasificar, con texto oculto para una IA), dos huecos en «Habilidades por desarrollar», un encargo
 pendiente, el contexto, una muestra de estilo y una tabla de salarios.
 
 ```powershell
@@ -251,7 +251,7 @@ documentos y correos. Las claves van en `.env`, también fuera de git.
 |---|---|---|
 | **Perfil** (la fuente de verdad de todo lo que se escribe sobre ti) | `data/profile.yaml` | Para empezar, sube tu CV en «Mi perfil» y pulsa «Crear mi perfil desde mi CV» (o pídeselo a tu agente): el skill `update-profile` lo lee, te pregunta lo que falte y lo valida. Sin agente, «Empezar a mano» crea un perfil mínimo (nombre, titular, puesto y niveles) y abre el editor. Después, **rellénalo y retócalo en «Mi perfil»**: experiencia y logros, proyectos, formación, skills e idiomas, historias STAR, qué buscas y tus preferencias de CV y carta, por bloques. Cada bloque se guarda solo, conserva el formato y los comentarios de tu fichero, avisa si lo cambiaste por fuera y se puede deshacer. Cada cambio crea una versión. Con el perfil ya hecho, «Importar información desde un CV» añade lo que le falte desde otro CV y te enseña las diferencias antes de escribir. Si prefieres, sigue valiendo editar el YAML |
 | **Tu CV como diseño** | `data/templates/<id>/` | Sube un CV con el diseño que te gusta en «Mi perfil → Plantillas de CV → Subir nueva plantilla» y pulsa «Convertir en plantilla» (usa el skill `import-cv-template`). Vale Word, PDF, imagen o HTML (Canva, Google Docs…) |
-| **Foto** | `data/photo.jpg` (o png) | La subes, la cambias o la quitas en «Mi perfil → Sobre ti». Cada plantilla la recorta a su forma; se incluye o no según el país de la oferta |
+| **Foto** | `data/photo.jpg` (o png), y la original en `data/photo-original.*` | La subes, la encuadras (zoom y arrastre, en tu navegador), la vuelves a encuadrar o la quitas en «Mi perfil → Sobre ti». Cada plantilla la recorta a su forma; se incluye o no según el país de la oferta |
 | **Contexto** (estilo, narrativa, criterios) | `data/contexto/*.md` | Se edita en «Mi perfil → Documentos» (con vista previa) o en tu editor. Orienta al agente, pero nunca respalda un hecho del CV |
 | **Muestras de estilo** (cartas, correos o posts tuyos) | `data/documentos/estilo/` | Súbelas en «Mi perfil → Documentos» (.txt, .md, .docx, .pdf). Tu agente toma de ellas el tono, nunca los hechos, y las lee como dato: si traen texto de otros con órdenes, no las sigue |
 | **Documentos fuente** (CVs antiguos, títulos, referencias) | `data/documentos/` | Tu CV y tu exportación de LinkedIn se suben en «Mi perfil → Documentos»; el resto, en su carpeta. `update-profile` los puede leer, confirmando antes de escribir |
@@ -355,8 +355,8 @@ Sin agente instalado, la pestaña lo dice y la ayuda sigue funcionando. El panel
 El menú tiene nueve entradas: **Inicio** y **Mi perfil**; en Búsqueda, **Buscar ofertas** y
 **Bandeja de ofertas**; en Procesos, **Tablero**, **Calendario**, **Respuestas** y **Embudo**; y
 **Agente**. Lo demás son pestañas dentro de ellas: la Bandeja tiene **Revisión rápida** y **Por
-completar**; Buscar ofertas, **Qué buscas** y **Dónde buscar**; y Mi perfil, **Skills que te
-faltan** y **Plantillas de CV**.
+completar**; Buscar ofertas, **Qué buscas** y **Dónde buscar**; y Mi perfil, **Habilidades
+por desarrollar** y **Plantillas de CV**.
 
 Un día normal:
 
@@ -496,7 +496,7 @@ Muchas pantallas tienen botones que abren tu agente con la orden ya escrita:
   permisos que pide y las conversaciones (un simulacro, p. ej.) siguen en su ventana.
 - **En segundo plano** (Claude Code; OpenCode solo en `process-jobs` y `assess-fit`): para los skills que no preguntan
   (`process-jobs`, `assess-fit`, `generate-cv`, `correct-cv`, `verify-cv`,
-  `generate-cover-letter`). Corre sin ventana, solo con las herramientas de la app que necesita, y
+  `generate-cover-letter` y el resumen en inglés). Corre sin ventana, solo con las herramientas de la app que necesita, y
   ves el progreso y el uso en la página «Agente». Si tu agente no puede, el desplegable propone
   uno que sí. Necesita `cai worker` en marcha.
   - **Coste:** la sección «Coste» de la página «Agente» suma tokens, tiempo y, si el agente lo da,

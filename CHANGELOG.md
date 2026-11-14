@@ -10,6 +10,17 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Encuadrar la foto del CV:** al subirla en **Mi perfil → Sobre ti**, la colocas con zoom y arrastre
+  antes de guardarla, con la forma (redonda o cuadrada) de tu plantilla por defecto. Se hace en tu
+  navegador, y **Volver a encuadrar** parte de la foto original.
+- **Generar resumen en inglés:** un botón junto a «Resumen (inglés)» pide a tu agente que traduzca tu
+  resumen en español, sin añadir nada. La propuesta aparece junto al campo para usarla, editarla o
+  descartarla antes de guardar; puede ir en segundo plano.
+- **Subir una plantilla, más cómodo:** en **Plantillas de CV** puedes arrastrar el fichero, eliges su
+  nombre antes de subirlo («Mi CV» por defecto, o «Mi CV 2» si ya existe) y la tarjeta dice
+  «Convirtiendo en plantilla…» mientras tu agente trabaja.
+- **Ayuda del periodo en Habilidades por desarrollar:** junto a 30/60/90/180 días, qué ofertas cuenta
+  cada ventana y para qué sirve cambiarla.
 - **Pídeselo a tu agente, en la ayuda:** el panel de ayuda tiene una pestaña nueva con una caja de
   texto para pedirle algo a tu agente con tus palabras («¿qué tengo pendiente esta semana?»).
   **Enviar ahora** lo lanza en segundo plano y la respuesta aparece ahí mismo, con enlaces a la oferta
@@ -125,6 +136,10 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   vez de 23).
 
 ### Cambiado
+- **«Skills que te faltan» pasa a llamarse «Habilidades por desarrollar»** (en inglés, «Skills to
+  build»), con textos que hablan de lo que piden tus ofertas.
+- **Plantillas importadas:** la tarjeta enseña la plantilla; el CV original se ve con **Comparar con
+  el original**.
 - **Textos más claros y profesionales en toda la app:** en español y en inglés, dicen lo que puedes
   hacer en vez de lo que no se hace, explican cada regla una sola vez y dejan las explicaciones largas
   en una ayuda (ⓘ). Algunos ejemplos: «Correo electrónico» en vez de «Usuario (tu dirección)»,

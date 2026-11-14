@@ -49,7 +49,7 @@
     "home": "Home",
     "howItWorks": "How it works",
     "profile": "My profile",
-    "skills": "Skills you lack",
+    "skills": "Skills to build",
     "templates": "CV templates",
     "search": "Search jobs",
     "searchSettings": "What you're after",
@@ -263,8 +263,8 @@
       "keywords": "funnel statistics results conversion figures analysis"
     },
     "skillGaps": {
-      "q": "What are the “Skills you lack”?",
-      "a": "What the jobs you approve ask for and your profile doesn't yet include. Mark them as yours, as a synonym of one in your profile or for the training plan your agent prepares.",
+      "q": "What are the “Skills to build”?",
+      "a": "The skills the jobs you approve ask for that aren't in your profile yet. Mark them as yours, as a synonym of one in your profile or for the training plan your agent prepares.",
       "keywords": "skills training learn gaps courses plan"
     },
     "dataLeaving": {

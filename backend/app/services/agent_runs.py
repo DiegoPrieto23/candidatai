@@ -118,7 +118,8 @@ def _cv_gaps_note(session: Session, job_id: int) -> str:
         raise LaunchError(
             "invalid_request",
             f"A tu perfil le faltan {count} {noun} de esta oferta y el skill te preguntará si las "
-            "tienes: usa «En terminal», o márcalas antes en la página Skills.",
+            "tienes: usa «En terminal», o márcalas antes en la página «Habilidades por "
+            "desarrollar».",
         )
     return agent_launch.GAPS_MARKED_NOTE
 

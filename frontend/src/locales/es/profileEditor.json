@@ -182,12 +182,24 @@
       "choose": "Elegir una foto",
       "upload": "Subir foto",
       "replace": "Cambiar foto",
-      "uploading": "Subiendo…",
       "remove": "Quitar",
       "confirmRemove": "Sí, quitar la foto",
       "cancel": "Cancelar",
-      "formats": "JPG, PNG o WebP, de hasta 10 MB. Mejor cuadrada: se recorta desde el centro.",
-      "policyOff": "Para que tus CVs la lleven, activa «Poner foto en el CV» en la pestaña «Documentos»."
+      "formats": "JPG, PNG o WebP, de hasta 10 MB. Al elegirla, la encuadras.",
+      "policyOff": "Para que tus CVs la lleven, activa «Poner foto en el CV» en la pestaña «Documentos».",
+      "reframe": "Volver a encuadrar",
+      "opening": "Abriendo…",
+      "originalFailed": "No se ha podido abrir la foto para encuadrarla. Inténtalo de nuevo.",
+      "crop": {
+        "title": "Encuadra tu foto",
+        "description": "Arrastra la foto para colocarla y usa el zoom para acercarla. Así saldrá en tus CVs.",
+        "area": "Zona de encuadre de la foto",
+        "zoom": "Zoom",
+        "cancel": "Cancelar",
+        "save": "Guardar foto",
+        "saving": "Guardando…",
+        "failed": "No se ha podido recortar la foto. Prueba con otra imagen."
+      }
     }
   },
   "fields": {
@@ -408,5 +420,14 @@
     "saveFirst": "Guarda o descarta antes los bloques con cambios.",
     "copies_one": "{{count}} copia guardada",
     "copies_other": "{{count}} copias guardadas"
+  },
+  "summarySuggestion": {
+    "generate": "Generar resumen en inglés",
+    "label": "Propuesta de tu agente",
+    "outdated": "Se hizo con otra versión de tu resumen en español.",
+    "use": "Usar en el campo",
+    "discard": "Descartar",
+    "saveFirst": "Tu agente traduce el resumen guardado. Guarda antes los cambios del resumen en español.",
+    "saveFirstLabel": "Por qué está desactivado"
   }
 }

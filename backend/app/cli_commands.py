@@ -2516,6 +2516,7 @@ register_tools(
         "complete_agent_request": _render_message,
         "get_assistant_request": _render_assistant_request,
         "save_assistant_answer": _render_message,
+        "save_profile_suggestion": _render_message,
         "get_status": _render_status,
         "get_job_contacts": _render_job_contacts,
         "get_company_research": _render_company_research,

@@ -226,7 +226,7 @@ It also brings what she and her agent would have left, so no screen is empty: fi
 cover letter and screening answers for one job, a LinkedIn message and a follow-up, two company
 dossiers (one with a red flag), the prep plan of one interview and the debrief of two, the details
 of the received offer, three company emails in "Replies" (two with a proposal and one
-unclassified, with text hidden for an AI), two gaps in "Skills", a pending request, the context, a
+unclassified, with text hidden for an AI), two gaps in "Skills to build", a pending request, the context, a
 style sample and a salary table.
 
 ```powershell
@@ -257,7 +257,7 @@ photo, documents and emails. Keys go in `.env`, also outside git.
 |---|---|---|
 | **Profile** (the source of truth for anything written about you) | `data/profile.yaml` | To start, upload your CV in **My profile** and click **Create my profile from my CV** (or ask your agent): the `update-profile` skill reads it, asks for what's missing and validates it. With no agent, **Start by hand** creates a minimal profile (name, headline, role and levels) and opens the editor. Then **fill it in and refine it in My profile**: experience and achievements, projects, education, skills and languages, STAR stories, what you're looking for and your CV and letter preferences, block by block. Each block saves on its own, keeps your file's formatting and comments, warns you if you changed it outside the app, and can be undone. Every change creates a version. With a profile already made, **Import information from a CV** adds what's missing from another CV and shows you the differences before writing. You can still edit the YAML if you prefer |
 | **Your CV as a design** | `data/templates/<id>/` | Upload a CV with the design you like in **My profile → CV templates → Upload new template** and click **Turn into a template** (it uses the `import-cv-template` skill). Word, PDF, image or HTML (Canva, Google Docs…) |
-| **Photo** | `data/photo.jpg` (or png) | Upload, change or remove it in **My profile → About you**. Each template crops it to its shape; it's included or not depending on the job's country |
+| **Photo** | `data/photo.jpg` (or png), and the original in `data/photo-original.*` | Upload it, frame it (zoom and drag, in your browser), reframe it or remove it in **My profile → About you**. Each template crops it to its shape; it's included or not depending on the job's country |
 | **Context** (style, narrative, criteria) | `data/contexto/*.md` | Edited in **My profile → Documents** (with a preview) or in your editor. Guides the agent, but never backs a CV claim |
 | **Writing samples** (letters, emails or posts of yours) | `data/documentos/estilo/` | Upload them in **My profile → Documents** (.txt, .md, .docx, .pdf). Your agent takes your tone from them, never facts, and reads them as data: if they contain someone else's text with instructions, it doesn't follow them |
 | **Source documents** (old CVs, degrees, references) | `data/documentos/` | Your CV and your LinkedIn export are uploaded in **My profile → Documents**; the rest, in their folder. `update-profile` can read them, confirming before writing |
@@ -361,7 +361,7 @@ requests on your computer.
 The menu has nine entries: **Home** and **My profile**; under Search, **Search jobs** and **Job
 inbox**; under Processes, **Board**, **Calendar**, **Replies** and **Funnel**; and **Agent**. The
 rest are tabs inside them: the Inbox has **Quick review** and **To complete**; Search jobs, **What
-you're after** and **Where to search**; and My profile, **Skills you lack** and **CV templates**.
+you're after** and **Where to search**; and My profile, **Skills to build** and **CV templates**.
 
 A typical day:
 
@@ -502,7 +502,7 @@ Many pages have buttons that open your agent with the instruction already writte
   requests and conversations (a mock interview, say) stay in its window.
 - **In the background** (Claude Code; OpenCode only for `process-jobs` and `assess-fit`): for skills that don't ask
   questions (`process-jobs`, `assess-fit`, `generate-cv`, `correct-cv`, `verify-cv`,
-  `generate-cover-letter`). It runs without a window, only with the app tools it needs, and you
+  `generate-cover-letter` and the English summary). It runs without a window, only with the app tools it needs, and you
   follow its progress and usage on the **Agent** page. If your agent can't, the menu suggests one
   that can. Requires `cai worker`.
   - **Cost:** the **Cost** section of the **Agent** page adds up tokens, time and, if the agent

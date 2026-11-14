@@ -4,6 +4,34 @@ import { describe, expect, it, vi } from 'vitest'
 import { i18n } from '@/lib/i18n'
 import { mockApi, renderApp, status } from '@/test/utils'
 
+// jsdom no carga imágenes ni tiene canvas: el editor de encuadre avisa del recuadro al montarse y el
+// recorte devuelve un JPEG de mentira. Lo que se prueba es qué se sube y cuándo.
+vi.mock('react-easy-crop', async () => {
+  const { useEffect } = await import('react')
+  return {
+    default: function FakeCropper(props: {
+      cropShape: string
+      initialCroppedAreaPercentages?: unknown
+      onCropComplete: (percent: unknown, pixels: unknown) => void
+    }) {
+      useEffect(() => {
+        props.onCropComplete({ x: 10, y: 20, width: 50, height: 50 }, { x: 2, y: 4, width: 10, height: 10 })
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, [])
+      return (
+        <div
+          data-testid="fake-cropper"
+          data-shape={props.cropShape}
+          data-initial={JSON.stringify(props.initialCroppedAreaPercentages ?? null)}
+        />
+      )
+    },
+  }
+})
+vi.mock('@/lib/cropImage', () => ({
+  cropToBlob: vi.fn(async () => new Blob(['recorte'], { type: 'image/jpeg' })),
+}))
+
 /** «Mi perfil» editable (fase 25.7b), con una candidata ficticia como la de `demo/`. */
 const PROFILE = {
   schema_version: 1,
@@ -103,6 +131,22 @@ const BASE = {
   'GET /context/style-samples': [],
   'GET /templates': { templates: [], invalid: [], fallback_template: 'ats-simple' },
   'GET /profile/salary-floor': { salary_floor_eur: 30000, file_hash: 'h1' },
+}
+
+/** Una plantilla de la lista con su forma de foto (para el encuadre). */
+function templateWithShape(id: string, photo_shape: string) {
+  return {
+    id,
+    name: id,
+    engine: 'docx',
+    origin: 'builtin',
+    ats_friendly: false,
+    photo_supported: true,
+    photo_shape,
+    columns: 1,
+    has_preview: false,
+    editable: false,
+  }
 }
 
 async function openTab(name: string) {
@@ -698,8 +742,9 @@ describe('Mi perfil editable', () => {
     expect(within(filters).getByRole('button', { name: /^Todas/ }).textContent).not.toBe(before)
   })
 
-  it('la foto es opcional: se sube, se cambia y se quita pidiendo confirmación', async () => {
-    const saved = { exists: true, filename: 'photo.png', size_bytes: 10, version: 'a' }
+  it('la foto es opcional: se encuadra, se sube, se cambia y se quita pidiendo confirmación', async () => {
+    const crop = { x: 10, y: 20, width: 50, height: 50 }
+    const saved = { exists: true, filename: 'photo.jpg', size_bytes: 10, version: 'a', has_original: true, crop }
     const calls = mockApi({
       ...BASE,
       'GET /profile/photo': { exists: false, filename: null, size_bytes: null, version: null },
@@ -710,12 +755,135 @@ describe('Mi perfil editable', () => {
     const block = await screen.findByRole('region', { name: 'Foto para el CV (opcional)' })
     expect(await within(block).findByRole('button', { name: 'Subir foto' })).toBeInTheDocument()
     await userEvent.upload(within(block).getByLabelText('Elegir una foto'), new File(['x'], 'yo.png', { type: 'image/png' }))
+    // Primero se encuadra; no se sube nada hasta guardar.
+    const dialog = await screen.findByRole('dialog', { name: 'Encuadra tu foto' })
+    expect(calls.some((c) => c.method === 'PUT')).toBe(false)
+    // Sin plantilla por defecto con otra forma, el recuadro es redondo.
+    expect(within(dialog).getByTestId('fake-cropper')).toHaveAttribute('data-shape', 'round')
+    expect(within(dialog).getByRole('slider', { name: 'Zoom' })).toBeInTheDocument()
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Guardar foto' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
     expect(await within(block).findByRole('img', { name: 'Tu foto actual' })).toBeInTheDocument()
-    expect(calls.find((c) => c.method === 'PUT')?.body).toEqual({ content_base64: btoa('x') })
+    // Se sube el recorte, la original y el recuadro.
+    expect(calls.find((c) => c.method === 'PUT')?.body).toEqual({
+      content_base64: btoa('recorte'),
+      original_base64: btoa('x'),
+      crop,
+    })
+    expect(within(block).getByRole('button', { name: 'Volver a encuadrar' })).toBeInTheDocument()
     await userEvent.click(within(block).getByRole('button', { name: 'Quitar' }))
     expect(calls.some((c) => c.method === 'DELETE')).toBe(false)
     await userEvent.click(within(block).getByRole('button', { name: 'Sí, quitar la foto' }))
     expect(await within(block).findByRole('button', { name: 'Subir foto' })).toBeInTheDocument()
+  })
+
+  it('la foto se vuelve a encuadrar desde la original, empezando por el último recuadro', async () => {
+    const crop = { x: 5, y: 5, width: 60, height: 60 }
+    const calls = mockApi({
+      ...BASE,
+      'GET /profile/photo': { exists: true, filename: 'photo.jpg', size_bytes: 10, version: 'b', has_original: true, crop },
+      'GET /profile/photo/original': { original: true },
+      'GET /templates': {
+        templates: [{ ...templateWithShape('cuadrada', 'square') }],
+        invalid: [],
+        fallback_template: 'ats-simple',
+      },
+      'GET /templates/default': { template_id: 'cuadrada' },
+    })
+    renderApp('/perfil')
+    const block = await screen.findByRole('region', { name: 'Foto para el CV (opcional)' })
+    await userEvent.click(await within(block).findByRole('button', { name: 'Volver a encuadrar' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Encuadra tu foto' })
+    expect(calls.some((c) => c.path === '/profile/photo/original')).toBe(true)
+    const cropper = within(dialog).getByTestId('fake-cropper')
+    expect(JSON.parse(cropper.getAttribute('data-initial') ?? 'null')).toEqual(crop)
+    // La plantilla por defecto lleva la foto cuadrada: el recuadro también.
+    expect(cropper).toHaveAttribute('data-shape', 'rect')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Cancelar' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    expect(calls.some((c) => c.method === 'PUT')).toBe(false)
+  })
+
+  it('«Generar resumen en inglés» deja el encargo a tu agente', async () => {
+    const calls = mockApi({
+      ...BASE,
+      'GET /profile/suggestions': { suggestions: [] },
+      'GET /agent': {
+        available: true,
+        agent: 'claude',
+        reason: null,
+        actions: [{ id: 'translate-summary', label: 'translate-summary', needs_job: false, needs_milestone: false }],
+      },
+      'POST /agent/launch': { ok: true, agent: 'claude', prompt: 'Usa el skill update-profile…', message: 'ok' },
+    })
+    renderApp('/perfil')
+    await userEvent.click(await screen.findByRole('button', { name: /Generar resumen en inglés/ }))
+    await waitFor(() =>
+      expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ action: 'translate-summary' }),
+    )
+  })
+
+  it('con el resumen en español sin guardar, primero hay que guardarlo', async () => {
+    mockApi({
+      ...BASE,
+      'GET /profile/suggestions': { suggestions: [] },
+      'GET /agent': { available: true, agent: 'claude', reason: null, actions: [] },
+    })
+    renderApp('/perfil')
+    await userEvent.type(await screen.findByLabelText('Resumen (español)'), ' Y más.')
+    expect(screen.getByRole('button', { name: /Generar resumen en inglés/ })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Por qué está desactivado' })).toBeInTheDocument()
+  })
+
+  it('la propuesta del resumen en inglés se usa en el campo o se descarta, sin guardar el perfil', async () => {
+    const suggestion = {
+      id: 7,
+      field: 'summary.en',
+      text: 'Data Engineer with three years.',
+      source: 'Data Engineer con tres años.',
+      agent_name: 'claude',
+      created_at: '2026-11-14T10:00:00Z',
+    }
+    const calls = mockApi({
+      ...BASE,
+      'GET /profile/suggestions': { suggestions: [suggestion] },
+      'POST /profile/suggestions/7/used': { suggestions: [] },
+    })
+    renderApp('/perfil')
+    const panel = await screen.findByRole('region', { name: 'Propuesta de tu agente' })
+    expect(within(panel).getByText('Data Engineer with three years.')).toBeInTheDocument()
+    expect(within(panel).queryByText(/otra versión/)).not.toBeInTheDocument()
+    await userEvent.click(within(panel).getByRole('button', { name: /Usar en el campo/ }))
+    await waitFor(() => expect(screen.getByLabelText('Resumen (inglés)')).toHaveValue('Data Engineer with three years.'))
+    expect(calls.some((c) => c.path === '/profile/suggestions/7/used')).toBe(true)
+    // Usarla no guarda el perfil: eso sigue siendo «Guardar».
+    expect(calls.some((c) => c.method === 'PUT' && c.path.startsWith('/profile/editable'))).toBe(false)
+  })
+
+  it('avisa si la propuesta se hizo con otro resumen en español, y se puede descartar', async () => {
+    const calls = mockApi({
+      ...BASE,
+      'GET /profile/suggestions': {
+        suggestions: [
+          {
+            id: 8,
+            field: 'summary.en',
+            text: 'Old translation.',
+            source: 'Otro resumen.',
+            agent_name: null,
+            created_at: '2026-11-14T10:00:00Z',
+          },
+        ],
+      },
+      'POST /profile/suggestions/8/discard': { suggestions: [] },
+    })
+    renderApp('/perfil')
+    const panel = await screen.findByRole('region', { name: 'Propuesta de tu agente' })
+    expect(within(panel).getByText(/Se hizo con otra versión de tu resumen en español/)).toBeInTheDocument()
+    await userEvent.click(within(panel).getByRole('button', { name: /Descartar/ }))
+    await waitFor(() => expect(screen.queryByRole('region', { name: 'Propuesta de tu agente' })).not.toBeInTheDocument())
+    expect(calls.some((c) => c.path === '/profile/suggestions/8/discard')).toBe(true)
+    expect(screen.getByLabelText('Resumen (inglés)')).toHaveValue('')
   })
 
   it('«Experiencia y formación» abre con un índice de apartados: Experiencia primero, cada uno en su bloque', async () => {

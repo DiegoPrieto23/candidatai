@@ -349,12 +349,15 @@ export function SkillsPage() {
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <Segmented
-          label={t('period')}
-          options={PERIODS.map((d) => ({ id: d, label: t('days', { count: d }) }))}
-          value={days}
-          onChange={fromStart(setDays)}
-        />
+        <span className="inline-flex items-center gap-1">
+          <Segmented
+            label={t('period')}
+            options={PERIODS.map((d) => ({ id: d, label: t('days', { count: d }) }))}
+            value={days}
+            onChange={fromStart(setDays)}
+          />
+          <Hint text={t('periodHint')} label={t('periodHelp')} />
+        </span>
         <Segmented
           label={t('kind')}
           options={KINDS.map((id) => ({ id, label: t(`kinds.${id}`) }))}

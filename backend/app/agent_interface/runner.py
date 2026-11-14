@@ -61,6 +61,7 @@ from app.services.profile_editor import (
     ProfileConflictError,
     ProfileReferencedError,
 )
+from app.services.profile_suggestions import SuggestionClosedError, SuggestionNotFoundError
 from app.services.prompts import PromptNotFoundError
 from app.services.received_offers import ReceivedOfferNotFoundError
 from app.services.replies import ReplyNotFoundError, ReplyResolvedError
@@ -86,6 +87,8 @@ _ERROR_TYPES: tuple[tuple[type[Exception], str], ...] = (
     (RequestClosedError, "not_allowed"),
     (AssistantNotFoundError, "not_found"),
     (AssistantClosedError, "not_allowed"),
+    (SuggestionNotFoundError, "not_found"),
+    (SuggestionClosedError, "not_allowed"),
     (ReplyNotFoundError, "not_found"),
     (ReplyResolvedError, "not_allowed"),
     (DraftNotFoundError, "not_found"),

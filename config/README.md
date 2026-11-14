@@ -19,7 +19,7 @@ repositorio.
 Formato: `Nombre canónico: [sinónimo, otro sinónimo]`. Se compara sin tildes, mayúsculas ni signos
 (salvo `+` y `#`, por C++ y C#). Un sinónimo solo puede apuntar a un canónico.
 
-**Desde la UI** (página «Skills»): cuando una skill que piden tus ofertas es otra forma de
+**Desde la UI** (página «Habilidades por desarrollar»): cuando una skill que piden tus ofertas es otra forma de
 llamar a una de tu perfil, «Es lo mismo que…» la añade como sinónimo:
 
 - en la entrada de esa skill si ya existe (también si tu perfil la llama por un sinónimo: si tienes

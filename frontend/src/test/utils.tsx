@@ -58,7 +58,9 @@ export function mockApi(routes: Record<string, Handler | unknown>): Call[] {
   const calls: Call[] = []
   vi.stubGlobal(
     'fetch',
-    vi.fn(async (input: Request) => {
+    vi.fn(async (resource: Request | string) => {
+      // El cliente de la API pasa un `Request`; un `fetch(url)` suelto (un fichero), la URL.
+      const input = typeof resource === 'string' ? new Request(resource) : resource
       const url = new URL(input.url)
       const key = `${input.method} ${url.pathname}`
       const text = await input.clone().text()

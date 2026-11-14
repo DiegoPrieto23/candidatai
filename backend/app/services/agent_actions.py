@@ -39,6 +39,7 @@ ActionId = Literal[
     "create-profile",
     "import-profile-from-cv",
     "improve-profile-item",
+    "translate-summary",
     "propose-stories",
     "import-cv-template",
     "assistant",
@@ -288,7 +289,8 @@ ACTIONS: dict[ActionId, Action] = {
     "add-skills": Action(
         "Añadir al perfil las que tengo",
         "Usa el skill update-profile de CandidatAI para añadir a mi perfil las skills que he "
-        "marcado como «La tengo» en la página Skills (get_skill_gaps con status have).",
+        "marcado como «La tengo» en la página «Habilidades por desarrollar» (get_skill_gaps con "
+        "status have).",
     ),
     # Perfil (fase 25.2): revisa el perfil entero y, si hay enlaces públicos, propone lo que sale de
     # ellos; pregunta antes de escribir, así que solo en terminal. El id sigue siendo `expand`.
@@ -330,6 +332,15 @@ ACTIONS: dict[ActionId, Action] = {
         "Convertir en plantilla",
         "Usa el skill import-cv-template de CandidatAI para convertir en plantilla {upload}.",
         upload=True,
+    ),
+    # «Mi perfil» (fase 41.2): el resumen en inglés desde el español. El agente deja una propuesta y
+    # no escribe en el perfil (la usa o la descarta el usuario), así que admite segundo plano.
+    "translate-summary": Action(
+        "Generar resumen en inglés",
+        "Usa el skill update-profile de CandidatAI en modo «Resumen en inglés»: traduce el resumen "
+        "en español de mi perfil y déjalo como propuesta.",
+        skill="update-profile",
+        background=("get_profile", "save_profile_suggestion"),
     ),
     "propose-stories": Action(
         "Proponer historias desde mi experiencia",

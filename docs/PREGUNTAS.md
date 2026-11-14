@@ -230,11 +230,11 @@ Hasta dónde ha llegado cada candidatura y dónde se detienen: por fuente, por s
 
 Dónde: «Embudo».
 
-### ¿Qué son las «Skills que te faltan»?
+### ¿Qué son las «Habilidades por desarrollar»?
 
-Lo que piden las ofertas que apruebas y tu perfil aún no recoge. Márcalas como tuyas, como sinónimo de una de tu perfil o para el plan de formación que prepara tu agente.
+Las skills que piden las ofertas que apruebas y que aún no figuran en tu perfil. Márcalas como tuyas, como sinónimo de una de tu perfil o para el plan de formación que prepara tu agente.
 
-Dónde: «Skills que te faltan».
+Dónde: «Habilidades por desarrollar».
 
 ## Tus datos
 

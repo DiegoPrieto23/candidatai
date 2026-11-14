@@ -69,6 +69,34 @@ def test_upload_saves_with_safe_name_and_never_overwrites(
     assert (uploads.paths.uploads_dir() / "mi-cv-version-2.docx").read_bytes() == data
 
 
+def test_upload_keeps_the_chosen_template_name_until_deleted(
+    client: TestClient, tmp_path: Path
+) -> None:
+    response = client.post(
+        "/uploads",
+        files={"file": ("cv.docx", _cv_bytes(tmp_path), DOCX_TYPE)},
+        data={"template_name": "  Mi   CV 2 "},
+    )
+    assert response.status_code == 201
+    saved = response.json()
+    assert saved["template_name"] == "Mi CV 2"
+    assert client.get("/uploads").json()[0]["template_name"] == "Mi CV 2"
+    # El agente lo lee al analizar el fichero; uno sin nombre elegido, `None`.
+    path = uploads.paths.uploads_dir() / saved["name"]
+    assert uploads.requested_name(path) == "Mi CV 2"
+    other = _upload(client, "otro.docx", _cv_bytes(tmp_path))
+    assert other["template_name"] is None
+    assert uploads.requested_name(uploads.paths.uploads_dir() / other["name"]) is None
+    # Fuera de `data/uploads/`, nunca.
+    assert uploads.requested_name(tmp_path / saved["name"]) is None
+
+    assert client.delete(f"/uploads/{saved['name']}").status_code == 204
+    # Era el único con nombre: el fichero de nombres desaparece con él.
+    assert not (uploads.paths.uploads_dir() / uploads.NAMES_FILE).exists()
+    # El fichero de nombres no se lista como subida.
+    assert [u["name"] for u in client.get("/uploads").json()] == [other["name"]]
+
+
 def test_upload_path_is_relative_inside_the_repo() -> None:
     """Con la carpeta de datos en el repo (`data/`, `data-demo/`), la orden usa la de verdad."""
     from app.core.config import REPO_ROOT

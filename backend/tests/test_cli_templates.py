@@ -46,6 +46,13 @@ def test_inspect_json(source: Path) -> None:
     assert out["format"] == "docx" and out["pages"] == 1
     assert out["paragraphs"][0]["text"] == "Ana Ficticia Pérez"
     assert [s["section"] for s in out["sections"]][:2] == ["summary", "experience"]
+    assert out["requested_name"] is None
+
+
+def test_inspect_carries_the_name_chosen_on_upload(source: Path) -> None:
+    (paths.uploads_dir() / "names.json").write_text('{"mi-cv.docx": "Mi CV"}', encoding="utf-8")
+    code, out = _jh("templates", "inspect", str(source), "--json")
+    assert code == 0 and out["requested_name"] == "Mi CV"
 
 
 def test_inspect_outside_data_is_invalid_file(tmp_path: Path) -> None:

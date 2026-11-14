@@ -96,6 +96,8 @@ class VisualSection(BaseModel):
 
 class VisualInspection(BaseModel):
     file: str
+    # El nombre que eligió el usuario al subirlo desde la UI; si lo hay, no se pregunta.
+    requested_name: str | None = None
     format: VisualFormat
     pages: int
     page: PageInfo

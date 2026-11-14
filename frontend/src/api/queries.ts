@@ -350,34 +350,38 @@ export function useEditCv(jobId: number) {
   })
 }
 
-export function useTemplates() {
+/** `polling`: mientras tu agente convierte un CV, para ver la plantilla en cuanto la guarde. */
+export function useTemplates(polling = false) {
   return useQuery({
     queryKey: keys.templates,
     queryFn: () => unwrap(api.GET('/templates')),
     staleTime: 60_000,
+    refetchInterval: polling ? 5_000 : false,
   })
 }
 
 /** CVs subidos para convertirlos en plantilla y si ya se importaron. */
-export function useUploads() {
+export function useUploads(polling = false) {
   return useQuery({
     queryKey: keys.uploads,
     queryFn: () => unwrap(api.GET('/uploads')),
-    // El agente importa el fichero desde fuera: se refresca solo para ver cuándo termina.
-    refetchInterval: 15_000,
+    // El agente importa el fichero desde fuera: se refresca solo para ver cuándo termina (más a
+    // menudo mientras sabemos que lo está convirtiendo).
+    refetchInterval: polling ? 5_000 : 15_000,
   })
 }
 
 export function useUploadCv() {
   const client = useQueryClient()
   return useMutation({
-    mutationFn: (file: File) =>
+    mutationFn: ({ file, templateName }: { file: File; templateName?: string }) =>
       unwrap(
         api.POST('/uploads', {
           body: { file: file as unknown as string },
           bodySerializer: () => {
             const form = new FormData()
             form.append('file', file)
+            if (templateName) form.append('template_name', templateName)
             return form
           },
         }),
@@ -1574,7 +1578,7 @@ export function useStyleSampleText(name: string, enabled: boolean) {
 }
 
 /** El fichero en base64: las subidas van en JSON para que la API compruebe que vienen de la UI. */
-async function toBase64(file: File): Promise<string> {
+async function toBase64(file: Blob): Promise<string> {
   const bytes = new Uint8Array(await file.arrayBuffer())
   let binary = ''
   for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000))
@@ -1998,12 +2002,56 @@ export function useProfilePhoto() {
   return useQuery({ queryKey: PROFILE_PHOTO, queryFn: () => unwrap(api.GET('/profile/photo')) })
 }
 
+export type PhotoCrop = Schemas['PhotoCrop']
+
+/** La foto ya encuadrada en el navegador; con la original y el recuadro, se puede volver a encuadrar. */
+export interface PhotoUpload {
+  photo: Blob
+  original?: Blob
+  crop?: PhotoCrop
+}
+
 export function useSaveProfilePhoto() {
   const client = useQueryClient()
   return useMutation({
-    mutationFn: async (file: File) =>
-      unwrap(api.PUT('/profile/photo', { body: { content_base64: await toBase64(file) } })),
+    mutationFn: async ({ photo, original, crop }: PhotoUpload) =>
+      unwrap(
+        api.PUT('/profile/photo', {
+          body: {
+            content_base64: await toBase64(photo),
+            ...(original ? { original_base64: await toBase64(original) } : {}),
+            ...(crop ? { crop } : {}),
+          },
+        }),
+      ),
     onSuccess: (info) => client.setQueryData(PROFILE_PHOTO, info),
+  })
+}
+
+// --- Propuestas de tu agente para el perfil (fase 41.2) -------------------------------------
+
+export type ProfileSuggestion = Schemas['SuggestionView']
+const PROFILE_SUGGESTIONS = ['profile-suggestions'] as const
+
+/** Lo que tu agente propone para tu perfil. Mientras esperas una, se vuelve a pedir cada poco. */
+export function useProfileSuggestions(waiting = false) {
+  return useQuery({
+    queryKey: PROFILE_SUGGESTIONS,
+    queryFn: () => unwrap(api.GET('/profile/suggestions')),
+    refetchInterval: waiting ? 5_000 : false,
+  })
+}
+
+export function useResolveProfileSuggestion() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, outcome }: { id: number; outcome: 'used' | 'discarded' }) =>
+      unwrap(
+        outcome === 'used'
+          ? api.POST('/profile/suggestions/{suggestion_id}/used', { params: { path: { suggestion_id: id } }, body: {} })
+          : api.POST('/profile/suggestions/{suggestion_id}/discard', { params: { path: { suggestion_id: id } }, body: {} }),
+      ),
+    onSuccess: (data) => client.setQueryData(PROFILE_SUGGESTIONS, data),
   })
 }
 

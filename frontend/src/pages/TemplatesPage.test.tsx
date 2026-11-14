@@ -1,6 +1,7 @@
-import { screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { nextTemplateName, resetConverting } from '@/lib/convertingUploads'
 import { mockApi, renderApp, status, templateInfo, templateList } from '@/test/utils'
 
 describe('Galería de plantillas', () => {
@@ -65,6 +66,7 @@ describe('Galería de plantillas', () => {
   })
 
   describe('Mi CV', () => {
+    afterEach(() => resetConverting())
     const pending = {
       name: 'mi-cv.docx',
       path: 'data/uploads/mi-cv.docx',
@@ -102,8 +104,8 @@ describe('Galería de plantillas', () => {
         'FormData',
         class {
           private parts: string[] = []
-          append(key: string, value: File) {
-            this.parts.push(`${key}=${value.name}`)
+          append(key: string, value: File | string) {
+            this.parts.push(`${key}=${typeof value === 'string' ? value : value.name}`)
           }
           toString() {
             return this.parts.join('&')
@@ -123,9 +125,46 @@ describe('Galería de plantillas', () => {
         type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       })
       await userEvent.upload(screen.getByLabelText('Fichero con el diseño de la plantilla'), file)
+      // Antes de subirlo, el nombre de la plantilla: «Mi CV» ya puesto.
+      const step = await screen.findByRole('form', { name: 'Nombre de la plantilla' })
+      expect(within(step).getByLabelText('Nombre de la plantilla')).toHaveValue('Mi CV')
+      expect(calls.some((c) => c.method === 'POST' && c.path === '/uploads')).toBe(false)
+      await userEvent.click(within(step).getByRole('button', { name: 'Continuar con «Mi CV»' }))
       await waitFor(() => expect(calls.some((c) => c.method === 'POST' && c.path === '/uploads')).toBe(true))
       const upload = calls.find((c) => c.method === 'POST' && c.path === '/uploads')
-      expect(String(upload?.body)).toContain('Mi CV.docx')
+      expect(String(upload?.body)).toContain('file=Mi CV.docx')
+      expect(String(upload?.body)).toContain('template_name=Mi CV')
+    })
+
+    it('se puede arrastrar el fichero; con una «Mi CV» ya hecha, propone «Mi CV 2»', async () => {
+      mockApi({
+        'GET /status': status(),
+        'GET /templates': templateList({ templates: [templateInfo(), mine] }),
+        'GET /uploads': [],
+        'GET /templates/default': { template_id: null },
+      })
+      renderApp('/plantillas')
+      await screen.findByText('Aún no has subido ningún CV de ejemplo')
+      const section = screen.getByRole('region', { name: 'Crea una plantilla desde un CV' })
+      const file = new File(['%PDF'], 'canva.pdf', { type: 'application/pdf' })
+      fireEvent.dragOver(section, { dataTransfer: { types: ['Files'], files: [file] } })
+      expect(screen.getByText('Suelta el fichero para subirlo')).toBeInTheDocument()
+      fireEvent.drop(section, { dataTransfer: { types: ['Files'], files: [file] } })
+      const step = await screen.findByRole('form', { name: 'Nombre de la plantilla' })
+      expect(within(step).getByLabelText('Nombre de la plantilla')).toHaveValue('Mi CV 2')
+      // Cambiar el nombre cambia el botón.
+      await userEvent.clear(within(step).getByLabelText('Nombre de la plantilla'))
+      await userEvent.type(within(step).getByLabelText('Nombre de la plantilla'), 'Canva')
+      expect(within(step).getByRole('button', { name: 'Continuar con «Canva»' })).toBeInTheDocument()
+
+      // Un formato que no se admite se dice al soltarlo, sin subir nada.
+      fireEvent.drop(section, { dataTransfer: { types: ['Files'], files: [new File(['x'], 'notas.txt')] } })
+      expect(await screen.findByRole('alert')).toHaveTextContent('Ese formato no se admite')
+    })
+
+    it('elige el primer nombre libre', () => {
+      expect(nextTemplateName('Mi CV', [])).toBe('Mi CV')
+      expect(nextTemplateName('Mi CV', ['mi cv', 'Mi CV 2'])).toBe('Mi CV 3')
     })
 
     it('un CV pendiente muestra la petición para el agente; un PDF avisa de que se recrea', async () => {
@@ -169,6 +208,11 @@ describe('Galería de plantillas', () => {
           upload: 'mi-cv.docx',
         }),
       )
+      // Mientras tu agente lo convierte, la tarjeta lo dice y se puede dejar de esperar.
+      expect(await within(card).findByText('Convirtiendo en plantilla…')).toBeInTheDocument()
+      expect(within(card).queryByText('Pendiente de importar')).not.toBeInTheDocument()
+      await userEvent.click(within(card).getByRole('button', { name: 'Dejar de esperar' }))
+      expect(within(card).getByRole('button', { name: 'Convertir en plantilla' })).toBeInTheDocument()
     })
 
     it('un CV ya convertido no sale en «Mi CV»: es una plantilla más de la lista', async () => {
@@ -193,11 +237,17 @@ describe('Galería de plantillas', () => {
       expect(screen.queryByRole('listitem', { name: 'canva.pdf' })).not.toBeInTheDocument()
       expect(screen.queryByRole('img', { name: 'Con tu perfil' })).not.toBeInTheDocument()
 
-      const pair = within(gallery).getByLabelText('Original y recreación')
+      // La tarjeta enseña la plantilla; el original, solo al pedir la comparación.
+      expect(within(gallery).getByRole('img', { name: 'Vista previa de Canva' })).toBeInTheDocument()
+      expect(within(gallery).queryByLabelText('Original y recreación')).not.toBeInTheDocument()
+      await userEvent.click(within(gallery).getByRole('button', { name: /Comparar con el original/ }))
+      const pair = within(await screen.findByRole('dialog')).getByLabelText('Original y recreación')
       expect(within(pair).getByRole('img', { name: 'Original de Canva' })).toHaveAttribute(
         'src',
         'http://127.0.0.1:8000/templates/canva/source.png',
       )
+      await userEvent.keyboard('{Escape}')
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
       const tags = within(within(gallery).getByRole('list', { name: 'Características' })).getAllByRole('listitem')
       expect(tags.map((t) => t.textContent)).toContain('Solo PDF')
       const builtin = screen.getByRole('article', { name: 'ATS sencilla' })

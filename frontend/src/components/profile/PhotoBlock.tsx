@@ -1,17 +1,37 @@
 import { useRef, useState } from 'react'
-import { TrashIcon, UploadSimpleIcon, UserCircleIcon } from '@phosphor-icons/react'
+import { CropIcon, TrashIcon, UploadSimpleIcon, UserCircleIcon } from '@phosphor-icons/react'
 import { useTranslation } from 'react-i18next'
 import { fileUrls } from '@/api/client'
-import { useDeleteProfilePhoto, useProfilePhoto, useSaveProfilePhoto } from '@/api/queries'
+import {
+  useDefaultTemplate,
+  useDeleteProfilePhoto,
+  useProfilePhoto,
+  useSaveProfilePhoto,
+  useTemplates,
+} from '@/api/queries'
 import { BusyLabel } from '@/components/StableLabel'
 import { Button } from '@/components/ui/button'
 import { errorMessage } from '@/lib/errors'
+import { cn } from '@/lib/utils'
 import { Block } from './fields'
 import { useProfileState } from './editor'
+import { PhotoCropDialog, type CropSource, type PhotoShape } from './PhotoCropDialog'
 
 const ACCEPT = '.jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp'
 
-/** La foto del CV, opcional. Se guarda al elegirla: no pasa por «Guardar» porque no va en el YAML. */
+/** La forma de la foto en la plantilla por defecto: así se ve el encuadre. Redonda si no se sabe. */
+function useDefaultPhotoShape(): PhotoShape {
+  const templates = useTemplates()
+  const chosen = useDefaultTemplate()
+  const id = chosen.data?.template_id
+  const shape = templates.data?.templates.find((tpl) => tpl.id === id)?.photo_shape
+  return shape === 'square' || shape === 'rounded' ? shape : 'circle'
+}
+
+/**
+ * La foto del CV, opcional. Al elegirla se encuadra (zoom y arrastre) y se guarda el recorte: no
+ * pasa por «Guardar» porque no va en el YAML. Con la original guardada, se vuelve a encuadrar.
+ */
 export function PhotoBlock() {
   const { t } = useTranslation('profileEditor', { keyPrefix: 'blocks.photo' })
   const { profile } = useProfileState()
@@ -20,9 +40,28 @@ export function PhotoBlock() {
   const remove = useDeleteProfilePhoto()
   const input = useRef<HTMLInputElement>(null)
   const [confirming, setConfirming] = useState(false)
+  const [cropping, setCropping] = useState<CropSource | null>(null)
+  const [loadingOriginal, setLoadingOriginal] = useState(false)
+  const [originalError, setOriginalError] = useState(false)
+  const shape = useDefaultPhotoShape()
   const info = photo.data
   const policyOff = profile?.preferences?.cv?.photo_policy?.default === false
-  const error = save.error ?? remove.error
+  const error = remove.error
+
+  const reframe = async () => {
+    if (!info?.exists) return
+    setOriginalError(false)
+    setLoadingOriginal(true)
+    try {
+      const response = await fetch(fileUrls.profilePhotoOriginal(info.version ?? ''))
+      if (!response.ok) throw new Error(String(response.status))
+      setCropping({ blob: await response.blob(), initial: info.has_original ? info.crop : null })
+    } catch {
+      setOriginalError(true)
+    } finally {
+      setLoadingOriginal(false)
+    }
+  }
   return (
     <Block id="photo" title={t('title')} hint={t('hint')}>
       <div className="flex flex-wrap items-center gap-4">
@@ -30,7 +69,7 @@ export function PhotoBlock() {
           <img
             src={fileUrls.profilePhoto(info.version ?? '')}
             alt={t('preview')}
-            className="size-20 rounded-lg border object-cover"
+            className={cn('size-20 border object-cover', shape === 'circle' ? 'rounded-full' : 'rounded-lg')}
           />
         ) : (
           <span className="grid size-20 place-items-center rounded-lg border border-dashed text-muted-foreground">
@@ -51,15 +90,22 @@ export function PhotoBlock() {
               if (file) {
                 setConfirming(false)
                 remove.reset()
-                save.mutate(file)
+                save.reset()
+                setCropping({ blob: file })
               }
             }}
           />
           <div className="flex flex-wrap gap-2">
             <Button type="button" size="sm" variant="outline" disabled={save.isPending} onClick={() => input.current?.click()}>
               <UploadSimpleIcon />
-              <BusyLabel busy={save.isPending} busyText={t('uploading')} text={info?.exists ? t('replace') : t('upload')} />
+              {info?.exists ? t('replace') : t('upload')}
             </Button>
+            {info?.exists && (
+              <Button type="button" size="sm" variant="outline" disabled={loadingOriginal} onClick={() => void reframe()}>
+                <CropIcon />
+                <BusyLabel busy={loadingOriginal} busyText={t('opening')} text={t('reframe')} />
+              </Button>
+            )}
             {info?.exists && !confirming && (
               <Button type="button" size="sm" variant="ghost" onClick={() => setConfirming(true)}>
                 <TrashIcon />
@@ -89,11 +135,22 @@ export function PhotoBlock() {
           <p className="text-xs text-muted-foreground">{t('formats')}</p>
         </div>
       </div>
-      {error && (
+      {(error || originalError) && (
         <p role="alert" className="text-sm text-destructive">
-          {errorMessage(error)}
+          {originalError ? t('originalFailed') : errorMessage(error)}
         </p>
       )}
+      <PhotoCropDialog
+        source={cropping}
+        shape={shape}
+        saving={save.isPending}
+        error={save.error ? errorMessage(save.error) : null}
+        onCancel={() => {
+          save.reset()
+          setCropping(null)
+        }}
+        onSave={(upload) => save.mutate(upload, { onSuccess: () => setCropping(null) })}
+      />
       {info?.exists && policyOff && <p className="text-xs text-muted-foreground">{t('policyOff')}</p>}
     </Block>
   )

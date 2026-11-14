@@ -2962,7 +2962,7 @@
           "cv"
         ],
         "summary": "Upload Cv",
-        "description": "Guarda un CV en data/uploads/ (máximo 10 MB) para importarlo con tu agente.",
+        "description": "Guarda un CV en data/uploads/ (máximo 10 MB) para importarlo con tu agente, con el nombre\nque tendrá la plantilla (opcional).",
         "operationId": "upload_cv",
         "requestBody": {
           "content": {
@@ -18032,7 +18032,7 @@
           "profile"
         ],
         "summary": "Save Profile Photo",
-        "description": "Sube la foto (JPG, PNG o WebP, hasta 10 MB) y sustituye la anterior.",
+        "description": "Sube la foto (JPG, PNG o WebP, hasta 10 MB) y sustituye la anterior. Si se encuadró en la\npágina, con la original y el recuadro.",
         "operationId": "save_profile_photo",
         "requestBody": {
           "content": {
@@ -18339,6 +18339,448 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/profile/photo/original": {
+      "get": {
+        "tags": [
+          "profile"
+        ],
+        "summary": "Get Profile Photo Original",
+        "description": "La foto antes de encuadrarla, para volver a encuadrar. Sin original, la foto actual.",
+        "operationId": "get_profile_photo_original",
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/profile/suggestions": {
+      "get": {
+        "tags": [
+          "profile"
+        ],
+        "summary": "List Profile Suggestions",
+        "description": "Lo que tu agente propone para tu perfil (hoy, el resumen en inglés), pendiente de revisar.",
+        "operationId": "list_profile_suggestions",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PendingSuggestions"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/profile/suggestions/{suggestion_id}/used": {
+      "post": {
+        "tags": [
+          "profile"
+        ],
+        "summary": "Use Profile Suggestion",
+        "description": "La pasaste al formulario: deja de estar pendiente. El perfil se guarda con «Guardar».",
+        "operationId": "use_profile_suggestion",
+        "parameters": [
+          {
+            "name": "suggestion_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Suggestion Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmptyBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PendingSuggestions"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/profile/suggestions/{suggestion_id}/discard": {
+      "post": {
+        "tags": [
+          "profile"
+        ],
+        "summary": "Discard Profile Suggestion",
+        "operationId": "discard_profile_suggestion",
+        "parameters": [
+          {
+            "name": "suggestion_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Suggestion Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmptyBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PendingSuggestions"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
           }
         }
       }
@@ -20997,6 +21439,7 @@
               "create-profile",
               "import-profile-from-cv",
               "improve-profile-item",
+              "translate-summary",
               "propose-stories",
               "import-cv-template",
               "assistant"
@@ -21761,6 +22204,7 @@
               "create-profile",
               "import-profile-from-cv",
               "improve-profile-item",
+              "translate-summary",
               "propose-stories",
               "import-cv-template",
               "assistant"
@@ -21921,6 +22365,7 @@
               "create-profile",
               "import-profile-from-cv",
               "improve-profile-item",
+              "translate-summary",
               "propose-stories",
               "import-cv-template",
               "assistant"
@@ -22218,6 +22663,7 @@
               "create-profile",
               "import-profile-from-cv",
               "improve-profile-item",
+              "translate-summary",
               "propose-stories",
               "import-cv-template",
               "assistant"
@@ -23438,6 +23884,18 @@
             "type": "string",
             "contentMediaType": "application/octet-stream",
             "title": "File"
+          },
+          "template_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Template Name"
           }
         },
         "type": "object",
@@ -26347,6 +26805,7 @@
               "create-profile",
               "import-profile-from-cv",
               "improve-profile-item",
+              "translate-summary",
               "propose-stories",
               "import-cv-template",
               "assistant"
@@ -29059,6 +29518,7 @@
               "create-profile",
               "import-profile-from-cv",
               "improve-profile-item",
+              "translate-summary",
               "propose-stories",
               "import-cv-template",
               "assistant"
@@ -32461,6 +32921,22 @@
         ],
         "title": "PendingPrompts"
       },
+      "PendingSuggestions": {
+        "properties": {
+          "suggestions": {
+            "items": {
+              "$ref": "#/components/schemas/SuggestionView"
+            },
+            "type": "array",
+            "title": "Suggestions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "suggestions"
+        ],
+        "title": "PendingSuggestions"
+      },
       "PendingTask": {
         "properties": {
           "kind": {
@@ -32484,6 +32960,43 @@
         ],
         "title": "PendingTask",
         "description": "Tarea del worker para este intento que aún no ha terminado."
+      },
+      "PhotoCrop": {
+        "properties": {
+          "x": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "X"
+          },
+          "y": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Y"
+          },
+          "width": {
+            "type": "number",
+            "maximum": 100.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Width"
+          },
+          "height": {
+            "type": "number",
+            "maximum": 100.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Height"
+          }
+        },
+        "type": "object",
+        "required": [
+          "x",
+          "y",
+          "width",
+          "height"
+        ],
+        "title": "PhotoCrop",
+        "description": "El recuadro elegido, en porcentaje de la original (como lo da el editor del navegador)."
       },
       "PhotoInfo": {
         "properties": {
@@ -32523,6 +33036,21 @@
               }
             ],
             "title": "Version"
+          },
+          "has_original": {
+            "type": "boolean",
+            "title": "Has Original",
+            "default": false
+          },
+          "crop": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PhotoCrop"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -32587,6 +33115,7 @@
                 "create-profile",
                 "import-profile-from-cv",
                 "improve-profile-item",
+                "translate-summary",
                 "propose-stories",
                 "import-cv-template",
                 "assistant"
@@ -34598,6 +35127,7 @@
               "create-profile",
               "import-profile-from-cv",
               "improve-profile-item",
+              "translate-summary",
               "propose-stories",
               "import-cv-template",
               "assistant"
@@ -37009,6 +37539,60 @@
         ],
         "title": "SubmitBody"
       },
+      "SuggestionView": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "field": {
+            "type": "string",
+            "const": "summary.en",
+            "title": "Field"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
+          "agent_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Name"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "field",
+          "text",
+          "source",
+          "agent_name",
+          "created_at"
+        ],
+        "title": "SuggestionView"
+      },
       "TemplateInfo": {
         "properties": {
           "id": {
@@ -37280,6 +37864,7 @@
                 "create-profile",
                 "import-profile-from-cv",
                 "improve-profile-item",
+                "translate-summary",
                 "propose-stories",
                 "import-cv-template",
                 "assistant"
@@ -37347,6 +37932,7 @@
                 "create-profile",
                 "import-profile-from-cv",
                 "improve-profile-item",
+                "translate-summary",
                 "propose-stories",
                 "import-cv-template",
                 "assistant"
@@ -37422,6 +38008,7 @@
                 "create-profile",
                 "import-profile-from-cv",
                 "improve-profile-item",
+                "translate-summary",
                 "propose-stories",
                 "import-cv-template",
                 "assistant"
@@ -37780,6 +38367,17 @@
             ],
             "title": "Template Id"
           },
+          "template_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Template Name"
+          },
           "agent_command": {
             "type": "string",
             "title": "Agent Command"
@@ -37809,6 +38407,28 @@
             "type": "string",
             "maxLength": 13981021,
             "title": "Content Base64"
+          },
+          "original_base64": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 13981021
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original Base64"
+          },
+          "crop": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PhotoCrop"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,

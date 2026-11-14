@@ -49,7 +49,7 @@
     "home": "Inicio",
     "howItWorks": "Cómo funciona",
     "profile": "Mi perfil",
-    "skills": "Skills que te faltan",
+    "skills": "Habilidades por desarrollar",
     "templates": "Plantillas de CV",
     "search": "Buscar ofertas",
     "searchSettings": "Qué buscas",
@@ -263,8 +263,8 @@
       "keywords": "embudo estadísticas resultados conversión cifras análisis"
     },
     "skillGaps": {
-      "q": "¿Qué son las «Skills que te faltan»?",
-      "a": "Lo que piden las ofertas que apruebas y tu perfil aún no recoge. Márcalas como tuyas, como sinónimo de una de tu perfil o para el plan de formación que prepara tu agente.",
+      "q": "¿Qué son las «Habilidades por desarrollar»?",
+      "a": "Las skills que piden las ofertas que apruebas y que aún no figuran en tu perfil. Márcalas como tuyas, como sinónimo de una de tu perfil o para el plan de formación que prepara tu agente.",
       "keywords": "habilidades formación aprender huecos cursos plan"
     },
     "dataLeaving": {

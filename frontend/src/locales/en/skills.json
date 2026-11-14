@@ -35,8 +35,8 @@
     "title": "You don't have a profile yet",
     "body": "Gaps are worked out against your profile. Create it in “My profile” or ask your agent."
   },
-  "title": "Skills",
-  "intro": "The skills your jobs ask for that aren't in your profile yet: mark them as a synonym of yours, as yours or for your training plan.",
+  "title": "Skills to build",
+  "intro": "What your jobs ask for that isn't in your profile yet. Mark each skill as yours, as a synonym of one in your profile or for your training plan.",
   "addHave": "Add the ones I have to my profile ({{count}})",
   "training": "Training plan",
   "period": "Period",
@@ -45,11 +45,11 @@
   "mark": "Mark",
   "covered": {
     "title": "Your profile covers what your jobs ask for",
-    "body": "No missing skills across {{jobs}} jobs (open, and approved or sent in the last {{days}} days)."
+    "body": "Everything {{jobs}} jobs ask for is in your profile (open, and approved or sent in the last {{days}} days)."
   },
-  "missing": "Missing skills",
-  "summary": "{{count}} skills not in your profile, across {{jobs}} jobs from the last {{days}} days.",
-  "tableLabel": "Missing skills by frequency",
+  "missing": "Skills your jobs ask for",
+  "summary": "{{count}} skills asked for by {{jobs}} jobs from the last {{days}} days that aren't in your profile yet.",
+  "tableLabel": "Skills to build, by frequency",
   "cols": {
     "skill": "Skill",
     "jobs": "Jobs",
@@ -59,5 +59,7 @@
   },
   "noneFiltered": "None with this filter.",
   "weightHint": "How much it counts in your jobs: 1 for each job that requires it and 0.5 if it's nice-to-have, times the job's fit.",
-  "weightHelp": "What the weight is"
+  "weightHelp": "What the weight is",
+  "periodHint": "Counts the open jobs and the ones you approved or sent in that period. Fewer days show what is asked for now; more show what keeps coming up across your search.",
+  "periodHelp": "Which jobs the period counts"
 }

@@ -58,7 +58,9 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 | `POST /documents/{id}/renders` | Otro render del mismo contenido con otras `CvRenderOptions` (actor `user`, sin IA) |
 | `POST /renders/{id}/select` | Marca el render que se enviará (uno por CV; sin evento ni cambio de etapa) |
 | `GET /renders/{id}/pdf`, `GET /renders/{id}/docx` | Ficheros del render |
-| `GET /uploads`, `POST /uploads`, `DELETE /uploads/{name}` | «Mi CV»: CVs subidos a `data/uploads/` (máximo 10 MB, nombre saneado, nunca se sobrescribe) y la plantilla creada desde cada uno, si la hay (por sha256 del `source.*`) |
+| `GET /profile/photo`, `GET /profile/photo/file`, `GET /profile/photo/original`, `PUT /profile/photo`, `DELETE /profile/photo` | Foto del CV (solo la UI): el recorte encuadrado en el navegador como `data/photo.*`, la original (`data/photo-original.*`) y el recuadro (`data/photo-crop.json`) para volver a encuadrar |
+| `GET /profile/suggestions`, `POST /profile/suggestions/{id}/used`, `POST /profile/suggestions/{id}/discard` | Propuestas de tu agente para el perfil (hoy, el resumen en inglés, de `save_profile_suggestion`), solo desde la UI. Usarla la pasa al formulario; el perfil cambia con «Guardar» |
+| `GET /uploads`, `POST /uploads`, `DELETE /uploads/{name}` | «Mi CV»: CVs subidos a `data/uploads/` (máximo 10 MB, nombre saneado, nunca se sobrescribe), con el nombre que tendrá la plantilla (`template_name`), y la plantilla creada desde cada uno, si la hay (por sha256 del `source.*`) |
 | `GET /templates/{id}/source.png`, `GET /templates/{id}/preview-real.png` | Primera página del original importado y la plantilla con el perfil real (en caché por plantilla y versión del perfil) |
 | `GET /sources`, `POST /sources` | Página «Dónde buscar → Empresas objetivo»: fuentes con conector (empresas objetivo y portales) con su última ejecución; alta (`exists` 409 si ya está) |
 | `POST /sources/platforms` | «Añadir plataforma» (búsqueda con navegador): `AgentBrowseSource`; `exists` 409 si ya hay una con ese nombre. LinkedIn se crea siempre desactivada |
@@ -77,7 +79,7 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 | `GET /stats/funnel?since=` | Página «Embudo» (fase 10.2): lo mismo que `get_funnel_stats` |
 | `GET /stats/calibration?since=&min_cases=` | Sección «¿Acierta el encaje?» del Embudo (fase 20): lo mismo que `get_calibration` |
 | `POST /jobs/{id}/check-open`, `POST /jobs/{id}/still-open` | ¿Sigue abierta? (fase 16): comprueba ahora (`{force}`; si la última es reciente, la devuelve) y «Sigue abierta» (quita el aviso). Solo desde la UI (`require_ui`); descartar va por `POST /jobs/{id}/events` con el motivo `closed` |
-| `GET /skills/gaps?days=` | «Mi perfil → Skills que te faltan» (fase 14): lo mismo que `get_skill_gaps`, más las skills del perfil para «Es lo mismo que…» |
+| `GET /skills/gaps?days=` | «Mi perfil → Habilidades por desarrollar» (fase 14): lo mismo que `get_skill_gaps`, más las skills del perfil para «Es lo mismo que…» |
 | `POST /skills/aliases`, `POST /skills/marks` | «Es lo mismo que…» (`{skill, profile_skill}`: añade el sinónimo a `config/skill_aliases.yaml` y encola `rescore_all`; 422 si ya apunta a otra skill o el perfil ya la cubre) y «La tengo» / «No la tengo» (`{skill, status: have\|gap\|null}`). Solo desde la UI, como `POST /agent/launch` |
 | `GET /jobs/{id}/process` | Ficha de proceso: envío y canal, seguimiento, hitos, contactos, notas y CV enviado o seleccionado |
 | `POST /jobs/{id}/milestones`, `POST /milestones/{id}`, `POST /milestones/{id}/status` | Crear un hito (entrevista y prueba registran su evento; 409 si no es válido en la etapa), editarlo y marcarlo como hecho o cancelado |

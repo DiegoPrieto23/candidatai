@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import {
   ArrowCounterClockwiseIcon,
   CheckIcon,
+  ColumnsIcon,
   ImageIcon,
   PencilSimpleIcon,
   StarIcon,
@@ -231,6 +232,31 @@ function TemplateActions({ template, isDefault }: { template: TemplateInfo; isDe
   )
 }
 
+/** El original y la plantilla, en grande: útil justo después de importarla, no siempre a la vista. */
+function CompareWithOriginal({ template }: { template: TemplateInfo }) {
+  const { t } = useTranslation('templates')
+  const text = useTemplateText()
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      <Button type="button" size="xs" variant="outline" className="self-start" onClick={() => setOpen(true)}>
+        <ColumnsIcon /> {t('compare')}
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>{text.name(template)}</DialogTitle>
+            <DialogDescription>{t('compareHint')}</DialogDescription>
+          </DialogHeader>
+          <div className="aspect-[420/297] overflow-hidden rounded-lg border">
+            <OriginalAndTemplate template={template} />
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  )
+}
+
 function TemplateCard({ template, isDefault }: { template: TemplateInfo; isDefault: boolean }) {
   const { t } = useTranslation('templates')
   const text = useTemplateText()
@@ -238,9 +264,7 @@ function TemplateCard({ template, isDefault }: { template: TemplateInfo; isDefau
   return (
     <article aria-label={text.name(template)} className="flex flex-col overflow-hidden rounded-xl border bg-card">
       <div className="aspect-[210/297] border-b bg-white">
-        {template.has_source_preview ? (
-          <OriginalAndTemplate template={template} />
-        ) : template.has_preview ? (
+        {template.has_preview ? (
           <a href={fileUrls.templatePreview(template.id)} target="_blank" rel="noopener noreferrer">
             <img
               src={fileUrls.templatePreview(template.id)}
@@ -249,6 +273,8 @@ function TemplateCard({ template, isDefault }: { template: TemplateInfo; isDefau
               className="size-full object-cover object-top"
             />
           </a>
+        ) : template.has_source_preview ? (
+          <Thumbnail src={fileUrls.templateSource(template.id)} alt={t('ofName', { label: t('original'), name: text.name(template) })} />
         ) : (
           <div className="grid size-full place-items-center text-sm text-muted-foreground">
             <span className="flex flex-col items-center gap-2">
@@ -260,6 +286,7 @@ function TemplateCard({ template, isDefault }: { template: TemplateInfo; isDefau
       </div>
       <div className="flex flex-1 flex-col gap-3 p-4">
         <TemplateName template={template} />
+        {template.has_source_preview && template.has_preview && <CompareWithOriginal template={template} />}
         {template.description && (
           <p className="text-sm leading-relaxed text-foreground/80">{text.description(template)}</p>
         )}

@@ -571,7 +571,7 @@ Un guardado del perfil que no cambia los datos (comentarios aparte) no crea vers
 ## Ampliaciones de la fase 14
 
 ### `skill_gap_marks`
-Lo que el usuario dijo, en «Mi perfil → Skills que te faltan», de una skill que piden las ofertas y su perfil no
+Lo que el usuario dijo, en «Mi perfil → Habilidades por desarrollar», de una skill que piden las ofertas y su perfil no
 cubre (migración 0013). No es estado de una oferta: no lleva evento.
 
 | Columna | Tipo | Notas |
@@ -792,6 +792,21 @@ Cola de encargos: lo que la UI deja para la próxima sesión interactiva del age
 
 Mismo encargo pendiente (acción, oferta e hito) no se duplica. `get_status` cuenta los pendientes
 en `agent_requests`.
+
+### `profile_suggestions`
+Lo que tu agente propone para un campo del perfil (fase 41.2, migración 0038): hoy, el resumen en
+inglés traducido del español. El agente nunca escribe en el perfil desde aquí: la propuesta sale
+junto al campo en «Mi perfil» y el perfil solo cambia con «Guardar».
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | int PK | |
+| field | str | `summary.en` |
+| text | text | La propuesta (≤ 4000), de `save_profile_suggestion` |
+| source | text? | El texto del que sale (el resumen en español vigente): si cambia, la UI avisa |
+| agent_name | str? | |
+| status | str | `pending`, `used` (pasó al formulario), `discarded` o `replaced` (llegó otra del mismo campo) |
+| created_at / resolved_at | datetime | |
 
 ### `assistant_requests`
 Lo que escribes en «Pídeselo a tu agente», en la ayuda del portal (fase 42.2, migración 0037), y

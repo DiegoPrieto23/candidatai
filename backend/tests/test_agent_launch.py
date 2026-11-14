@@ -226,10 +226,12 @@ def test_get_lists_agent_and_actions(client: TestClient, opened: list[tuple[str,
         "import-profile-from-cv",
         "configure-platforms",
         "improve-profile-item",
+        "translate-summary",
         "propose-stories",
         "import-cv-template",
         "assistant",
     }
+    assert "Resumen en inglés" in actions["translate-summary"]["prompt"]
     assert actions["import-cv-template"]["needs_upload"] is True
     assert actions["import-cv-template"]["prompt"] is None
     assert actions["improve-profile-item"]["needs_profile_item"] is True

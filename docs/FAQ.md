@@ -230,11 +230,11 @@ How far each application has gone and where they stop: by source, by week and by
 
 Where: “Funnel”.
 
-### What are the “Skills you lack”?
+### What are the “Skills to build”?
 
-What the jobs you approve ask for and your profile doesn't yet include. Mark them as yours, as a synonym of one in your profile or for the training plan your agent prepares.
+The skills the jobs you approve ask for that aren't in your profile yet. Mark them as yours, as a synonym of one in your profile or for the training plan your agent prepares.
 
-Where: “Skills you lack”.
+Where: “Skills to build”.
 
 ## Your data
 

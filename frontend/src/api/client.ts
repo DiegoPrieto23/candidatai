@@ -119,6 +119,7 @@ export const API_URL: string =
 /** Ficheros que sirve la API (PDF y DOCX de un render, preview de una plantilla). */
 export const fileUrls = {
   profilePhoto: (version: string) => `${API_URL}/profile/photo/file?v=${encodeURIComponent(version)}`,
+  profilePhotoOriginal: (version: string) => `${API_URL}/profile/photo/original?v=${encodeURIComponent(version)}`,
   renderPdf: (renderId: number) => `${API_URL}/renders/${renderId}/pdf`,
   renderCover: (renderId: number) => `${API_URL}/renders/${renderId}/cover.png`,
   renderPage: (renderId: number, page: number) => `${API_URL}/renders/${renderId}/pages/${page}.png`,

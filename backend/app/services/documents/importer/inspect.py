@@ -149,6 +149,8 @@ class AtsEstimate(BaseModel):
 
 class DocxInspection(BaseModel):
     file: str
+    # El nombre que eligió el usuario al subirlo desde la UI; si lo hay, no se pregunta.
+    requested_name: str | None = None
     format: Literal["docx"]
     pages: int | None
     pages_note: str | None
