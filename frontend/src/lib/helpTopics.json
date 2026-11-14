@@ -37,6 +37,8 @@
     { "id": "agentLater", "group": "agent", "screen": "agent" },
     { "id": "agentAsks", "group": "agent", "screen": null },
     { "id": "agentChoose", "group": "agent", "screen": "agent" },
+    { "id": "askAgent", "group": "agent", "screen": null },
+    { "id": "askAgentLimits", "group": "agent", "screen": null },
 
     { "id": "addJob", "group": "jobs", "screen": "newJob" },
     { "id": "sources", "group": "jobs", "screen": "sources" },

@@ -18,6 +18,7 @@ from app.core import migrations
 from app.core.db import session_scope
 from app.services.agent_requests import RequestClosedError, RequestNotFoundError
 from app.services.answers import AnswersContentError
+from app.services.assistant import AssistantClosedError, AssistantNotFoundError
 from app.services.audit import record_call, summarize_args
 from app.services.context import ContextTooLargeError
 from app.services.documents.checks import CvContentError
@@ -83,6 +84,8 @@ _ERROR_TYPES: tuple[tuple[type[Exception], str], ...] = (
     (PromptNotFoundError, "not_found"),
     (RequestNotFoundError, "not_found"),
     (RequestClosedError, "not_allowed"),
+    (AssistantNotFoundError, "not_found"),
+    (AssistantClosedError, "not_allowed"),
     (ReplyNotFoundError, "not_found"),
     (ReplyResolvedError, "not_allowed"),
     (DraftNotFoundError, "not_found"),

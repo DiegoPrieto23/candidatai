@@ -60,6 +60,7 @@ export const keys = {
   agentTasks: ['agent', 'tasks'] as const,
   agentAgents: ['agent', 'agents'] as const,
   agentRequests: ['agent', 'requests'] as const,
+  assistant: ['agent', 'assistant'] as const,
   localModels: ['agent', 'local-models'] as const,
   spendTiers: ['agent', 'tiers'] as const,
   agentCosts: ['agent', 'costs'] as const,
@@ -1344,6 +1345,47 @@ export function useOpenAgentRun() {
   return useMutation({
     mutationFn: (runId: number) =>
       unwrap(api.POST('/agent/runs/{run_id}/open', { params: { path: { run_id: runId } }, body: {} })),
+  })
+}
+
+/** «Pídeselo a tu agente»: las últimas peticiones. Mientras alguna trabaja, se refresca seguido;
+ * las que esperan a tu próxima sesión las cierra el agente desde fuera. */
+export function useAssistantRequests() {
+  return useQuery({
+    queryKey: keys.assistant,
+    queryFn: () => unwrap(api.GET('/agent/assistant')),
+    refetchInterval: (query) =>
+      query.state.data?.requests.some((item) => item.status === 'queued' || item.status === 'running') ? 3000 : 20000,
+  })
+}
+
+/** Envía lo que has escrito: ahora en segundo plano o como encargo para tu próxima sesión. */
+export function useAskAssistant() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (body: { text: string; mode: 'background' | 'session' }) =>
+      unwrap(api.POST('/agent/assistant', { body })),
+    onSuccess: () =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: keys.assistant }),
+        client.invalidateQueries({ queryKey: keys.agentRuns }),
+        client.invalidateQueries({ queryKey: keys.agentRequests }),
+      ]),
+  })
+}
+
+/** Para la ejecución o retira el encargo. */
+export function useCancelAssistantRequest() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (requestId: number) =>
+      unwrap(api.POST('/agent/assistant/{request_id}/cancel', { params: { path: { request_id: requestId } }, body: {} })),
+    onSuccess: () =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: keys.assistant }),
+        client.invalidateQueries({ queryKey: keys.agentRuns }),
+        client.invalidateQueries({ queryKey: keys.agentRequests }),
+      ]),
   })
 }
 

@@ -13,6 +13,38 @@
   "results_other": "{{count}} resultados",
   "none": "Sin resultados para «{{query}}». Prueba con otras palabras, como «perfil», «CV» o «correo».",
   "goTo": "Ir a «{{screen}}»",
+  "tabs": {
+    "label": "Secciones de la ayuda",
+    "help": "Ayuda",
+    "assistant": "Pídeselo a tu agente"
+  },
+  "assistant": {
+    "label": "Qué quieres pedirle a tu agente",
+    "placeholder": "Por ejemplo: ¿qué tengo pendiente esta semana?",
+    "hint": "Tu agente lee los datos de la app y te contesta aquí. Enviar una candidatura, aprobar, descartar y borrar los confirmas siempre tú. Ctrl+Intro lo envía.",
+    "left_one": "Queda {{count}} carácter.",
+    "left_other": "Quedan {{count}} caracteres.",
+    "sendNow": "Enviar ahora",
+    "sendLater": "Dejar para mi próxima sesión",
+    "noBackground": "Tu agente no trabaja en segundo plano desde la app: deja la petición para tu próxima sesión.",
+    "noAgentTitle": "Para pedirle algo a tu agente, instala uno",
+    "noAgentBody": "La app no incluye inteligencia artificial: usa el agente que tengas instalado. La pestaña «Ayuda» funciona sin agente.",
+    "empty": "Aquí verás lo que le pidas y sus respuestas.",
+    "history": "Peticiones anteriores",
+    "asked": "Pedido el {{when}}",
+    "jobLink": "Oferta {{id}}",
+    "cancel": "Cancelar",
+    "noAnswer": "Tu agente terminó sin dejar respuesta.",
+    "status": {
+      "queued": "En cola",
+      "running": "Tu agente está trabajando",
+      "asking": "Tu agente espera tu respuesta en el aviso",
+      "waiting": "Guardada para tu próxima sesión con el agente",
+      "done": "Hecho",
+      "failed": "No se pudo completar.",
+      "cancelled": "Cancelada."
+    }
+  },
   "screens": {
     "home": "Inicio",
     "howItWorks": "Cómo funciona",
@@ -109,6 +141,16 @@
       "q": "¿Cómo elijo qué agente o qué modelo se usa?",
       "a": "En la página «Agente», «Configurar agentes» te deja elegir el agente por defecto, el modelo de cada uno y otro distinto para una acción concreta. La flecha de cada botón lo cambia solo para esa vez.",
       "keywords": "cambiar agente modelo por defecto local económico configurar"
+    },
+    "askAgent": {
+      "q": "¿Puedo pedirle algo a mi agente desde el portal?",
+      "a": "Sí. Abre la ayuda, elige «Pídeselo a tu agente» y escribe lo que necesitas. «Enviar ahora» lo lanza en segundo plano y la respuesta aparece en el mismo panel, con enlaces a lo que haya cambiado. «Dejar para mi próxima sesión» lo guarda como encargo.",
+      "keywords": "asistente chat preguntar pedir agente caja texto portal"
+    },
+    "askAgentLimits": {
+      "q": "¿Qué puede hacer mi agente cuando se lo pido desde el portal?",
+      "a": "Consultar tus ofertas, procesos, entrevistas, perfil y resultados, valorar una oferta ya leída y guardar las indicaciones de una carta. Para generar un CV o una carta te indica su botón. Enviar una candidatura, aprobar, descartar y borrar los confirmas siempre tú en la app.",
+      "keywords": "asistente limites permisos seguridad confirmar enviar borrar puede hacer"
     },
     "addJob": {
       "q": "¿Cómo añado una oferta que he visto en una web?",

@@ -87,12 +87,13 @@ def create(
     job_id: int | None = None,
     milestone_id: int | None = None,
     search: agent_launch.SearchScope | None = None,
+    assistant_id: int | None = None,
 ) -> AgentRequestView:
     """Deja un encargo. Si ya hay uno pendiente igual, devuelve ese."""
     if action == "handle-requests":
         raise LaunchError("invalid_request", "Atender los encargos no puede ser un encargo.")
     prompt, job_id, milestone_id = agent_launch.check_target(
-        session, action, job_id, milestone_id, search=search
+        session, action, job_id, milestone_id, search=search, assistant_id=assistant_id
     )
     existing = session.scalars(
         select(AgentRequest).where(

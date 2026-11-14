@@ -340,6 +340,24 @@ opens with the `?` key and closes with `Esc`) searches the [frequent questions](
 guide, and each answer takes you to the screen where it is done. It works offline and without an
 agent.
 
+In the same panel, the **Ask your agent** tab is a text box for asking in your own words (“what do
+I have pending this week?”, “assess the Acme job”). The app calls no model: it hands the request to
+the agent you already use.
+
+- **Send now** runs it in the background. The panel shows the progress and the answer, with links
+  to the job or the screen it refers to. If your agent needs something from you, it asks in an app
+  notice.
+- **Leave it for my next session** saves it as a request (`handle-requests`).
+- **What it can do:** look up your jobs, processes, interviews, profile and results, assess a job
+  that has already been read, and save the instructions for a cover letter. For anything that has
+  its own button (a CV, a letter, an interview guide) it tells you where that is. It does not read
+  the original text of job postings or emails, only what the app already extracted from them.
+- **What you always confirm:** submitting an application, approving or discarding a job, accepting
+  a company's reply, and deleting. Your agent prepares it; it never confirms it.
+
+With no agent installed, the tab says so and the help keeps working. The panel keeps your last 20
+requests on your computer.
+
 The menu has nine entries: **Home** and **My profile**; under Search, **Search jobs** and **Job
 inbox**; under Processes, **Board**, **Calendar**, **Replies** and **Funnel**; and **Agent**. The
 rest are tabs inside them: the Inbox has **Quick review** and **To complete**; Search jobs, **What

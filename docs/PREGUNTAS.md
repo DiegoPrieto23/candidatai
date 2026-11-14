@@ -84,6 +84,14 @@ En la página «Agente», «Configurar agentes» te deja elegir el agente por de
 
 Dónde: «Agente».
 
+### ¿Puedo pedirle algo a mi agente desde el portal?
+
+Sí. Abre la ayuda, elige «Pídeselo a tu agente» y escribe lo que necesitas. «Enviar ahora» lo lanza en segundo plano y la respuesta aparece en el mismo panel, con enlaces a lo que haya cambiado. «Dejar para mi próxima sesión» lo guarda como encargo.
+
+### ¿Qué puede hacer mi agente cuando se lo pido desde el portal?
+
+Consultar tus ofertas, procesos, entrevistas, perfil y resultados, valorar una oferta ya leída y guardar las indicaciones de una carta. Para generar un CV o una carta te indica su botón. Enviar una candidatura, aprobar, descartar y borrar los confirmas siempre tú en la app.
+
 ## Ofertas
 
 ### ¿Cómo añado una oferta que he visto en una web?

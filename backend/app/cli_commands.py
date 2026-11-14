@@ -31,6 +31,10 @@ requests_app = typer.Typer(
     help="Cola de encargos: lo que dejaste en la UI para tu agente (fase 19).",
     no_args_is_help=True,
 )
+assistant_app = typer.Typer(
+    help="«Pídeselo a tu agente»: lo que escribiste en la ayuda del portal.",
+    no_args_is_help=True,
+)
 profile_app = typer.Typer(help="Perfil del candidato.", no_args_is_help=True)
 match_app = typer.Typer(help="Encaje de las ofertas con el perfil.", no_args_is_help=True)
 eval_app = typer.Typer(help="Evaluación de la calidad del matching.", no_args_is_help=True)
@@ -115,6 +119,7 @@ app.add_typer(contacts_app, name="contacts")
 app.add_typer(companies_app, name="companies")
 app.add_typer(received_offers_app, name="received-offers")
 app.add_typer(requests_app, name="requests")
+app.add_typer(assistant_app, name="assistant")
 demo_app = typer.Typer(
     help="Modo demo: una búsqueda ficticia para probar la app.", no_args_is_help=True
 )
@@ -1546,6 +1551,12 @@ def _render_message(result: Any) -> None:
     typer.echo(result.message)
 
 
+def _render_assistant_request(result: Any) -> None:
+    state = "abierta" if result.open else "cerrada"
+    typer.echo(f"Petición {result.request_id} ({state}):")
+    typer.echo(result.text)
+
+
 def _render_agent_requests(result: Any) -> None:
     if not result.requests:
         typer.echo("No hay encargos.")
@@ -2498,10 +2509,13 @@ register_tools(
         "companies": companies_app,
         "received-offers": received_offers_app,
         "requests": requests_app,
+        "assistant": assistant_app,
     },
     {
         "list_agent_requests": _render_agent_requests,
         "complete_agent_request": _render_message,
+        "get_assistant_request": _render_assistant_request,
+        "save_assistant_answer": _render_message,
         "get_status": _render_status,
         "get_job_contacts": _render_job_contacts,
         "get_company_research": _render_company_research,

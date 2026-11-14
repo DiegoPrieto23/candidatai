@@ -84,6 +84,14 @@ On the “Agent” page, “Configure agents” lets you choose the default agen
 
 Where: “Agent”.
 
+### Can I ask my agent for something from the portal?
+
+Yes. Open the help, choose “Ask your agent” and write what you need. “Send now” runs it in the background and the answer appears in the same panel, with links to whatever changed. “Leave it for my next session” saves it as a request.
+
+### What can my agent do when I ask from the portal?
+
+Look up your jobs, processes, interviews, profile and results, assess a job that has already been read, and save the instructions for a cover letter. To generate a CV or a letter it points you to its button. Submitting an application, approving, discarding and deleting are always confirmed by you in the app.
+
 ## Jobs
 
 ### How do I add a job I have seen on a website?

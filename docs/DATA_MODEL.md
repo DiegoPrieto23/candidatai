@@ -793,6 +793,24 @@ Cola de encargos: lo que la UI deja para la próxima sesión interactiva del age
 Mismo encargo pendiente (acción, oferta e hito) no se duplica. `get_status` cuenta los pendientes
 en `agent_requests`.
 
+### `assistant_requests`
+Lo que escribes en «Pídeselo a tu agente», en la ayuda del portal (fase 42.2, migración 0037), y
+la respuesta de tu agente. Es también el historial del panel.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | int PK | Lo único que lleva la orden del agente |
+| text | text | Tu petición (≤ 2000). La lee el skill `assistant` con `get_assistant_request` |
+| mode | str | `background` (una ejecución de `agent_runs`) o `session` (un encargo de `agent_requests`) |
+| run_id / request_id | FK? | La ejecución o el encargo que la atiende |
+| answer | text? | Lo que deja el agente con `save_assistant_answer` (≤ 4000) |
+| links | JSON | `[{"job_id": 42}, {"screen": "inbox"}]`: una oferta o una pantalla, nunca una URL |
+| agent_name | str? | |
+| created_at / answered_at | datetime | |
+
+El estado no se guarda: sale de la ejecución (`queued`, `running`, `done`, `failed`, `cancelled`) o
+del encargo (`waiting`, `done`, `cancelled`).
+
 ### `agent_preferences`
 Qué agente y qué modelo usa cada acción (fase 24.4, migración 0022). Son datos de uso de
 la persona: viven en la base de datos de `data/`, nunca en el repositorio ni en la configuración

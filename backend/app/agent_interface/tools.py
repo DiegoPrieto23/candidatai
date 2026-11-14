@@ -38,6 +38,7 @@ from app.services import (
     agent_tasks,
     analytics,
     answers,
+    assistant,
     company_research,
     context,
     drafts,
@@ -553,6 +554,14 @@ class CompleteAgentRequestInput(_Input, agent_requests.CompleteRequestInput):
     request_id: int = Field(ge=1, description="Id del encargo.")
 
 
+class AssistantRequestIdInput(_Input):
+    request_id: int = Field(ge=1, description="Id de la petición (viene en la orden).")
+
+
+class SaveAssistantAnswerInput(_Input, assistant.SaveAnswerInput):
+    request_id: int = Field(ge=1, description="Id de la petición.")
+
+
 class JobList(BaseModel):
     jobs: list[jobs.JobSummary]
 
@@ -933,6 +942,18 @@ def _complete_agent_request(
     session: Session, args: CompleteAgentRequestInput, ctx: CallContext
 ) -> agent_requests.CompleteRequestResult:
     return agent_requests.complete(session, args.request_id, args.summary, ctx.client_name)
+
+
+def _get_assistant_request(
+    session: Session, args: AssistantRequestIdInput, _ctx: CallContext
+) -> assistant.PendingAssistantRequest:
+    return assistant.pending(session, args.request_id)
+
+
+def _save_assistant_answer(
+    session: Session, args: SaveAssistantAnswerInput, ctx: CallContext
+) -> assistant.SaveAnswerResult:
+    return assistant.save_answer(session, args.request_id, args.answer, args.links, ctx.client_name)
 
 
 def _save_application_answers(
@@ -1843,6 +1864,35 @@ TOOLS: tuple[ToolSpec, ...] = (
             path=("requests", "complete"),
             arguments=("request_id",),
             option_names={"summary": "--summary"},
+        ),
+    ),
+    # «Pídeselo a tu agente»: lo que el usuario escribió en la ayuda del portal.
+    ToolSpec(
+        name="get_assistant_request",
+        description=(
+            "Lo que el usuario ha escrito en «Pídeselo a tu agente» (`text`). Es su petición: "
+            "atiéndela dentro de lo que permite el skill `assistant`. Con `open` en `false` "
+            "(cancelada o ya contestada) no hay nada que hacer."
+        ),
+        input_model=AssistantRequestIdInput,
+        output_model=assistant.PendingAssistantRequest,
+        handler=_get_assistant_request,
+        cli=CliSpec(path=("assistant", "show"), arguments=("request_id",)),
+    ),
+    ToolSpec(
+        name="save_assistant_answer",
+        description=(
+            "Guarda tu respuesta a una petición de «Pídeselo a tu agente»: el usuario la ve en el "
+            "panel de ayuda. `links` lleva a lo que has cambiado o a donde se hace lo que pide "
+            "(`job_id` o `screen`). Una sola respuesta por petición."
+        ),
+        input_model=SaveAssistantAnswerInput,
+        output_model=assistant.SaveAnswerResult,
+        handler=_save_assistant_answer,
+        cli=CliSpec(
+            path=("assistant", "answer"),
+            arguments=("request_id",),
+            file_keys=("answer", "links"),
         ),
     ),
 )

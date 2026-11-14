@@ -13,6 +13,38 @@
   "results_other": "{{count}} results",
   "none": "No results for “{{query}}”. Try other words, such as “profile”, “CV” or “email”.",
   "goTo": "Go to “{{screen}}”",
+  "tabs": {
+    "label": "Help sections",
+    "help": "Help",
+    "assistant": "Ask your agent"
+  },
+  "assistant": {
+    "label": "What you want to ask your agent",
+    "placeholder": "For example: what do I have pending this week?",
+    "hint": "Your agent reads the app's data and answers here. Submitting an application, approving, discarding and deleting are always confirmed by you. Ctrl+Enter sends it.",
+    "left_one": "{{count}} character left.",
+    "left_other": "{{count}} characters left.",
+    "sendNow": "Send now",
+    "sendLater": "Leave it for my next session",
+    "noBackground": "Your agent does not run in the background from the app: leave the request for your next session.",
+    "noAgentTitle": "To ask your agent, install one",
+    "noAgentBody": "The app does not include artificial intelligence: it uses the agent you have installed. The “Help” tab works without an agent.",
+    "empty": "Your requests and their answers will appear here.",
+    "history": "Previous requests",
+    "asked": "Asked on {{when}}",
+    "jobLink": "Job {{id}}",
+    "cancel": "Cancel",
+    "noAnswer": "Your agent finished without leaving an answer.",
+    "status": {
+      "queued": "Queued",
+      "running": "Your agent is working",
+      "asking": "Your agent is waiting for your answer in the notice",
+      "waiting": "Saved for your next session with the agent",
+      "done": "Done",
+      "failed": "It could not be completed.",
+      "cancelled": "Cancelled."
+    }
+  },
   "screens": {
     "home": "Home",
     "howItWorks": "How it works",
@@ -109,6 +141,16 @@
       "q": "How do I choose which agent or model is used?",
       "a": "On the “Agent” page, “Configure agents” lets you choose the default agent, the model for each one and a different one for a specific action. The arrow on each button changes it for that time only.",
       "keywords": "change agent model default local cheap configure"
+    },
+    "askAgent": {
+      "q": "Can I ask my agent for something from the portal?",
+      "a": "Yes. Open the help, choose “Ask your agent” and write what you need. “Send now” runs it in the background and the answer appears in the same panel, with links to whatever changed. “Leave it for my next session” saves it as a request.",
+      "keywords": "assistant chat ask request agent text box portal"
+    },
+    "askAgentLimits": {
+      "q": "What can my agent do when I ask from the portal?",
+      "a": "Look up your jobs, processes, interviews, profile and results, assess a job that has already been read, and save the instructions for a cover letter. To generate a CV or a letter it points you to its button. Submitting an application, approving, discarding and deleting are always confirmed by you in the app.",
+      "keywords": "assistant limits permissions safety confirm submit delete can do"
     },
     "addJob": {
       "q": "How do I add a job I have seen on a website?",

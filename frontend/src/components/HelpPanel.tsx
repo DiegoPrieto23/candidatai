@@ -2,6 +2,7 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { ArrowRightIcon, CaretDownIcon, MagnifyingGlassIcon, QuestionIcon, XIcon } from '@phosphor-icons/react'
+import { AssistantTab } from '@/components/AssistantTab'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Hint } from '@/components/Hint'
@@ -115,6 +116,7 @@ function GuideBody({ section }: { section: GuideSection }) {
 
 function Panel({ onClose }: { onClose: () => void }) {
   const { t, i18n } = useTranslation('help')
+  const [tab, setTab] = useState<'help' | 'assistant'>('help')
   const [query, setQuery] = useState('')
   const [expanded, setExpanded] = useState<string | null>(null)
   const [guide, setGuide] = useState<GuideSection[] | null>(null)
@@ -122,8 +124,8 @@ function Panel({ onClose }: { onClose: () => void }) {
   const language = i18n.language
 
   useEffect(() => {
-    input.current?.focus()
-  }, [])
+    if (tab === 'help') input.current?.focus()
+  }, [tab])
 
   useEffect(() => {
     let current = true
@@ -175,6 +177,44 @@ function Panel({ onClose }: { onClose: () => void }) {
           <XIcon weight="bold" aria-hidden />
         </Button>
       </header>
+      <div role="tablist" aria-label={t('tabs.label')} className="flex gap-1 border-b px-3 pt-1.5">
+        {(['help', 'assistant'] as const).map((name) => (
+          <button
+            key={name}
+            type="button"
+            role="tab"
+            id={`help-tab-${name}`}
+            aria-selected={tab === name}
+            aria-controls="help-tabpanel"
+            tabIndex={tab === name ? 0 : -1}
+            onClick={() => setTab(name)}
+            onKeyDown={(e) => {
+              if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+              e.preventDefault()
+              const other = name === 'help' ? 'assistant' : 'help'
+              setTab(other)
+              document.getElementById(`help-tab-${other}`)?.focus()
+            }}
+            className={cn(
+              '-mb-px rounded-t-sm border-b-2 px-2 py-1.5 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
+              tab === name
+                ? 'border-primary font-medium text-foreground'
+                : 'border-transparent text-muted-foreground hover:text-foreground',
+            )}
+          >
+            {t(`tabs.${name}`)}
+          </button>
+        ))}
+      </div>
+      <div
+        role="tabpanel"
+        id="help-tabpanel"
+        aria-labelledby={`help-tab-${tab}`}
+        className="flex min-h-0 flex-1 flex-col"
+      >
+      {tab === 'assistant' && <AssistantTab onGo={onClose} />}
+      {tab === 'help' && (
+      <>
       <div className="relative border-b px-4 py-3">
         <MagnifyingGlassIcon
           className="pointer-events-none absolute top-1/2 left-6.5 size-4 -translate-y-1/2 text-muted-foreground"
@@ -237,6 +277,9 @@ function Panel({ onClose }: { onClose: () => void }) {
           <p className="py-4 text-sm text-pretty text-muted-foreground">{t('none', { query: query.trim() })}</p>
         )}
       </div>
+      </>
+      )}
+      </div>
       <footer className="border-t px-4 py-2 text-xs text-muted-foreground">
         <SafeTrans t={t} i18nKey="shortcut" components={{ kbd: <Kbd>{null}</Kbd> }} />
       </footer>
@@ -246,7 +289,8 @@ function Panel({ onClose }: { onClose: () => void }) {
 
 /**
  * Ayuda del portal: un botón fijo abajo a la derecha, bajo los avisos flotantes, que abre un
- * buscador sobre las preguntas frecuentes y la guía de uso. Sin red y sin agente. `?` la abre y
+ * buscador sobre las preguntas frecuentes y la guía de uso (sin red y sin agente) y, en otra
+ * pestaña, «Pídeselo a tu agente» (`AssistantTab`). `?` la abre y
  * `Esc` la cierra, devolviendo el foco al botón.
  */
 export function HelpPanel() {

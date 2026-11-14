@@ -90,6 +90,29 @@ class AgentRequest(Base):
     completed_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
 
 
+class AssistantRequest(Base):
+    """Lo que el usuario escribe en «Pídeselo a tu agente», en la ayuda del portal.
+
+    El texto se queda aquí: la orden del agente solo lleva el `id`, y el skill `assistant` lo lee
+    con `get_assistant_request`. `run_id`: la ejecución en segundo plano (`mode = background`);
+    `request_id`: el encargo para la próxima sesión (`mode = session`). `answer` y `links`: lo
+    que deja el agente con `save_assistant_answer`. Es también el historial del panel.
+    """
+
+    __tablename__ = "assistant_requests"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    text: Mapped[str] = mapped_column(Text)
+    mode: Mapped[str] = mapped_column(String(16))  # background | session
+    run_id: Mapped[int | None] = mapped_column(ForeignKey("agent_runs.id"), index=True)
+    request_id: Mapped[int | None] = mapped_column(ForeignKey("agent_requests.id"))
+    answer: Mapped[str | None] = mapped_column(Text)
+    links: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
+    agent_name: Mapped[str | None] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
+    answered_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
+
+
 class AgentPreference(Base):
     """Preferencias de agente y modelo de la persona (fase 24.4). Datos de uso: viven en
     `data/`, nunca en el repositorio ni en la configuración generada.

@@ -77,6 +77,7 @@ COMMANDS: dict[str, str] = {
         "La oferta que te ha hecho la empresa (lo que ve el agente; los datos, en la ficha)."
     ),
     "requests": "Cola de encargos: lo que dejaste en la UI para tu agente (fase 19).",
+    "assistant": "«Pídeselo a tu agente»: lo que escribiste en la ayuda del portal.",
     "demo": "Modo demo: una búsqueda ficticia para probar la app.",
 }
 

@@ -10,6 +10,12 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Pídeselo a tu agente, en la ayuda:** el panel de ayuda tiene una pestaña nueva con una caja de
+  texto para pedirle algo a tu agente con tus palabras («¿qué tengo pendiente esta semana?»).
+  **Enviar ahora** lo lanza en segundo plano y la respuesta aparece ahí mismo, con enlaces a la oferta
+  o a la pantalla de la que habla; **Dejar para mi próxima sesión** lo guarda como encargo. Puede
+  consultar tus datos, valorar una oferta ya leída y guardar las indicaciones de una carta. Enviar una
+  candidatura, aprobar, descartar y borrar los sigues confirmando tú.
 - **Ayuda en todas las páginas:** un botón abajo a la derecha (o la tecla `?`) abre un buscador sobre
   las preguntas frecuentes y la guía de uso. Cada respuesta lleva a la pantalla donde se hace.
   Funciona sin conexión y sin agente, en español y en inglés, y `Esc` lo cierra. Las mismas preguntas

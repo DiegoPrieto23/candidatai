@@ -26,6 +26,7 @@ from app.services import (
     agent_runs,
     agent_tasks,
     assess_threshold,
+    assistant,
     local_models,
     search_runs,
     spend_tiers,
@@ -122,7 +123,7 @@ def get_agent_launcher(session: SessionDep) -> AgentStatus:
                 needs_profile_item=spec.profile_item,
                 needs_upload=spec.upload,
                 prompt=None
-                if spec.needs_job or spec.profile_item or spec.upload
+                if spec.needs_job or spec.profile_item or spec.upload or spec.assistant
                 else agent_launch.prompt_for(action_id),
                 background=bool(spec.background),
                 agent=res,
@@ -461,3 +462,64 @@ def cancel_agent_request(
         raise ToolError("not_found", str(exc)) from exc
     except agent_requests.RequestClosedError as exc:
         raise ToolError("invalid_request", str(exc)) from exc
+
+
+# --- «Pídeselo a tu agente», en la ayuda del portal -----------------------------------------------
+
+
+class AssistantBody(BaseModel):
+    """Lo que escribes en la caja. `background`: ahora, en segundo plano; `session`: como encargo
+    para tu próxima sesión. Solo texto, sin adjuntos."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    text: assistant.RequestText
+    mode: assistant.Mode
+
+
+@router.get("/assistant", operation_id="list_assistant_requests")
+def list_assistant_requests(
+    session: SessionDep, limit: Annotated[int, Query(ge=1, le=50)] = assistant.HISTORY
+) -> assistant.AssistantList:
+    """Las últimas peticiones con su respuesta, la más reciente primero."""
+    return assistant.list_recent(session, limit)
+
+
+@router.post(
+    "/assistant",
+    operation_id="create_assistant_request",
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_ui)],
+)
+def create_assistant_request(session: SessionDep, body: AssistantBody) -> assistant.AssistantView:
+    """Guarda el texto y se lo pasa a tu agente. La orden del agente solo lleva el id."""
+    try:
+        return assistant.create(session, body.text, body.mode)
+    except LaunchError as exc:
+        _raise(exc)
+        raise
+
+
+@router.get("/assistant/{request_id}", operation_id="get_assistant_request")
+def get_assistant_request(session: SessionDep, request_id: int) -> assistant.AssistantView:
+    try:
+        return assistant.get(session, request_id)
+    except assistant.AssistantNotFoundError as exc:
+        raise ToolError("not_found", str(exc)) from exc
+
+
+@router.post(
+    "/assistant/{request_id}/cancel",
+    operation_id="cancel_assistant_request",
+    dependencies=[Depends(require_ui)],
+)
+def cancel_assistant_request(
+    session: SessionDep, request_id: int, body: EmptyBody
+) -> assistant.AssistantView:
+    try:
+        return assistant.cancel(session, request_id)
+    except assistant.AssistantNotFoundError as exc:
+        raise ToolError("not_found", str(exc)) from exc
+    except LaunchError as exc:
+        _raise(exc)
+        raise

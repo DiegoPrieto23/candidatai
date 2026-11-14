@@ -21,7 +21,7 @@ from pydantic import BaseModel
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
-from app.models import AgentRun, SkillGapMark
+from app.models import AgentRun, AssistantRequest, SkillGapMark
 from app.models.base import utcnow
 from app.services import agent_launch, agent_tasks, assess_threshold
 from app.services.agent_launch import ACTIONS, ActionId, LaunchError, LaunchResult
@@ -172,10 +172,12 @@ def start(
     model: str | None = None,
     preset: str | None = None,
     min_score: int | None = None,
+    assistant_id: int | None = None,
 ) -> AgentRunView:
     """Deja en cola una ejecución en segundo plano. Si ya hay una igual en cola o en curso,
     devuelve esa en vez de duplicarla. `agent`, `model` y `preset`: la elección puntual (si no, las
-    preferencias de `agent_prefs`). `min_score`: el umbral de `assess-fit` solo esta vez."""
+    preferencias de `agent_prefs`). `min_score`: el umbral de `assess-fit` solo esta vez.
+    `assistant_id`: la petición de «Pídeselo a tu agente»; cada una es una ejecución distinta."""
     spec = ACTIONS[action]
     if not spec.background:
         raise LaunchError(
@@ -183,18 +185,21 @@ def start(
             f"«{spec.label}» no se puede lanzar en segundo plano (pregunta, usa tu navegador o la "
             "web): usa «En terminal».",
         )
-    prompt, job_id, milestone_id = agent_launch.check_target(session, action, job_id, milestone_id)
+    prompt, job_id, milestone_id = agent_launch.check_target(
+        session, action, job_id, milestone_id, assistant_id=assistant_id
+    )
     picked = agent_launch.pick(
         session, action, prompt, agent=agent, model=model, preset=preset, mode="background"
     )
-    if (existing := _active(session, action, job_id)) is not None:
+    if not spec.assistant and (existing := _active(session, action, job_id)) is not None:
         return view(existing)
     if action == "assess-fit":  # fase 25.4: umbral antes de gastar
         prompt = _assess_prompt(session, min_score)
     elif action == "process-jobs":  # su fase 2 valora, con el mismo umbral
         prompt += _threshold_note(session, min_score)
     note = _cv_gaps_note(session, job_id) if action == "generate-cv" and job_id else ""
-    full_prompt = prompt + note + agent_launch.BACKGROUND_NOTE
+    closing = agent_launch.ASSISTANT_NOTE if spec.assistant else agent_launch.BACKGROUND_NOTE
+    full_prompt = prompt + note + closing
     assert picked.headless is not None  # lo garantiza `pick_headless`
     row = AgentRun(
         action=action,
@@ -270,7 +275,8 @@ def open_in_terminal(session: Session, run_id: int) -> LaunchResult:
     if row.status in ACTIVE:
         raise LaunchError("invalid_request", "Espera a que termine o cancélala antes.")
     action: ActionId = row.action  # validado al crearla
-    prompt = agent_launch.prompt_for(action, row.job_id, row.milestone_id)
+    asked = session.scalar(select(AssistantRequest.id).where(AssistantRequest.run_id == row.id))
+    prompt = agent_launch.prompt_for(action, row.job_id, row.milestone_id, assistant_id=asked)
     return agent_launch.resume_in_terminal(
         session, action, prompt, row.agent, row.session_id, row.model, row.preset
     )

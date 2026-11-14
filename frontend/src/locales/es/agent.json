@@ -30,7 +30,8 @@
     "import-profile-from-cv": "Importar información desde un CV",
     "improve-profile-item": "Mejorar con mi agente",
     "propose-stories": "Proponer historias desde mi experiencia",
-    "import-cv-template": "Convertir en plantilla"
+    "import-cv-template": "Convertir en plantilla",
+    "assistant": "Pídeselo a tu agente"
   },
   "status": {
     "queued": "En cola",
