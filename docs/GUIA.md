@@ -329,6 +329,11 @@ queda sin memoria, puede cerrar lo que haya lanzado él.
 Si es tu primera vez, **Cómo funciona**, al pie del menú, cuenta el recorrido completo y quién hace
 qué.
 
+Para una duda concreta, el botón **Ayuda** (el `?` de abajo a la derecha, en todas las páginas;
+también se abre con la tecla `?` y se cierra con `Esc`) busca en las
+[preguntas frecuentes](PREGUNTAS.md) y en esta guía, y cada respuesta lleva a la pantalla donde se
+hace. Funciona sin conexión y sin agente.
+
 El menú tiene nueve entradas: **Inicio** y **Mi perfil**; en Búsqueda, **Buscar ofertas** y
 **Bandeja de ofertas**; en Procesos, **Tablero**, **Calendario**, **Respuestas** y **Embudo**; y
 **Agente**. Lo demás son pestañas dentro de ellas: la Bandeja tiene **Revisión rápida** y **Por

@@ -335,6 +335,11 @@ memory it may close what it started.
 If it's your first time, **How it works**, at the bottom of the menu, covers the whole journey and
 who does what.
 
+For a specific question, the **Help** button (the `?` at the bottom right, on every page; it also
+opens with the `?` key and closes with `Esc`) searches the [frequent questions](FAQ.md) and this
+guide, and each answer takes you to the screen where it is done. It works offline and without an
+agent.
+
 The menu has nine entries: **Home** and **My profile**; under Search, **Search jobs** and **Job
 inbox**; under Processes, **Board**, **Calendar**, **Replies** and **Funnel**; and **Agent**. The
 rest are tabs inside them: the Inbox has **Quick review** and **To complete**; Search jobs, **What

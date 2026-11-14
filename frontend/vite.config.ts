@@ -133,8 +133,9 @@ export default defineConfig({
     host: '127.0.0.1',
     port: 5173,
     strictPort: true, // la API solo admite CORS desde este origen exacto
-    // Los tests de la extensión (`src/extension/`) leen sus ficheros de `../extension`.
-    fs: { allow: [searchForWorkspaceRoot(process.cwd()), '../extension'] },
+    // Los tests de la extensión (`src/extension/`) leen sus ficheros de `../extension`, y la ayuda
+    // del portal, la guía de uso de `../docs`.
+    fs: { allow: [searchForWorkspaceRoot(process.cwd()), '../extension', '../docs'] },
   },
   test: {
     environment: 'jsdom',

@@ -13,6 +13,7 @@ import type cv from '@/locales/es/cv.json'
 import type drafts from '@/locales/es/drafts.json'
 import type extension from '@/locales/es/extension.json'
 import type funnel from '@/locales/es/funnel.json'
+import type help from '@/locales/es/help.json'
 import type home from '@/locales/es/home.json'
 import type howItWorks from '@/locales/es/howItWorks.json'
 import type inbox from '@/locales/es/inbox.json'
@@ -59,6 +60,7 @@ declare module 'i18next' {
       drafts: typeof drafts
       extension: typeof extension
       funnel: typeof funnel
+      help: typeof help
       home: typeof home
       howItWorks: typeof howItWorks
       inbox: typeof inbox

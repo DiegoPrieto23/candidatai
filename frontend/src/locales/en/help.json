@@ -1,0 +1,279 @@
+{
+  "button": "Help",
+  "buttonHint": "Help: frequent questions and guide",
+  "title": "Help",
+  "close": "Close help",
+  "searchLabel": "Search help",
+  "searchPlaceholder": "What do you want to do?",
+  "shortcut": "Opens with <kbd>?</kbd> and closes with <kbd>Esc</kbd>.",
+  "faqHeading": "Frequent questions",
+  "guideHeading": "In the user guide",
+  "guideLoading": "Searching the guide…",
+  "results_one": "{{count}} result",
+  "results_other": "{{count}} results",
+  "none": "No results for “{{query}}”. Try other words, such as “profile”, “CV” or “email”.",
+  "goTo": "Go to “{{screen}}”",
+  "screens": {
+    "home": "Home",
+    "howItWorks": "How it works",
+    "profile": "My profile",
+    "skills": "Skills you lack",
+    "templates": "CV templates",
+    "search": "Search jobs",
+    "searchSettings": "What you're after",
+    "sources": "Where to search",
+    "companies": "Target companies",
+    "email": "Email alerts",
+    "extension": "Browser button",
+    "newJob": "New job",
+    "inbox": "Job inbox",
+    "review": "Quick review",
+    "complete": "To complete",
+    "board": "Board",
+    "calendar": "Calendar",
+    "replies": "Replies",
+    "funnel": "Funnel",
+    "agent": "Agent"
+  },
+  "groups": {
+    "start": "Getting started",
+    "agent": "Your agent",
+    "jobs": "Jobs",
+    "cv": "CV, letter and application",
+    "processes": "Processes and interviews",
+    "privacy": "Your data",
+    "problems": "If something fails"
+  },
+  "faq": {
+    "whatIs": {
+      "q": "What does CandidatAI do, and what does my agent do?",
+      "a": "CandidatAI organises your job search: it gathers the jobs, scores their fit, keeps your CVs and tracks each process. Reading the jobs and writing CVs and letters is done by your AI agent, which you install on your computer. “How it works” walks through the whole journey.",
+      "keywords": "what is it for the app start journey who does what"
+    },
+    "firstSteps": {
+      "q": "Where do I start?",
+      "a": "With your profile: upload your CV and create the profile from it. Then search for jobs or add one you have seen. Home shows your next step at every moment.",
+      "keywords": "first step begin first time home"
+    },
+    "createProfile": {
+      "q": "How do I create my profile?",
+      "a": "In “My profile”, press “Upload my CV” and then “Create my profile from my CV”. Your agent reads the CV, asks you for what is missing and shows you the result. Afterwards you can adjust each block on the same page.",
+      "keywords": "profile cv upload resume data experience edit"
+    },
+    "profileByHand": {
+      "q": "Can I create the profile without an agent?",
+      "a": "Yes. In “My profile”, “Start by hand” creates a profile with your name, your headline and the role you are after, and opens the editor to complete the rest.",
+      "keywords": "manual by hand fill in myself without ai editor"
+    },
+    "withoutAgent": {
+      "q": "What can I do without an agent?",
+      "a": "Add, approve and discard jobs, track your processes, use the calendar and the funnel, edit your profile and change the design of a CV you already have. Reading jobs and writing CVs, letters and interview guides requires the agent.",
+      "keywords": "without ai without agent free limits"
+    },
+    "language": {
+      "q": "How do I change the language or the light and dark theme?",
+      "a": "With the globe and theme buttons at the bottom of the sidebar. The app remembers your choice in this browser. Your data and what your agent writes follow the language of each job.",
+      "keywords": "english spanish español dark mode light theme appearance"
+    },
+    "whatAgent": {
+      "q": "What is “your agent” and which one do I need?",
+      "a": "An AI agent is a program you install on your computer, such as Claude Code or Codex, and it uses your subscription. The Claude or ChatGPT chat app is something else: the agent is the separate program that comes with that same subscription. The “Agent” page says whether you have one ready and how to install it.",
+      "keywords": "claude code codex chatgpt ai artificial intelligence install agent model"
+    },
+    "cost": {
+      "q": "How much does it cost?",
+      "a": "CandidatAI is free. The agent costs whatever its plan costs: about US$20 a month with Claude Pro or ChatGPT Plus, and nothing with a free or local model. The “Cost” section of the “Agent” page adds up what each action spends.",
+      "keywords": "price pay free subscription tokens money spend"
+    },
+    "agentButtons": {
+      "q": "What happens when I press an agent button?",
+      "a": "Your agent opens with the instruction already written. The arrow on the button lets you choose: in a separate window, where you see and approve what it does; in the background, with no window; or leave it for your next session.",
+      "keywords": "button window terminal background instruction launch dropdown arrow"
+    },
+    "agentProgress": {
+      "q": "Where do I see what my agent is doing?",
+      "a": "In the notice at the bottom right, which appears on every page with what it has done so far and changes when it finishes. The “Agent” page keeps the detail of each run and its usage.",
+      "keywords": "progress notice finished running run status"
+    },
+    "agentLater": {
+      "q": "What is “Leave for my next session”?",
+      "a": "It saves the request for later. Next time you open your agent, press “Handle requests” on the “Agent” page and it will do them one by one.",
+      "keywords": "request pending later session handle"
+    },
+    "agentAsks": {
+      "q": "My agent is asking me something: where do I answer?",
+      "a": "In the notice that appears at the bottom right, or in your agent's window. The permissions it asks for and long conversations, such as a mock interview, stay in its window.",
+      "keywords": "question answer reply notice permission"
+    },
+    "agentChoose": {
+      "q": "How do I choose which agent or model is used?",
+      "a": "On the “Agent” page, “Configure agents” lets you choose the default agent, the model for each one and a different one for a specific action. The arrow on each button changes it for that time only.",
+      "keywords": "change agent model default local cheap configure"
+    },
+    "addJob": {
+      "q": "How do I add a job I have seen on a website?",
+      "a": "In “New job”, paste its link. If the link fails to open, copy the text of the job and paste it under “Paste text”, with the role and the company.",
+      "keywords": "add job link url paste text manual"
+    },
+    "sources": {
+      "q": "How do I get jobs to arrive on their own?",
+      "a": "In “Where to search” you choose where they come from: job boards, target companies, email alerts and the browser button. What arrives appears in the Job inbox.",
+      "keywords": "sources boards infojobs indeed companies automatic arrive jobs"
+    },
+    "searchNow": {
+      "q": "How do I search for jobs on the job boards?",
+      "a": "In “Search jobs”, press “Search now”: your agent goes through the job boards you have chosen with your browser and adds what it finds. A notice tells you when it finishes.",
+      "keywords": "search boards browser infojobs indeed find"
+    },
+    "emailAlerts": {
+      "q": "How do I connect my email to receive the alerts?",
+      "a": "Create alerts on your job boards and have them arrive under a label in your email. Then, in “Email alerts”, “Add mailbox” guides you through your provider and tests the connection before saving.",
+      "keywords": "gmail outlook email mailbox alerts imap label app password"
+    },
+    "browserButton": {
+      "q": "What is the browser button?",
+      "a": "An extension for Chrome, Edge or Brave that sends the job you are looking at to CandidatAI, with one click. “Browser button” guides you through installing and connecting it.",
+      "keywords": "extension chrome edge brave send capture"
+    },
+    "fit": {
+      "q": "How do I know whether a job fits me?",
+      "a": "Every job that has been read has a fit from 0 to 100 against your profile; hover over it to see where it comes from. “Assess new jobs” adds your agent's reasoned assessment.",
+      "keywords": "fit score rating assessment number match compatibility"
+    },
+    "noFit": {
+      "q": "Why does a job show no fit?",
+      "a": "The fit needs two things: your profile created and the job read by your agent. The job's page shows which one is missing and has the button to sort it out.",
+      "keywords": "no score no fit to read missing profile empty"
+    },
+    "quickReview": {
+      "q": "How do I approve or discard jobs quickly?",
+      "a": "In “Quick review”, with the keyboard: J and K to move, A to approve, D to discard and O to open the job. A discard is undone from its notice; an approval, with “Reopen” on the job's page.",
+      "keywords": "approve discard keyboard shortcuts undo review"
+    },
+    "filters": {
+      "q": "Where do I say which jobs I want and which are discarded?",
+      "a": "In “What you're after”: roles, work mode, areas, years of experience, contract type, words that discard a job and your minimum salary. Your agent never sees that figure.",
+      "keywords": "filters salary minimum remote work mode location preferences discard"
+    },
+    "toComplete": {
+      "q": "What are the jobs “To complete”?",
+      "a": "The ones that arrived from an alert with only the title and the link. Open them on their job board and send them with the browser button to complete them, or discard the ones that don't interest you.",
+      "keywords": "incomplete alerts title link complete"
+    },
+    "getCv": {
+      "q": "How do I get a CV for a job?",
+      "a": "Approve the job and open its page: on the “Application” tab, “Generate CV” asks your agent for a tailored CV, written only from the data in your profile and verified afterwards.",
+      "keywords": "generate cv resume tailored pdf application"
+    },
+    "fixCv": {
+      "q": "How do I correct a CV that is already generated?",
+      "a": "On the job's page, next to the CV: “Ask for changes” so your agent touches only what you say, “Edit text” to change it yourself and “Design” for the template, the photo and the colour. Each change is a new version and you can go back to any of them.",
+      "keywords": "correct edit change cv version template colour color one page"
+    },
+    "ownTemplate": {
+      "q": "Can I use the design of my own CV?",
+      "a": "Yes. In “CV templates”, upload a CV with the design you like, as Word, PDF or an image, and press “Turn into a template”.",
+      "keywords": "template own design word canva upload style"
+    },
+    "photo": {
+      "q": "How do I add, change or remove the CV photo?",
+      "a": "In “My profile”, under “About you”. Each template crops it to its shape, and it is included or not depending on the country of the job.",
+      "keywords": "photo picture portrait remove upload"
+    },
+    "letter": {
+      "q": "And the cover letter?",
+      "a": "On the job's page, “Write letter”. It follows your general instructions and the ones for that job, and it matches the CV.",
+      "keywords": "letter cover letter write"
+    },
+    "apply": {
+      "q": "Does the app send applications for me?",
+      "a": "Sending is always your decision. “Prepare application” opens the form, fills it in and stops so you can review it; sending requires your confirmation, one application at a time. Messages and emails are drafts that you copy and send yourself.",
+      "keywords": "send apply form automatic submit confirm"
+    },
+    "track": {
+      "q": "How do I record a reply or an interview?",
+      "a": "On the job's page, “What happened?”, or by dragging its card on the Board. Interviews and tests create a dated milestone in your calendar.",
+      "keywords": "reply interview rejection offer status board move card record"
+    },
+    "interview": {
+      "q": "How do I prepare for an interview?",
+      "a": "On the job's page, “Process” tab, each interview has “Prepare”, which leaves a PDF guide and a day-by-day plan, and “Mock interview”, to rehearse with your agent one question at a time.",
+      "keywords": "interview prepare guide mock rehearse questions"
+    },
+    "calendar": {
+      "q": "Can I see my interviews in my calendar?",
+      "a": "Yes. “Calendar” gathers interviews, tests and deadlines, and each milestone can be exported to your usual calendar.",
+      "keywords": "calendar google outlook export date milestone agenda"
+    },
+    "replies": {
+      "q": "What is “Replies”?",
+      "a": "If you turn it on for a mailbox, the app reads the emails from the companies in your processes, your agent proposes what happened and you accept or ignore it. The app only reads: sending, moving and deleting emails stays in your hands.",
+      "keywords": "emails companies replies accept ignore classify"
+    },
+    "followUps": {
+      "q": "How do I know which companies to write to again?",
+      "a": "Home tells you about the applications that have gone days without a reply. Your agent writes the follow-up draft and you send it.",
+      "keywords": "follow-up reminder no reply write company thank you"
+    },
+    "funnel": {
+      "q": "What does the Funnel tell me?",
+      "a": "How far each application has gone and where they stop: by source, by week and by discard reason, with how well each route performs.",
+      "keywords": "funnel statistics results conversion figures analysis"
+    },
+    "skillGaps": {
+      "q": "What are the “Skills you lack”?",
+      "a": "What the jobs you approve ask for and your profile doesn't yet include. Mark them as yours, as a synonym of one in your profile or for the training plan your agent prepares.",
+      "keywords": "skills training learn gaps courses plan"
+    },
+    "dataLeaving": {
+      "q": "What data leaves my computer?",
+      "a": "Your data is in a folder on your computer and the app keeps it there. What your agent reads, the jobs and your profile without your email, your phone or your minimum salary, goes to the company behind its model, unless you use a local model.",
+      "keywords": "privacy data cloud send third parties security local"
+    },
+    "backup": {
+      "q": "Where is my data and how do I back it up?",
+      "a": "In a folder on your computer; the user guide says which one for your system. To back it up, close CandidatAI and copy that whole folder wherever you like.",
+      "keywords": "backup folder copy restore move computer"
+    },
+    "mailSafe": {
+      "q": "Is it safe to connect my email?",
+      "a": "The app opens only the folder or label you choose, and only to read. Use an app password, different from your own, which you can revoke whenever you like; it stays on your computer and your agent never sees it.",
+      "keywords": "safe password email gmail read permissions revoke"
+    },
+    "linkedin": {
+      "q": "And LinkedIn?",
+      "a": "Its jobs arrive through your email alerts or with the browser button, and applications on LinkedIn are always sent by you. Searching LinkedIn is optional: you turn it on in its card in “Where to search”, under your responsibility.",
+      "keywords": "linkedin alerts public search account block"
+    },
+    "demo": {
+      "q": "What is “Demo mode”?",
+      "a": "A made-up candidate with jobs, CVs and processes to try the app. It lives in its own folder, separate from your data. To go back to yours, close the demo window and open CandidatAI as usual.",
+      "keywords": "demo trial example fictional made-up data exit"
+    },
+    "notResponding": {
+      "q": "The page says the app is not responding",
+      "a": "The CandidatAI window has been closed or it has stopped. Open it again with its shortcut and reload the page.",
+      "keywords": "not connecting error down closed not loading not working"
+    },
+    "agentWontOpen": {
+      "q": "A button doesn't open my agent",
+      "a": "The button then shows the full instruction, with “Copy” and where to paste it. Check on the “Agent” page that your agent appears as ready.",
+      "keywords": "won't open agent instruction copy paste terminal install failure"
+    },
+    "noPdf": {
+      "q": "A Word template doesn't generate the CV",
+      "a": "Word templates use LibreOffice, which is free, to create the PDF. Install it and generate the CV again, or choose another template under “Design”.",
+      "keywords": "pdf libreoffice missing document word error template"
+    },
+    "nothingArrives": {
+      "q": "No new jobs have arrived today",
+      "a": "Automatic sources are checked once a day and with CandidatAI open. Open it and, to bring it forward, press “Search now” in “Search jobs”.",
+      "keywords": "no jobs arriving empty morning automatic nothing new"
+    },
+    "moreHelp": {
+      "q": "Where do I ask for more help?",
+      "a": "In the CandidatAI Discussions on GitHub, or by opening an issue there. To show a failure, use the demo data instead of your own.",
+      "keywords": "support contact error bug issue github community"
+    }
+  }
+}

@@ -236,6 +236,9 @@ Every page and what you can do in it: [`FEATURES.md`](FEATURES.md).
 
 ## 7. Questions
 
+Day-to-day questions (how to add a job, correct a CV, record an interview…) are in the
+[Frequent questions](FAQ.md) and behind the app's **Help** button, at the bottom right.
+
 **What data leaves my computer?** CandidatAI itself sends nothing anywhere: your data is in a folder
 on your computer (`cai paths` tells you which). What does leave is what your agent reads (the
 postings and your profile, without your email, phone or salary minimum), and it goes to the company

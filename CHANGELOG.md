@@ -10,6 +10,10 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Ayuda en todas las páginas:** un botón abajo a la derecha (o la tecla `?`) abre un buscador sobre
+  las preguntas frecuentes y la guía de uso. Cada respuesta lleva a la pantalla donde se hace.
+  Funciona sin conexión y sin agente, en español y en inglés, y `Esc` lo cierra. Las mismas preguntas
+  están en `docs/PREGUNTAS.md` y `docs/FAQ.md`.
 - **Importar información desde un CV, en Mi perfil:** con tu perfil ya hecho, un botón nuevo sube un CV (PDF
   o Word) y tu agente añade a tu perfil lo que le falte, como experiencia o logros. Te enseña las
   diferencias y tú decides qué se guarda.

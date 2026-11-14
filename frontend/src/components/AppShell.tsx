@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { PageErrorBoundary } from '@/components/PageErrorBoundary'
 import { AgentTaskNotices } from '@/components/AgentTaskNotices'
+import { HelpPanel } from '@/components/HelpPanel'
 import { ReadyNotices } from '@/components/ReadyNotices'
 import { SearchRunNotice } from '@/components/SearchRunNotice'
 import { UserPrompts } from '@/components/UserPrompts'
@@ -171,6 +172,8 @@ export function AppShell() {
         <SearchRunNotice />
         <AgentTaskNotices />
         <ReadyNotices />
+        {/* La ayuda, la última: los avisos se apilan encima y ninguno la tapa. */}
+        <HelpPanel />
       </div>
     </div>
   )

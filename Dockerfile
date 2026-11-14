@@ -16,6 +16,8 @@ RUN pnpm install --frozen-lockfile
 COPY frontend/ ./
 # Algunos tests del frontend leen `../extension`; `tsc -b` los compila.
 COPY extension/ /src/extension/
+# La ayuda del portal busca en la guía de uso.
+COPY docs/GUIA.md docs/GUIDE.md /src/docs/
 RUN pnpm build
 
 # --- App -------------------------------------------------------------------------------------

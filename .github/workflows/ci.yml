@@ -57,6 +57,8 @@ jobs:
       - run: uv run --no-project python ../scripts/check_links.py
       # Cada página y cada skill, contados en FEATURES/FUNCIONALIDADES y los README al par (28.3a).
       - run: uv run --no-project python ../scripts/check_readme_coverage.py
+      # Las preguntas frecuentes de docs/ salen de los textos de la ayuda del portal.
+      - run: uv run --no-project python ../scripts/build_faq.py --check
       # La lógica vive en services/: ahí se exige cobertura mínima (criterio de la fase 02).
       - run: uv run pytest --cov=app/services --cov-report=term-missing --cov-fail-under=85
       # Modo demo (fase 12.1): un clon limpio debe poder sembrar la demo. Sin LibreOffice, los PDF
