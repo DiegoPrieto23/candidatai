@@ -30,7 +30,8 @@
     "prepare-negotiation": "Prepare negotiation",
     "improve-profile-item": "Improve with my agent",
     "propose-stories": "Propose stories from my experience",
-    "import-cv-template": "Turn into a template"
+    "import-cv-template": "Turn into a template",
+    "assistant": "Ask your agent"
   },
   "status": {
     "queued": "Queued",

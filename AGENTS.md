@@ -18,6 +18,7 @@ aquí; `GEMINI.md` está vacío a propósito (Antigravity lee los dos y ese mand
 |---|---|
 | Empezar sin ser técnico (qué hace falta, agente incluido, y preguntas frecuentes) | `docs/EMPEZAR.md` (en inglés, `docs/START_HERE.md`) |
 | Instalar y usar la app (para personas) | `docs/GUIA.md` (en inglés, `docs/GUIDE.md`) |
+| Las dudas habituales de quien usa la app (las mismas del botón de ayuda) | `docs/PREGUNTAS.md` (en inglés, `docs/FAQ.md`): generados, no se editan a mano |
 | Todo lo que hace la app, página a página y skill a skill | `docs/FUNCIONALIDADES.md` (en inglés, `docs/FEATURES.md`) |
 | Comparativa con AI Job Search y career-ops | `docs/COMPARATIVA.md` |
 | Índice de los documentos para quien usa o contribuye | `docs/README.md` |
@@ -78,6 +79,7 @@ cd frontend && pnpm dev            # UI en desarrollo en http://127.0.0.1:5173
 cd frontend && pnpm build          # UI compilada (frontend/dist) que sirve `cai start`
 uv run scripts/sync_agents.py      # regenerar configuración de agentes (desde la raíz)
 uv run scripts/sync_agents.py --check   # CI: falla si lo generado no está al día
+uv run --no-project python scripts/build_faq.py   # regenerar docs/PREGUNTAS.md y docs/FAQ.md (--check en la CI)
 uv run --no-project python scripts/build_site.py --serve   # web del proyecto en http://127.0.0.1:8001
 ```
 
@@ -105,7 +107,9 @@ uv run --no-project python scripts/build_site.py --serve   # web del proyecto en
   Query para datos remotos, shadcn/ui para componentes.
 - **Textos de la UI**: en `frontend/src/locales/<idioma>/<zona>.json` (español e inglés, con
   i18next), nunca escritos en los componentes. Un texto nuevo va en los dos idiomas: un test
-  comprueba que tienen las mismas claves y otro busca textos en español fuera de `locales/`. Los
+  comprueba que tienen las mismas claves y otro busca textos en español fuera de `locales/`. Las
+  preguntas frecuentes de la ayuda se escriben en `locales/<idioma>/help.json` (su orden y su
+  pantalla, en `frontend/src/lib/helpTopics.json`), y `scripts/build_faq.py` las pasa a `docs/`. Los
   mensajes del servidor siguen en español; si la UI los recibe con un código estable, lo traduce.
 - **Configuración de agentes**: se edita solo en `.agents/`. Nunca a mano en `.claude/skills`,
   `.claude/agents`, `.codex/`, `.opencode/`, `.qwen/`, `.mcp.json`, `opencode.json` ni

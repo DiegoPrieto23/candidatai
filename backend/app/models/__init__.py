@@ -1,6 +1,12 @@
 """Tablas SQLAlchemy (sin lógica). Importar este paquete registra todas en `Base.metadata`."""
 
-from app.models.agents import AgentPreference, AgentRequest, AgentRun, AgentTask
+from app.models.agents import (
+    AgentPreference,
+    AgentRequest,
+    AgentRun,
+    AgentTask,
+    AssistantRequest,
+)
 from app.models.applier import ApplicationAttempt
 from app.models.base import Base
 from app.models.companies import Company, CompanyResearch
@@ -31,6 +37,7 @@ from app.models.sources import (
 
 __all__ = [
     "AgentTask",
+    "AssistantRequest",
     "AgentPreference",
     "AgentRequest",
     "AgentRun",

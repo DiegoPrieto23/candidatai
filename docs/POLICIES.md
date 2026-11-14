@@ -290,6 +290,16 @@ Una oferta puede encajar en el papel y aun así no merecer la pena. El código m
   solo `docs/`. Lo que intente fuera de eso queda en el progreso como «denegada». Solo se lanzan
   así los skills que no preguntan; si uno necesita al usuario, para y deja la pregunta en la UI.
   Tiempo máximo: `background_runs.timeout_minutes` de `config/policies.yaml`.
+- **Pídeselo a tu agente** (fase 42.2): lo que escribes en la ayuda del portal es tuyo, pero no
+  amplía lo que tu agente puede hacer. El texto se guarda en la app y no va en la orden del agente,
+  que solo lleva el número de la petición. En segundo plano, esa ejecución lee datos que la app ya
+  tiene estructurados y escribe solo lo que ya escribe otra acción en segundo plano (la valoración
+  de una oferta y las indicaciones de una carta), además de su respuesta. No lee el texto crudo de
+  ofertas, correos ni webs, porque es una sesión que escribe y que nadie mira, y no delega en
+  subagentes. Enviar una candidatura (§5.1), aprobar o descartar una oferta, aceptar la respuesta
+  de una empresa y borrar no tienen herramienta: los confirmas tú en la app. El asistente puede
+  dejarlo preparado y decirte dónde, nunca confirmarlo. Sus enlaces son a una oferta o a una
+  pantalla de la app, nunca una dirección de fuera.
 - **Varias a la vez y umbral** (fase 25.4): hasta `background_runs.max_parallel`
   ejecuciones a la vez (1 por defecto), nunca dos de la misma oferta ni dos lotes de la misma
   acción, cada una con su techo de herramientas. La valoración en segundo plano («Valorar las ofertas nuevas» y «Valorar las que están por revisar») solo valora

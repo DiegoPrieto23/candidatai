@@ -41,6 +41,7 @@ ActionId = Literal[
     "improve-profile-item",
     "propose-stories",
     "import-cv-template",
+    "assistant",
 ]
 
 # Hitos de entrevista (fase 17): `upcoming`, programada y por empezar; `past`, ya empezada y no
@@ -86,9 +87,49 @@ class Action:
     upload: bool = False
     # «Buscar ofertas»: admite elegir plataformas y una búsqueda puntual (`SearchScope`).
     search_scope: bool = False
+    # «Pídeselo a tu agente»: la orden lleva el id de una petición (`{assistant_id}`); su texto se
+    # queda en la base de datos y lo lee el skill.
+    assistant: bool = False
     # Sigue existiendo (ejecuciones antiguas, preferencias guardadas), pero la UI no la ofrece: ni
     # botón, ni fila en «Agente», ni en los niveles de gasto.
     hidden: bool = False
+
+
+# Lo que lee el asistente del portal: datos que la app ya guarda estructurados.
+ASSISTANT_READS: tuple[str, ...] = (
+    "get_status",
+    "get_schema",
+    "list_jobs",
+    "get_extraction",
+    "get_match",
+    "get_timeline",
+    "get_search_titles",
+    "get_profile",
+    "get_context",
+    "list_cv_templates",
+    "get_cv_content",
+    "get_cv_brief",
+    "get_cv_correction",
+    "get_cover_letter",
+    "get_application_answers",
+    "list_sources",
+    "list_mail_sources",
+    "list_followups_due",
+    "list_upcoming",
+    "get_funnel_stats",
+    "get_calibration",
+    "get_skill_gaps",
+    "list_replies",
+    "get_job_contacts",
+    "get_company_research",
+    "get_received_offer",
+    "get_interviews",
+    "get_interview_guide",
+    "list_agent_requests",
+)
+# Lo que escribe, además de su respuesta: la valoración de una oferta y las indicaciones de una
+# carta. Las dos se revisan después en la ficha y ninguna cambia de etapa una oferta.
+ASSISTANT_WRITES: tuple[str, ...] = ("save_fit_assessment", "save_cover_letter_brief")
 
 
 ACTIONS: dict[ActionId, Action] = {
@@ -400,5 +441,23 @@ ACTIONS: dict[ActionId, Action] = {
         stages=frozenset({Stage.IN_PROCESS}),
         wrong_stage="Solo con un proceso abierto.",
         needs_offer=True,
+    ),
+    # «Pídeselo a tu agente», en la ayuda del portal. Lo que escribe el usuario no va en la orden.
+    # En segundo plano lee datos ya estructurados y solo escribe lo que ya escribe alguna otra
+    # acción en segundo plano (`ASSISTANT_WRITES`). No lee texto crudo de ofertas ni de correos
+    # (`get_job`, `get_reply`, `check_job_open`): es una sesión que escribe y que nadie mira. Sin
+    # roles: lo que los necesita (un CV, una carta) se hace con su botón.
+    "assistant": Action(
+        "Pídeselo a tu agente",
+        "Usa el skill assistant de CandidatAI para la petición {assistant_id}.",
+        assistant=True,
+        background=(
+            "get_assistant_request",
+            "save_assistant_answer",
+            "ask_user",
+            "wait_user_action",
+            *ASSISTANT_READS,
+            *ASSISTANT_WRITES,
+        ),
     ),
 }

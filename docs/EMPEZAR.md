@@ -235,6 +235,9 @@ Cada página y lo que puedes hacer en ella: [`FUNCIONALIDADES.md`](FUNCIONALIDAD
 
 ## 7. Preguntas
 
+Las dudas del día a día (cómo añadir una oferta, corregir un CV, anotar una entrevista…) están en
+[Preguntas frecuentes](PREGUNTAS.md) y en el botón **Ayuda** de la app, abajo a la derecha.
+
 **¿Qué datos salen de mi equipo?** CandidatAI no envía nada a ningún sitio: tus datos están en una
 carpeta de tu equipo (`cai paths` te dice cuál). Lo que sí sale es lo que lee tu agente (las ofertas
 y tu perfil, sin tu correo, tu teléfono ni tu mínimo salarial), y va a la empresa del modelo de tu

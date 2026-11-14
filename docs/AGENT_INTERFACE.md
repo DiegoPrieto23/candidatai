@@ -56,7 +56,7 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 
 | MCP | CLI | Fase | Entrada | Salida | Evento |
 |---|---|---|---|---|---|
-| `get_schema` | `cai schema [NOMBRE] [--example true] --json` | 24.2 | `name?` (sin él, o `list`: el catálogo), `example=false` | Catálogo: `schemas` (`name`, `tool`, `description`). Uno: `name`, `tool`, `description`, `send` (cómo va por `--file` y por MCP), `json_schema` y `example` (o `null`). Nombres: `extraction`, `fit-assessment`, `cv-content`, `cv-render-options`, `cv-verification`, `application-answers`, `cover-letter-brief`, `cover-letter`, `cover-letter-render-options`, `cover-letter-verification`, `reply-proposal`, `message-draft`, `company-research`, `interview-plan`, `interview-notes`, `source`, `source-run`. Uno que no existe: `not_found` con los más parecidos | — |
+| `get_schema` | `cai schema [NOMBRE] [--example true] --json` | 24.2 | `name?` (sin él, o `list`: el catálogo), `example=false` | Catálogo: `schemas` (`name`, `tool`, `description`). Uno: `name`, `tool`, `description`, `send` (cómo va por `--file` y por MCP), `json_schema` y `example` (o `null`). Nombres: `extraction`, `fit-assessment`, `cv-content`, `cv-render-options`, `cv-verification`, `application-answers`, `cover-letter-brief`, `cover-letter`, `cover-letter-render-options`, `cover-letter-verification`, `reply-proposal`, `message-draft`, `company-research`, `interview-plan`, `interview-notes`, `source`, `source-run`, `assistant-answer`. Uno que no existe: `not_found` con los más parecidos | — |
 | `get_status` | `cai status --json` | 04 | — | `total`, `by_stage`, `pending_tasks`, `agent_requests` (encargos pendientes, 19), `replies_new` (correos sin clasificar, 34), `replies_proposed` (propuestas por aceptar en la UI, 34), `demo_mode` (12.1) | — |
 | `add_job_from_url` | `cai jobs add-url URL --json` | 04 | `url` | `job_id`, `created`, `duplicate_of?`, `risk_flags` | `found` |
 | `add_job_from_text` | `cai jobs add-text --title T --company C --file F [--url U] [--location L] --json` | 04 | `title, company, text, url?, location?` | `job_id`, `created`, `duplicate_of?`, `risk_flags` | `found` |
@@ -114,6 +114,8 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `record_source_run` | `cai sources record-run ID --file F --json` | 09b | `source_id` + `SourceRunSummary`: `found, created, existing=0, incidents[{code, message}], started_at?, finished_at?`; por CLI, `F` = el resumen | `ok`, `run_id`. Actor `agent`; avanza `last_run_at`. Plataforma desactivada: `not_allowed` | — |
 | `list_agent_requests` | `cai requests list [--status S] [--limit N] --json` | 19 | `status="pending"` (`pending`, `done`, `cancelled` o `null` para todos), `limit=50` | `requests` (`id`, `action`, `label`, `job_id`, `milestone_id`, `prompt`, `status`, `summary`, `agent_name`, fechas; los pendientes, el más antiguo primero) y `pending` | — |
 | `complete_agent_request` | `cai requests complete ID --summary S --json` | 19 | `request_id`, `summary` (1-2000) | `ok`, `request_id`, `message`. Ya cerrado: `not_allowed` | — |
+| `get_assistant_request` | `cai assistant show ID --json` | 42.2 | `request_id` | `request_id`, `text` (lo que escribió el usuario en «Pídeselo a tu agente», ≤ 2000), `mode` (`background` o `session`), `open` (`false`: cancelada o ya contestada) y `created_at` | — |
+| `save_assistant_answer` | `cai assistant answer ID --file F --json` | 42.2 | `request_id`, `answer` (1-4000), `links=[]` (≤ 8; cada uno, `job_id` o `screen`, nunca una URL) | `ok`, `request_id`, `message`. Una respuesta por petición; cerrada: `not_allowed`; `job_id` que no existe: `not_found` | — |
 | `finish_task` | `cai agents finish-task --action A --outcome O --json` | 39g | `action` (el skill), `outcome`: `done` o `stopped` | `closed`, `message`. Cierra el aviso de lo lanzado desde un botón cuando lo pendiente no se acaba del todo o has parado antes de guardar. Sin aviso abierto, `closed: false` y no es un error | — |
 | `ask_user` | `cai prompts ask --question Q [--job-id ID] [--timeout-seconds S] --json` | 39g | `question` (≤ 1500), `options?` (≤ 6, solo por MCP), `job_id?`, `timeout_seconds=600` (60-900) | `PromptView`. Pregunta en un pop-up de la app; después `wait_user_action`: con `done`, la respuesta viene en `answer`; con `skipped` o `expired`, pregunta en tu ventana | — |
 | `request_user_action` | `cai prompts request --kind K --message M [--url U] [--source-id ID] [--timeout-seconds S] --json` | mejora | `kind` (`captcha`, `anti_bot`, `login_required`), `message` (≤ 500), `url?`, `source_id?`, `timeout_seconds` (60-900, por defecto 300) | `PromptView`: `id`, `kind`, `title`, `message`, `status` (`pending`), `expires_at`, `seconds_left`… La UI enseña un pop-up y una notificación del sistema. Un aviso anterior de la misma plataforma caduca. Plataforma inexistente: `not_found` | — |
@@ -617,6 +619,34 @@ lanza a sí mismo.
   Tu próxima sesión la ve en `get_status` (`agent_requests`) y con el skill `handle-requests`
   (`list_agent_requests` → sigue el `prompt` → `complete_agent_request`). Un encargo que no se hizo
   no se cierra.
+
+### Pídeselo a tu agente (fase 42.2)
+
+La pestaña «Pídeselo a tu agente» del panel de ayuda (`POST /agent/assistant`, solo la UI) guarda
+lo que escribe el usuario en `assistant_requests` y se lo pasa al agente con la acción `assistant`:
+
+- **La orden es fija** («Usa el skill assistant de CandidatAI para la petición N») y solo lleva el
+  id. El texto (hasta 2000 caracteres, sin adjuntos) lo lee el skill con `get_assistant_request`.
+- **`mode: background`**: una ejecución en segundo plano como las de arriba, con su techo de
+  herramientas. Cada petición es una ejecución distinta. La orden le permite preguntar con
+  `ask_user` y `wait_user_action`, porque el usuario tiene la app delante.
+- **`mode: session`**: un encargo de la cola (`handle-requests`). Ahí valen los permisos de la
+  sesión interactiva del usuario, no el techo del segundo plano.
+- **Techo en segundo plano** (`ASSISTANT_READS` y `ASSISTANT_WRITES` en
+  `services/agent_actions.py`): consultas de datos ya estructurados (`get_status`, `list_jobs`,
+  `get_extraction`, `get_match`, `get_timeline`, `get_profile`, `get_context`, `list_upcoming`,
+  `list_followups_due`, `get_funnel_stats`, `get_skill_gaps`, `get_interviews`…), sus dos
+  herramientas, `ask_user`, `wait_user_action` y dos escrituras que ya hace otra acción en segundo
+  plano: `save_fit_assessment` y `save_cover_letter_brief`. Sin roles. Quedan fuera `get_job`,
+  `get_reply` y `check_job_open` (texto crudo de ofertas, correos y webs), `add_event` y todo lo
+  que cambia de etapa una oferta, toca fuentes o genera un documento.
+- **La respuesta** (`save_assistant_answer`) es texto y enlaces a una oferta (`job_id`) o a una
+  pantalla (`screen`: `home`, `howItWorks`, `profile`, `skills`, `templates`, `search`,
+  `searchSettings`, `sources`, `companies`, `email`, `extension`, `newJob`, `inbox`, `review`,
+  `complete`, `board`, `calendar`, `replies`, `funnel`, `agent`). La ruta la pone la UI.
+- `GET /agent/assistant` (las últimas, con estado, progreso, respuesta y enlaces),
+  `GET /agent/assistant/{id}` y `POST /agent/assistant/{id}/cancel` son de la UI. Los botones
+  genéricos (`/agent/launch`, `/agent/runs`, `/agent/requests`) rechazan la acción `assistant`.
 
 ### Agentes (fase 24.1, solo CLI y API)
 

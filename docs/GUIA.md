@@ -329,6 +329,29 @@ queda sin memoria, puede cerrar lo que haya lanzado él.
 Si es tu primera vez, **Cómo funciona**, al pie del menú, cuenta el recorrido completo y quién hace
 qué.
 
+Para una duda concreta, el botón **Ayuda** (el `?` de abajo a la derecha, en todas las páginas;
+también se abre con la tecla `?` y se cierra con `Esc`) busca en las
+[preguntas frecuentes](PREGUNTAS.md) y en esta guía, y cada respuesta lleva a la pantalla donde se
+hace. Funciona sin conexión y sin agente.
+
+En el mismo panel, la pestaña **Pídeselo a tu agente** es una caja de texto para pedirle algo con
+tus palabras («¿qué tengo pendiente esta semana?», «valora la oferta de Acme»). La app no llama a
+ningún modelo: le pasa la petición al agente que ya usas.
+
+- **Enviar ahora** la lanza en segundo plano. El panel enseña el progreso y la respuesta, con
+  enlaces a la oferta o a la pantalla de la que habla. Si tu agente necesita un dato, te lo
+  pregunta en un aviso de la app.
+- **Dejar para mi próxima sesión** la guarda como encargo (`handle-requests`).
+- **Qué puede hacer:** consultar tus ofertas, procesos, entrevistas, perfil y resultados, valorar
+  una oferta ya leída y guardar las indicaciones de una carta. Para lo que tiene su propio botón
+  (un CV, una carta, una guía de entrevista) te dice dónde está. No lee el texto original de las
+  ofertas ni de los correos, solo lo que la app ya extrajo de ellos.
+- **Qué confirmas siempre tú:** enviar una candidatura, aprobar o descartar una oferta, aceptar la
+  respuesta de una empresa y borrar. Tu agente lo deja preparado; nunca lo confirma.
+
+Sin agente instalado, la pestaña lo dice y la ayuda sigue funcionando. El panel guarda tus últimas
+20 peticiones en tu equipo.
+
 El menú tiene nueve entradas: **Inicio** y **Mi perfil**; en Búsqueda, **Buscar ofertas** y
 **Bandeja de ofertas**; en Procesos, **Tablero**, **Calendario**, **Respuestas** y **Embudo**; y
 **Agente**. Lo demás son pestañas dentro de ellas: la Bandeja tiene **Revisión rápida** y **Por

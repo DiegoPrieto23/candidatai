@@ -2529,6 +2529,64 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/agent/assistant": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Assistant Requests
+         * @description Las últimas peticiones con su respuesta, la más reciente primero.
+         */
+        get: operations["list_assistant_requests"];
+        put?: never;
+        /**
+         * Create Assistant Request
+         * @description Guarda el texto y se lo pasa a tu agente. La orden del agente solo lleva el id.
+         */
+        post: operations["create_assistant_request"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/agent/assistant/{request_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Assistant Request */
+        get: operations["get_assistant_request"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/agent/assistant/{request_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel Assistant Request */
+        post: operations["cancel_assistant_request"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/context": {
         parameters: {
             query?: never;
@@ -3304,7 +3362,7 @@ export interface components {
              * Id
              * @enum {string}
              */
-            id: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "propose-stories" | "import-cv-template";
+            id: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "propose-stories" | "import-cv-template" | "assistant";
             /** Label */
             label: string;
             /** Needs Job */
@@ -3562,7 +3620,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "propose-stories" | "import-cv-template";
+            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "propose-stories" | "import-cv-template" | "assistant";
             /** Label */
             label: string;
             /** Job Id */
@@ -3603,7 +3661,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "propose-stories" | "import-cv-template";
+            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "propose-stories" | "import-cv-template" | "assistant";
             /** Label */
             label: string;
             /** Job Id */
@@ -3676,7 +3734,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "propose-stories" | "import-cv-template";
+            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "propose-stories" | "import-cv-template" | "assistant";
             /** Job Id */
             job_id: number | null;
             /** Milestone Id */
@@ -3858,6 +3916,66 @@ export interface components {
         AssessThresholdInput: {
             /** Value */
             value: number | null;
+        };
+        /**
+         * AssistantBody
+         * @description Lo que escribes en la caja. `background`: ahora, en segundo plano; `session`: como encargo
+         *     para tu próxima sesión. Solo texto, sin adjuntos.
+         */
+        AssistantBody: {
+            /** Text */
+            text: string;
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "background" | "session";
+        };
+        /** AssistantList */
+        AssistantList: {
+            /** Requests */
+            requests: components["schemas"]["AssistantView"][];
+        };
+        /**
+         * AssistantView
+         * @description Una petición, como la enseña el panel.
+         */
+        AssistantView: {
+            /** Id */
+            id: number;
+            /** Text */
+            text: string;
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "background" | "session";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "queued" | "running" | "waiting" | "done" | "failed" | "cancelled";
+            /** Answer */
+            answer: string | null;
+            /** Links */
+            links: components["schemas"]["LinkView"][];
+            /** Questions */
+            questions: string[];
+            /** Error */
+            error: string | null;
+            /** Progress */
+            progress: components["schemas"]["ProgressView"][];
+            /** Agent */
+            agent: string | null;
+            /** Run Id */
+            run_id: number | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Finished At */
+            finished_at: string | null;
         };
         /**
          * AssistedApplication
@@ -5067,7 +5185,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "propose-stories" | "import-cv-template";
+            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "propose-stories" | "import-cv-template" | "assistant";
             /** Label */
             label: string;
             terminal: components["schemas"]["Resolution"];
@@ -5926,7 +6044,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "propose-stories" | "import-cv-template";
+            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "propose-stories" | "import-cv-template" | "assistant";
             /** Job Id */
             job_id?: number | null;
             /** Milestone Id */
@@ -6056,6 +6174,15 @@ export interface components {
             /** Photo Supported */
             photo_supported: boolean;
             accent_colors: components["schemas"]["AccentColors"] | null;
+        };
+        /** LinkView */
+        LinkView: {
+            /** Job Id */
+            job_id: number | null;
+            /** Screen */
+            screen: ("home" | "howItWorks" | "profile" | "skills" | "templates" | "search" | "searchSettings" | "sources" | "companies" | "email" | "extension" | "newJob" | "inbox" | "review" | "complete" | "board" | "calendar" | "replies" | "funnel" | "agent") | null;
+            /** Label */
+            label: string | null;
         };
         /**
          * LinkedInPublicLimits
@@ -7208,6 +7335,21 @@ export interface components {
             /** Text */
             text: string;
         };
+        /** ProgressView */
+        ProgressView: {
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "tool" | "text" | "info" | "error";
+            /** Text */
+            text: string;
+        };
         /** PromptView */
         PromptView: {
             /** Id */
@@ -7726,7 +7868,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "propose-stories" | "import-cv-template";
+            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "propose-stories" | "import-cv-template" | "assistant";
             /** Job Id */
             job_id?: number | null;
             /** Milestone Id */
@@ -8660,7 +8802,7 @@ export interface components {
         /** TiersView */
         TiersView: {
             /** Actions */
-            actions: ("search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "propose-stories" | "import-cv-template")[];
+            actions: ("search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "propose-stories" | "import-cv-template" | "assistant")[];
             /** Tiers */
             tiers: components["schemas"]["TierView"][];
             /** Can Undo */
@@ -21529,6 +21671,388 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AgentRequestView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_assistant_requests: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssistantList"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_assistant_request: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssistantBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssistantView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_assistant_request: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                request_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssistantView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    cancel_assistant_request: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                request_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmptyBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssistantView"];
                 };
             };
             /** @description Unauthorized */

@@ -175,6 +175,17 @@ def seed_agent_request() -> None:
         agent_requests.cancel(session, cancelled.id)
 
 
+def seed_assistant() -> None:
+    """La oferta 1 y dos peticiones al asistente: la 1 abierta y la 2 cancelada."""
+    seed_job()
+    from app.services import assistant
+
+    with session_scope() as session:
+        assistant.create(session, "¿Qué tengo pendiente?", "session")
+        closed = assistant.create(session, "Olvídalo", "session")
+        assistant.cancel(session, closed.id)
+
+
 def seed_reply() -> None:
     """La oferta 1 enviada y un correo de su empresa que intenta romper el envoltorio."""
     seed_applied_long_ago()
@@ -534,6 +545,12 @@ class Case:
     expect_error: str | None = None  # tipo de error esperado, o None si debe ir bien
 
 
+ASSISTANT_ANSWER: dict[str, Any] = {
+    "answer": "Tienes 1 oferta por revisar.",
+    "links": [{"job_id": 1}, {"screen": "inbox"}],
+}
+ASSISTANT_BAD_LINK: dict[str, Any] = {"answer": "x", "links": [{"url": "https://evil.example"}]}
+
 CASES = [
     Case("status", "get_status", {}, ["status"]),
     Case("schema-list", "get_schema", {}, ["schema"], seed=None),
@@ -881,6 +898,18 @@ CASES = [
     Case("request-complete-empty", "complete_agent_request", {"request_id": 1, "summary": ""},
          ["requests", "complete", "1", "--summary", ""], seed=seed_agent_request,
          expect_error="validation_error"),
+    Case("assistant-show", "get_assistant_request", {"request_id": 1},
+         ["assistant", "show", "1"], seed=seed_assistant),
+    Case("assistant-show-missing", "get_assistant_request", {"request_id": 9},
+         ["assistant", "show", "9"], seed=seed_assistant, expect_error="not_found"),
+    _file_case("assistant-answer", "save_assistant_answer", {"request_id": 1, **ASSISTANT_ANSWER},
+               ["assistant", "answer", "1"], "a.json", ASSISTANT_ANSWER, seed=seed_assistant),
+    _file_case("assistant-answer-closed", "save_assistant_answer",
+               {"request_id": 2, **ASSISTANT_ANSWER}, ["assistant", "answer", "2"], "a.json",
+               ASSISTANT_ANSWER, seed=seed_assistant, expect_error="not_allowed"),
+    _file_case("assistant-answer-url", "save_assistant_answer",
+               {"request_id": 1, **ASSISTANT_BAD_LINK}, ["assistant", "answer", "1"], "a.json",
+               ASSISTANT_BAD_LINK, seed=seed_assistant, expect_error="validation_error"),
     Case("replies", "list_replies", {}, ["replies", "list"], seed=seed_reply),
     Case("replies-new", "list_replies", {"status": "new", "limit": 5},
          ["replies", "list", "--status", "new", "--limit", "5"], seed=seed_reply),

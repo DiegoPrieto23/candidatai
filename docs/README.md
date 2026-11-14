@@ -12,6 +12,7 @@ the rest are in Spanish only.
 |---|---|
 | 🌐 [Empieza aquí](EMPEZAR.md) · [Start here](START_HERE.md) | Para quien no es técnico: qué necesitas (incluido el agente y lo que cuesta), instalar, la demo, tu perfil, tu primera búsqueda y preguntas frecuentes |
 | 🌐 [Guía de uso](GUIA.md) · [User guide](GUIDE.md) | Instalar, probar la demo, conectar tu agente y el día a día |
+| 🌐 [Preguntas frecuentes](PREGUNTAS.md) · [Frequent questions](FAQ.md) | Las dudas habituales, con la pantalla donde se resuelve cada una; son las del botón de ayuda de la app |
 | 🌐 [Funcionalidades](FUNCIONALIDADES.md) · [Features](FEATURES.md) | Todo lo que hace, en el orden en que lo usas, con su página o su skill |
 | [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md) | Alertas de empleo y respuestas por correo (Gmail, IMAP), paso a paso |
 | [`FUENTES_OFERTAS.md`](FUENTES_OFERTAS.md) | De dónde salen las ofertas: APIs, alertas, botón, navegador, LinkedIn |
