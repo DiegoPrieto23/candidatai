@@ -100,7 +100,7 @@
     },
     "pending_extraction": {
       "what": "Jobs with their full description that your agent hasn't read yet.",
-      "next": "click “Assess new jobs”. Your agent pulls out the role, skills, work mode and salary of each one, the app calculates its fit (0 to 100) against your profile and your agent explains why it fits or not. Those that don't pass your filters (work mode, location…) close by themselves; the rest move to “To review”."
+      "next": "click “Assess new jobs”. Your agent pulls out each job's details, the app calculates its fit (0 to 100) against your profile and your agent explains why it fits or not. Those that don't pass your filters (work mode, location…) close by themselves; the rest move to “To review”."
     },
     "pending_triage": {
       "what": "Jobs already read and with their fit calculated, waiting for your decision.",
@@ -124,7 +124,7 @@
     },
     "closed": {
       "what": "The end of the road: jobs discarded, rejected, expired, duplicated or that didn't pass your filters.",
-      "next": "nothing to do. If you closed one by mistake, open it and click “Reopen”."
+      "next": "this is the final stage. If you closed one by mistake, open it and click “Reopen”."
     },
     "openComplete": "Go through them one by one"
   },

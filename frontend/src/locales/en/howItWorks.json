@@ -1,19 +1,33 @@
 {
   "title": "How it works",
-  "intro": "CandidatAI organizes your job search, from the first job to the company's reply. Here's the journey, step by step; come back whenever you like.",
+  "intro": "CandidatAI organizes your job search, from the first job to the company's reply. Here's the journey, step by step.",
   "who": {
     "title": "Who does what",
     "you": {
       "name": "You",
-      "body": "You decide which jobs move forward, review what gets prepared and confirm each application."
+      "items": {
+        "decide": "You decide which jobs move forward",
+        "review": "You review what gets prepared",
+        "confirm": "You confirm each application"
+      }
     },
     "agent": {
       "name": "Your agent",
-      "body": "The AI program installed on your computer, such as Claude Code or Codex. It reads jobs, explains whether they fit you and writes your CVs and cover letters."
+      "what": "The AI program installed on your computer, such as Claude Code or Codex.",
+      "items": {
+        "read": "Reads the jobs",
+        "explain": "Explains whether they fit you",
+        "write": "Writes your CVs and cover letters"
+      }
     },
     "app": {
       "name": "The app",
-      "body": "It stores your jobs and your profile, works out a 0-100 fit and fills in forms. On its own, it doesn't read jobs or write CVs."
+      "items": {
+        "store": "Stores your jobs and your profile",
+        "score": "Works out a 0-100 fit",
+        "fill": "Fills in application forms",
+        "agent": "Leaves anything that needs AI to your agent"
+      }
     },
     "promise": "No application goes out without your confirmation, and your CVs only include what's in your profile."
   },

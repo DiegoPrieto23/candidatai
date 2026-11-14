@@ -320,7 +320,6 @@ export function SearchContractBlock() {
       <div className="grid gap-4 sm:grid-cols-2">
         <ChoicesField
           label={t('fields.contractTypes')}
-          hint={t('fields.noneMeansAny')}
           value={d.contract_types}
           error={err('contract_types')}
           options={CONTRACT_TYPES.map((c) => ({ value: c, label: t(`fields.contract.${c}`) }))}
@@ -328,7 +327,6 @@ export function SearchContractBlock() {
         />
         <ChoicesField
           label={t('fields.employmentTypes')}
-          hint={t('fields.noneMeansAny')}
           value={d.employment_types}
           error={err('employment_types')}
           options={EMPLOYMENT_TYPES.map((e) => ({ value: e, label: t(`fields.employment.${e}`) }))}

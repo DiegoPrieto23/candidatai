@@ -111,9 +111,9 @@ describe('Buscar ofertas', () => {
     expect(await screen.findByText('2 portales, 3 búsquedas')).toBeInTheDocument()
     expect(screen.getByText(/Hasta 25 ofertas/)).toBeInTheDocument()
     expect(screen.getByText('Ten el navegador conectado a tu agente.')).toBeInTheDocument()
-    expect(screen.getByText('Entra en Glassdoor.')).toBeInTheDocument()
+    expect(screen.getByText('Inicia sesión en Glassdoor.')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('checkbox', { name: /Glassdoor/ }))
-    expect(screen.queryByText('Entra en Glassdoor.')).not.toBeInTheDocument()
+    expect(screen.queryByText('Inicia sesión en Glassdoor.')).not.toBeInTheDocument()
   })
 
   it('sin navegador, consulta las fuentes con API una a una', async () => {

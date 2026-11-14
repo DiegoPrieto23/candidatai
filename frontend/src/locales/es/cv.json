@@ -86,15 +86,15 @@
   },
   "brief": {
     "label": "Indicaciones para este CV (opcional)",
-    "placeholder": "Qué quieres que tenga en cuenta: qué proyecto o logro destacar, el idioma, qué dejar fuera…",
+    "placeholder": "Qué quieres que tenga en cuenta: qué proyecto destacar o qué dejar fuera…",
     "hint": "Se guardan solas y tu agente las usa cada vez que redacta este CV. Solo orientan: lo que diga el CV sale de tu perfil.",
     "saving": "Guardando…",
     "saved": "Guardadas: tu agente las usará al redactar este CV."
   },
   "correction": {
     "label": "Qué quieres corregir",
-    "placeholder": "Por ejemplo: quita el proyecto X, el resumen más corto, cambia «lideré» por «participé»…",
-    "hint": "Tu agente cambia solo esto, sin rehacer el CV, y conserva la versión anterior. Nada que no esté en tu perfil.",
+    "placeholder": "Por ejemplo: acorta el resumen o cambia «lideré» por «participé».",
+    "hint": "Tu agente cambia solo esto, sin rehacer el CV, y conserva la versión anterior. Todo sale de tu perfil.",
     "submit": "Pedir corrección",
     "pending": "Esperando a tu agente:",
     "cancel": "Cancelar",

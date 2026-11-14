@@ -12,7 +12,7 @@
       "title": "Empieza por tu CV",
       "intro": "Lo más rápido: tu agente lo crea a partir de tu CV, sin que rellenes nada. Sin CV o sin agente, empieza a mano, más abajo.",
       "upload": "Sube tu CV, en PDF o Word. Se guarda en tu equipo, con tus documentos.",
-      "agent": "Tu agente lo lee y rellena tu perfil sección a sección. Te pregunta lo que el CV no dice (el nivel de tus skills, las cifras de tus logros, qué buscas) y no guarda nada sin tu OK.",
+      "agent": "Tu agente lo lee y rellena tu perfil sección a sección. Te pregunta lo que el CV no dice, como el nivel de tus skills o las cifras de tus logros, y te enseña cada cambio antes de guardarlo.",
       "review": "Cuando termine, tu perfil aparece aquí solo, para que lo revises bloque a bloque.",
       "uploadButton": "Subir mi CV",
       "uploadAnother": "Subir otro CV",
@@ -29,7 +29,7 @@
       "roleHint": "Uno para empezar; luego añades más en «Buscar ofertas → Qué buscas».",
       "summary": "Resumen (opcional)",
       "summaryHint": "Dos o tres frases sobre ti. Si lo dejas vacío, se usa tu titular.",
-      "defaults": "Lo demás (modalidad, ubicaciones, foto en el CV…) empieza abierto a todo y lo cambias en «Qué buscas» y en «Documentos». Tu experiencia y tus skills, en «Experiencia y formación».",
+      "defaults": "Lo demás, como la modalidad o la foto en el CV, empieza abierto a todo y lo cambias en «Qué buscas» y en «Documentos». Tu experiencia y tus skills, en «Experiencia y formación».",
       "required": "Hace falta para crear tu perfil.",
       "pickOne": "Elige al menos uno.",
       "create": "Crear mi perfil",
@@ -163,7 +163,7 @@
     },
     "searchContract": {
       "title": "Contrato y empresa",
-      "hint": "Tipo de contrato, jornada, tipo de empresa y ofertas dudosas. Lo que la oferta no dice no la descarta."
+      "hint": "Si no marcas ninguna opción, se aceptan todas. Si la oferta no indica el contrato, la jornada o el tipo de empresa, no se descarta."
     },
     "cv": {
       "title": "Preferencias de CV",
@@ -177,7 +177,7 @@
     },
     "photo": {
       "title": "Foto para el CV (opcional)",
-      "hint": "No hace falta: sin foto, tus CVs salen sin ella. Se guarda solo en tu equipo y tu agente no la lee.",
+      "hint": "Tus CVs pueden llevarla o no. Se queda en tu equipo y solo la usa la app al dar formato al CV.",
       "preview": "Tu foto actual",
       "choose": "Elegir una foto",
       "upload": "Subir foto",
@@ -187,7 +187,7 @@
       "confirmRemove": "Sí, quitar la foto",
       "cancel": "Cancelar",
       "formats": "JPG, PNG o WebP, de hasta 10 MB. Mejor cuadrada: se recorta desde el centro.",
-      "policyOff": "Ahora mismo tus CVs salen sin foto. Para usarla, activa «Poner foto en el CV» en la pestaña de documentos."
+      "policyOff": "Para que tus CVs la lleven, activa «Poner foto en el CV» en la pestaña «Documentos»."
     }
   },
   "fields": {
@@ -217,9 +217,9 @@
     "achievement": "Logro",
     "achievementHint": "Qué hiciste y qué pasó, sin adornos. Tu agente puede ayudarte a redactarlo mejor.",
     "metrics": "Métrica",
-    "metricsHint": "Solo la real: «-35 % de tiempo de carga». Si no la sabes, déjalo vacío.",
+    "metricsHint": "Solo la real, p. ej. «-35 % de tiempo de carga».",
     "source": "Fuente",
-    "sourceHint": "Enlace público que lo demuestra (opcional).",
+    "sourceHint": "Enlace público que lo demuestra.",
     "skills": "Skills",
     "skillsHint": "Solo las de tu perfil (con nivel o básicas): añade antes las que falten en «Skills e idiomas».",
     "nda": "Confidencial (NDA): el CV no da detalles internos ni el cliente",
@@ -266,7 +266,7 @@
     "remoteModes": "Modalidad",
     "locations": {
       "preferred": "Ubicaciones preferidas",
-      "preferredHint": "Te valen siempre, también presenciales.",
+      "preferredHint": "Aplican siempre.",
       "allowed": "Solo si no es presencial",
       "allowedHint": "Te valen si la oferta es híbrida o remota; si es presencial, se descarta.",
       "excluded": "Excluidas",
@@ -278,7 +278,7 @@
     "maxPagesAuto": "El de cada plantilla",
     "photoDefault": "Poner foto en el CV",
     "photoNo": "Países sin foto",
-    "photoNoHint": "Códigos de dos letras en mayúsculas: GB, US, IE…",
+    "photoNoHint": "Códigos de dos letras en mayúsculas, como GB o US.",
     "cvInstructions": "Indicaciones para tus CVs",
     "instructionsHint": "Énfasis o estilo. Orientan la redacción, pero nunca son un hecho: un dato nuevo va en su sección.",
     "avoid": "Qué no debe decir nunca",
@@ -302,7 +302,7 @@
     "yearsHintExact": "Vacío: sin límite.",
     "salaryFloor": "Sueldo mínimo",
     "salaryUnit": "€ brutos al año",
-    "salaryHint": "Solo lo ve la app: tu agente nunca ve esta cifra. Descarta las ofertas que publican un sueldo menor (uno mensual cuenta ×12); si no lo publican, no.",
+    "salaryHint": "Solo lo ve la app, nunca tu agente. Descarta las ofertas con un sueldo publicado menor (uno mensual cuenta ×12); si no está publicado, no aplica.",
     "salarySave": "Guardar sueldo",
     "salarySaved": "Sueldo guardado",
     "salaryInvalid": "Escribe un número entero de euros mayor que 0, o déjalo vacío.",
@@ -310,27 +310,26 @@
     "discardKeywords": "Palabras que descartan una oferta",
     "discardKeywordsHint": "Si el título las contiene (palabra completa, sin importar tildes), la oferta se descarta. También antes de guardar las ofertas de tus fuentes.",
     "policyKeywords": "También descartan las de la configuración de la app: {{words}}.",
-    "contractTypes": "Tipo de contrato que aceptas",
+    "contractTypes": "Tipo de contrato",
     "contract": {
       "permanent": "Indefinido",
       "fixed_term": "Temporal",
       "freelance": "Autónomo / freelance"
     },
-    "employmentTypes": "Jornada que aceptas",
+    "employmentTypes": "Tipo de jornada",
     "employment": {
       "full_time": "Jornada completa",
       "part_time": "Parcial",
       "internship": "Prácticas"
     },
-    "noneMeansAny": "Sin marcar nada: cualquiera. Si la oferta no lo dice, no se descarta.",
     "employerKinds": "Tipo de empresa",
     "employer": {
-      "consultancy": "Excluir consultoras (te contratan para cederte a un cliente)",
+      "consultancy": "Excluir consultoras que asignan a su personal a un cliente",
       "agency": "Excluir ETT y agencias de selección"
     },
-    "employerKindsHint": "Lo anota tu agente al extraer cada oferta. Si no se sabe, no se descarta.",
+    "employerKindsHint": "Lo indica tu agente al leer cada oferta.",
     "doubtful": "Ofertas dudosas",
-    "employerHidden": "Descartar las que no dicen qué empresa contrata (empresa oculta o agencia que no dice para quién)"
+    "employerHidden": "Descartar las que no dicen qué empresa contrata"
   },
   "star": {
     "situation": {

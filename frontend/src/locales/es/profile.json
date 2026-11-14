@@ -51,7 +51,7 @@
   "import": {
     "button": "Importar información desde un CV",
     "title": "Importar información desde un CV",
-    "intro": "Sube un CV (PDF o Word) y tu agente añade a tu perfil lo que le falte: experiencia, skills, logros, formación… Te enseña las diferencias y no guarda nada sin tu OK.",
+    "intro": "Sube un CV (PDF o Word) y tu agente añade a tu perfil lo que le falte, como experiencia o logros. Te enseña las diferencias antes de guardar.",
     "stepUpload": "Sube el CV",
     "stepAgent": "Tu agente lo lee y lo compara con tu perfil"
   },

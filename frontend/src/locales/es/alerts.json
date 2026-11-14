@@ -30,9 +30,9 @@
   "failingCount": "No encajan con tus filtros ({{count}})",
   "email": {
     "title": "Alertas por correo",
-    "intro": "Los buzones donde te llegan las alertas de empleo de LinkedIn, InfoJobs y otros portales. La app los lee en solo lectura y sus ofertas entran en la Bandeja.",
+    "intro": "Los buzones donde te llegan las alertas de empleo, como las de LinkedIn o InfoJobs. La app solo los lee y sus ofertas entran en la Bandeja.",
     "emptyTitle": "Aún no hay ningún buzón",
-    "emptyBody": "Añade el buzón donde te llegan (Gmail, Outlook, Yahoo, iCloud…) o una carpeta con correos guardados (.eml).",
-    "goToComplete": "Las ofertas que llegan como resumen te esperan en"
+    "emptyBody": "Añade el buzón donde te llegan, como Gmail u Outlook, o una carpeta con correos guardados (.eml).",
+    "goToComplete": "Las ofertas que llegan como resumen están en la Bandeja de ofertas, en"
   }
 }

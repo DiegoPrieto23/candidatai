@@ -1,6 +1,6 @@
 {
   "title": "“Send to CandidatAI” button",
-  "intro": "A browser extension that saves the job you're looking at (on LinkedIn, InfoJobs, Indeed, Tecnoempleo or any website) to CandidatAI in one click. It's what completes the LinkedIn jobs that arrive as a summary. You install it once, in a few minutes; this page guides you and moves on by itself.",
+  "intro": "Saves the job you're looking at in one click, on LinkedIn, InfoJobs or any website, and completes the LinkedIn jobs that arrive as a summary.",
   "notChromium": "The extension works in Chrome, Edge or Brave. Open CandidatAI in one of them to install and connect it.",
   "outdated": "You have an old version of the extension (<strong>{{installed}}</strong>; this app's is <strong>{{current}}</strong>). On the browser's extensions page, press the reload button (⟳) on its card.",
   "installed": "Installed (version {{version}}).",
@@ -41,5 +41,5 @@
     "send": "Open a job (for example, on LinkedIn while signed in) and press the button. It tells you whether it's <strong>new</strong>, whether it <strong>completed</strong> a summary or whether you <strong>already had it</strong>, with a link to its page.",
     "selection": "If it can't find the description, select the job's text with the mouse, company included, and press again."
   },
-  "privacy": "It only acts when you press its button, on the tab in front of you: it doesn't read cookies, doesn't crawl pages and only talks to CandidatAI on your computer. LinkedIn's terms forbid extensions that copy its content; this one is the same as copying and pasting a job, so the risk is low, but not zero."
+  "privacy": "It only acts when you press its button, on the tab in front of you: it doesn't crawl pages, doesn't read your cookies and only talks to CandidatAI on your computer. LinkedIn's terms forbid extensions that copy its content; this one saves only the job you ask for, as if you copied and pasted it, but that ban is still in their terms."
 }

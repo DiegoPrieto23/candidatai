@@ -51,7 +51,7 @@
   "import": {
     "button": "Import information from a CV",
     "title": "Import information from a CV",
-    "intro": "Upload a CV (PDF or Word) and your agent adds to your profile what it is missing: experience, skills, achievements, education… It shows you the differences and saves nothing without your OK.",
+    "intro": "Upload a CV (PDF or Word) and your agent adds to your profile what it is missing, such as experience or achievements. It shows you the differences before saving.",
     "stepUpload": "Upload the CV",
     "stepAgent": "Your agent reads it and compares it with your profile"
   },

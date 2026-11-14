@@ -34,7 +34,7 @@
     "copy": "Copy address"
   },
   "title": "Processes",
-  "intro": "Drag a card to the right or press “Update status” to record what happened: a reply, an interview, a rejection…",
+  "intro": "Your applications in progress, by stage.",
   "followups_one": "{{count}} follow-up due",
   "followups_other": "{{count}} follow-ups due",
   "thanks_one": "{{count}} interview to thank for",
@@ -45,5 +45,7 @@
     "body": "The jobs you approve in <to>To review</to> show up here."
   },
   "seeCalendar": "See the calendar",
-  "next7": "Next 7 days"
+  "next7": "Next 7 days",
+  "introHint": "Drag a card to the right or press “Update status” to record what happened, such as a reply or an interview.",
+  "introHintAria": "How to use the board"
 }

@@ -151,6 +151,36 @@ the command can't launch, do the three skills by hand in the demo and use `--imp
 For larger changes, open an issue first to agree on the approach: then a short plan, a branch,
 tests and a review.
 
+## UI texts
+
+The UI is for anyone looking for a job, not only for developers, and it should read like a
+commercial app. Every text goes in `frontend/src/locales/es` and `frontend/src/locales/en`, and
+follows these rules (the examples show the Spanish text and its English version):
+
+1. **Professional tone.** No colloquialisms. Not «con tu OK» / “with your OK”, but «Te enseña los
+   cambios antes de guardarlos» / “It shows you the changes before saving them”, «Tú decides qué se
+   guarda» / “You decide what gets saved” or «Solo con tu confirmación» / “Only with your
+   confirmation”.
+2. **Positive.** Say what there is or what you can do, not what is missing or what doesn't happen
+   (a bar says “table service at the counter only”, not “no table service outside”). Not «No hace
+   falta: sin foto, tus CVs salen sin ella» / “You don't need one: without a photo, your CVs go
+   without it”, but «Tus CVs pueden llevarla o no» / “Your CVs can include it or not”.
+3. **One explanation per idea, in its place.** If a rule applies to several fields (“what a job
+   doesn't say never discards it”), say it once, in the header of the block.
+4. **What's only needed the first time goes in a hint** (the `Hint` component), not in the
+   paragraph. A page intro stays on one or two lines; the long explanation goes in a hint or in the
+   settings.
+5. **No long lists of examples.** Two at most: «portales de empleo, como InfoJobs o Indeed» / “job
+   boards, such as InfoJobs or Indeed”, not five.
+6. **Nothing internal on screen:** no variables (`CAI_IMAP_PASSWORD`), files (`.env`), table, skill
+   or path names. If it matters, say in words what to do.
+7. **A label isn't clarified in brackets.** If «Usuario (tu dirección)» / “User (your address)”
+   needs a clarification, the label is wrong: «Correo electrónico» / “Email address”.
+8. **Optional is marked once**, in the field label, not in the label and again in the hint.
+
+`frontend/src/locales/jargon.test.ts` and `tone.test.ts` catch the most common slips: technical
+words, colloquial or negative phrases, and page intros longer than two lines.
+
 ## Changelog, versions and releases
 
 - **Every change a user would notice** goes under `## [Sin publicar]` in

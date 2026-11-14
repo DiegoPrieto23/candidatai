@@ -61,7 +61,10 @@ describe('Buzones de las alertas (fase 27.4)', () => {
       'https://myaccount.google.com/apppasswords',
     )
     expect(within(dialog).getByRole('link', { name: /Guía completa/ }).getAttribute('href')).toMatch(/CONFIGURAR_CORREO\.md#gmail$/)
-    await userEvent.type(within(dialog).getByLabelText('Usuario (tu dirección)'), 'ana@gmail.com')
+    await userEvent.type(within(dialog).getByLabelText('Correo electrónico'), 'ana@gmail.com')
+    // La explicación de leer las respuestas va en una ayuda junto a la casilla.
+    expect(within(dialog).getByRole('checkbox', { name: 'Leer aquí también las respuestas de las empresas' })).toBeInTheDocument()
+    expect(within(dialog).getByRole('button', { name: 'Qué correos lee' })).toBeInTheDocument()
     await userEvent.type(within(dialog).getByLabelText('Contraseña de aplicación'), 'abcd efgh')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Probar conexión' }))
     const outcome = await within(dialog).findByRole('status')
@@ -102,7 +105,7 @@ describe('Buzones de las alertas (fase 27.4)', () => {
     expect(within(dialog).getByLabelText('Nombre')).toHaveValue('Yahoo')
     await userEvent.click(within(dialog).getByRole('tab', { name: 'iCloud' }))
     expect(host()).toHaveValue('imap.mail.me.com')
-    expect(within(dialog).getByLabelText('Usuario (lo que va antes de @icloud.com)')).toBeInTheDocument()
+    expect(within(dialog).getByLabelText('Usuario de iCloud')).toBeInTheDocument()
 
     await userEvent.click(within(dialog).getByRole('tab', { name: 'Outlook / Hotmail' }))
     expect(within(dialog).getByText(/Microsoft ya no deja entrar por IMAP/)).toBeInTheDocument()
@@ -133,7 +136,7 @@ describe('Buzones de las alertas (fase 27.4)', () => {
     )
     renderApp('/fuentes/correo')
     const dialog = await openWizard()
-    await userEvent.type(within(dialog).getByLabelText('Usuario (tu dirección)'), 'ana@gmail.com')
+    await userEvent.type(within(dialog).getByLabelText('Correo electrónico'), 'ana@gmail.com')
     await userEvent.type(within(dialog).getByLabelText('Contraseña de aplicación'), 'x')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Guardar' }))
     expect(await within(dialog).findByText('CAI_IMAP_GMAIL_PASSWORD=…')).toBeInTheDocument()
@@ -160,7 +163,7 @@ describe('Buzones de las alertas (fase 27.4)', () => {
     // Abierto de entrada porque uno tiene un error.
     expect(await screen.findByText(/2 buzones/)).toBeInTheDocument()
     expect(screen.getByText(/1 con error/)).toBeInTheDocument()
-    expect(screen.getByText(/Falta la contraseña de aplicación de tu correo/)).toBeInTheDocument()
+    expect(screen.getByText(/Falta la contraseña de aplicación de este buzón/)).toBeInTheDocument()
     expect(screen.getByText(/escribe el nombre exacto/)).toBeInTheDocument()
     // Las variables y el mensaje del servidor, solo en «Detalles técnicos».
     expect(screen.queryByText(/CAI_IMAP|\.env/)).not.toBeInTheDocument()
@@ -197,7 +200,7 @@ describe('Buzones de las alertas (fase 27.4)', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Escribir la contraseña' }))
     const dialog = await screen.findByRole('dialog')
     expect(within(dialog).queryByLabelText('Servidor IMAP')).not.toBeInTheDocument()
-    expect(within(dialog).queryByLabelText('Usuario (tu dirección)')).not.toBeInTheDocument()
+    expect(within(dialog).queryByLabelText('Correo electrónico')).not.toBeInTheDocument()
     await userEvent.type(within(dialog).getByLabelText('Contraseña de aplicación'), 'abcd')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Guardar' }))
     expect(calls.find((c) => c.method === 'PATCH')?.body).toEqual({ label: 'Principal', read_replies: false, password: 'abcd' })

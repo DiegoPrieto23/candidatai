@@ -36,7 +36,7 @@
     "body": "Gaps are worked out against your profile. Create it in “My profile” or ask your agent."
   },
   "title": "Skills",
-  "intro": "What your jobs ask for that isn't in your profile. If it's the same as one of your skills, say so; if you have it, mark it to add it; if not, it goes to your training plan.",
+  "intro": "The skills your jobs ask for that aren't in your profile yet: mark them as a synonym of yours, as yours or for your training plan.",
   "addHave": "Add the ones I have to my profile ({{count}})",
   "training": "Training plan",
   "period": "Period",

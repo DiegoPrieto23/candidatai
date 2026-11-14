@@ -11,7 +11,7 @@
     "removeAria": "Quitar {{name}}",
     "remove": "Quitar",
     "title": "Crea una plantilla desde un CV",
-    "intro": "Sube un CV con el diseño que te gusta (el tuyo o uno de ejemplo) y tu agente lo convierte una vez en una plantilla nueva. A partir de ahí, cada CV a medida puede salir con ese diseño y ese orden de secciones, con el texto adaptado a la oferta desde tu perfil. Para rellenar tu perfil con la información de un CV, usa «Importar información desde un CV» en «Mi perfil».",
+    "intro": "Sube un CV con el diseño que te guste y tu agente lo convierte en una plantilla para tus CVs a medida. Para pasar sus datos a tu perfil, usa «Importar información desde un CV» en «Mi perfil».",
     "file": "Fichero con el diseño de la plantilla",
     "uploading": "Subiendo…",
     "upload": "Subir nueva plantilla",

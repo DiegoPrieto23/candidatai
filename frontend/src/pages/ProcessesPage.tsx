@@ -28,6 +28,7 @@ import { useBoard, useFollowups, useUpcoming } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
 import { ScoreBadge } from '@/components/MatchDetails'
 import { CopyButton } from '@/components/CopyButton'
+import { Hint } from '@/components/Hint'
 import { MoveDialog } from '@/components/MoveDialog'
 import { ReceivedOffersComparison } from '@/components/ReceivedOffersComparison'
 import { EmptyState, ErrorState } from '@/components/States'
@@ -340,8 +341,9 @@ export function ProcessesPage() {
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
-          <p className="mt-1.5 max-w-[65ch] text-sm leading-relaxed text-muted-foreground">
+          <p className="mt-1.5 flex max-w-[65ch] items-center gap-1.5 text-sm leading-relaxed text-muted-foreground">
             {t('intro')}
+            <Hint text={t('introHint')} label={t('introHintAria')} />
           </p>
         </div>
         {(followups > 0 || thanks > 0) && (

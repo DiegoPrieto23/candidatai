@@ -436,7 +436,7 @@ describe('Añadir portal', () => {
     const add = within(dialog).getByRole('button', { name: 'Añadir' })
     expect(add).toBeDisabled()
     await userEvent.type(
-      within(dialog).getByLabelText('Búsquedas (una URL por línea)'),
+      within(dialog).getByLabelText('Búsquedas'),
       'https://www.linkedin.com/jobs/search/?keywords=data',
     )
     await userEvent.click(add)
@@ -462,7 +462,7 @@ describe('Añadir portal', () => {
       '3 · la última',
     ])
     await userEvent.selectOptions(priority, '2')
-    await userEvent.type(within(dialog).getByLabelText('Búsquedas (una URL por línea)'), 'https://es.indeed.com/jobs?q=bi')
+    await userEvent.type(within(dialog).getByLabelText('Búsquedas'), 'https://es.indeed.com/jobs?q=bi')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Añadir' }))
     const call = calls.find((c) => c.method === 'POST' && c.path === '/sources/platforms')
     expect(call?.body).toMatchObject({ name: 'Indeed', priority: 2 })
@@ -484,7 +484,7 @@ describe('Añadir portal', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Añadir portal' }))
     const dialog = await screen.findByRole('dialog')
     await userEvent.selectOptions(within(dialog).getByLabelText('Portal'), 'indeed')
-    const searches = within(dialog).getByLabelText('Búsquedas (una URL por línea)')
+    const searches = within(dialog).getByLabelText('Búsquedas')
     await waitFor(() =>
       expect(searches).toHaveValue('https://es.indeed.com/jobs?q=Data%20Engineer&l=Vigo\nhttps://es.indeed.com/jobs?q=Data%20Engineer&l=Remoto'),
     )
@@ -509,7 +509,7 @@ describe('Añadir portal', () => {
     const name = within(dialog).getByLabelText('Nombre')
     await userEvent.clear(name)
     await userEvent.type(name, 'Tecnoempleo España')
-    const searches = within(dialog).getByLabelText('Búsquedas (una URL por línea)')
+    const searches = within(dialog).getByLabelText('Búsquedas')
     await userEvent.clear(searches)
     await userEvent.type(searches, 'https://www.tecnoempleo.com/ofertas-trabajo/?te=bi')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Guardar' }))
@@ -526,7 +526,7 @@ describe('Añadir portal', () => {
     await userEvent.selectOptions(within(dialog).getByLabelText('Portal'), 'otra')
     await userEvent.type(within(dialog).getByLabelText('Nombre'), 'Mi portal')
     await userEvent.type(within(dialog).getByLabelText('Id corto'), 'miportal')
-    await userEvent.type(within(dialog).getByLabelText('Búsquedas (una URL por línea)'), 'https://miportal.example/q')
+    await userEvent.type(within(dialog).getByLabelText('Búsquedas'), 'https://miportal.example/q')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Añadir' }))
     const call = calls.find((c) => c.method === 'POST' && c.path === '/sources/platforms')
     expect(call?.body).toMatchObject({ name: 'Mi portal', platform: 'miportal', search_urls: ['https://miportal.example/q'] })

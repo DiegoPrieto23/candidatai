@@ -65,6 +65,9 @@ describe('Procesos (kanban)', () => {
     expect(within(applied).getByText('Oferta 2')).toBeInTheDocument()
     expect(within(applied).getByText(/Seguimiento · 12 días/)).toBeInTheDocument()
     expect(screen.getByText('1 seguimiento pendiente')).toBeInTheDocument()
+    // La intro va en una línea; cómo se usa el tablero, en su ayuda.
+    expect(screen.getByText('Tus candidaturas en curso, por etapa.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Cómo se usa el tablero' })).toBeInTheDocument()
     expect(within(screen.getByRole('region', { name: 'Cerrada' })).getByText('Rechazada')).toBeInTheDocument()
     const upcoming = screen.getByRole('region', { name: 'Próximos 7 días' })
     expect(await within(upcoming).findByText(/Oferta 3 \(Empresa 3\)/)).toBeInTheDocument()

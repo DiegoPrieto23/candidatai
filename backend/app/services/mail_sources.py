@@ -240,7 +240,7 @@ def create_mail_source(session: Session, data: MailSourceInput) -> MailSaveResul
     if env_line:
         message += f" Falta su contraseña: añade a tu .env la línea `{env_line}` y recrea Docker."
     elif data.kind == "imap" and data.password is None:
-        message += f" Falta su contraseña (variable {row.secret_ref} de .env)."
+        message += " Falta su contraseña: escríbela en «Editar»."
     return MailSaveResult(source=_view(row), message=message, env_line=env_line)
 
 
@@ -343,15 +343,16 @@ def _account(
     folder: str,
     security: str,
     allow_private: bool,
-    secret_ref: str | None,
 ) -> ImapAccount:
     if get_settings().demo_mode:
         raise MailboxError("demo", "En la demo no se lee ningún buzón real.")
     if not host or not user:
         raise MailboxError("imap_error", "Faltan el servidor o el usuario.")
     if not password:
-        where = f" (variable {secret_ref} de .env)" if secret_ref else ""
-        raise MailboxError("no_password", f"Falta la contraseña{where}.")
+        # Lo lee quien usa la app (también en «Respuestas»): qué hacer, sin nombres de variables.
+        raise MailboxError(
+            "no_password", "Falta la contraseña de este buzón: escríbela en «Editar»."
+        )
     check_host(host, allow_private)
     return ImapAccount(
         host,
@@ -377,7 +378,6 @@ def account_of(row: MailSource, purpose: Purpose = "alerts") -> ImapAccount:
         folder,
         row.security,
         row.allow_private or row.from_env,
-        row.secret_ref,
     )
 
 
@@ -435,7 +435,6 @@ def probe_new_mail_source(
             data.folder,
             data.security,
             data.allow_private,
-            None,
         )
         return _try(account, factory)
     except MailboxError as exc:

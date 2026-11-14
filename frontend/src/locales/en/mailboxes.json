@@ -13,7 +13,7 @@
   "row": {
     "folderKind": "Emails saved in a folder",
     "readsReplies": "Reads replies",
-    "noPassword": "Your email's app password is missing: without it the alerts can't be read.",
+    "noPassword": "This mailbox's app password is missing: enter it in “Edit” to read its alerts.",
     "lastPolled": "Read {{when}}",
     "never": "Not read yet",
     "lastError": "It couldn't be read last time.",
@@ -32,7 +32,7 @@
   "dialog": {
     "addTitle": "Add mailbox",
     "editTitle": "Edit “{{name}}”",
-    "description": "The app only reads: it doesn't mark anything as read, move or delete emails, or send anything. The password stays on your computer.",
+    "description": "The app only reads and sends nothing: your emails stay exactly as they are. The password stays on your computer.",
     "provider": "Provider",
     "guide": "Full guide",
     "officialLinks": "Official help",
@@ -49,8 +49,8 @@
   "fields": {
     "label": "Name",
     "labelHint": "To recognise it in the list, e.g. “Personal Gmail”.",
-    "user": "User (your address)",
-    "userIcloud": "User (the part before @icloud.com)",
+    "user": "Email address",
+    "userIcloud": "iCloud username",
     "password": "App password",
     "passwordKeep": "Leave it empty to keep the current one",
     "host": "IMAP server",
@@ -63,17 +63,18 @@
     "folderName": "Folder name",
     "folderNameHint": "It's created in {{path}}. Put the .eml or .mbox files there.",
     "readReplies": "Also read company replies here",
-    "readRepliesHint": "The app checks the sender, date and subject of the emails in your inbox since your oldest open application, and only saves those from the companies you applied to. It only reads: it doesn't send, delete or change anything unless you accept it.",
+    "readRepliesHint": "The app checks the sender, date and subject of the emails in your inbox since your oldest open application, and saves only those from the companies you applied to. It only reads and sends nothing; a job changes stage when you accept the proposal.",
     "allowPrivate": "Server on my computer or network",
-    "allowPrivateHint": "Only for your own server: for safety, the app doesn't connect to local addresses unless you tick this."
+    "allowPrivateHint": "Only for your own server: for safety, the app doesn't connect to local addresses unless you tick this.",
+    "readRepliesHintAria": "Which emails it reads"
   },
   "providers": {
     "gmail": {
       "name": "Gmail",
       "step1": "Turn on 2-Step Verification in your Google Account.",
       "step2": "Create an app password and copy it: Google only shows its 16 letters once.",
-      "step3": "Optional: create a label (e.g. “Job alerts”) and a filter that sends emails from LinkedIn, InfoJobs, Indeed… there. Type that name in “Folder”.",
-      "step4": "It doesn't work with work or school accounts, or with Advanced Protection: Google doesn't offer app passwords there.",
+      "step3": "Optional: create a label (e.g. “Job alerts”) and a filter that sends emails from LinkedIn or InfoJobs there. Type that name in “Folder”.",
+      "step4": "It only works with personal Google accounts without Advanced Protection: Google offers no app passwords for work or school accounts.",
       "linkTwoStep": "2-Step Verification",
       "linkAppPasswords": "App passwords",
       "linkHelp": "Google's help on app passwords",
@@ -81,7 +82,7 @@
     },
     "outlook": {
       "name": "Outlook / Hotmail",
-      "intro": "Microsoft no longer allows IMAP sign-in with a password for work or school accounts, and has announced it will remove it for personal ones too (Outlook.com, Hotmail, Live). The app doesn't use Microsoft sign-in, so there are two ways that work:",
+      "intro": "Microsoft no longer allows IMAP sign-in with a password for work or school accounts, and has announced it will remove it for personal ones too, such as Outlook.com or Hotmail. The app doesn't use Microsoft sign-in, so there are two ways that work:",
       "forwardTitle": "Forward the alerts to another account (recommended)",
       "forwardBody": "In Outlook.com: Settings → Mail → Rules, a rule for emails from LinkedIn, InfoJobs… with “Forward to” your Gmail. Or Settings → Mail → Forwarding, to forward everything. Then add that Gmail here.",
       "forwardButton": "Go to Gmail",
@@ -96,7 +97,7 @@
     "yahoo": {
       "name": "Yahoo",
       "step1": "In your Yahoo account security, go to “External connections” and generate an app password.",
-      "step2": "Type your full address here as the user, and that password.",
+      "step2": "Type your full address here and that password.",
       "linkAppPasswords": "Yahoo app passwords",
       "linkImap": "Yahoo IMAP settings"
     },
@@ -104,7 +105,7 @@
       "name": "iCloud",
       "step1": "Turn on two-factor authentication for your Apple Account.",
       "step2": "At account.apple.com → Sign-In and Security → App-Specific Passwords, generate one.",
-      "step3": "User: the part before @icloud.com. If it doesn't connect, try the full address.",
+      "step3": "iCloud username: the part before @icloud.com. If it doesn't connect, try the full address.",
       "linkAppPasswords": "App-specific passwords",
       "linkImap": "iCloud IMAP settings"
     },
@@ -122,7 +123,7 @@
     }
   },
   "errors": {
-    "imap_auth": "Check the user (the full address) and that the password is an app password, not your usual one.",
+    "imap_auth": "Check the email address or username and that the password is an app password, not your usual one.",
     "imap_folder": "That folder or label doesn't exist: type its exact name (in Gmail, the label's).",
     "network": "Couldn't connect: check the server, the port and your connection.",
     "host_not_allowed": "It's an address on your computer or network. If it's your own server, tick “Server on my computer or network”.",
