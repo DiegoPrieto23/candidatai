@@ -2,10 +2,10 @@
   "days_one": "{{value}} día",
   "days_other": "{{value}} días",
   "presets": {
-    "all": "Todo",
     "30": "30 días",
     "90": "90 días",
-    "365": "12 meses"
+    "365": "12 meses",
+    "all": "Todo"
   },
   "period": "Periodo",
   "since": "Desde",
@@ -199,7 +199,7 @@
   },
   "loading": "Cargando",
   "title": "Embudo",
-  "intro": "Qué funciona en tu búsqueda: cuántas ofertas avanzan en cada paso, por qué canal y tipo de puesto llegan, cuánto tardan en responder y por qué se descartan.",
+  "intro": "Qué funciona en tu búsqueda: cuántas ofertas avanzan, por qué canal llegan, cuánto tardan en responder y por qué se descartan.",
   "empty": {
     "periodTitle": "No hay ofertas en este periodo",
     "title": "Aún no hay datos",

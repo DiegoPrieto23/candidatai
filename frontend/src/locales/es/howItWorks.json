@@ -1,19 +1,33 @@
 {
   "title": "Cómo funciona",
-  "intro": "CandidatAI ordena tu búsqueda de empleo, de la primera oferta a la respuesta de la empresa. Este es el recorrido, paso a paso; puedes volver aquí cuando quieras.",
+  "intro": "CandidatAI ordena tu búsqueda de empleo, de la primera oferta a la respuesta de la empresa. Este es el recorrido, paso a paso.",
   "who": {
     "title": "Quién hace qué",
     "you": {
       "name": "Tú",
-      "body": "Decides qué ofertas siguen adelante, revisas lo que se prepara y confirmas cada candidatura."
+      "items": {
+        "decide": "Decides qué ofertas siguen adelante",
+        "review": "Revisas lo que se prepara",
+        "confirm": "Confirmas cada candidatura"
+      }
     },
     "agent": {
       "name": "Tu agente",
-      "body": "El programa de IA instalado en tu equipo, como Claude Code o Codex. Lee las ofertas, explica si encajan contigo y redacta tus CVs y cartas."
+      "what": "El programa de IA instalado en tu equipo, como Claude Code o Codex.",
+      "items": {
+        "read": "Lee las ofertas",
+        "explain": "Explica si encajan contigo",
+        "write": "Redacta tus CVs y cartas"
+      }
     },
     "app": {
       "name": "La app",
-      "body": "Guarda tus ofertas y tu perfil, calcula el encaje de 0 a 100 y rellena los formularios. Por sí sola no lee ofertas ni escribe CVs."
+      "items": {
+        "store": "Guarda tus ofertas y tu perfil",
+        "score": "Calcula el encaje de 0 a 100",
+        "fill": "Rellena los formularios de candidatura",
+        "agent": "Deja a tu agente lo que necesita IA"
+      }
     },
     "promise": "Ninguna candidatura sale sin tu confirmación, y en tus CVs solo entra lo que está en tu perfil."
   },

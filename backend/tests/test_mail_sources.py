@@ -423,4 +423,7 @@ def test_one_broken_mailbox_does_not_stop_the_run_being_recorded(session: Sessio
     mail_sources.create_mail_source(session, _imap("Sin clave", 993, password=None))
     result = email_service.poll_email(session, fetch=_no_fetch)
     assert [e.code for e in result.errors] == ["no_password"]
+    # Dice qué hacer, sin nombres de variables ni ficheros internos.
+    assert "Editar" in result.errors[0].message
+    assert "CAI_" not in result.errors[0].message and ".env" not in result.errors[0].message
     assert session.get(Source, result.source_id).last_run_at is not None  # type: ignore[union-attr]

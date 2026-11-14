@@ -30,9 +30,9 @@
   "failingCount": "Don’t match your filters ({{count}})",
   "email": {
     "title": "Email alerts",
-    "intro": "The mailboxes where your job alerts from LinkedIn, Indeed and other portals arrive. The app reads them read-only and their jobs go into the Inbox.",
+    "intro": "The mailboxes where your job alerts arrive, such as those from LinkedIn or Indeed. The app only reads them and their jobs go into the Inbox.",
     "emptyTitle": "No mailboxes yet",
-    "emptyBody": "Add the mailbox where they arrive (Gmail, Outlook, Yahoo, iCloud…) or a folder with saved emails (.eml).",
-    "goToComplete": "Jobs that arrive as a summary wait for you in"
+    "emptyBody": "Add the mailbox where they arrive, such as Gmail or Outlook, or a folder with saved emails (.eml).",
+    "goToComplete": "Jobs that arrive as a summary are in the Job inbox, under"
   }
 }

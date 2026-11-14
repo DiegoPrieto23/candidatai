@@ -1,6 +1,6 @@
 {
   "title": "Application package",
-  "intro": "Everything you need to send it by hand. Nothing is sent from here.",
+  "intro": "Everything you need to send it by hand, from the job board or your email.",
   "form": {
     "question": "Question",
     "answer": "Answer",

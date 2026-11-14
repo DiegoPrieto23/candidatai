@@ -11,8 +11,8 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 
 ### Añadido
 - **Importar información desde un CV, en Mi perfil:** con tu perfil ya hecho, un botón nuevo sube un CV (PDF
-  o Word) y tu agente añade a tu perfil lo que le falte (experiencia, skills, logros, formación…). Te
-  enseña las diferencias y no cambia ni borra nada sin tu OK.
+  o Word) y tu agente añade a tu perfil lo que le falte, como experiencia o logros. Te enseña las
+  diferencias y tú decides qué se guarda.
 - **Eliminar y restaurar plantillas de la app:** en **Plantillas de CV**, todas las plantillas ofrecen
   **Eliminar**. Las tuyas se borran como hasta ahora; una de la app se quita de tu lista y de las que elige
   tu agente (no se borra del programa, para que tus CVs ya hechos sigan funcionando) y vuelve desde
@@ -115,6 +115,15 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   vez de 23).
 
 ### Cambiado
+- **Textos más claros y profesionales en toda la app:** en español y en inglés, dicen lo que puedes
+  hacer en vez de lo que no se hace, explican cada regla una sola vez y dejan las explicaciones largas
+  en una ayuda (ⓘ). Algunos ejemplos: «Correo electrónico» en vez de «Usuario (tu dirección)»,
+  «Inicia sesión en…», «Tipo de contrato» y «Tipo de jornada», la intro del **Tablero** en una línea
+  con su ayuda y **Cómo funciona → Quién hace qué** en viñetas. Los avisos sobre LinkedIn dicen en
+  concreto qué puede pasar.
+- **Buzones:** si falta la contraseña de un buzón, el aviso dice qué hacer («escríbela en Editar»)
+  en vez de nombrar ajustes internos, también en **Respuestas**. La explicación de «Leer aquí también
+  las respuestas de las empresas» pasa a una ayuda junto a la casilla.
 - **README nuevo, en inglés y en español:** se lee en dos minutos. Demo, funcionalidades, capturas,
   cómo instalarla y abrirla paso a paso, documentación, cómo funciona, por qué CandidatAI (con la
   comparativa en un desplegable), limitaciones conocidas, rendimiento y seguridad. La comparativa

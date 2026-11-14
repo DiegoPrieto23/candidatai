@@ -100,7 +100,7 @@
     },
     "pending_extraction": {
       "what": "Ofertas con la descripción completa que tu agente aún no ha leído.",
-      "next": "pulsa «Valorar las ofertas nuevas». Tu agente saca de cada una el puesto, las skills, la modalidad y el salario, la app calcula su encaje (de 0 a 100) frente a tu perfil y tu agente explica por qué encaja o no. Las que no pasan tus filtros (modalidad, ubicación…) se cierran solas; las demás pasan a «Por revisar»."
+      "next": "pulsa «Valorar las ofertas nuevas». Tu agente saca los datos de cada una, la app calcula su encaje (de 0 a 100) frente a tu perfil y tu agente explica por qué encaja o no. Las que no pasan tus filtros (modalidad, ubicación…) se cierran solas; las demás pasan a «Por revisar»."
     },
     "pending_triage": {
       "what": "Ofertas ya leídas y con su encaje calculado, a la espera de que decidas.",
@@ -124,7 +124,7 @@
     },
     "closed": {
       "what": "El final del recorrido: ofertas descartadas, rechazadas, caducadas, duplicadas o que no pasaron tus filtros.",
-      "next": "no hay nada que hacer. Si cerraste una por error, ábrela y pulsa «Reabrir»."
+      "next": "es la etapa final. Si cerraste una por error, ábrela y pulsa «Reabrir»."
     },
     "openComplete": "Repasarlas una a una"
   },

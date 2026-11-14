@@ -34,7 +34,7 @@
     "browser": "Keep your browser connected to your agent.",
     "browserHint": "In Claude Code, with the Claude in Chrome extension open in your Chrome and the same account. If it can't see it, your agent tells you and adds nothing.",
     "login": "Sign in to {{names}}.",
-    "loginHint": "It needs a session: your agent will tell you before going on.",
+    "loginHint": "It needs you to sign in: your agent will tell you before going on.",
     "safe": "It opens in a separate window where you see what it does. It can take several minutes.",
     "looking": "You're after:",
     "lookingNone": "no roles yet",
@@ -71,7 +71,7 @@
   },
   "settings": {
     "title": "What you're after",
-    "intro": "Roles, salary, place and contract decide what your agent looks for and which jobs pass your filters. Each block saves separately and recalculates the fit.",
+    "intro": "Your roles, salary, place and contract decide what your agent looks for and which jobs pass your filters. Each block saves separately.",
     "issues": "Your profile has errors to fix. See them in <to>My profile</to>.",
     "noProfile": {
       "title": "Your profile first",

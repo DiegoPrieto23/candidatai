@@ -12,7 +12,7 @@
       "title": "Start with your CV",
       "intro": "The quickest way: your agent builds it from your CV, with nothing for you to fill in. No CV or no agent? Start by hand, below.",
       "upload": "Upload your CV, as PDF or Word. It stays on your computer, with your documents.",
-      "agent": "Your agent reads it and fills in your profile section by section. It asks about what the CV doesn't say (your skill levels, the figures behind your achievements, what you're looking for) and saves nothing without your OK.",
+      "agent": "Your agent reads it and fills in your profile section by section. It asks about what the CV doesn't say, such as your skill levels or the figures behind your achievements, and shows you each change before saving it.",
       "review": "When it's done, your profile shows up here on its own, ready to review block by block.",
       "uploadButton": "Upload my CV",
       "uploadAnother": "Upload another CV",
@@ -29,7 +29,7 @@
       "roleHint": "One to start with; add more later in “Search jobs → What you're after”.",
       "summary": "Summary (optional)",
       "summaryHint": "Two or three sentences about you. Left empty, your headline is used.",
-      "defaults": "Everything else (work mode, locations, photo on the CV…) starts open to anything and you change it in “What you're after” and “Documents”. Your experience and skills go in “Experience and education”.",
+      "defaults": "Everything else, such as work mode or the photo on the CV, starts open to anything and you change it in “What you're after” and “Documents”. Your experience and skills go in “Experience and education”.",
       "required": "Needed to create your profile.",
       "pickOne": "Pick at least one.",
       "create": "Create my profile",
@@ -163,7 +163,7 @@
     },
     "searchContract": {
       "title": "Contract and employer",
-      "hint": "Contract type, working time, type of employer and doubtful jobs. What a job doesn't say never discards it."
+      "hint": "With no option ticked, all are accepted. If a job doesn't state the contract, working time or type of employer, it isn't discarded."
     },
     "cv": {
       "title": "CV preferences",
@@ -177,7 +177,7 @@
     },
     "photo": {
       "title": "CV photo (optional)",
-      "hint": "You don't need one: without a photo, your CVs go without it. It stays on your computer only and your agent doesn't read it.",
+      "hint": "Your CVs can include it or not. It stays on your computer and only the app uses it when laying out the CV.",
       "preview": "Your current photo",
       "choose": "Choose a photo",
       "upload": "Upload photo",
@@ -187,7 +187,7 @@
       "confirmRemove": "Yes, remove the photo",
       "cancel": "Cancel",
       "formats": "JPG, PNG or WebP, up to 10 MB. Square works best: it's cropped from the centre.",
-      "policyOff": "Your CVs currently go without a photo. To use it, turn on “Put a photo on the CV” in the documents tab."
+      "policyOff": "To include it in your CVs, turn on “Put a photo on the CV” in the “Documents” tab."
     }
   },
   "fields": {
@@ -217,9 +217,9 @@
     "achievement": "Achievement",
     "achievementHint": "What you did and what happened, plainly. Your agent can help you word it better.",
     "metrics": "Metric",
-    "metricsHint": "Only the real one: \"-35% load time\". If you don't know it, leave it empty.",
+    "metricsHint": "Only the real one, e.g. \"-35% load time\".",
     "source": "Source",
-    "sourceHint": "A public link that proves it (optional).",
+    "sourceHint": "A public link that proves it.",
     "skills": "Skills",
     "skillsHint": "Only skills in your profile (with a level or basic): add missing ones first under Skills and languages.",
     "nda": "Confidential (NDA): the CV gives no internal details or client",
@@ -266,7 +266,7 @@
     "remoteModes": "Work mode",
     "locations": {
       "preferred": "Preferred locations",
-      "preferredHint": "Always fine, on-site too.",
+      "preferredHint": "Always apply.",
       "allowed": "Only if not on-site",
       "allowedHint": "Fine if the job is hybrid or remote; if it's on-site, it's discarded.",
       "excluded": "Excluded",
@@ -278,7 +278,7 @@
     "maxPagesAuto": "Each template's own",
     "photoDefault": "Include a photo in the CV",
     "photoNo": "Countries without a photo",
-    "photoNoHint": "Two-letter codes in capitals: GB, US, IE…",
+    "photoNoHint": "Two-letter codes in capitals, such as GB or US.",
     "cvInstructions": "Instructions for your CVs",
     "instructionsHint": "Emphasis or style. They guide the writing but are never a fact: new information goes in its own section.",
     "avoid": "What it must never say",
@@ -302,7 +302,7 @@
     "yearsHintExact": "Empty: no limit.",
     "salaryFloor": "Minimum salary",
     "salaryUnit": "EUR gross per year",
-    "salaryHint": "Only the app sees it: your agent never sees this figure. It discards jobs that publish a lower salary (a monthly one counts ×12); if they don't publish one, it doesn't.",
+    "salaryHint": "Only the app sees it, never your agent. It discards jobs with a lower published salary (a monthly one counts ×12); if none is published, it doesn't apply.",
     "salarySave": "Save salary",
     "salarySaved": "Salary saved",
     "salaryInvalid": "Enter a whole number of euros above 0, or leave it empty.",
@@ -310,27 +310,26 @@
     "discardKeywords": "Words that discard a job",
     "discardKeywordsHint": "If the title contains one (whole word, accents ignored), the job is discarded. Also before saving jobs from your sources.",
     "policyKeywords": "The app's settings also rule out: {{words}}.",
-    "contractTypes": "Contract types you accept",
+    "contractTypes": "Contract type",
     "contract": {
       "permanent": "Permanent",
       "fixed_term": "Temporary",
       "freelance": "Self-employed / freelance"
     },
-    "employmentTypes": "Working time you accept",
+    "employmentTypes": "Working time",
     "employment": {
       "full_time": "Full time",
       "part_time": "Part time",
       "internship": "Internship"
     },
-    "noneMeansAny": "Nothing ticked: any. If the job doesn't say, it isn't discarded.",
     "employerKinds": "Type of employer",
     "employer": {
-      "consultancy": "Exclude consultancies (they hire you to place you with a client)",
+      "consultancy": "Exclude consultancies that place their staff with a client",
       "agency": "Exclude temp and recruitment agencies"
     },
-    "employerKindsHint": "Your agent notes it when it extracts each job. If it's unknown, the job isn't discarded.",
+    "employerKindsHint": "Your agent notes it when it reads each job.",
     "doubtful": "Doubtful jobs",
-    "employerHidden": "Discard jobs that don't say which company is hiring (hidden employer, or an agency that doesn't say who for)"
+    "employerHidden": "Discard jobs that don't say which company is hiring"
   },
   "star": {
     "situation": {

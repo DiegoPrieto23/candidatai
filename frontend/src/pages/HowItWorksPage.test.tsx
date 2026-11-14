@@ -31,6 +31,10 @@ describe('Cómo funciona', () => {
       expect(who.getByRole('heading', { level: 3, name })).toBeInTheDocument()
     }
     expect(who.getByText(/Ninguna candidatura sale sin tu confirmación/)).toBeInTheDocument()
+    // En viñetas, un verbo por línea.
+    for (const item of ['Decides qué ofertas siguen adelante', 'Redacta tus CVs y cartas', 'Deja a tu agente lo que necesita IA']) {
+      expect(who.getByText(item).tagName).toBe('LI')
+    }
   })
 
   it('recorre los cinco pasos, en orden, con los nombres de verdad de botones y páginas', async () => {

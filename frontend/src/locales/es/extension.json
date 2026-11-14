@@ -1,6 +1,6 @@
 {
   "title": "Botón «Enviar a CandidatAI»",
-  "intro": "Una extensión del navegador para guardar en CandidatAI la oferta que estás viendo (en LinkedIn, InfoJobs, Indeed, Tecnoempleo o cualquier web) con un clic. Es lo que completa las ofertas de LinkedIn que llegan como resumen. Se instala una vez, en unos minutos; esta página te guía y avanza sola.",
+  "intro": "Guarda con un clic la oferta que estás viendo, en LinkedIn, InfoJobs o cualquier web, y completa las de LinkedIn que llegan como resumen.",
   "notChromium": "La extensión funciona en Chrome, Edge o Brave. Abre CandidatAI en uno de ellos para instalarla y conectarla.",
   "outdated": "Tienes una versión antigua de la extensión (<strong>{{installed}}</strong>; la de esta app es la <strong>{{current}}</strong>). En la página de extensiones del navegador, pulsa el botón de recargar (⟳) de su tarjeta.",
   "installed": "Instalada (versión {{version}}).",
@@ -41,5 +41,5 @@
     "send": "Abre una oferta (por ejemplo, en LinkedIn con tu sesión iniciada) y pulsa el botón. Te dice si es <strong>nueva</strong>, si ha <strong>completado</strong> un resumen o si <strong>ya estaba</strong>, con un enlace a su ficha.",
     "selection": "Si no encuentra la descripción, selecciona con el ratón el texto de la oferta, con la empresa, y vuelve a pulsar."
   },
-  "privacy": "Solo actúa cuando pulsas su botón, en la pestaña que tienes delante: no lee cookies, no recorre páginas y solo habla con CandidatAI en tu equipo. Las condiciones de LinkedIn prohíben las extensiones que copian su contenido; esta equivale a copiar y pegar una oferta, así que el riesgo es bajo, pero no es cero."
+  "privacy": "Solo actúa cuando pulsas su botón, en la pestaña que tienes delante: no recorre páginas, no lee tus cookies y solo se comunica con CandidatAI en tu equipo. Las condiciones de LinkedIn prohíben las extensiones que copian su contenido; esta guarda solo la oferta que le pides, como si la copiaras y la pegaras, pero esa prohibición sigue en sus condiciones."
 }

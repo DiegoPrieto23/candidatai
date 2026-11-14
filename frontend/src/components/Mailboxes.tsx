@@ -16,6 +16,7 @@ import {
   useTestNewMailSource,
   useUpdateMailSource,
 } from '@/api/queries'
+import { Hint } from '@/components/Hint'
 import { Reveal } from '@/components/Reveal'
 import { InlineCode } from '@/components/States'
 import { Switch } from '@/components/Switch'
@@ -329,14 +330,36 @@ function Field({ id, label, hint, children }: { id: string; label: string; hint?
   )
 }
 
-function Check({ id, label, hint, checked, onChange }: { id: string; label: string; hint: string; checked: boolean; onChange: (v: boolean) => void }) {
+/** Con `hintLabel`, la explicación va en una ayuda (ⓘ) junto a la etiqueta en vez de en un párrafo. */
+function Check({
+  id,
+  label,
+  hint,
+  hintLabel,
+  checked,
+  onChange,
+}: {
+  id: string
+  label: string
+  hint: string
+  hintLabel?: string
+  checked: boolean
+  onChange: (v: boolean) => void
+}) {
   return (
     <div className="flex items-start gap-2">
       <input id={id} type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="mt-1" />
-      <div>
-        <Label htmlFor={id}>{label}</Label>
-        <p className="text-xs text-muted-foreground">{hint}</p>
-      </div>
+      {hintLabel ? (
+        <div className="flex items-center gap-1.5">
+          <Label htmlFor={id}>{label}</Label>
+          <Hint text={hint} label={hintLabel} />
+        </div>
+      ) : (
+        <div>
+          <Label htmlFor={id}>{label}</Label>
+          <p className="text-xs text-muted-foreground">{hint}</p>
+        </div>
+      )}
     </div>
   )
 }
@@ -414,6 +437,7 @@ function ImapFields({
         id="mailbox-replies"
         label={t('fields.readReplies')}
         hint={t('fields.readRepliesHint')}
+        hintLabel={t('fields.readRepliesHintAria')}
         checked={form.readReplies}
         onChange={(readReplies) => set({ readReplies })}
       />

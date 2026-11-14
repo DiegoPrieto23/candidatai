@@ -436,7 +436,7 @@ describe('Mi perfil editable', () => {
     const block = await screen.findByRole('region', { name: 'Experiencia y sueldo' })
     const field = await within(block).findByRole('spinbutton', { name: 'Sueldo mínimo' })
     await waitFor(() => expect(field).toHaveValue(30000))
-    expect(within(block).getByText(/tu agente nunca ve esta cifra/)).toBeInTheDocument()
+    expect(within(block).getByText(/Solo lo ve la app, nunca tu agente/)).toBeInTheDocument()
     const button = within(block).getByRole('button', { name: 'Guardar sueldo' })
     expect(button).toBeDisabled()
 
@@ -487,7 +487,7 @@ describe('Mi perfil editable', () => {
     expect(within(block).getByRole('checkbox', { name: 'Temporal' })).not.toBeChecked()
     expect(within(block).getByRole('checkbox', { name: 'Autónomo / freelance' })).toBeChecked()
     expect(within(block).getByRole('checkbox', { name: 'Parcial' })).not.toBeChecked()
-    expect(within(block).getAllByText(/Sin marcar nada: cualquiera/)).toHaveLength(2)
+    expect(within(block).getAllByText(/Si no marcas ninguna opción, se aceptan todas/)).toHaveLength(1)
 
     await userEvent.click(within(block).getByRole('checkbox', { name: 'Jornada completa' }))
     await userEvent.click(within(block).getByRole('checkbox', { name: /Excluir consultoras/ }))

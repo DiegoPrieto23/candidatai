@@ -33,8 +33,8 @@
     "before": "Antes de empezar",
     "browser": "Ten el navegador conectado a tu agente.",
     "browserHint": "En Claude Code, con la extensión Claude in Chrome abierta en tu Chrome y la misma cuenta. Si no lo ve, tu agente te lo dice y no da nada de alta.",
-    "login": "Entra en {{names}}.",
-    "loginHint": "Pide sesión: tu agente te avisará antes de seguir.",
+    "login": "Inicia sesión en {{names}}.",
+    "loginHint": "Requiere iniciar sesión: tu agente te avisará antes de seguir.",
     "safe": "Se abre en una ventana aparte, donde ves lo que hace. Puede tardar varios minutos.",
     "looking": "Buscas:",
     "lookingNone": "sin puestos todavía",
@@ -71,7 +71,7 @@
   },
   "settings": {
     "title": "Qué buscas",
-    "intro": "Los puestos, el sueldo, el lugar y el contrato deciden qué busca tu agente y qué ofertas pasan tus filtros. Cada bloque se guarda por separado y recalcula el encaje.",
+    "intro": "Tus puestos, tu sueldo, dónde y con qué contrato: deciden qué busca tu agente y qué ofertas pasan tus filtros. Cada bloque se guarda por separado.",
     "issues": "Tu perfil tiene errores que hay que arreglar. Los ves en <to>Mi perfil</to>.",
     "noProfile": {
       "title": "Primero, tu perfil",

@@ -113,7 +113,7 @@
       "mac": "<strong>Instálalo.</strong> Abre Terminal (pulsa Cmd y la barra espaciadora, escribe «Terminal» y pulsa Intro), pega esta orden y pulsa Intro:",
       "linux": "<strong>Instálalo.</strong> Abre una terminal, pega esta orden y pulsa Intro:"
     },
-    "step3": "<strong>Entra con tu cuenta.</strong> Cuando termine, abre otra ventana igual, escribe «claude», pulsa Intro y sigue los pasos para entrar con tu cuenta de Claude.",
+    "step3": "<strong>Inicia sesión.</strong> Cuando termine, abre otra ventana igual, escribe «claude», pulsa Intro y sigue los pasos para iniciar sesión con tu cuenta de Claude.",
     "step4": "Cierra CandidatAI y vuelve a abrirla desde su acceso directo: los botones con el robot abrirán tu agente con la orden ya escrita.",
     "commandLabel": "Orden para instalar Claude Code",
     "guide": "La guía paso a paso",

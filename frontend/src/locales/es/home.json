@@ -55,7 +55,7 @@
     "howItWorks": "Todo el recorrido, paso a paso, en «Cómo funciona»",
     "profile": {
       "title": "Crea tu perfil desde tu CV",
-      "body": "Sube tu CV (PDF o Word) y pulsa «Crear mi perfil desde mi CV»: tu agente lo lee, te pregunta lo que el CV no dice y no guarda nada sin tu OK.",
+      "body": "Sube tu CV (PDF o Word) y pulsa «Crear mi perfil desde mi CV»: tu agente lo lee, te pregunta lo que el CV no dice y te enseña cada cambio antes de guardarlo.",
       "done": "Perfil creado: revísalo en «Mi perfil»",
       "byHand": "¿Sin CV o sin agente? Empieza a mano en «Mi perfil»"
     },

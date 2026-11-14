@@ -34,7 +34,7 @@
     "copy": "Copiar dirección"
   },
   "title": "Procesos",
-  "intro": "Arrastra una tarjeta hacia la derecha o pulsa «Actualizar estado» para anotar lo que ha pasado: una respuesta, una entrevista, un rechazo…",
+  "intro": "Tus candidaturas en curso, por etapa.",
   "followups_one": "{{count}} seguimiento pendiente",
   "followups_other": "{{count}} seguimientos pendientes",
   "thanks_one": "{{count}} entrevista por agradecer",
@@ -45,5 +45,7 @@
     "body": "Aparecen aquí las ofertas que apruebas en <to>Por revisar</to>."
   },
   "seeCalendar": "Ver el calendario",
-  "next7": "Próximos 7 días"
+  "next7": "Próximos 7 días",
+  "introHint": "Arrastra una tarjeta hacia la derecha o pulsa «Actualizar estado» para anotar lo que ha pasado, como una respuesta o una entrevista.",
+  "introHintAria": "Cómo se usa el tablero"
 }

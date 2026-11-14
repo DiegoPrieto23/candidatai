@@ -11,6 +11,12 @@ import { i18n, SOURCE_LANGUAGE } from '@/lib/i18n'
 type Actor = 'you' | 'agent' | 'app'
 
 const ACTORS: Actor[] = ['you', 'agent', 'app']
+/** Lo que hace cada uno, un verbo por viñeta. */
+const WHO_ITEMS: Record<Actor, string[]> = {
+  you: ['decide', 'review', 'confirm'],
+  agent: ['read', 'explain', 'write'],
+  app: ['store', 'score', 'fill', 'agent'],
+}
 
 // Las etiquetas de los enlaces son las del menú: si cambia un nombre, aquí cambia con él.
 const STEPS = [
@@ -110,7 +116,12 @@ export function HowItWorksPage() {
           {ACTORS.map((actor) => (
             <li key={actor} className="rounded-xl border bg-card p-4">
               <h3 className="text-sm font-medium">{t(`who.${actor}.name`)}</h3>
-              <p className="mt-1 text-sm text-muted-foreground">{t(`who.${actor}.body`)}</p>
+              {actor === 'agent' && <p className="mt-1 text-sm text-muted-foreground">{t('who.agent.what')}</p>}
+              <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-muted-foreground marker:text-muted-foreground/60">
+                {WHO_ITEMS[actor].map((item) => (
+                  <li key={item}>{t(`who.${actor}.items.${item}` as never)}</li>
+                ))}
+              </ul>
             </li>
           ))}
         </ul>

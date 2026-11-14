@@ -11,7 +11,7 @@
     "removeAria": "Remove {{name}}",
     "remove": "Remove",
     "title": "Create a template from a CV",
-    "intro": "Upload a CV with the design you like (yours or a sample) and your agent turns it into a new template once. From then on, every tailored CV can come out with that design and section order, with the text adapted to the job from your profile. To fill in your profile with the information from a CV, use “Import information from a CV” in “My profile”.",
+    "intro": "Upload a CV with the design you like and your agent turns it into a template for your tailored CVs. To copy its information into your profile, use “Import information from a CV” in “My profile”.",
     "file": "File with the template design",
     "uploading": "Uploading…",
     "upload": "Upload new template",

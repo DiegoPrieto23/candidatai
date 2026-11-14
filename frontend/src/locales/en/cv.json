@@ -86,15 +86,15 @@
   },
   "brief": {
     "label": "Instructions for this CV (optional)",
-    "placeholder": "What you want it to keep in mind: which project or achievement to highlight, the language, what to leave out…",
+    "placeholder": "What you want it to keep in mind: which project to highlight or what to leave out…",
     "hint": "They save on their own and your agent uses them every time it writes this CV. They only guide it: what the CV says comes from your profile.",
     "saving": "Saving…",
     "saved": "Saved: your agent will use them when writing this CV."
   },
   "correction": {
     "label": "What do you want to correct?",
-    "placeholder": "For example: remove project X, make the summary shorter, change “led” to “took part in”…",
-    "hint": "Your agent changes only this, without rewriting the CV, and keeps the previous version. Nothing that isn’t in your profile.",
+    "placeholder": "For example: shorten the summary or change “led” to “took part in”.",
+    "hint": "Your agent changes only this, without rewriting the CV, and keeps the previous version. Everything comes from your profile.",
     "submit": "Request correction",
     "pending": "Waiting for your agent:",
     "cancel": "Cancel",
