@@ -55,13 +55,15 @@ def test_the_entries_and_each_section_opens_its_tabs(page: Page, demo_app: AppSe
     expect(page.get_by_role("dialog")).to_be_visible()
     page.keyboard.press("Escape")
 
-    # Dónde buscar es una pestaña de Buscar ofertas, con sus propias pestañas: los buzones.
+    # Dónde buscar es una sección de Buscar ofertas, con sus propias pestañas: los buzones.
     nav.get_by_role("link", name=t("nav.entries.search")).click()
-    page.get_by_role("navigation", name=t("nav.tabs.searchLabel")).get_by_role(
-        "link", name=t("nav.tabs.sources")
+    page.get_by_role("navigation", name=t("search.nav.label")).get_by_role(
+        "link", name=t("search.nav.where")
     ).click()
-    page.get_by_role("link", name=t("nav.tabs.email")).click()
-    expect(page.get_by_role("heading", level=1, name=t("alerts.email.title"))).to_be_visible()
+    page.get_by_role("navigation", name=t("platforms.hub.label")).get_by_role(
+        "link", name=t("nav.tabs.email")
+    ).click()
+    expect(page.get_by_role("heading", level=3, name=t("alerts.email.title"))).to_be_attached()
     expect(page.get_by_role("button", name=t("alerts.addMailbox")).first).to_be_visible()
 
     # Procesos: el tablero y, en su propia entrada, el calendario, sin pestañas.

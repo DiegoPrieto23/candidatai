@@ -6,7 +6,7 @@ mismo sitio: la tabla `jobs`, con deduplicación, detección de riesgo e histori
 | Vía | Fase | Automática | Cubre |
 |---|---|---|---|
 | Alta manual por URL o texto | 03 | No | Cualquier oferta |
-| APIs y feeds públicos de ATS (Greenhouse, Lever, Ashby; Personio, Teamtailor, Workable, SmartRecruiters y Recruitee desde la 25.1) | 09, 25.1 | Sí, diaria | Tus empresas objetivo |
+| APIs y feeds públicos de ATS (Greenhouse, Lever, Ashby; Personio, Teamtailor, Workable, SmartRecruiters y Recruitee desde la 25.1) | 09, 25.1 | Sí, diaria | Tus empresas con portal propio |
 | APIs de portales: InfoJobs y Adzuna (si hay claves), Manfred y freehire (sin claves) | 09, 25.1 | Sí, diaria | Búsquedas por palabras clave |
 | **Alertas de empleo por correo** | 09b | Sí | LinkedIn, InfoJobs, Indeed, Tecnoempleo… (lo que te envíen) |
 | **Botón «Enviar a CandidatAI»** | 09b | No (un clic) | Cualquier página que estés viendo, LinkedIn incluido |
@@ -24,7 +24,7 @@ del agente o la búsqueda pública sin sesión que hace la propia app (abajo).
 
 ## APIs de ATS y portales (fases 09 y 25.1)
 
-- **Empresas objetivo:** nombre + ATS + slug del tablero, en la página «Dónde buscar → Empresas objetivo» o con
+- **Empresas con portal propio:** nombre + ATS + slug del tablero, en «Dónde buscar → Empresas con portal propio» o con
   `cai sources add`. Solo APIs y feeds públicos, sin autenticación ni scraping de HTML.
   La tabla de abajo dice qué usa cada uno.
 - **Portales con API:** búsquedas por palabras clave, no por empresa. InfoJobs y Adzuna necesitan

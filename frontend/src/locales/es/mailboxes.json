@@ -71,14 +71,11 @@
   "providers": {
     "gmail": {
       "name": "Gmail",
-      "step1": "Activa la verificación en dos pasos en tu cuenta de Google.",
-      "step2": "Crea una contraseña de aplicación y cópiala: Google solo enseña sus 16 letras una vez.",
-      "step3": "Opcional: crea una etiqueta (p. ej. «Alertas empleo») y un filtro que lleve ahí los correos de LinkedIn o InfoJobs. Escribe ese nombre en «Carpeta».",
+      "step1": "Activa la <a>verificación en dos pasos</a> en tu cuenta de Google.",
+      "step2": "Crea una <a>contraseña de aplicación</a> y cópiala: Google solo enseña sus 16 letras una vez.",
+      "step3": "Opcional: crea una etiqueta (p. ej. «Alertas empleo») y un <a>filtro</a> que lleve ahí los correos de LinkedIn o InfoJobs. Escribe ese nombre en «Carpeta».",
       "step4": "Solo sirve con cuentas personales de Google sin Protección Avanzada: en las de trabajo o de un centro educativo, Google no da contraseñas de aplicación.",
-      "linkTwoStep": "Verificación en dos pasos",
-      "linkAppPasswords": "Contraseñas de aplicación",
-      "linkHelp": "Ayuda de Google sobre contraseñas de aplicación",
-      "linkFilters": "Crear filtros en Gmail"
+      "linkHelp": "Ayuda de Google sobre contraseñas de aplicación"
     },
     "outlook": {
       "name": "Outlook / Hotmail",
@@ -96,17 +93,15 @@
     },
     "yahoo": {
       "name": "Yahoo",
-      "step1": "En la seguridad de tu cuenta de Yahoo, ve a «Conexiones externas» y genera una contraseña de aplicación.",
+      "step1": "En la seguridad de tu cuenta de Yahoo, ve a «Conexiones externas» y genera una <a>contraseña de aplicación</a>.",
       "step2": "Escribe aquí tu dirección completa y esa contraseña.",
-      "linkAppPasswords": "Contraseñas de aplicación de Yahoo",
       "linkImap": "Datos IMAP de Yahoo"
     },
     "icloud": {
       "name": "iCloud",
       "step1": "Activa la autenticación de doble factor en tu cuenta de Apple.",
-      "step2": "En account.apple.com → Inicio de sesión y seguridad → Contraseñas específicas de app, genera una.",
+      "step2": "En account.apple.com → Inicio de sesión y seguridad, genera una <a>contraseña específica de app</a>.",
       "step3": "Usuario de iCloud: lo que va antes de @icloud.com. Si no conecta, prueba con la dirección completa.",
-      "linkAppPasswords": "Contraseñas específicas de app",
       "linkImap": "Datos IMAP de iCloud"
     },
     "imap": {

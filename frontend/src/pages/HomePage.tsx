@@ -3,13 +3,14 @@ import { Link } from 'react-router'
 import { ArrowRightIcon } from '@phosphor-icons/react'
 import { Trans, useTranslation } from 'react-i18next'
 import type { JobRow, Stage, UpcomingItem } from '@/api/client'
-import { useAgentLauncher, useFollowups, useJobs, useReplies, useStatus, useUpcoming } from '@/api/queries'
+import { useAgentLauncher, useFollowups, useJobs, usePlatforms, useReplies, useStatus, useUpcoming } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
 import { FirstSteps } from '@/components/FirstSteps'
 import { FunnelFlow } from '@/components/FunnelFlow'
 import { GetAnAgent } from '@/components/GetAnAgent'
 import { ScoreBadge } from '@/components/MatchDetails'
 import { ErrorState } from '@/components/States'
+import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useFirstStepsLeft } from '@/lib/firstSteps'
 import { formatList, joinNodes } from '@/lib/i18n'
@@ -40,6 +41,11 @@ function Today() {
   // Con los primeros pasos sin hacer, lo que toca es eso: el titular lo dice y la acción principal
   // es la del paso, en «Primeros pasos».
   const stepsLeft = useFirstStepsLeft()
+  // Sin ningún portal en el que buscar, «Buscar ofertas» no podría hacer nada: lleva a elegirlos.
+  const platforms = usePlatforms().data?.sources
+  const noPortals =
+    platforms !== undefined &&
+    !platforms.some((p) => p.active && p.browse?.allow_agent_browsing && p.browse.access !== 'blocked')
   // La fecha del encabezado, la de cuando se abre la página.
   const [now] = useState(() => new Date())
   const s = status.data?.by_stage
@@ -107,9 +113,15 @@ function Today() {
       )}
       {/* Abren tu agente en una terminal con la orden escrita: lo que haga lo ves y lo apruebas tú. */}
       <div className="mt-4 flex flex-wrap items-start gap-2">
-        <AgentButton action="search-jobs" size="default" primary={primary === 'search-jobs'}>
-          {t('today.searchJobs')}
-        </AgentButton>
+        {noPortals ? (
+          <Button asChild variant={primary === 'search-jobs' ? 'default' : 'outline'}>
+            <Link to="/buscar">{t('today.goSearch')}</Link>
+          </Button>
+        ) : (
+          <AgentButton action="search-jobs" size="default" primary={primary === 'search-jobs'}>
+            {t('today.searchJobs')}
+          </AgentButton>
+        )}
         {!!s?.pending_extraction && (
           <AgentButton action="process-jobs" size="default" primary={primary === 'process-jobs'}>
             {t('today.processJobs')}

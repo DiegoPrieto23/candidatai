@@ -781,7 +781,7 @@ export interface paths {
         put?: never;
         /**
          * Add Source
-         * @description Añade una empresa objetivo (ATS + slug) o una búsqueda en un portal con API.
+         * @description Añade una empresa con portal propio (ATS + slug) o una búsqueda en un portal con API.
          */
         post: operations["add_source"];
         delete?: never;
@@ -965,7 +965,7 @@ export interface paths {
         put?: never;
         /**
          * Set Source Website
-         * @description Pone o quita la web de una empresa objetivo, que la UI usa para su logo.
+         * @description Pone o quita la web de una empresa con portal propio, que la UI usa para su logo.
          */
         post: operations["set_source_website"];
         delete?: never;

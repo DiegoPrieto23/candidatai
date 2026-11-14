@@ -52,7 +52,7 @@ de perfil técnico.
 
 ## Funcionalidades
 
-- **Ofertas de muchas fuentes:** pega un enlace o el texto, sigue a tus empresas objetivo por sus
+- **Ofertas de muchas fuentes:** pega un enlace o el texto, sigue a las empresas con portal propio por sus
   portales de empleo públicos (Greenhouse, Lever, Ashby y cinco más), lee tus alertas de empleo por
   correo, envía la página que estás viendo con un botón del navegador o deja que tu agente busque en
   los portales que elijas. Las repetidas se juntan.

@@ -71,14 +71,11 @@
   "providers": {
     "gmail": {
       "name": "Gmail",
-      "step1": "Turn on 2-Step Verification in your Google Account.",
-      "step2": "Create an app password and copy it: Google only shows its 16 letters once.",
-      "step3": "Optional: create a label (e.g. “Job alerts”) and a filter that sends emails from LinkedIn or InfoJobs there. Type that name in “Folder”.",
+      "step1": "Turn on <a>2-Step Verification</a> in your Google Account.",
+      "step2": "Create an <a>app password</a> and copy it: Google only shows its 16 letters once.",
+      "step3": "Optional: create a label (e.g. “Job alerts”) and a <a>filter</a> that sends emails from LinkedIn or InfoJobs there. Type that name in “Folder”.",
       "step4": "It only works with personal Google accounts without Advanced Protection: Google offers no app passwords for work or school accounts.",
-      "linkTwoStep": "2-Step Verification",
-      "linkAppPasswords": "App passwords",
-      "linkHelp": "Google's help on app passwords",
-      "linkFilters": "Create filters in Gmail"
+      "linkHelp": "Google's help on app passwords"
     },
     "outlook": {
       "name": "Outlook / Hotmail",
@@ -96,17 +93,15 @@
     },
     "yahoo": {
       "name": "Yahoo",
-      "step1": "In your Yahoo account security, go to “External connections” and generate an app password.",
+      "step1": "In your Yahoo account security, go to “External connections” and generate an <a>app password</a>.",
       "step2": "Type your full address here and that password.",
-      "linkAppPasswords": "Yahoo app passwords",
       "linkImap": "Yahoo IMAP settings"
     },
     "icloud": {
       "name": "iCloud",
       "step1": "Turn on two-factor authentication for your Apple Account.",
-      "step2": "At account.apple.com → Sign-In and Security → App-Specific Passwords, generate one.",
+      "step2": "At account.apple.com → Sign-In and Security, generate an <a>app-specific password</a>.",
       "step3": "iCloud username: the part before @icloud.com. If it doesn't connect, try the full address.",
-      "linkAppPasswords": "App-specific passwords",
       "linkImap": "iCloud IMAP settings"
     },
     "imap": {

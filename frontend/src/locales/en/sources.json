@@ -72,8 +72,8 @@
     "body": "Pick the job site it uses and test it before saving: you'll see how many jobs it has and how many match your filters.",
     "add": "Add company"
   },
-  "title": "Target companies",
-  "intro": "While it's open, the app checks these companies' job sites every day. What matches your preferences goes to “To read”.",
+  "title": "Company career sites",
+  "intro": "Companies with their own careers site: while it's open, the app checks it every day and brings in what fits you.",
   "addTitle": "Add company or search",
   "following": "Following",
   "closeAdd": "Close"

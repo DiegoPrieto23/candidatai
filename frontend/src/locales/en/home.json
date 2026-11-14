@@ -17,6 +17,7 @@
     "nothing": "Nothing waiting on you.",
     "forAgent": "For your agent: {{list}}.",
     "searchJobs": "Search jobs",
+    "goSearch": "Go to search jobs",
     "processJobs": "Assess new jobs",
     "reviewReplies": "Review replies",
     "firstSteps_one": "One first step left to get started.",

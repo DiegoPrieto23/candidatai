@@ -103,9 +103,9 @@ def test_website_given_by_the_user_is_kept_as_its_origin(session: Session) -> No
         service.set_website(session, view.id, "javascript:alert(1)")
     portal = service.add_source(session, SourceInput(kind="manfred", name="Manfred", query="data"))
     assert portal.website == "https://www.getmanfred.com"
-    with pytest.raises(service.NotAConnectorError, match="empresas objetivo"):
+    with pytest.raises(service.NotAConnectorError, match="empresas con portal propio"):
         service.set_website(session, portal.id, "acme.example")
-    with pytest.raises(ValueError, match="solo se usa en las empresas objetivo"):
+    with pytest.raises(ValueError, match="solo se usa en las empresas con portal propio"):
         SourceInput(kind="manfred", name="Manfred", query="data", website="acme.example")
 
 

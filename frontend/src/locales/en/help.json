@@ -52,9 +52,9 @@
     "skills": "Skills to build",
     "templates": "CV templates",
     "search": "Search jobs",
-    "searchSettings": "What you're after",
+    "searchSettings": "Your search settings",
     "sources": "Where to search",
-    "companies": "Target companies",
+    "companies": "Company career sites",
     "email": "Email alerts",
     "extension": "Browser button",
     "newJob": "New job",
@@ -159,7 +159,7 @@
     },
     "sources": {
       "q": "How do I get jobs to arrive on their own?",
-      "a": "In “Where to search” you choose where they come from: job boards, target companies, email alerts and the browser button. What arrives appears in the Job inbox.",
+      "a": "In “Where to search” you choose where they come from: job boards, company career sites, email alerts and the browser button. What arrives appears in the Job inbox.",
       "keywords": "sources boards infojobs indeed companies automatic arrive jobs"
     },
     "searchNow": {
@@ -194,7 +194,7 @@
     },
     "filters": {
       "q": "Where do I say which jobs I want and which are discarded?",
-      "a": "In “What you're after”: roles, work mode, areas, years of experience, contract type, words that discard a job and your minimum salary. Your agent never sees that figure.",
+      "a": "In “Your search settings”: roles, work mode, areas, years of experience, contract type, words that discard a job and your minimum salary. Your agent never sees that figure.",
       "keywords": "filters salary minimum remote work mode location preferences discard"
     },
     "toComplete": {

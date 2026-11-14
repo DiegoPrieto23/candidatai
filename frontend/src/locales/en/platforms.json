@@ -1,7 +1,7 @@
 {
   "hub": {
     "label": "Where to search",
-    "companies": "Target companies",
+    "companies": "Company career sites",
     "platforms": "Job boards",
     "extension": "Browser button"
   },
@@ -117,7 +117,7 @@
   },
   "title": "Job boards",
   "broaden": "Broaden search",
-  "intro": "Job boards your agent browses with your browser, in this order, when you press “Search jobs”. It only reads: it never applies for you.",
+  "intro": "Your agent goes through them in this order when you search.",
   "add": {
     "linkedinTitle": "It's saved with searching turned off, and that's what we recommend.",
     "linkedinP1": "LinkedIn's terms forbid browsing its website with automated tools, and it may restrict or close your account if it detects it, even if the agent uses your browser and only reads. The safe way is to get its jobs through email alerts (“Where to search → Email alerts”) or with the “Send to CandidatAI” button.",
@@ -145,8 +145,8 @@
     "submit": "Add",
     "button": "Add job board",
     "fromProfile": "Fill in from my profile",
-    "urlsHintGenerated": "They come from the roles and locations in your profile (“Search jobs → What you're after”). You can remove or add lines: one address per search.",
-    "urlsHintNoRoles": "Add the roles you're looking for in “Search jobs → What you're after” and they fill in by themselves. Or run the search on the job board and paste the results address here.",
+    "urlsHintGenerated": "They come from the roles and locations in your profile (“Search jobs → Your search settings”). You can remove or add lines: one address per search.",
+    "urlsHintNoRoles": "Add the roles you're looking for in “Search jobs → Your search settings” and they fill in by themselves. Or run the search on the job board and paste the results address here.",
     "willSearch": "It will search:"
   },
   "edit": {

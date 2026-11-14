@@ -52,7 +52,7 @@ you're not technical.
 
 ## Features
 
-- **Jobs from many sources:** paste a link or the text, follow your target companies through their
+- **Jobs from many sources:** paste a link or the text, follow companies through their own career sites through their
   public job boards (Greenhouse, Lever, Ashby and five more), read your email job alerts, send the
   page you're on with a browser button, or let your agent search the job boards you choose.
   Duplicates are merged.

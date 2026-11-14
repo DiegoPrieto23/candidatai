@@ -257,10 +257,10 @@ documentos y correos. Las claves van en `.env`, también fuera de git.
 | **Documentos fuente** (CVs antiguos, títulos, referencias) | `data/documentos/` | Tu CV y tu exportación de LinkedIn se suben en «Mi perfil → Documentos»; el resto, en su carpeta. `update-profile` los puede leer, confirmando antes de escribir |
 | **Lo que has hecho en público** (repositorios, portfolio, Kaggle, Scholar, certificaciones verificables) | `data/profile.yaml` | Skill `expand`, o «Mejorar el contenido de mi perfil» en «Mi perfil». Úsalo **justo después de crear el perfil** y cuando quieras pulirlo: revisa el perfil entero (logros sin cifra, textos de relleno, huecos) y propone proyectos, skills (sin nivel: lo pones tú), logros con los números que da la fuente y certificaciones, cada uno con su enlace en `source`, y solo escribe lo que aceptes. Solo web pública: ni LinkedIn ni nada con login. Leer los enlaces necesita un agente con búsqueda web; revisar el perfil, no |
 
-Tu mínimo salarial va en «Buscar ofertas → Qué buscas» (o en `private.salary_floor_eur` del perfil): la
+Tu mínimo salarial va en «Buscar ofertas → Configuración de tu búsqueda» (o en `private.salary_floor_eur` del perfil): la
 app descarta las ofertas que publican un sueldo por debajo y lo usa para comparar las ofertas
 recibidas, pero el agente nunca ve la cifra; solo sabe que una oferta cayó «por debajo de tu
-mínimo salarial». En «Qué buscas» también eliges años mínimo y máximo, palabras que descartan,
+mínimo salarial». En «Configuración de tu búsqueda» también eliges años mínimo y máximo, palabras que descartan,
 tipo de contrato y jornada, y si excluyes consultoras o agencias de selección.
 
 **Dónde están tus datos y cómo copiarlos.** `uv run cai paths` (o `cai paths` en la carpeta de la
@@ -282,7 +282,7 @@ En «Mi perfil», cada logro y cada historia tienen **«Mejorar con mi agente»*
 una versión más clara, te pregunta los números que falten (nunca los inventa) y solo escribe con tu
 OK. En «Historias STAR», **«Proponer historias desde mi experiencia»** te sugiere historias a partir
 de los logros que aún no tienen. Tu correo y tu teléfono se editan ahí, pero tu agente sigue sin
-verlos. Lo mismo tu mínimo salarial (`private`), en «Qué buscas».
+verlos. Lo mismo tu mínimo salarial (`private`), en «Configuración de tu búsqueda».
 
 ## 5. Conectar tu agente
 
@@ -355,8 +355,9 @@ Sin agente instalado, la pestaña lo dice y la ayuda sigue funcionando. El panel
 El menú tiene nueve entradas: **Inicio** y **Mi perfil**; en Búsqueda, **Buscar ofertas** y
 **Bandeja de ofertas**; en Procesos, **Tablero**, **Calendario**, **Respuestas** y **Embudo**; y
 **Agente**. Lo demás son pestañas dentro de ellas: la Bandeja tiene **Revisión rápida** y **Por
-completar**; Buscar ofertas, **Qué buscas** y **Dónde buscar**; y Mi perfil, **Habilidades
-por desarrollar** y **Plantillas de CV**.
+completar**, y Mi perfil, **Habilidades por desarrollar** y **Plantillas de CV**. Buscar ofertas es
+una sola página con tres secciones, con un índice arriba: **Buscar**, **Configuración de tu
+búsqueda** y **Dónde buscar**.
 
 Un día normal:
 
@@ -371,7 +372,7 @@ Un día normal:
 | Fuente | Cómo se configura |
 |---|---|
 | **Alta manual** | «Nueva oferta» en la UI (URL o texto pegado; con texto, el puesto y la empresa son obligatorios porque con ellos se detectan duplicados, y el botón dice qué falta) |
-| **Empresas objetivo** (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee) | En «Buscar ofertas», pestaña «Dónde buscar → Empresas objetivo» o `cai sources add --kind greenhouse --name "Acme" --slug acme`. `cai sources discover --file empresas.txt` busca el tablero de cada empresa de una lista. Cómo encontrar el slug, en [`FUENTES_OFERTAS.md`](FUENTES_OFERTAS.md#cómo-encontrar-el-slug) |
+| **Empresas con portal propio** (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee) | En «Buscar ofertas», sección «Dónde buscar → Empresas con portal propio» o `cai sources add --kind greenhouse --name "Acme" --slug acme`. `cai sources discover --file empresas.txt` busca el tablero de cada empresa de una lista. Cómo encontrar el slug, en [`FUENTES_OFERTAS.md`](FUENTES_OFERTAS.md#cómo-encontrar-el-slug) |
 | **InfoJobs y Adzuna** | Sus claves en `.env` (`CAI_INFOJOBS_CLIENT_ID`/`_SECRET`, `CAI_ADZUNA_APP_ID`/`_KEY`) y una búsqueda con `cai sources add` |
 | **Manfred y freehire.me** | Sin claves: una búsqueda en la misma página o con `cai sources add --kind manfred --name Manfred --query "data engineer"` (en freehire, también `--country` y `--remote-only`) |
 | **Alertas por correo** | Crea alertas en LinkedIn, InfoJobs, Indeed… y que lleguen a una etiqueta de tu correo. En «Dónde buscar → Alertas por correo → Añadir buzón» conecta uno o varios buzones (Gmail, Outlook, Yahoo, iCloud u otro IMAP, siempre en solo lectura) o una carpeta de `.eml`; el asistente explica cada proveedor y prueba la conexión antes de guardar. La contraseña se guarda en tu `.env` y no vuelve a salir. Paso a paso en [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md). Lo que llega aparece en la **Bandeja de ofertas**; las que solo traen título y enlace esperan en su pestaña «Por completar» |

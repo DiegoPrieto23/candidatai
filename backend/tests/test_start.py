@@ -172,7 +172,7 @@ def test_every_ui_route_is_known_to_the_api() -> None:
     # Las rutas anidadas (las de «Fuentes») cuelgan de su madre; el resto va solo en la raíz:
     # probar cada ruta también bajo `/fuentes` dejaba pasar `/calendario` sin estar en la lista.
     parents = re.findall(
-        r'<Route path="([^"]+)" element=\{<\w+ />\}>(.*?)</Route>', source, flags=re.DOTALL
+        r'<Route path="([^"]+)"(?: element=\{<\w+ />\})?>(.*?)</Route>', source, flags=re.DOTALL
     )
     assert parents
     urls = []

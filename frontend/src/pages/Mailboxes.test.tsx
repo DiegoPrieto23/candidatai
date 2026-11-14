@@ -56,7 +56,7 @@ describe('Buzones de las alertas (fase 27.4)', () => {
     renderApp('/fuentes/correo')
     const dialog = await openWizard()
     expect(within(dialog).getByRole('tab', { name: 'Gmail', selected: true })).toBeInTheDocument()
-    expect(within(dialog).getByRole('link', { name: /Contraseñas de aplicación/ })).toHaveAttribute(
+    expect(within(dialog).getByRole('link', { name: 'contraseña de aplicación' })).toHaveAttribute(
       'href',
       'https://myaccount.google.com/apppasswords',
     )

@@ -4916,7 +4916,7 @@
           "sources"
         ],
         "summary": "Add Source",
-        "description": "Añade una empresa objetivo (ATS + slug) o una búsqueda en un portal con API.",
+        "description": "Añade una empresa con portal propio (ATS + slug) o una búsqueda en un portal con API.",
         "operationId": "add_source",
         "requestBody": {
           "required": true,
@@ -5927,7 +5927,7 @@
           "sources"
         ],
         "summary": "Set Source Website",
-        "description": "Pone o quita la web de una empresa objetivo, que la UI usa para su logo.",
+        "description": "Pone o quita la web de una empresa con portal propio, que la UI usa para su logo.",
         "operationId": "set_source_website",
         "parameters": [
           {

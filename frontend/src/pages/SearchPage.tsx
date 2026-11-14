@@ -12,6 +12,7 @@ import {
 import type { SourceView } from '@/api/client'
 import { useEditableProfile, usePlatforms, useRunSource, useSearchRun, useSources } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
+import { Hint } from '@/components/Hint'
 import { SiteIcon } from '@/components/SiteIcon'
 import { BusyLabel } from '@/components/StableLabel'
 import { EmptyState, ErrorState } from '@/components/States'
@@ -198,9 +199,9 @@ function WithoutBrowser() {
 
   return (
     <section aria-labelledby="search-no-browser" className="grid gap-2 border-t pt-4">
-      <h3 id="search-no-browser" className="text-sm font-medium">
+      <h4 id="search-no-browser" className="text-sm font-medium">
         {t('noBrowser.title')}
-      </h3>
+      </h4>
       {connectors.length === 0 ? (
         <p className="text-sm text-muted-foreground">
           <Trans t={t} i18nKey="noBrowser.none" components={{ to: <Link to="/fuentes/empresas" className="underline underline-offset-4" /> }} />
@@ -239,8 +240,9 @@ function WithoutBrowser() {
 // --- Página ---------------------------------------------------------------------------------------
 
 /**
- * «Buscar ofertas»: elegir portales, ver qué va a pasar y lanzar a tu agente, que busca con tu
- * navegador y en su ventana. Si no puede usar el navegador, las fuentes con API se consultan aquí.
+ * La sección «Buscar» de «Buscar ofertas»: elegir portales, ver qué va a pasar y lanzar a tu agente,
+ * que busca con tu navegador y en su ventana. Si no puede usar el navegador, las fuentes con API se
+ * consultan aquí. El título y la intro son de la página (`SearchHubPage`).
  */
 export function SearchPage() {
   const { t } = useTranslation('search')
@@ -368,49 +370,47 @@ export function SearchPage() {
     )
   }
 
-  return (
-    <div className="max-w-6xl animate-in fade-in duration-300">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
-        <p className="mt-1.5 max-w-[65ch] text-sm leading-relaxed text-muted-foreground">{t('intro')}</p>
-      </div>
+  // Casilla maestra: marcada con todos, a medias con algunos.
+  const someChosen = chosen.length > 0 && !allChosen
 
+  return (
+    <div>
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <section aria-labelledby="search-where" className="min-w-0">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <h2 id="search-where" className="font-medium">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+            <h3 id="search-where" className="font-medium">
               {t('where')}
-            </h2>
-            <div className="flex items-center gap-3 text-xs">
-              {usable.length > 1 && (
-                <button
-                  type="button"
-                  className="text-muted-foreground underline-offset-4 outline-none hover:text-foreground hover:underline focus-visible:underline"
-                  onClick={() => setSkipped(allChosen ? new Set(usable.map((s) => s.id)) : new Set())}
-                >
-                  {allChosen ? t('selectNone') : t('selectAll')}
-                </button>
-              )}
-              <Link to="/fuentes/plataformas" className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
-                {t('manage')}
-              </Link>
-            </div>
+            </h3>
+            {usable.length > 1 && (
+              <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+                <input
+                  type="checkbox"
+                  checked={allChosen}
+                  ref={(el) => {
+                    if (el) el.indeterminate = someChosen
+                  }}
+                  onChange={() => setSkipped(allChosen ? new Set(usable.map((s) => s.id)) : new Set())}
+                />
+                {allChosen ? t('selectNone') : t('selectAll')}
+              </label>
+            )}
           </div>
           {portals}
         </section>
 
-        <aside aria-labelledby="search-plan" className="grid gap-4 rounded-xl border bg-card p-5 lg:sticky lg:top-6">
+        <aside aria-labelledby="search-plan" className="grid gap-4 rounded-xl border bg-card p-5 lg:sticky lg:top-16">
           <div>
-            <h2 id="search-plan" className="font-medium">
+            <h3 id="search-plan" className="font-medium">
               {t('plan.title')}
-            </h2>
+            </h3>
             {usable.length > 0 && (
               <>
                 <p className="mt-1 text-lg leading-snug font-semibold tracking-tight">
                   {t('plan.summary', { portals: chosen.length, count: searches })}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {t('plan.offers', { count: offers })}
+                  {t('plan.offers', { count: offers })}{' '}
+                  <Hint text={t('plan.offersHint')} label={t('plan.offersHintLabel')} />
                   {' · '}
                   {oneOff ? t('plan.oneOff') : t('plan.saved')}
                 </p>
@@ -430,7 +430,7 @@ export function SearchPage() {
                 </Link>
               </p>
               <div className="grid gap-2">
-                <h3 className="text-xs font-medium text-muted-foreground">{t('plan.before')}</h3>
+                <h4 className="text-xs font-medium text-muted-foreground">{t('plan.before')}</h4>
                 <ul className="grid gap-2 text-sm">
                   <li className="flex gap-2">
                     <BrowserIcon className="mt-0.5 size-4 shrink-0 text-primary" weight="duotone" aria-hidden />
@@ -472,7 +472,6 @@ export function SearchPage() {
           <WithoutBrowser />
         </aside>
       </div>
-
     </div>
   )
 }

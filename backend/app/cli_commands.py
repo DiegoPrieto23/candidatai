@@ -41,8 +41,8 @@ eval_app = typer.Typer(help="Evaluación de la calidad del matching.", no_args_i
 cv_app = typer.Typer(help="CVs a medida: contenido, renders y verificación.", no_args_is_help=True)
 templates_app = typer.Typer(help="Plantillas de CV.", no_args_is_help=True)
 sources_app = typer.Typer(
-    help="Fuentes de ofertas: empresas objetivo (ATS), portales con API y plataformas para la "
-    "búsqueda con navegador.",
+    help="Fuentes de ofertas: empresas con portal propio (ATS), portales con API y plataformas "
+    "para la búsqueda con navegador.",
     no_args_is_help=True,
 )
 mail_sources_app = typer.Typer(
@@ -1329,7 +1329,7 @@ def templates_preview(
         typer.secho(f"  Aviso: {warning}", fg=typer.colors.YELLOW)
 
 
-# --- Fuentes: empresas objetivo y portales -----------------------------------------------------
+# --- Fuentes: empresas con portal propio y portales -----------------------------------------------
 
 KIND_OPTION = typer.Option(
     ...,
@@ -1463,7 +1463,7 @@ def sources_add(
     website: str | None = WEBSITE_OPTION,
     as_json: bool = JSON_OPTION,
 ) -> None:
-    """Añade una empresa objetivo (ATS + slug) o una búsqueda en un portal con API."""
+    """Añade una empresa con portal propio (ATS + slug) o una búsqueda en un portal con API."""
     from app.services.ingestion import service as sources
 
     try:

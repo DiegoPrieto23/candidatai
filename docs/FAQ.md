@@ -102,7 +102,7 @@ Where: “New job”.
 
 ### How do I get jobs to arrive on their own?
 
-In “Where to search” you choose where they come from: job boards, target companies, email alerts and the browser button. What arrives appears in the Job inbox.
+In “Where to search” you choose where they come from: job boards, company career sites, email alerts and the browser button. What arrives appears in the Job inbox.
 
 Where: “Where to search”.
 
@@ -144,9 +144,9 @@ Where: “Quick review”.
 
 ### Where do I say which jobs I want and which are discarded?
 
-In “What you're after”: roles, work mode, areas, years of experience, contract type, words that discard a job and your minimum salary. Your agent never sees that figure.
+In “Your search settings”: roles, work mode, areas, years of experience, contract type, words that discard a job and your minimum salary. Your agent never sees that figure.
 
-Where: “What you're after”.
+Where: “Your search settings”.
 
 ### What are the jobs “To complete”?
 

@@ -693,9 +693,9 @@ antes; `POST /agent/tiers/undo` las devuelve.
 | `cai eval cv [--agent NOMBRE] [--min-coverage 0.8] [--json]` | Comprueba los CVs guardados de los casos de `evals/cv/` (solo en la demo): evidencias, skills, skills básicas, una página, maquetación (fase 25.5: sin avisos de maquetación en el render seleccionado o, si no hay, el último; uno anterior a la 25.5 no los tiene), cobertura, idioma y verificación. Un caso sin CV es «pendiente». Guarda el informe en `evals/reports/` de la carpeta de datos (`evals/README.md`) |
 | `cai eval compat --agent NOMBRE [--model M \| --preset P] [--timeout MIN] [--cases N] [--import] [--approve] [--json]` | Fase 24.6: la matriz de compatibilidad sobre su propia demo (`data-demo-compat-<agente>-<modelo>/`). `--cases N`: solo las N primeras ofertas, con su propia demo (`…-1-oferta`), su resultado y su columna; para comprobar con poco cupo si un agente funciona (pásalo también en `--approve` e `--import`). Lanza el agente en segundo plano para `process-jobs`, `assess-fit` y `generate-cv`, y aprueba las 5 ofertas y marca las skills ausentes solo en esa demo. Mide la extracción (11 campos), las valoraciones, `eval cv`, el tiempo, los turnos y los tokens. Guarda `evals/compat/results/<fecha>-<agente>-<modelo>.json` y regenera `evals/compat/REPORT.md`. Si un paso no tiene segundo plano, imprime los pasos manuales; `--approve` aprueba y `--import` mide lo hecho a mano. Lanza tu agente: sin herramienta MCP |
 
-### Fuentes: empresas objetivo y portales (fase 09, solo CLI)
+### Fuentes: empresas con portal propio y portales (fase 09, solo CLI)
 
-Las usa la persona (CLI o página «Dónde buscar → Empresas objetivo» de la UI). `cai sources list` es desde la 09b la
+Las usa la persona (CLI o página «Dónde buscar → Empresas con portal propio» de la UI). `cai sources list` es desde la 09b la
 herramienta `list_sources` (tabla de arriba); las plataformas `agent_browse` se ven y se activan en
 la página «Dónde buscar → Portales de empleo».
 

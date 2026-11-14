@@ -321,10 +321,10 @@ def set_active(session: Session, source_id: int, active: bool) -> SourceView:
 
 
 def set_website(session: Session, source_id: int, website: str | None) -> SourceView:
-    """Pone o quita la web de una empresa objetivo, que la UI usa para su logo."""
+    """Pone o quita la web de una empresa con portal propio, que la UI usa para su logo."""
     source = _source(session, source_id)
     if source.kind not in ATS_KINDS:
-        raise NotAConnectorError("Solo las empresas objetivo (ATS) tienen web.")
+        raise NotAConnectorError("Solo las empresas con portal propio (ATS) tienen web.")
     config = dict(source.config or {})
     value = _WEBSITE.validate_python(website.strip() if website and website.strip() else None)
     if value is None:

@@ -188,7 +188,7 @@ def _app_routes() -> list[str]:
     """Las rutas de `App.tsx`, como en `test_start.py`: las anidadas cuelgan de su madre."""
     source = APP_TSX.read_text(encoding="utf-8")
     parents = re.findall(
-        r'<Route path="([^"]+)" element=\{<\w+ />\}>(.*?)</Route>', source, flags=re.DOTALL
+        r'<Route path="([^"]+)"(?: element=\{<\w+ />\})?>(.*?)</Route>', source, flags=re.DOTALL
     )
     assert parents
     urls = []

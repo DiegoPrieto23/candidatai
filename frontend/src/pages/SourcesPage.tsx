@@ -426,7 +426,7 @@ function AddSourceForm({ onAdded }: { onAdded?: () => void }) {
 
 // --- Lista de fuentes ----------------------------------------------------------------------------
 
-/** La web de una empresa objetivo, para su logo: enlace y, al pulsar «Cambiar», un campo. */
+/** La web de una empresa con portal propio, para su logo: enlace y, al pulsar «Cambiar», un campo. */
 function Website({ source }: { source: SourceView }) {
   const { t } = useTranslation('sources', { keyPrefix: 'row' })
   const save = useSetSourceWebsite()
@@ -513,7 +513,7 @@ function SourceRow({ source }: { source: SourceView }) {
         />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="font-medium">{source.name}</h3>
+            <h5 className="font-medium">{source.name}</h5>
             <span className="rounded-md border px-1.5 py-0.5 text-xs text-muted-foreground">
               {SOURCE_KIND_LABEL[source.kind] ?? source.kind_label}
             </span>
@@ -603,14 +603,12 @@ export function SourcesPage() {
   const [adding, setAdding] = useState(false)
   const none = sources.isSuccess && !sources.data.sources.some((s) => CONNECTOR_KINDS.has(s.kind))
   return (
-    <div className="max-w-3xl animate-in fade-in duration-300">
-      <div className="mb-8 flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
-        <div className="min-w-0 flex-1">
-          <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
-          <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-            <InlineCode text={t('intro')} />
-          </p>
-        </div>
+    <div className="max-w-3xl">
+      <h3 className="sr-only">{t('title')}</h3>
+      <div className="mb-6 grid justify-items-start gap-3">
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          <InlineCode text={t('intro')} />
+        </p>
         {sources.isSuccess && !none && (
           <Button variant={adding ? 'outline' : 'default'} onClick={() => setAdding(!adding)} aria-expanded={adding}>
             {adding ? t('closeAdd') : t('empty.add')}
@@ -626,13 +624,13 @@ export function SourcesPage() {
       )}
       {(adding || none) && (
         <section className="mb-10 rounded-xl border bg-card p-5 sm:p-6">
-          <h2 className="mb-4 font-medium">{t('addTitle')}</h2>
+          <h4 className="mb-4 font-medium">{t('addTitle')}</h4>
           <AddSourceForm onAdded={() => setAdding(false)} />
         </section>
       )}
       {!none && (
         <section>
-          <h2 className="mb-3 font-medium">{t('following')}</h2>
+          <h4 className="mb-3 font-medium">{t('following')}</h4>
           <SourceList />
         </section>
       )}

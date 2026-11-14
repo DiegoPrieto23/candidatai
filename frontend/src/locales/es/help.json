@@ -52,9 +52,9 @@
     "skills": "Habilidades por desarrollar",
     "templates": "Plantillas de CV",
     "search": "Buscar ofertas",
-    "searchSettings": "Qué buscas",
+    "searchSettings": "Configuración de tu búsqueda",
     "sources": "Dónde buscar",
-    "companies": "Empresas objetivo",
+    "companies": "Empresas con portal propio",
     "email": "Alertas por correo",
     "extension": "Botón del navegador",
     "newJob": "Nueva oferta",
@@ -159,7 +159,7 @@
     },
     "sources": {
       "q": "¿Cómo consigo que las ofertas lleguen solas?",
-      "a": "En «Dónde buscar» eliges de dónde vienen: portales de empleo, empresas objetivo, alertas por correo y el botón del navegador. Lo que llega aparece en la Bandeja de ofertas.",
+      "a": "En «Dónde buscar» eliges de dónde vienen: portales de empleo, empresas con portal propio, alertas por correo y el botón del navegador. Lo que llega aparece en la Bandeja de ofertas.",
       "keywords": "fuentes portales infojobs indeed empresas automático llegar ofertas"
     },
     "searchNow": {
@@ -194,7 +194,7 @@
     },
     "filters": {
       "q": "¿Dónde indico qué ofertas quiero y cuáles se descartan?",
-      "a": "En «Qué buscas»: puestos, modalidad, zonas, años de experiencia, tipo de contrato, palabras que descartan y tu mínimo salarial. Tu agente nunca ve esa cifra.",
+      "a": "En «Configuración de tu búsqueda»: puestos, modalidad, zonas, años de experiencia, tipo de contrato, palabras que descartan y tu mínimo salarial. Tu agente nunca ve esa cifra.",
       "keywords": "filtros salario mínimo remoto modalidad ubicación preferencias descartar"
     },
     "toComplete": {

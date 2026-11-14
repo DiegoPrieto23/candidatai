@@ -5,7 +5,7 @@
  */
 import { useState, type FormEvent, type ReactNode } from 'react'
 import type { ParseKeys } from 'i18next'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { ArrowSquareOutIcon, CaretDownIcon, CheckCircleIcon, EnvelopeSimpleIcon, FolderIcon, WarningIcon } from '@phosphor-icons/react'
 import type { MailSourceInput, MailSourceView, MailTestResult } from '@/api/client'
 import {
@@ -40,6 +40,8 @@ interface Provider {
   host?: string
   port?: number
   steps: Key[]
+  /** El enlace oficial que va dentro de un paso (su `<a>`): la página donde se hace lo que pide. */
+  stepLinks?: Partial<Record<Key, string>>
   /** La sección de `docs/CONFIGURAR_CORREO.md` de este proveedor. */
   guide: string
   /** El texto del enlace y su URL oficial. */
@@ -52,13 +54,13 @@ const PROVIDERS: Record<ProviderId, Provider> = {
     host: 'imap.gmail.com',
     port: 993,
     steps: ['providers.gmail.step1', 'providers.gmail.step2', 'providers.gmail.step3', 'providers.gmail.step4'],
+    stepLinks: {
+      'providers.gmail.step1': 'https://myaccount.google.com/security',
+      'providers.gmail.step2': 'https://myaccount.google.com/apppasswords',
+      'providers.gmail.step3': 'https://support.google.com/mail/answer/6579',
+    },
     guide: 'https://github.com/DiegoPrieto23/candidatai/blob/main/docs/CONFIGURAR_CORREO.md#gmail',
-    links: [
-      ['providers.gmail.linkTwoStep', 'https://myaccount.google.com/security'],
-      ['providers.gmail.linkAppPasswords', 'https://myaccount.google.com/apppasswords'],
-      ['providers.gmail.linkHelp', 'https://support.google.com/mail/answer/185833'],
-      ['providers.gmail.linkFilters', 'https://support.google.com/mail/answer/6579'],
-    ],
+    links: [['providers.gmail.linkHelp', 'https://support.google.com/mail/answer/185833']],
   },
   outlook: {
     host: 'outlook.office365.com',
@@ -80,21 +82,17 @@ const PROVIDERS: Record<ProviderId, Provider> = {
     host: 'imap.mail.yahoo.com',
     port: 993,
     steps: ['providers.yahoo.step1', 'providers.yahoo.step2'],
+    stepLinks: { 'providers.yahoo.step1': 'https://help.yahoo.com/kb/SLN15241.html' },
     guide: 'https://github.com/DiegoPrieto23/candidatai/blob/main/docs/CONFIGURAR_CORREO.md#yahoo',
-    links: [
-      ['providers.yahoo.linkAppPasswords', 'https://help.yahoo.com/kb/SLN15241.html'],
-      ['providers.yahoo.linkImap', 'https://help.yahoo.com/kb/SLN4075.html'],
-    ],
+    links: [['providers.yahoo.linkImap', 'https://help.yahoo.com/kb/SLN4075.html']],
   },
   icloud: {
     host: 'imap.mail.me.com',
     port: 993,
     steps: ['providers.icloud.step1', 'providers.icloud.step2', 'providers.icloud.step3'],
+    stepLinks: { 'providers.icloud.step2': 'https://support.apple.com/en-us/102654' },
     guide: 'https://github.com/DiegoPrieto23/candidatai/blob/main/docs/CONFIGURAR_CORREO.md#icloud',
-    links: [
-      ['providers.icloud.linkAppPasswords', 'https://support.apple.com/en-us/102654'],
-      ['providers.icloud.linkImap', 'https://support.apple.com/en-us/102525'],
-    ],
+    links: [['providers.icloud.linkImap', 'https://support.apple.com/en-us/102525']],
   },
   imap: { port: 993, steps: ['providers.imap.step1', 'providers.imap.step2', 'providers.imap.step3'], guide: 'https://github.com/DiegoPrieto23/candidatai/blob/main/docs/CONFIGURAR_CORREO.md#otro-proveedor-imap', links: [] },
   folder: { steps: ['providers.folder.step1', 'providers.folder.step2', 'providers.folder.step3'], guide: 'https://github.com/DiegoPrieto23/candidatai/blob/main/docs/CONFIGURAR_CORREO.md#carpeta-de-eml', links: [] },
@@ -372,9 +370,28 @@ function ProviderGuide({ provider }: { provider: ProviderId }) {
     <div className="space-y-2 rounded-lg bg-muted/40 p-3 text-sm">
       {preset.steps.length > 0 && (
         <ol className="list-decimal space-y-1 pl-5">
-          {preset.steps.map((key) => (
-            <li key={key}>{t(key)}</li>
-          ))}
+          {preset.steps.map((key) => {
+            const url = preset.stepLinks?.[key]
+            return (
+              <li key={key}>
+                {url ? (
+                  <Trans
+                    t={t}
+                    i18nKey={key}
+                    components={{
+                      a: (
+                        // El texto del enlace lo pone la traducción.
+                        // oxlint-disable-next-line jsx-a11y/anchor-has-content
+                        <a href={url} target="_blank" rel="noopener noreferrer" className="font-medium underline underline-offset-2" />
+                      ),
+                    }}
+                  />
+                ) : (
+                  t(key)
+                )}
+              </li>
+            )
+          })}
         </ol>
       )}
       <p className="flex flex-wrap gap-x-3 gap-y-1 text-xs">

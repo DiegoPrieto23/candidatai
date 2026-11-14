@@ -102,7 +102,7 @@ Dónde: «Nueva oferta».
 
 ### ¿Cómo consigo que las ofertas lleguen solas?
 
-En «Dónde buscar» eliges de dónde vienen: portales de empleo, empresas objetivo, alertas por correo y el botón del navegador. Lo que llega aparece en la Bandeja de ofertas.
+En «Dónde buscar» eliges de dónde vienen: portales de empleo, empresas con portal propio, alertas por correo y el botón del navegador. Lo que llega aparece en la Bandeja de ofertas.
 
 Dónde: «Dónde buscar».
 
@@ -144,9 +144,9 @@ Dónde: «Revisión rápida».
 
 ### ¿Dónde indico qué ofertas quiero y cuáles se descartan?
 
-En «Qué buscas»: puestos, modalidad, zonas, años de experiencia, tipo de contrato, palabras que descartan y tu mínimo salarial. Tu agente nunca ve esa cifra.
+En «Configuración de tu búsqueda»: puestos, modalidad, zonas, años de experiencia, tipo de contrato, palabras que descartan y tu mínimo salarial. Tu agente nunca ve esa cifra.
 
-Dónde: «Qué buscas».
+Dónde: «Configuración de tu búsqueda».
 
 ### ¿Qué son las ofertas «Por completar»?
 

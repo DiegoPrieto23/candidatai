@@ -494,7 +494,7 @@ export function useSelectRender(jobId: number) {
   })
 }
 
-// --- Fuentes: empresas objetivo y portales (fase 09) ---------------------------------------------
+// --- Fuentes: empresas con portal propio y portales (fase 09) ----------------------------------------
 
 export function useSources() {
   return useQuery({

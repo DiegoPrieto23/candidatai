@@ -1,5 +1,5 @@
 /** Campos de «Mi perfil» (fase 25.7b): etiqueta, pista y el error de validación de su ruta. */
-import { useId, useState, type ReactNode } from 'react'
+import { useContext, useId, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ArrowDownIcon, ArrowUpIcon, CheckIcon, TrashIcon, WarningIcon, XIcon } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import { blockAnchor, type BlockEditor } from './editor'
+import { BlockHeadingLevel } from './headingLevel'
 import { PRESENT } from './types'
 
 const SELECT = 'h-9 w-full rounded-md border border-input bg-background px-3 text-sm'
@@ -389,6 +390,7 @@ export function Block({
   actions?: ReactNode
   children: ReactNode
 }) {
+  const Heading = useContext(BlockHeadingLevel) === 3 ? 'h3' : 'h2'
   return (
     <section
       id={id && blockAnchor(id)}
@@ -398,7 +400,7 @@ export function Block({
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h2 className="font-medium">{title}</h2>
+          <Heading className="font-medium">{title}</Heading>
           {hint && <p className="mt-0.5 text-sm text-muted-foreground">{hint}</p>}
         </div>
         {actions}

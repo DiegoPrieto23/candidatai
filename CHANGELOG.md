@@ -10,6 +10,9 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Elige tu navegador antes de instalar «Enviar a CandidatAI»:** en **Dónde buscar → Botón del
+  navegador** eliges Chrome, Edge o Brave (se propone el que usas) y los pasos se adaptan a él. Con
+  Firefox o Safari, o con la app abierta en otro navegador, el aviso sale al principio.
 - **Encuadrar la foto del CV:** al subirla en **Mi perfil → Sobre ti**, la colocas con zoom y arrastre
   antes de guardarla, con la forma (redonda o cuadrada) de tu plantilla por defecto. Se hace en tu
   navegador, y **Volver a encuadrar** parte de la foto original.
@@ -136,6 +139,18 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   vez de 23).
 
 ### Cambiado
+- **«Buscar ofertas» es una sola página** con tres secciones y un índice fijo arriba: **Buscar**,
+  **Configuración de tu búsqueda** (antes, la pestaña «Qué buscas») y **Dónde buscar**. Los enlaces de
+  siempre llevan a su sección.
+- **Seleccionar los portales:** una casilla encima de la lista los selecciona o los quita todos.
+- **Qué ofertas entran:** junto a «Hasta N ofertas» se dice cuáles: las más recientes que encajan
+  con tu perfil, en cada portal. Tu agente sigue ese orden.
+- **«Buscar ofertas» en Inicio:** sin portales en los que buscar, el botón dice **Ir a buscar
+  ofertas** y lleva a elegirlos.
+- **«Empresas objetivo» pasa a llamarse «Empresas con portal propio»** (en inglés, «Company career
+  sites»).
+- **Contraseña de aplicación del correo:** el enlace a la página de Google, Yahoo o iCloud va dentro
+  del paso que lo pide.
 - **«Skills que te faltan» pasa a llamarse «Habilidades por desarrollar»** (en inglés, «Skills to
   build»), con textos que hablan de lo que piden tus ofertas.
 - **Plantillas importadas:** la tarjeta enseña la plantilla; el CV original se ve con **Comparar con

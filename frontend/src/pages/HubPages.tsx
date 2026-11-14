@@ -1,12 +1,9 @@
 import { Outlet } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import {
-  CompassIcon,
   FileTextIcon,
   GraduationCapIcon,
   LightningIcon,
-  MagnifyingGlassIcon,
-  SlidersHorizontalIcon,
   ListChecksIcon,
   TrayIcon,
   UserCircleIcon,
@@ -45,26 +42,6 @@ export function InboxHubPage() {
             count: toReview,
             countLabel: t('withCount', { label: t('review'), count: toReview }),
           },
-        ]}
-      />
-      <div className="min-w-0">
-        <Outlet />
-      </div>
-    </div>
-  )
-}
-
-/** «Buscar ofertas»: lanzar una búsqueda, decidir qué buscas y dónde. */
-export function SearchHubPage() {
-  const { t } = useTranslation('nav', { keyPrefix: 'tabs' })
-  return (
-    <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
-      <PageTabs
-        label={t('searchLabel')}
-        tabs={[
-          { to: '/buscar', label: t('search'), icon: MagnifyingGlassIcon, end: true },
-          { to: '/buscar/ajustes', label: t('searchSettings'), icon: SlidersHorizontalIcon },
-          { to: '/fuentes', label: t('sources'), icon: CompassIcon },
         ]}
       />
       <div className="min-w-0">
