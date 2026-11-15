@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import type { ContextFileInfo, ContextStatus } from '@/api/client'
@@ -287,6 +287,40 @@ describe('Mi perfil', () => {
     await userEvent.click(launch)
     await screen.findByText('Abierto en claude: sigue en la ventana que se acaba de abrir.')
     expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ action: 'import-profile-from-cv' })
+  })
+
+  it('sin perfil, el CV se sube arrastrándolo a la caja; un formato que no vale no se sube', async () => {
+    let uploaded = false
+    const calls = mockApi({
+      'GET /status': status(),
+      'GET /context': contextStatus(),
+      'GET /profile/editable': NO_PROFILE,
+      'GET /context/documents/cv': () =>
+        uploaded ? [{ name: 'cv-demo.pdf', size_bytes: 1000, modified_at: '2026-11-15T08:00:00Z' }] : [],
+      'POST /context/documents/cv': () => {
+        uploaded = true
+        return { name: 'cv-demo.pdf' }
+      },
+    })
+    renderApp('/perfil')
+    const button = await screen.findByRole('button', { name: 'Subir mi CV' })
+    const zone = button.closest('div.border-dashed') as HTMLElement
+    expect(within(zone).getByText('Arrastra aquí tu CV o súbelo desde tu equipo')).toBeInTheDocument()
+
+    const drag = (files: File[]) => ({ dataTransfer: { files, types: ['Files'] } })
+    fireEvent.dragOver(zone, drag([]))
+    expect(within(zone).getByText('Suéltalo para subirlo')).toBeInTheDocument()
+    fireEvent.drop(zone, drag([new File(['x'], 'foto.png', { type: 'image/png' })]))
+    expect(await screen.findByRole('alert')).toHaveTextContent('Ese formato no se admite')
+    expect(calls.some((c) => c.method === 'POST' && c.path === '/context/documents/cv')).toBe(false)
+
+    fireEvent.drop(zone, drag([new File(['%PDF'], 'cv-demo.pdf', { type: 'application/pdf' })]))
+    await screen.findByText('CV subido: cv-demo.pdf')
+    expect(calls.find((c) => c.path === '/context/documents/cv' && c.method === 'POST')?.body).toMatchObject({
+      filename: 'cv-demo.pdf',
+    })
+    expect(screen.getByRole('button', { name: 'Subir otro CV' })).toBeInTheDocument()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 
   it('está en el menú', async () => {

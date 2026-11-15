@@ -18,7 +18,11 @@
       "uploadAnother": "Subir otro CV",
       "uploading": "Subiendo…",
       "fileLabel": "Tu CV",
-      "uploaded": "CV subido: {{name}}"
+      "uploaded": "CV subido: {{name}}",
+      "dropOr": "Arrastra aquí tu CV o súbelo desde tu equipo",
+      "dropHere": "Suéltalo para subirlo",
+      "formats": "PDF o Word; también .txt o .md",
+      "wrongType": "Ese formato no se admite. Sube un PDF, un Word (.docx), un .txt o un .md."
     },
     "byHand": {
       "title": "Empezar a mano",
