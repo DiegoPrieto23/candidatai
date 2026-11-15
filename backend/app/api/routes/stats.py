@@ -14,14 +14,14 @@ router = APIRouter(tags=["stats"])
 
 @router.get("/stats/flow", operation_id="get_funnel_flow")
 def get_funnel_flow(session: SessionDep, since: date | None = None) -> analytics.FunnelFlow:
-    """«Tu embudo», en la portada y en «Embudo»: los pasos y dónde se quedó cada candidatura."""
+    """«Tu embudo», en la portada y en «Resultados»: los pasos y dónde se quedó cada candidatura."""
     return analytics.get_funnel_flow(session, since)
 
 
 @router.get("/stats/funnel", operation_id="get_funnel_stats")
 def get_funnel_stats(session: SessionDep, since: date | None = None) -> analytics.FunnelStats:
-    """Embudo con su conversión, desglose por fuente, puesto y semana, tiempo hasta la primera
-    respuesta y motivos de descarte de las ofertas vistas desde `since`."""
+    """Embudo con su conversión, desglose por fuente, puesto, semana y canal, tiempo hasta la
+    primera respuesta y motivos de descarte de las ofertas vistas desde `since`."""
     return analytics.get_funnel_stats(session, since)
 
 

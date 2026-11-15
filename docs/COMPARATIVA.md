@@ -59,7 +59,7 @@ Lo que hay que hacer para tener cada uno funcionando desde un equipo sin nada.
 | Qué hace el instalador | Instala uv (que trae Python 3.12), descarga la release, **comprueba su SHA-256**, instala dependencias, Chromium y la base de datos, y crea el acceso directo | Ejecuta `bun install` en cada CLI de portal | Clona la última release en `./career-ops` e instala las dependencias |
 | Cómo se arranca | **Icono «CandidatAI»** en el escritorio y el menú Inicio (Aplicaciones en macOS, menú en Linux): abre la app en el navegador. También `cai start` | `claude` en la carpeta, y `/setup` | `claude` (o `codex`, `opencode`, `agy`, `grok`…) en la carpeta; la TUI con `npm run serve:dashboard`; la web con `npm run ui` o `cd web && npm ci && npm run build && npm start` |
 | Primera configuración | Página «Mi perfil» o skill `update-profile`; demo con `cai demo seed` | `/setup`: lee tu carpeta `documents/`, un CV pegado o una entrevista | En el chat la primera vez: CV, perfil y puestos |
-| Sin agente, ¿qué puedes hacer? | Mucho: ver, aprobar y descartar ofertas, fuentes, alertas, kanban, calendario, embudo, cambiar plantilla o foto del CV, editar el perfil | Nada (todo pasa por Claude Code) | Escanear (sin tokens), la TUI y la web |
+| Sin agente, ¿qué puedes hacer? | Mucho: ver, aprobar y descartar ofertas, fuentes, alertas, kanban, calendario, resultados, cambiar plantilla o foto del CV, editar el perfil | Nada (todo pasa por Claude Code) | Escanear (sin tokens), la TUI y la web |
 | Dónde quedan tus datos | `%LOCALAPPDATA%\CandidatAI\data` (o `~/.local/share/…`), fuera del código | En ficheros del repositorio, algunos versionados | `data/`, `reports/` y `output/` fuera de git, o una carpeta aparte con `CAREER_OPS_DATA_DIR` |
 | Actualizar | Volver a ejecutar el instalador; tus datos no se tocan | Fusionar una etiqueta de `upstream`, con `check_upstream_updates.py` y `upstream_triage.py` para ver qué toca | Modo `update` con diff y comprobación de compatibilidad |
 | Desinstalar | `install.ps1 -Uninstall` / `install.sh --uninstall` (deja tus datos) | Borrar la carpeta | Borrar la carpeta |
@@ -197,7 +197,7 @@ tres proyectos han llegado a lo mismo: `GEMINI.md` vacío o de paso, y Antigravi
 | Mensaje a un recruiter o compañero (≤ 300 caracteres) | ✅ | ❌ | ✅ |
 | Correo de candidatura | ✅ | ❌ | ✅ |
 | Dosier de empresa con fuentes | ✅ | ✅ dentro de `/apply` | ✅ `deep` |
-| Embudo y analítica | ✅ gráfico de embudo por etapa, por fuente, puesto, semana, plantilla, carta, referencia | ✅ informe HTML | ✅ patrones, velocidad, latencia de rechazo, Sankey en la web |
+| Embudo y analítica | ✅ «Resultados»: frases con lo que funciona, tasa y tiempo de respuesta por canal, gráfico de embudo por etapa, por fuente, puesto, semana, plantilla, carta, referencia | ✅ informe HTML | ✅ patrones, velocidad, latencia de rechazo, Sankey en la web |
 | Exportar el tracker a una hoja de cálculo | ❌ | ✅ es un CSV | ✅ `query --csv` y en la web |
 | Exportar a Notion | 🚫 descartado | ✅ solo lectura | ✅ plugin |
 
@@ -235,7 +235,7 @@ tres proyectos han llegado a lo mismo: `GEMINI.md` vacío o de paso, y Antigravi
 - **Se instala como un programa**: un comando sin nada previo, la suma SHA-256 comprobada, un icono
   en el escritorio y la app abierta en el navegador. Probado en un Windows 11 recién instalado.
 - **Sirve sin agente** para lo de cada día: bandeja, revisión rápida, fuentes, alertas, kanban, calendario,
-  embudo, perfil y cambios de plantilla. El agente solo entra para razonar.
+  resultados, perfil y cambios de plantilla. El agente solo entra para razonar.
 - Una **UI web completa** y bilingüe, que no es una vista sobre ficheros sino la app misma.
 - **MCP + CLI con paridad comprobada por test**: un agente sin MCP hace exactamente lo mismo.
 - **Eventos como fuente de verdad**: historial completo y estados que no se corrompen.

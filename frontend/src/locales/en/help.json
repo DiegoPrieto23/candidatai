@@ -64,7 +64,7 @@
     "board": "Board",
     "calendar": "Calendar",
     "replies": "Replies",
-    "funnel": "Funnel",
+    "funnel": "Results",
     "agent": "Agent"
   },
   "groups": {
@@ -99,7 +99,7 @@
     },
     "withoutAgent": {
       "q": "What can I do without an agent?",
-      "a": "Add, approve and discard jobs, track your processes, use the calendar and the funnel, edit your profile and change the design of a CV you already have. Reading jobs and writing CVs, letters and interview guides requires the agent.",
+      "a": "Add, approve and discard jobs, track your processes, use the calendar and the results, edit your profile and change the design of a CV you already have. Reading jobs and writing CVs, letters and interview guides requires the agent.",
       "keywords": "without ai without agent free limits"
     },
     "language": {
@@ -258,9 +258,9 @@
       "keywords": "follow-up reminder no reply write company thank you"
     },
     "funnel": {
-      "q": "What does the Funnel tell me?",
-      "a": "How far each application has gone and where they stop: by source, by week and by discard reason, with how well each route performs.",
-      "keywords": "funnel statistics results conversion figures analysis"
+      "q": "What do the Results tell me?",
+      "a": "What works for you: which channel gets you more replies, and sooner (referral, company careers site, job boards), how far each application goes, which roles reply and why you discard jobs.",
+      "keywords": "results funnel statistics conversion figures analysis channel reply"
     },
     "skillGaps": {
       "q": "What are the “Skills to build”?",

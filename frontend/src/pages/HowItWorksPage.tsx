@@ -61,7 +61,7 @@ const STEPS = [
       { to: '/procesos', label: 'entries.processes' },
       { to: '/calendario', label: 'entries.calendar' },
       { to: '/respuestas', label: 'entries.replies' },
-      { to: '/embudo', label: 'entries.funnel' },
+      { to: '/resultados', label: 'entries.funnel' },
       { to: '/perfil/skills', label: 'tabs.skills' },
     ],
   },

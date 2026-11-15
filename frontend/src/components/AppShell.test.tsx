@@ -79,7 +79,7 @@ describe('Barra lateral (fase 23.3)', () => {
       'Tablero',
       'Calendario',
       'Respuestas',
-      'Embudo',
+      'Resultados',
       'Agente',
     ])
     expect(await within(nav).findByRole('link', { name: 'Bandeja de ofertas' })).toHaveAttribute('aria-current', 'page')
@@ -126,8 +126,8 @@ describe('Barra lateral (fase 23.3)', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Plegar el menú' }))
     const nav = screen.getByRole('navigation', { name: 'Navegación principal' })
     // Plegada, cada enlace conserva su nombre accesible aunque solo se vea el icono.
-    expect(within(nav).getByRole('link', { name: 'Embudo' })).toBeInTheDocument()
-    expect(within(nav).queryByText('Embudo')).not.toBeInTheDocument()
+    expect(within(nav).getByRole('link', { name: 'Resultados' })).toBeInTheDocument()
+    expect(within(nav).queryByText('Resultados')).not.toBeInTheDocument()
     expect(localStorage.getItem('cai-sidebar-collapsed')).toBe('1')
     unmount()
 
@@ -140,7 +140,7 @@ describe('Barra lateral (fase 23.3)', () => {
     renderApp('/bandeja')
     await userEvent.click(screen.getByRole('button', { name: 'Abrir el menú' }))
     const drawer = await screen.findByRole('dialog')
-    await userEvent.click(within(drawer).getByRole('link', { name: 'Embudo' }))
+    await userEvent.click(within(drawer).getByRole('link', { name: 'Resultados' }))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 

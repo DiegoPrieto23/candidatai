@@ -34,7 +34,7 @@ Dónde: «Mi perfil».
 
 ### ¿Qué puedo hacer sin agente?
 
-Añadir, aprobar y descartar ofertas, seguir tus procesos, usar el calendario y el embudo, editar tu perfil y cambiar el diseño de un CV ya generado. Leer ofertas y redactar CVs, cartas y guías de entrevista requiere el agente.
+Añadir, aprobar y descartar ofertas, seguir tus procesos, usar el calendario y los resultados, editar tu perfil y cambiar el diseño de un CV ya generado. Leer ofertas y redactar CVs, cartas y guías de entrevista requiere el agente.
 
 Dónde: «Agente».
 
@@ -224,11 +224,11 @@ Inicio te avisa de las candidaturas que llevan días sin respuesta. Tu agente re
 
 Dónde: «Inicio».
 
-### ¿Qué me dice el Embudo?
+### ¿Qué me dicen los Resultados?
 
-Hasta dónde ha llegado cada candidatura y dónde se detienen: por fuente, por semana y por motivo de descarte, con lo que rinde cada vía.
+Qué te funciona: por qué canal te responden más y antes (referencia, web de la empresa, portales), hasta dónde llega cada candidatura, qué puestos te responden y por qué descartas.
 
-Dónde: «Embudo».
+Dónde: «Resultados».
 
 ### ¿Qué son las «Habilidades por desarrollar»?
 

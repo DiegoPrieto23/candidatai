@@ -2048,6 +2048,20 @@ def _render_funnel(result: Any) -> None:
                 f"  {labels[group.group]}: {group.applied} enviadas, "
                 f"respuesta {_pct(group.reply_rate)}"
             )
+    channels = {
+        "referral": "Por referencia",
+        "company": "Web de la empresa",
+        "portal": "Portales de empleo",
+        "manual": "Añadidas por ti",
+    }
+    for channel in result.by_channel:
+        if channel.applied:
+            median = channel.median_reply_days
+            days = "" if median is None else f", mediana {median} días"
+            typer.echo(
+                f"  {channels[channel.channel]}: {channel.applied} enviadas, "
+                f"respuesta {_pct(channel.reply_rate)}{days}"
+            )
     if result.discard_reasons:
         reasons = ", ".join(f"{r.reason} ({r.count})" for r in result.discard_reasons)
         typer.echo(f"Descartes: {reasons}")

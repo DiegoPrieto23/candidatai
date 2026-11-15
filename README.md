@@ -77,8 +77,9 @@ you're not technical.
 - **Interviews and offers:** a prep guide in PDF with a day-by-day plan, mock interviews, debriefs,
   company research with sources, and offers compared with your minimum salary without the agent
   ever seeing it.
-- **A funnel that tells you what works:** where each application stopped, by source, role, template
-  and referral, and whether the fit score predicted what really happened.
+- **Results that tell you what works:** which channel gets you more replies and sooner, where each
+  application stopped, by source, role, template and referral, and whether the fit score predicted
+  what really happened.
 
 **Every feature, page by page and skill by skill:** [`docs/FEATURES.md`](docs/FEATURES.md).
 
@@ -207,7 +208,7 @@ doesn't have yet.
 |---|---|---|---|
 | What it is | An **app** with a web UI, a database and a background worker | Instructions and commands for Claude Code over files | An agent with many modes and Node scripts over files, a terminal dashboard and a web UI |
 | Installing | One command, a desktop shortcut, nothing installed beforehand | Fork, then Claude Code, Python, Bun and LaTeX | `npx … init` with Node installed |
-| Without the agent open | Reviewing jobs, board, calendar, funnel, profile, CV designs | Nothing | Scanning, the dashboard and the web UI |
+| Without the agent open | Reviewing jobs, board, calendar, results, profile, CV designs | Nothing | Scanning, the dashboard and the web UI |
 | Rules | **Enforced by code**: a CV line without evidence in your profile is rejected; sending needs your click | Instructions, least-privilege permissions and an injection filter in code | Instructions, plus fact and wording checks of the CV in code |
 | Agents | 5 configured; Claude Code fully tested | Claude Code | 12 CLIs, free and local models |
 | Community | One maintainer, just released | ~70k stars, ~90 contributors, the author's real search | ~81k stars, ~470 contributors, Discord, many success stories |

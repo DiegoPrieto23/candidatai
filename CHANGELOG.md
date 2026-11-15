@@ -10,6 +10,9 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Tiempo y tasa de respuesta por canal:** en **Resultados**, cuánto te responden y en cuántos días
+  (mediana) por referencia, en la web de la empresa, en los portales de empleo y en las ofertas que
+  añades tú. También en `cai stats funnel` y en la interfaz para agentes.
 - **Columnas del Tablero a tu gusto:** con **Personalizar columnas** eliges entre 3 y 5 columnas
   juntando etapas seguidas y les pones nombre. Solo cambia la vista: las etapas de tus ofertas siguen
   igual, cada tarjeta de una columna con varias etapas dice la suya y **Restablecer** vuelve a las de
@@ -158,6 +161,12 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   vez de 23).
 
 ### Cambiado
+- **«Embudo» pasa a llamarse «Resultados»** y responde a qué te funciona. Arriba, frases sacadas de
+  tus datos («Te responden más por referencia: 40 % frente a 12 % en el resto», cuánto tardan las
+  empresas, por dónde responden antes y tu mejor fuente), que salen cuando hay candidaturas
+  suficientes. Debajo, todo agrupado por pregunta: por dónde te responden, dónde se quedan tus
+  candidaturas, qué puestos te responden y por qué descartas. Los enlaces guardados a la dirección
+  antigua siguen funcionando.
 - **Tablero que se ajusta al ancho:** las columnas reparten el espacio de la pantalla, los títulos
   largos pasan a otra línea en vez de cortarse y solo aparece la barra de desplazamiento si de verdad
   no caben.

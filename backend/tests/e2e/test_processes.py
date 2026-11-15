@@ -508,6 +508,13 @@ def _check_against_agent_interface(page: Page, server: AppServer, since: str | N
         [s["found"], s["approved"], s["applied"], s["replied"], s["interview"]]
         for s in stats["by_source"]
     ]
+    # Por canal: enviadas y con respuesta de los canales con ofertas, en el orden del servidor.
+    channels = _table(page, t("funnel.byChannel.caption"))
+    assert [[row[0], *_numbers(" ".join(row[1:3]))] for row in channels] == [
+        [t(f"funnel.byChannel.names.{c['channel']}"), c["applied"], c["replied"]]
+        for c in stats["by_channel"]
+        if c["found"]
+    ]
     if stats["by_week"]:
         weeks = _table(page, t("funnel.week.caption"))
         assert [_numbers(" ".join(row[1:])) for row in weeks] == [
@@ -531,7 +538,7 @@ def _check_against_agent_interface(page: Page, server: AppServer, since: str | N
 @pytest.mark.smoke
 def test_the_funnel_counts_the_same_as_the_agent_interface(page: Page, demo_app: AppServer) -> None:
     """La UI y `get_funnel_stats` cuentan lo mismo, periodo a periodo."""
-    page.goto("/embudo")
+    page.goto("/resultados")
     expect(page.get_by_role("heading", name=t("funnel.title"), level=1)).to_be_visible()
     expect(page.locator(".recharts-surface").first).to_be_visible()  # las gráficas pintan
     expect(page.locator(".recharts-rectangle").first).to_be_visible()

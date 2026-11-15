@@ -370,7 +370,7 @@ ACTIONS: dict[ActionId, Action] = {
         "Usa el skill broaden-search de CandidatAI para proponerme títulos de puesto cercanos a "
         "los que apruebo.",
     ),
-    # Embudo (fase 20): retrospectiva. Solo propone: los pesos y filtros los cambia el usuario.
+    # Resultados (fase 20): retrospectiva. Solo propone: los pesos y filtros los cambia el usuario.
     "review-search": Action(
         "Revisar mi búsqueda",
         "Usa el skill review-search de CandidatAI para hacer la retrospectiva de mi búsqueda: "

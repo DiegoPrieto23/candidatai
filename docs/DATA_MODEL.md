@@ -396,6 +396,16 @@ conversión nunca pasa del 100 %.
 - **Por referencia** (fase 18): `given` si algún contacto del proceso tiene `referral = given`; si
   no, `requested` si alguno la tiene pedida; si no, `none`. Siempre los tres grupos. La marca no
   tiene fecha de corte: cuenta aunque se pusiera después del envío.
+- **Por canal** (`by_channel`, para «Resultados»): `referral` si hay referencia dada (manda sobre la
+  fuente); si no, `company` si `sources.kind` es un ATS (la web de empleo de una empresa), `manual`
+  si es `manual_url`, `manual_text` o `browser_capture` (las que añades tú) y `portal` en el resto
+  (portales, alertas por correo, búsqueda con navegador, LinkedIn). Siempre los cuatro, en ese orden,
+  con `median_reply_days`: la mediana de días hasta la primera respuesta de las enviadas con
+  respuesta del canal (`null` sin ninguna), y `timed_replies`, cuántas entran en esa mediana (las
+  que llegaron a entrevista sin una respuesta registrada antes cuentan en `replied`, no aquí).
+- **Mínimos** (`min_applied` = 10, `min_replied` = 5): por debajo, la página no saca una frase de
+  una tasa (enviadas de cada grupo comparado) ni de una mediana (respuestas con fecha). Además, la
+  frase pide una diferencia clara: 10 puntos de tasa o un día de mediana. Los números se dan igual.
 - **Motivos**: ofertas con `discarded` por `payload.reason` (`unspecified` si falta) y con
   `hard_filter_failed` por cada `payload.failures[].filter` (`json_each`).
 - `json_each` es de SQLite: pasar a Postgres exigiría reescribir esa expresión.

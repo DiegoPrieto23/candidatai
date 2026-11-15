@@ -164,7 +164,7 @@ data.
    `CAI_DATA_DIR=data-demo-en uv run cai start`.
 3. Your browser opens with a **"Demo mode"** banner. Try **Quick review**, in the Inbox (move with `J`/`K`, approve
    with `A`, discard with `D`), open a job, change the CV template and press **Generate**, and look at
-   the **Board** and the **Funnel**.
+   the **Board** and the **Results**.
 
 To go back to your own data, close that window and open CandidatAI as usual.
 
@@ -269,7 +269,7 @@ without your account) only happens if you turn it on, and it's at your own risk.
 Pro or ChatGPT Plus.
 
 **Can I use it without an agent?** In part: you can add, approve and discard jobs, follow your processes, see
-the calendar and the funnel, edit your profile and re-render a CV with another design. Reading
+the calendar and the results, edit your profile and re-render a CV with another design. Reading
 postings and writing CVs needs the agent.
 
 **Where do I ask for help?** In the repository's

@@ -3,9 +3,9 @@ import { Link, useLocation } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import {
   CalendarDotsIcon,
+  ChartLineUpIcon,
   ChatsCircleIcon,
   DesktopIcon,
-  FunnelIcon,
   GlobeIcon,
   HouseIcon,
   KanbanIcon,
@@ -141,7 +141,7 @@ const NAV_GROUPS: { title: GroupKey | null; entries: Entry[] }[] = [
       { to: '/procesos', label: 'processes', icon: KanbanIcon, useCount: useFollowupsCount },
       { to: '/calendario', label: 'calendar', icon: CalendarDotsIcon },
       { to: '/respuestas', label: 'replies', icon: ChatsCircleIcon, useCount: useRepliesCount },
-      { to: '/embudo', label: 'funnel', icon: FunnelIcon },
+      { to: '/resultados', label: 'funnel', icon: ChartLineUpIcon },
     ],
   },
   {

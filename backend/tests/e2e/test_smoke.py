@@ -39,7 +39,7 @@ ROUTES = [
     # «Buscar ofertas» es una página: sus secciones y las vistas de «Dónde buscar» comparten `h1`.
     Route("/buscar", "search.title"),
     Route("/buscar/ajustes", "search.title"),
-    Route("/embudo", "funnel.title"),
+    Route("/resultados", "funnel.title"),
     Route("/perfil", "profile.title"),
     Route("/perfil/skills", "skills.title"),
     Route("/perfil/plantillas", "templates.title"),
@@ -50,6 +50,7 @@ ROUTES = [
     Route("/procesos/calendario", "calendar.title", "/calendario"),
     Route("/skills", "skills.title", "/perfil/skills"),
     Route("/plantillas", "templates.title", "/perfil/plantillas"),
+    Route("/embudo", "funnel.title", "/resultados"),
     Route("/buscar/donde", "search.title", "/fuentes/plataformas"),
     Route("/fuentes", "search.title", "/fuentes/plataformas"),
     Route("/fuentes/empresas", "search.title"),

@@ -20,7 +20,7 @@ steps.
 6. [Start the app every day](#6-start-the-app-every-day)
 7. [Set up job sources](#7-set-up-job-sources)
 8. [From job to application](#8-from-job-to-application)
-9. [Tracking, replies and funnel](#9-tracking-replies-and-funnel)
+9. [Tracking, replies and results](#9-tracking-replies-and-results)
 10. [Interviews and received offers](#10-interviews-and-received-offers)
 11. [The agent from the UI](#11-the-agent-from-the-ui)
 12. [Configuration](#12-configuration)
@@ -151,7 +151,7 @@ then you recreate the container (`docker compose up -d`).
 
 | | With Docker |
 |---|---|
-| UI, jobs, review, tracking and funnel | Yes |
+| UI, jobs, review, tracking and results | Yes |
 | Job sources and email alerts (the worker) | Yes |
 | CVs and cover letters in PDF | Yes, with the html templates (`moderna-2col`…). Not the docx ones, because there's no LibreOffice: if one would be used, `moderna-2col` takes its place and the app tells you |
 | Your agent through MCP or `cai … --json` | Yes, from outside the container (below) |
@@ -362,7 +362,7 @@ With no agent installed, the tab says so and the help keeps working. The panel k
 requests on your computer.
 
 The menu has nine entries: **Home** and **My profile**; under Search, **Search jobs** and **Job
-inbox**; under Processes, **Board**, **Calendar**, **Replies** and **Funnel**; and **Agent**. The
+inbox**; under Processes, **Board**, **Calendar**, **Replies** and **Results**; and **Agent**. The
 rest are tabs inside them: the Inbox has **Quick review** and **To complete**, and My profile,
 **Skills to build** and **CV templates**. Search jobs is a single page with three sections and an
 index at the top: **Search**, **Your search settings** and **Where to search**.
@@ -427,7 +427,7 @@ The worker runs the automatic sources every day at `connectors.daily_at`
    type the company name. At a captcha or a login it stops and hands you the tab. If you apply
    some other way, mark it as applied manually.
 
-## 9. Tracking, replies and funnel
+## 9. Tracking, replies and results
 
 - **Board:** a kanban by stage. A card only changes column by recording what
   happened (reply, interview, test, offer, rejection), and cards only move to the right: while you
@@ -458,14 +458,17 @@ The worker runs the automatic sources every day at `connectors.daily_at`
   accept or ignore one, a notice says which job it ended up on, with its link; **Ignore** can be undone
   from there. With the keyboard: `J`/`K` to move between emails, `A` to accept, `I` to ignore. If you
   leave it off, note it on the job page or on the board with **Update status**.
-- **Funnel:** **Your funnel** (also on Home) shows how far each application got and where the
-  ones that stopped are; each branch takes you to those applications. Below, one band per step
-  with its figure and two percentages, then conversion by source, week and referral, and the
-  discard reasons. Under
-  **More analysis**, folded at the end: "Is the fit right?" (by fit, verdict, template, cover
-  letter…), by role, the agent's cost and **Your search in numbers** (or `cai stats story`): your
-  figures since the start, with no company names, with a line to share if you want to.
-  `review-search` runs the weekly retrospective.
+- **Results:** what works for you. At the top, sentences drawn from your data: which channel gets
+  you more replies (referral, company careers site, job boards or the jobs you add yourself), how long
+  companies take to reply, where they reply sooner and your best source. Each sentence appears once
+  there's enough data (about 10 sent applications per group; 5 replies for the times) and a clear difference. Below,
+  grouped by question: "Where do I get more replies, and sooner?" (by channel, with the rate and the
+  median days, by source and by referral); "Where do my applications stall?" (**Your funnel**, also
+  on Home, with a branch for each group that stopped, the first reply and the weekly chart); "Which
+  roles reply to me?" and "Why do I discard jobs?". Under **More analysis**, folded at the end: "Is
+  the fit right?" (by fit, verdict, template, cover letter…), the agent's cost and **Your search in
+  numbers** (or `cai stats story`): your figures since the start, with no company names, with a
+  line to share if you want to. `review-search` runs the weekly retrospective.
 - **Network:** import your LinkedIn connections (CSV export) with `cai contacts import-linkedin` and
   you'll see “You know N” on jobs at their companies; `draft-message` drafts the
   message.

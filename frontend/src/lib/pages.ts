@@ -39,7 +39,7 @@ export const pages = {
   // «Buscar ofertas» trae dentro su búsqueda y su configuración; las vistas de «Dónde buscar», aparte.
   searchHub: lazyPage(() => import('@/pages/SearchHubPage').then((m) => m.SearchHubPage)),
   calendar: lazyPage(() => import('@/pages/CalendarPage').then((m) => m.CalendarPage)),
-  // Recharts pesa: va en el chunk del embudo.
+  // Recharts pesa: va en el chunk de «Resultados».
   funnel: lazyPage(() => import('@/pages/FunnelPage').then((m) => m.FunnelPage)),
   skills: lazyPage(() => import('@/pages/SkillsPage').then((m) => m.SkillsPage)),
   alerts: lazyPage(() => import('@/pages/AlertsPage').then((m) => m.AlertsPage)),
@@ -67,7 +67,7 @@ const ROUTES: [prefix: string, keys: PageKey[]][] = [
   ['/procesos', ['processes']],
   ['/calendario', ['calendar']],
   ['/respuestas', ['replies']],
-  ['/embudo', ['funnel']],
+  ['/resultados', ['funnel']],
   ['/perfil/skills', ['profileHub', 'skills']],
   ['/perfil/plantillas', ['profileHub', 'templates']],
   ['/perfil', ['profileHub', 'profile']],

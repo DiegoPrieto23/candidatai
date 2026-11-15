@@ -83,7 +83,7 @@ export function AppRoutes() {
         <Route path="procesos" element={<ProcessesPage />} />
         <Route path="calendario" element={<CalendarPage />} />
         <Route path="respuestas" element={<RepliesPage />} />
-        <Route path="embudo" element={<FunnelPage />} />
+        <Route path="resultados" element={<FunnelPage />} />
         <Route path="perfil" element={<ProfileHubPage />}>
           <Route index element={<ProfilePage />} />
           <Route path="skills" element={<SkillsPage />} />
@@ -95,6 +95,7 @@ export function AppRoutes() {
         <Route path="alertas" element={<MovedTo to="/bandeja/por-completar" />} />
         <Route path="procesos/calendario" element={<MovedTo to="/calendario" />} />
         <Route path="skills" element={<MovedTo to="/perfil/skills" />} />
+        <Route path="embudo" element={<MovedTo to="/resultados" />} />
         <Route path="plantillas" element={<MovedTo to="/perfil/plantillas" />} />
         {/* Antes de la fase 23.3 eran páginas sueltas: los enlaces guardados siguen funcionando. */}
         <Route path="empresas" element={<Navigate to="/fuentes/empresas" replace />} />

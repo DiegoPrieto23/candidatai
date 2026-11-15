@@ -64,7 +64,7 @@
     "board": "Tablero",
     "calendar": "Calendario",
     "replies": "Respuestas",
-    "funnel": "Embudo",
+    "funnel": "Resultados",
     "agent": "Agente"
   },
   "groups": {
@@ -99,7 +99,7 @@
     },
     "withoutAgent": {
       "q": "¿Qué puedo hacer sin agente?",
-      "a": "Añadir, aprobar y descartar ofertas, seguir tus procesos, usar el calendario y el embudo, editar tu perfil y cambiar el diseño de un CV ya generado. Leer ofertas y redactar CVs, cartas y guías de entrevista requiere el agente.",
+      "a": "Añadir, aprobar y descartar ofertas, seguir tus procesos, usar el calendario y los resultados, editar tu perfil y cambiar el diseño de un CV ya generado. Leer ofertas y redactar CVs, cartas y guías de entrevista requiere el agente.",
       "keywords": "sin ia sin agente gratis limitaciones"
     },
     "language": {
@@ -258,9 +258,9 @@
       "keywords": "seguimiento recordatorio sin respuesta escribir empresa agradecimiento"
     },
     "funnel": {
-      "q": "¿Qué me dice el Embudo?",
-      "a": "Hasta dónde ha llegado cada candidatura y dónde se detienen: por fuente, por semana y por motivo de descarte, con lo que rinde cada vía.",
-      "keywords": "embudo estadísticas resultados conversión cifras análisis"
+      "q": "¿Qué me dicen los Resultados?",
+      "a": "Qué te funciona: por qué canal te responden más y antes (referencia, web de la empresa, portales), hasta dónde llega cada candidatura, qué puestos te responden y por qué descartas.",
+      "keywords": "resultados embudo estadísticas conversión cifras análisis canal respuesta"
     },
     "skillGaps": {
       "q": "¿Qué son las «Habilidades por desarrollar»?",

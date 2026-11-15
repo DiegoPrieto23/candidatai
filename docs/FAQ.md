@@ -34,7 +34,7 @@ Where: “My profile”.
 
 ### What can I do without an agent?
 
-Add, approve and discard jobs, track your processes, use the calendar and the funnel, edit your profile and change the design of a CV you already have. Reading jobs and writing CVs, letters and interview guides requires the agent.
+Add, approve and discard jobs, track your processes, use the calendar and the results, edit your profile and change the design of a CV you already have. Reading jobs and writing CVs, letters and interview guides requires the agent.
 
 Where: “Agent”.
 
@@ -224,11 +224,11 @@ Home tells you about the applications that have gone days without a reply. Your 
 
 Where: “Home”.
 
-### What does the Funnel tell me?
+### What do the Results tell me?
 
-How far each application has gone and where they stop: by source, by week and by discard reason, with how well each route performs.
+What works for you: which channel gets you more replies, and sooner (referral, company careers site, job boards), how far each application goes, which roles reply and why you discard jobs.
 
-Where: “Funnel”.
+Where: “Results”.
 
 ### What are the “Skills to build”?
 

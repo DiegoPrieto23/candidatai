@@ -1655,7 +1655,7 @@ export interface paths {
         };
         /**
          * Get Funnel Flow
-         * @description «Tu embudo», en la portada y en «Embudo»: los pasos y dónde se quedó cada candidatura.
+         * @description «Tu embudo», en la portada y en «Resultados»: los pasos y dónde se quedó cada candidatura.
          */
         get: operations["get_funnel_flow"];
         put?: never;
@@ -1675,8 +1675,8 @@ export interface paths {
         };
         /**
          * Get Funnel Stats
-         * @description Embudo con su conversión, desglose por fuente, puesto y semana, tiempo hasta la primera
-         *     respuesta y motivos de descarte de las ofertas vistas desde `since`.
+         * @description Embudo con su conversión, desglose por fuente, puesto, semana y canal, tiempo hasta la
+         *     primera respuesta y motivos de descarte de las ofertas vistas desde `since`.
          */
         get: operations["get_funnel_stats"];
         put?: never;
@@ -4448,6 +4448,30 @@ export interface components {
             /** Message */
             message: string;
         };
+        /** ChannelFunnel */
+        ChannelFunnel: {
+            /** Found */
+            found: number;
+            /** Approved */
+            approved: number;
+            /** Applied */
+            applied: number;
+            /** Replied */
+            replied: number;
+            /** Interview */
+            interview: number;
+            /** Reply Rate */
+            reply_rate: number | null;
+            /**
+             * Channel
+             * @enum {string}
+             */
+            channel: "referral" | "company" | "portal" | "manual";
+            /** Median Reply Days */
+            median_reply_days: number | null;
+            /** Timed Replies */
+            timed_replies: number;
+        };
         /** CheckOpenBody */
         CheckOpenBody: {
             /**
@@ -5624,12 +5648,18 @@ export interface components {
             by_week: components["schemas"]["WeekFunnel"][];
             /** By Referral */
             by_referral: components["schemas"]["ReferralFunnel"][];
+            /** By Channel */
+            by_channel: components["schemas"]["ChannelFunnel"][];
             response_time: components["schemas"]["ResponseTime"];
             /** Discard Reasons */
             discard_reasons: components["schemas"]["ReasonCount"][];
             /** Hard Filter Failures */
             hard_filter_failures: components["schemas"]["FilterCount"][];
             agent_cost: components["schemas"]["FunnelCost"];
+            /** Min Applied */
+            min_applied: number;
+            /** Min Replied */
+            min_replied: number;
         };
         /** FunnelStep */
         FunnelStep: {

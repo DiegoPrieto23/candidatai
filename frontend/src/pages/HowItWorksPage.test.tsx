@@ -73,7 +73,7 @@ describe('Cómo funciona', () => {
       '/procesos',
       '/calendario',
       '/respuestas',
-      '/embudo',
+      '/resultados',
       '/perfil/skills',
     ])
   })

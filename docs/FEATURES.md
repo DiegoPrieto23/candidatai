@@ -96,10 +96,10 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 
 | Feature | Where | Screenshot |
 |---|---|---|
-| **Your funnel**, also on the home page: from sent to accepted, with a branch for each group that stopped at a step and how it stands now (waiting, rejected, interviewing…); each branch takes you to those applications | `/` · `/embudo` | |
-| **Funnel**: conversion step by step, by source, role, week, template, cover letter and referral, time to first reply and discard reasons | `/embudo` | <!-- media:provisional --> [Funnel](img/en/funnel.webp) |
-| **"Is the fit right?"**: reply and interview rates by fit, verdict, source, template, letter and referral, with 95 % intervals, under "More analysis" in the Funnel | `/embudo` | |
-| **Your search in numbers**, ready to share (figures only, never companies), under "More analysis" in the Funnel | `/embudo` · `cai stats story` | |
+| **Your funnel**, also on the home page: from sent to accepted, with a branch for each group that stopped at a step and how it stands now (waiting, rejected, interviewing…); each branch takes you to those applications | `/` · `/resultados` | |
+| **Results**: what works for you, in sentences (which channel gets more replies, how long companies take, where they reply sooner, your best source), and below, by question: reply rate and time by channel, conversion by source, role, week and referral, and discard reasons | `/resultados` | <!-- media:provisional --> [Funnel](img/en/funnel.webp) |
+| **"Is the fit right?"**: reply and interview rates by fit, verdict, source, template, letter and referral, with 95 % intervals, under "More analysis" in Results | `/resultados` | |
+| **Your search in numbers**, ready to share (figures only, never companies), under "More analysis" in Results | `/resultados` · `cai stats story` | |
 | **Weekly retrospective**: what's working and what to change, without touching weights or filters | `review-search` | |
 | **Skills to build**: what your jobs ask for that isn't in your profile yet; "it's the same as…" aliases, "I have it" and "I don't have it", 25 at a time | `/perfil/skills` | <!-- media:provisional --> [Skills](img/en/skills.webp) |
 | **Training plan** with verified resources for your real gaps, and an assessment of a course or project | `training-plan` | |

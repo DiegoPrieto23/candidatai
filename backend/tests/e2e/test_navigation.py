@@ -102,7 +102,7 @@ def test_every_page_starts_at_the_same_distance_from_the_sidebar(
         "/procesos",
         "/calendario",
         "/respuestas",
-        "/embudo",
+        "/resultados",
         "/agente",
         "/nueva",
         "/como-funciona",

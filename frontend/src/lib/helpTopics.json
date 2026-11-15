@@ -18,7 +18,7 @@
     "board": "/procesos",
     "calendar": "/calendario",
     "replies": "/respuestas",
-    "funnel": "/embudo",
+    "funnel": "/resultados",
     "agent": "/agente"
   },
   "groups": ["start", "agent", "jobs", "cv", "processes", "privacy", "problems"],

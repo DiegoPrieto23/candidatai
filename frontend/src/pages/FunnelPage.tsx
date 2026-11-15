@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { SafeTrans } from '@/components/SafeTrans'
 import { Link } from 'react-router'
-import { ChartBarHorizontalIcon, InfoIcon } from '@phosphor-icons/react'
+import { ChartBarHorizontalIcon, InfoIcon, LightbulbIcon } from '@phosphor-icons/react'
 import {
   Bar,
   BarChart,
@@ -26,6 +26,7 @@ import { DatePicker } from '@/components/ui/date-time-picker'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { funnelInsights, type ChannelName, type Insight } from '@/lib/funnelInsights'
 import { i18n } from '@/lib/i18n'
 import {
   dateFormatter,
@@ -108,23 +109,39 @@ function PeriodPicker({
 
 // --- Piezas ---------------------------------------------------------------------------------
 
-function Panel({ title, hint, children, className }: { title: string; hint?: ReactNode; children: ReactNode; className?: string }) {
+/** Un bloque con su título: `h3` bajo una pregunta de la página, `h2` en «Más análisis». */
+function Panel({
+  title,
+  hint,
+  children,
+  className,
+  level = 3,
+}: {
+  title: string
+  hint?: ReactNode
+  children: ReactNode
+  className?: string
+  level?: 2 | 3
+}) {
+  const Heading = level === 2 ? 'h2' : 'h3'
   return (
     <section aria-label={title} className={cn('rounded-xl border bg-card p-5 sm:p-6', className)}>
-      <h2 className="font-medium">{title}</h2>
+      <Heading className="font-medium">{title}</Heading>
       {hint && <p className="mt-0.5 text-sm text-muted-foreground">{hint}</p>}
       <div className="mt-4">{children}</div>
     </section>
   )
 }
 
-function Stat({ label, value, detail }: { label: string; value: string; detail?: string }) {
+/** Una pregunta de la página con los bloques que la responden. */
+function Question({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
-    <div className="rounded-xl border bg-card px-4 py-3.5">
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="tabular mt-1 text-2xl font-semibold tracking-tight">{value}</p>
-      {detail && <p className="mt-0.5 text-xs text-muted-foreground">{detail}</p>}
-    </div>
+    <section aria-labelledby={`q-${id}`} className="space-y-4">
+      <h2 id={`q-${id}`} className="text-lg font-semibold tracking-tight">
+        {title}
+      </h2>
+      {children}
+    </section>
   )
 }
 
@@ -335,7 +352,7 @@ function CostPanel({ cost }: { cost: Schemas['FunnelCost'] }) {
   const value = (usd: number | null, tokens: number | null) =>
     usd != null ? formatUsd(usd) : tokens != null ? t('tokens', { tokens: formatTokens(tokens) }) : '—'
   return (
-    <Panel title={t('title')} hint={t('hint')}>
+    <Panel level={2} title={t('title')} hint={t('hint')}>
       {cost.runs === 0 ? (
         <p className="text-sm text-muted-foreground">{t('none')}</p>
       ) : (
@@ -428,80 +445,152 @@ function ReasonsPanel({ stats }: { stats: FunnelStats }) {
   )
 }
 
+function insightValues(insight: Insight): Record<string, string> {
+  const channelIn = (channel: ChannelName) => i18n.t(`funnel:byChannel.in.${channel}`)
+  switch (insight.id) {
+    case 'bestChannel':
+      return { channel: channelIn(insight.channel), rate: pct(insight.rate), others: pct(insight.others) }
+    case 'medianReply':
+      return { days: days(insight.days) }
+    case 'fastestChannel':
+      return {
+        channel: channelIn(insight.channel),
+        days: days(insight.days),
+        slowDays: days(insight.slowDays),
+        slowChannel: channelIn(insight.slowChannel),
+      }
+    case 'bestSource':
+      return { name: insight.name, rate: pct(insight.rate) }
+  }
+}
+
+/** Arriba, lo que dicen los datos en frases; sin datos suficientes, cuándo saldrán. */
+function Insights({ stats }: { stats: FunnelStats }) {
+  const { t } = useTranslation('funnel', { keyPrefix: 'insights' })
+  const insights = funnelInsights(stats)
+  if (!insights.length) {
+    return (
+      <p className="flex items-center gap-2 rounded-xl border border-dashed px-4 py-3 text-sm text-muted-foreground">
+        <LightbulbIcon className="size-4 shrink-0" aria-hidden="true" />
+        {t('none', { count: stats.min_applied })}
+      </p>
+    )
+  }
+  return (
+    <ul aria-label={t('label')} className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      {insights.map((insight) => (
+        <li key={insight.id} className="rounded-xl border bg-card px-4 py-3.5">
+          <p className="text-xs text-muted-foreground">{t(`kinds.${insight.id}`)}</p>
+          <p className="mt-1.5 text-sm leading-relaxed [&_strong]:text-base [&_strong]:font-semibold [&_strong]:tabular-nums">
+            {/* El nombre de una fuente lo pone quien la da de alta: se interpola como texto. */}
+            <SafeTrans t={t} i18nKey={insight.id} values={insightValues(insight)} components={{ strong: <strong /> }} />
+          </p>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function ChannelPanel({ channels }: { channels: FunnelStats['by_channel'] }) {
+  const { t } = useTranslation('funnel', { keyPrefix: 'byChannel' })
+  const { t: tCols } = useTranslation('funnel', { keyPrefix: 'cols' })
+  const rows = channels.filter((c) => c.found > 0)
+  return (
+    <Panel title={t('title')} hint={t('hint')}>
+      <div className="-mx-1 overflow-x-auto overflow-y-hidden">
+        <table className="w-full min-w-[30rem] text-sm">
+          <caption className="sr-only">{t('caption')}</caption>
+          <thead>
+            <tr className="border-b text-left text-xs text-muted-foreground">
+              <th scope="col" className="px-1 pb-2 font-medium">
+                {t('head')}
+              </th>
+              {[tCols('applied'), tCols('replied'), tCols('reply'), t('median')].map((h) => (
+                <th key={h} scope="col" className="px-1 pb-2 text-right font-medium">
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((c) => (
+              <tr key={c.channel} className="border-b last:border-0">
+                <th scope="row" className="px-1 py-2 text-left font-normal">
+                  {t(`names.${c.channel}`)}
+                </th>
+                <td className="tabular px-1 py-2 text-right">{intFmt.format(c.applied)}</td>
+                <td className="tabular px-1 py-2 text-right">{intFmt.format(c.replied)}</td>
+                <td className="px-1 py-2 text-right">
+                  <RateBar value={c.reply_rate} />
+                </td>
+                <td className="tabular px-1 py-2 text-right">{days(c.median_reply_days)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </Panel>
+  )
+}
+
 function Dashboard({ stats, since }: { stats: FunnelStats; since: string | null }) {
   const { t } = useTranslation('funnel')
-  const step = (name: string) => stats.steps.find((s) => s.step === name)
-  const found = step('found')?.count ?? 0
-  const applied = step('applied')
-  const replied = step('replied')
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat label={t('stats.found')} value={intFmt.format(found)} />
-        <Stat
-          label={t('stats.applied')}
-          value={intFmt.format(applied?.count ?? 0)}
-          detail={t('stats.appliedDetail', { pct: pct(applied?.rate_from_start) })}
-        />
-        <Stat
-          label={t('stats.replyRate')}
-          value={pct(replied?.rate_from_previous)}
-          detail={t('stats.replyDetail', { count: replied?.count ?? 0 })}
-        />
-        <Stat
-          label={t('stats.firstReply')}
-          value={days(stats.response_time.median_days)}
-          detail={t('stats.waitingDetail', { count: stats.response_time.awaiting_reply })}
-        />
-      </div>
+    <div className="space-y-10">
+      <Insights stats={stats} />
 
-      <FunnelFlow since={since} />
-      <ResponseTimePanel rt={stats.response_time} />
-
-      <Panel title={t('bySource.title')} hint={t('bySource.hint')}>
-        <BreakdownTable
-          caption={t('bySource.caption')}
-          firstHead={t('bySource.head')}
-          rows={stats.by_source.map((s) => ({
-            key: String(s.source_id),
-            name: (
-              <>
-                {s.name}
-                <span className="ml-1.5 text-xs text-muted-foreground">{SOURCE_KIND_LABEL[s.kind] ?? s.kind}</span>
-              </>
-            ),
-            summary: s,
-            spend: { tokens: s.tokens, cost_usd: s.cost_usd },
-          }))}
-        />
-      </Panel>
-
-      {stats.by_week.length > 0 && <WeekChart weeks={stats.by_week} />}
-
-      {stats.by_referral.some((r) => r.group !== 'none' && r.found > 0) && (
-        <Panel
-          title={t('byReferral.title')}
-          hint={t('byReferral.hint')}
-        >
+      <Question id="channels" title={t('questions.channels')}>
+        <ChannelPanel channels={stats.by_channel} />
+        <Panel title={t('bySource.title')} hint={t('bySource.hint')}>
           <BreakdownTable
-            caption={t('byReferral.caption')}
-            firstHead={t('byReferral.head')}
-            rows={stats.by_referral.map((r) => ({
-              key: r.group,
-              name: t(`byReferral.groups.${r.group}`),
-              summary: r,
-              muted: r.group === 'none',
+            caption={t('bySource.caption')}
+            firstHead={t('bySource.head')}
+            rows={stats.by_source.map((s) => ({
+              key: String(s.source_id),
+              name: (
+                <>
+                  {s.name}
+                  <span className="ml-1.5 text-xs text-muted-foreground">{SOURCE_KIND_LABEL[s.kind] ?? s.kind}</span>
+                </>
+              ),
+              summary: s,
+              spend: { tokens: s.tokens, cost_usd: s.cost_usd },
             }))}
           />
         </Panel>
-      )}
+        {stats.by_referral.some((r) => r.group !== 'none' && r.found > 0) && (
+          <Panel title={t('byReferral.title')} hint={t('byReferral.hint')}>
+            <BreakdownTable
+              caption={t('byReferral.caption')}
+              firstHead={t('byReferral.head')}
+              rows={stats.by_referral.map((r) => ({
+                key: r.group,
+                name: t(`byReferral.groups.${r.group}`),
+                summary: r,
+                muted: r.group === 'none',
+              }))}
+            />
+          </Panel>
+        )}
+      </Question>
 
-      <ReasonsPanel stats={stats} />
+      <Question id="stall" title={t('questions.stall')}>
+        <FunnelFlow since={since} level={3} />
+        <ResponseTimePanel rt={stats.response_time} />
+        {stats.by_week.length > 0 && <WeekChart weeks={stats.by_week} />}
+      </Question>
+
+      <Question id="titles" title={t('questions.titles')}>
+        <TitlePanel rows={stats.by_title} />
+      </Question>
+
+      <Question id="discards" title={t('questions.discards')}>
+        <ReasonsPanel stats={stats} />
+      </Question>
 
       {/* Lo que se mira de vez en cuando, plegado. */}
       <Reveal label={t('more')} className="space-y-6">
         <CalibrationPanel since={since} />
-        <TitlePanel rows={stats.by_title} />
         <CostPanel cost={stats.agent_cost} />
         <StoryPanel />
       </Reveal>
@@ -644,6 +733,7 @@ function CalibrationPanel({ since }: { since: string | null }) {
   const data = calibration.data
   return (
     <Panel
+      level={2}
       title={t('title')}
       hint={t('hint')}
     >
@@ -737,6 +827,7 @@ function StoryPanel() {
   ] as const
   return (
     <Panel
+      level={2}
       title={t('title')}
       hint={
         data.started_on && data.last_activity_on

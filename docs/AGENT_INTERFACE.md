@@ -396,14 +396,22 @@ definiciones de cada paso están en `DATA_MODEL.md` §Embudo. Tasas entre 0 y 1 
   "by_referral": [                  // fase 18: siempre given, requested y none, en ese orden
     {"group": "given", "found": 2, "applied": 2, "replied": 2, "…": "…"}
   ],
+  "by_channel": [                   // siempre referral, company, portal y manual, en ese orden
+    {"channel": "referral", "found": 2, "applied": 2, "replied": 2, "…": "…",
+     "median_reply_days": 1.5,       // null sin respuestas en el canal
+     "timed_replies": 2}             // las respuestas con fecha que entran en la mediana
+  ],
   "response_time": {"applied": 5, "replied": 3, "median_days": 2.0, "mean_days": 2.2,
                     "awaiting_reply": 1, "closed_without_reply": 1},
   "discard_reasons": [{"reason": "skills", "count": 1}],      // `unspecified` sin motivo
-  "hard_filter_failures": [{"filter": "location", "count": 2}]
+  "hard_filter_failures": [{"filter": "location", "count": 2}],
+  "agent_cost": {"…": "…"},
+  "min_applied": 10,                // enviadas para sacar conclusiones de una tasa
+  "min_replied": 5                  // respuestas con fecha para sacar conclusiones de una mediana
 }
 ```
 
-`reply_rate` = con respuesta / enviadas. Los motivos y los filtros cuentan ofertas, no eventos:
+`reply_rate` = con respuesta / enviadas. Qué es cada canal: `DATA_MODEL.md` §Embudo. Los motivos y los filtros cuentan ofertas, no eventos:
 cuenta toda oferta del periodo con algún `discarded` (o `hard_filter_failed`), aunque luego se
 reabriera; descartada dos veces por lo mismo cuenta una vez, y por motivos distintos (o con dos
 filtros fallidos) cuenta en cada uno, así que la suma puede pasar del número de ofertas.

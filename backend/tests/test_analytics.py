@@ -6,7 +6,7 @@ from typing import Any
 import pytest
 from sqlalchemy.orm import Session
 
-from app.models import Company, Job, JobExtraction, Source
+from app.models import Company, Contact, Job, JobExtraction, Source
 from app.services import analytics, events
 
 
@@ -234,6 +234,47 @@ def test_response_time(session: Session, history: History) -> None:
         "awaiting_reply": 1,
         "closed_without_reply": 1,
     }
+
+
+def test_by_channel_puts_the_referral_before_the_source(session: Session, history: History) -> None:
+    jobs = {j.url.rsplit("/", 1)[1]: j for j in session.query(Job)}
+    # La 2 (ATS) con referencia dada pasa a «referencia»; la 1, solo pedida, sigue en «empresa».
+    session.add(Contact(job_id=jobs["2"].id, name="Ana Demo", referral="given"))
+    session.add(Contact(job_id=jobs["1"].id, name="Luis Demo", referral="requested"))
+    manual = Source(kind="manual_url", name="Añadidas por URL")
+    session.add(manual)
+    session.flush()
+    history.job(
+        manual, _t(1), "data engineer", ("applied_manually", _t(2)), ("reply_received", _t(8))
+    )
+    stats = analytics.get_funnel_stats(session)
+    rows = [
+        (
+            c.channel,
+            c.found,
+            c.approved,
+            c.applied,
+            c.replied,
+            c.interview,
+            c.reply_rate,
+            c.median_reply_days,
+            c.timed_replies,
+        )
+        for c in stats.by_channel
+    ]
+    assert rows == [
+        ("referral", 1, 1, 1, 1, 0, 1.0, 4.0, 1),
+        ("company", 4, 2, 2, 1, 1, 0.5, 2.0, 1),
+        ("portal", 5, 3, 2, 1, 0, 0.5, 0.5, 1),
+        ("manual", 1, 1, 1, 1, 0, 1.0, 6.0, 1),
+    ]  # fmt: skip
+    assert (stats.min_applied, stats.min_replied) == (analytics.MIN_CASES, analytics.MIN_REPLIES)
+
+
+def test_by_channel_lists_the_four_channels_even_without_data(session: Session) -> None:
+    stats = analytics.get_funnel_stats(session)
+    assert [c.channel for c in stats.by_channel] == ["referral", "company", "portal", "manual"]
+    assert all(c.found == 0 and c.timed_replies == 0 for c in stats.by_channel)
 
 
 def test_discard_reasons_and_hard_filters(session: Session, history: History) -> None:

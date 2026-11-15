@@ -96,10 +96,10 @@ FEATURES.md dejan de coincidir fila a fila. -->
 
 | Funcionalidad | Dónde | Captura |
 |---|---|---|
-| **Tu embudo**, también en la portada: de lo enviado a lo aceptado, con una rama por cada grupo que se quedó en un paso y cómo está ahora (esperando, rechazada, en entrevistas…); cada rama lleva a esas candidaturas | `/` · `/embudo` | |
-| **Embudo**: conversión paso a paso, por fuente, puesto, semana, plantilla, carta y referencia, tiempo hasta la primera respuesta y motivos de descarte | `/embudo` | <!-- media:provisional --> [Embudo](img/es/funnel.webp) |
-| **«¿Acierta el encaje?»**: tasas de respuesta y de entrevista por encaje, veredicto, fuente, plantilla, carta y referencia, con intervalos al 95 %, en «Más análisis» del Embudo | `/embudo` | |
-| **Tu búsqueda en números**, lista para compartir (solo cifras, nunca empresas), en «Más análisis» del Embudo | `/embudo` · `cai stats story` | |
+| **Tu embudo**, también en la portada: de lo enviado a lo aceptado, con una rama por cada grupo que se quedó en un paso y cómo está ahora (esperando, rechazada, en entrevistas…); cada rama lleva a esas candidaturas | `/` · `/resultados` | |
+| **Resultados**: qué te funciona, en frases (por qué canal te responden más, cuánto tardan, por dónde responden antes, tu mejor fuente), y debajo, por pregunta: tasa y tiempo de respuesta por canal, conversión por fuente, puesto, semana y referencia, y motivos de descarte | `/resultados` | <!-- media:provisional --> [Embudo](img/es/funnel.webp) |
+| **«¿Acierta el encaje?»**: tasas de respuesta y de entrevista por encaje, veredicto, fuente, plantilla, carta y referencia, con intervalos al 95 %, en «Más análisis» de Resultados | `/resultados` | |
+| **Tu búsqueda en números**, lista para compartir (solo cifras, nunca empresas), en «Más análisis» de Resultados | `/resultados` · `cai stats story` | |
 | **Retrospectiva semanal**: qué funciona y qué cambiar, sin tocar pesos ni filtros | `review-search` | |
 | **Habilidades por desarrollar**: lo que piden tus ofertas y aún no figura en tu perfil; sinónimos «Es lo mismo que…», «La tengo» y «No la tengo», de 25 en 25 | `/perfil/skills` | <!-- media:provisional --> [Skills](img/es/skills.webp) |
 | **Plan de formación** con recursos verificados para tus huecos reales, y valoración de un curso o proyecto | `training-plan` | |

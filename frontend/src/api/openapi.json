@@ -10116,7 +10116,7 @@
           "stats"
         ],
         "summary": "Get Funnel Flow",
-        "description": "«Tu embudo», en la portada y en «Embudo»: los pasos y dónde se quedó cada candidatura.",
+        "description": "«Tu embudo», en la portada y en «Resultados»: los pasos y dónde se quedó cada candidatura.",
         "operationId": "get_funnel_flow",
         "parameters": [
           {
@@ -10237,7 +10237,7 @@
           "stats"
         ],
         "summary": "Get Funnel Stats",
-        "description": "Embudo con su conversión, desglose por fuente, puesto y semana, tiempo hasta la primera\nrespuesta y motivos de descarte de las ofertas vistas desde `since`.",
+        "description": "Embudo con su conversión, desglose por fuente, puesto, semana y canal, tiempo hasta la\nprimera respuesta y motivos de descarte de las ofertas vistas desde `since`.",
         "operationId": "get_funnel_stats",
         "parameters": [
           {
@@ -24677,6 +24677,79 @@
         ],
         "title": "CaptureResult"
       },
+      "ChannelFunnel": {
+        "properties": {
+          "found": {
+            "type": "integer",
+            "title": "Found"
+          },
+          "approved": {
+            "type": "integer",
+            "title": "Approved"
+          },
+          "applied": {
+            "type": "integer",
+            "title": "Applied"
+          },
+          "replied": {
+            "type": "integer",
+            "title": "Replied"
+          },
+          "interview": {
+            "type": "integer",
+            "title": "Interview"
+          },
+          "reply_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reply Rate"
+          },
+          "channel": {
+            "type": "string",
+            "enum": [
+              "referral",
+              "company",
+              "portal",
+              "manual"
+            ],
+            "title": "Channel"
+          },
+          "median_reply_days": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Median Reply Days"
+          },
+          "timed_replies": {
+            "type": "integer",
+            "title": "Timed Replies"
+          }
+        },
+        "type": "object",
+        "required": [
+          "found",
+          "approved",
+          "applied",
+          "replied",
+          "interview",
+          "reply_rate",
+          "channel",
+          "median_reply_days",
+          "timed_replies"
+        ],
+        "title": "ChannelFunnel"
+      },
       "CheckOpenBody": {
         "properties": {
           "force": {
@@ -27993,6 +28066,13 @@
             "type": "array",
             "title": "By Referral"
           },
+          "by_channel": {
+            "items": {
+              "$ref": "#/components/schemas/ChannelFunnel"
+            },
+            "type": "array",
+            "title": "By Channel"
+          },
           "response_time": {
             "$ref": "#/components/schemas/ResponseTime"
           },
@@ -28012,6 +28092,14 @@
           },
           "agent_cost": {
             "$ref": "#/components/schemas/FunnelCost"
+          },
+          "min_applied": {
+            "type": "integer",
+            "title": "Min Applied"
+          },
+          "min_replied": {
+            "type": "integer",
+            "title": "Min Replied"
           }
         },
         "type": "object",
@@ -28023,10 +28111,13 @@
           "by_title",
           "by_week",
           "by_referral",
+          "by_channel",
           "response_time",
           "discard_reasons",
           "hard_filter_failures",
-          "agent_cost"
+          "agent_cost",
+          "min_applied",
+          "min_replied"
         ],
         "title": "FunnelStats"
       },

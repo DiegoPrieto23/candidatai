@@ -65,15 +65,6 @@
     "byFiltersCaption": "Closures per hard filter",
     "noFilters": "No closures by filters in this period."
   },
-  "stats": {
-    "found": "Found",
-    "applied": "Applied",
-    "appliedDetail": "{{pct}} of the ones found",
-    "replyRate": "Reply rate",
-    "replyDetail": "{{count}} replied",
-    "firstReply": "First reply (median)",
-    "waitingDetail": "{{count}} waiting for a reply"
-  },
   "bySource": {
     "title": "By source",
     "hint": "Where the jobs that move forward come from.",
@@ -98,6 +89,25 @@
       "given": "With referral",
       "requested": "Referral requested",
       "none": "No referral"
+    }
+  },
+  "byChannel": {
+    "title": "By channel",
+    "hint": "Referral: a contact in the process gave you one. Added by you: with a link, the text or the extension.",
+    "caption": "Replies by channel",
+    "head": "Channel",
+    "median": "Median time to reply",
+    "names": {
+      "referral": "Referral",
+      "company": "Company careers site",
+      "portal": "Job boards",
+      "manual": "Added by you"
+    },
+    "in": {
+      "referral": "through a referral",
+      "company": "on company careers sites",
+      "portal": "on job boards",
+      "manual": "on the jobs you add yourself"
     }
   },
   "calibration": {
@@ -198,13 +208,33 @@
     }
   },
   "loading": "Loading",
-  "title": "Funnel",
-  "intro": "What works in your search: how many jobs move forward, which channel they come from, how long companies take to reply and why jobs are discarded.",
+  "title": "Results",
+  "intro": "What works for you: where you get the most replies and how long they take.",
+  "insights": {
+    "label": "What your data says",
+    "kinds": {
+      "bestChannel": "Where you get the most replies",
+      "medianReply": "How long they take",
+      "fastestChannel": "Where they reply sooner",
+      "bestSource": "Your best source"
+    },
+    "bestChannel": "You get more replies {{channel}}: <strong>{{rate}}</strong> versus {{others}} for the rest.",
+    "medianReply": "Companies take a median of <strong>{{days}}</strong> to reply.",
+    "fastestChannel": "They reply sooner {{channel}}: a median of <strong>{{days}}</strong>, versus {{slowDays}} {{slowChannel}}.",
+    "bestSource": "Your source with the most replies is <strong>{{name}}</strong>, at {{rate}}.",
+    "none": "Once you've sent about {{count}} applications, you'll see here what works for you."
+  },
+  "questions": {
+    "channels": "Where do I get more replies, and sooner?",
+    "stall": "Where do my applications stall?",
+    "titles": "Which roles reply to me?",
+    "discards": "Why do I discard jobs?"
+  },
   "empty": {
     "periodTitle": "No jobs in this period",
     "title": "No data yet",
     "period": "Try a longer period.",
-    "body": "The funnel fills up as you add jobs (<to>New job</to>), review them and log what happens with each application."
+    "body": "Your results fill up as you add jobs (<to>New job</to>), review them and log what happens with each application."
   },
   "cost": {
     "title": "Agent cost",

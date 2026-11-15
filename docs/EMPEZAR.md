@@ -165,7 +165,7 @@ toca tus datos.
    `CAI_DATA_DIR=data-demo uv run cai start`.
 3. Se abre el navegador con un aviso de **«Modo demo»**. Prueba **Revisión rápida**, en la Bandeja (muévete con
    `J`/`K`, aprueba con `A`, descarta con `D`), abre una oferta, cambia la plantilla del CV y pulsa
-   **Generar**, y mira el **Tablero** y el **Embudo**.
+   **Generar**, y mira el **Tablero** y los **Resultados**.
 
 Para volver a tus datos, cierra esa ventana y abre CandidatAI como siempre.
 
@@ -268,7 +268,7 @@ o su búsqueda pública sin tu cuenta) solo pasa si lo activas, y es bajo tu res
 Claude Pro o ChatGPT Plus.
 
 **¿Puedo usarla sin agente?** En parte: puedes añadir, aprobar y descartar ofertas, seguir tus procesos, ver el
-calendario y el embudo, editar tu perfil y volver a renderizar un CV con otro diseño. Leer ofertas y
+calendario y los resultados, editar tu perfil y volver a renderizar un CV con otro diseño. Leer ofertas y
 redactar CVs necesita el agente.
 
 **¿Dónde pido ayuda?** En las

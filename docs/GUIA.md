@@ -17,7 +17,7 @@ primeros pasos.
 6. [Arrancar la app cada día](#6-arrancar-la-app-cada-día)
 7. [Configurar las fuentes de ofertas](#7-configurar-las-fuentes-de-ofertas)
 8. [De la oferta al envío](#8-de-la-oferta-al-envío)
-9. [Seguimiento, respuestas y embudo](#9-seguimiento-respuestas-y-embudo)
+9. [Seguimiento, respuestas y resultados](#9-seguimiento-respuestas-y-resultados)
 10. [Entrevistas y ofertas recibidas](#10-entrevistas-y-ofertas-recibidas)
 11. [El agente desde la UI](#11-el-agente-desde-la-ui)
 12. [Configuración](#12-configuración)
@@ -146,7 +146,7 @@ recreas el contenedor (`docker compose up -d`).
 
 | | Con Docker |
 |---|---|
-| UI, ofertas, revisión, seguimiento y embudo | Sí |
+| UI, ofertas, revisión, seguimiento y resultados | Sí |
 | Fuentes de ofertas y alertas por correo (el worker) | Sí |
 | CVs y cartas en PDF | Sí, con las plantillas html (`moderna-2col`…). Las docx no, porque no hay LibreOffice: si te toca una, se usa `moderna-2col` y la app te avisa |
 | Tu agente por MCP o `cai … --json` | Sí, desde fuera del contenedor (abajo) |
@@ -357,7 +357,7 @@ Sin agente instalado, la pestaña lo dice y la ayuda sigue funcionando. El panel
 20 peticiones en tu equipo.
 
 El menú tiene nueve entradas: **Inicio** y **Mi perfil**; en Búsqueda, **Buscar ofertas** y
-**Bandeja de ofertas**; en Procesos, **Tablero**, **Calendario**, **Respuestas** y **Embudo**; y
+**Bandeja de ofertas**; en Procesos, **Tablero**, **Calendario**, **Respuestas** y **Resultados**; y
 **Agente**. Lo demás son pestañas dentro de ellas: la Bandeja tiene **Revisión rápida** y **Por
 completar**, y Mi perfil, **Habilidades por desarrollar** y **Plantillas de CV**. Buscar ofertas es
 una sola página con tres secciones, con un índice arriba: **Buscar**, **Configuración de tu
@@ -424,7 +424,7 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
    captcha o un login, se para y te pasa la pestaña. Si la envías tú por otro lado, márcala como
    enviada a mano.
 
-## 9. Seguimiento, respuestas y embudo
+## 9. Seguimiento, respuestas y resultados
 
 - **Tablero:** kanban por etapas. Una tarjeta solo cambia de columna registrando lo que pasó
   (respuesta, entrevista, prueba, oferta, rechazo), y las tarjetas solo van hacia la derecha: al
@@ -455,14 +455,17 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
   Con el teclado: `J`/`K` para pasar de un correo a otro, `A` para aceptar, `I` para ignorar. Si no lo
   activas, anótalo en su ficha o en el tablero con «Actualizar estado». Qué lee exactamente:
   [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md#respuestas-de-las-empresas).
-- **Embudo:** «Tu embudo» (también en Inicio) enseña hasta dónde ha llegado cada candidatura y
-  dónde están las que pararon; cada rama lleva a esas candidaturas. Debajo, una franja por paso con
-  su cifra y dos porcentajes, la conversión por fuente, semana y referencia, y los motivos de
-  descarte. En «Más
-  análisis», plegado al final: «¿Acierta el encaje?» (por encaje, veredicto, plantilla, carta…), por
-  tipo de puesto, el coste del agente y «Tu búsqueda en números» (o `cai stats story`): tus cifras
-  desde el principio, sin empresas, con una línea para compartir si quieres. `review-search` hace
-  la retrospectiva semanal.
+- **Resultados:** qué te funciona. Arriba, frases sacadas de tus datos: por qué canal te responden
+  más (referencia, web de la empresa, portales de empleo o las ofertas que añades tú), cuánto tardan
+  las empresas en responder, por dónde responden antes y tu mejor fuente. Cada frase sale cuando hay
+  datos suficientes (unas 10 candidaturas enviadas por grupo; 5 respuestas para los tiempos) y una diferencia clara. Debajo,
+  agrupado por pregunta: «¿Por dónde me responden más y antes?» (por canal, con la tasa y la mediana
+  de días, por fuente y por referencia); «¿Dónde se quedan mis candidaturas?» («Tu embudo», también
+  en Inicio, con una rama por cada grupo que paró, la primera respuesta y la gráfica por semana);
+  «¿Qué puestos me responden?» y «¿Por qué descarto?». En «Más análisis», plegado al final:
+  «¿Acierta el encaje?» (por encaje, veredicto, plantilla, carta…), el coste del agente y «Tu
+  búsqueda en números» (o `cai stats story`): tus cifras desde el principio, sin empresas, con una
+  línea para compartir si quieres. `review-search` hace la retrospectiva semanal.
 - **Red:** importa tus contactos de LinkedIn (exportación CSV) con `cai contacts import-linkedin`
   y verás «Conoces a N» en las ofertas de sus empresas; `draft-message` prepara el mensaje.
 
