@@ -113,3 +113,65 @@ def test_only_the_ui_can_change_it(client: TestClient) -> None:
     assert (
         client.get("/profile/photo", headers={"Origin": "https://evil.example"}).status_code == 403
     )
+
+
+def test_framed_photo_keeps_the_original_to_frame_it_again(client: TestClient) -> None:
+    data_dir = get_settings().data_dir
+    crop = {"x": 10.0, "y": 5.0, "width": 60.0, "height": 80.0}
+    saved = client.put(
+        "/profile/photo",
+        json={
+            **body(image("JPEG")),
+            "original_base64": body(image("PNG"))["content_base64"],
+            "crop": crop,
+        },
+        headers=JSON,
+    ).json()
+    assert saved["filename"] == "photo.jpg"
+    assert saved["has_original"] is True and saved["crop"] == crop
+    # El recorte es la foto del CV; la original no compite con ella.
+    assert (data_dir / "photo-original.png").exists()
+    assert photo.current_photo(None, data_dir) == data_dir / "photo.jpg"
+    original = client.get("/profile/photo/original")
+    assert original.status_code == 200 and original.headers["content-type"] == "image/png"
+    assert client.get("/profile/photo").json()["crop"] == crop
+
+    # Otra foto sin encuadrar: la original de antes ya no corresponde.
+    plain = client.put("/profile/photo", json=body(image("PNG")), headers=JSON).json()
+    assert plain["has_original"] is False and plain["crop"] is None
+    assert not (data_dir / "photo-original.png").exists()
+    assert not (data_dir / "photo-crop.json").exists()
+    # Sin original, se vuelve a encuadrar desde la foto que hay.
+    assert client.get("/profile/photo/original").headers["content-type"] == "image/png"
+
+
+def test_removing_the_photo_also_removes_the_original(client: TestClient) -> None:
+    data_dir = get_settings().data_dir
+    client.put(
+        "/profile/photo",
+        json={
+            **body(image("JPEG")),
+            "original_base64": body(image("JPEG"))["content_base64"],
+            "crop": {"x": 0, "y": 0, "width": 100, "height": 100},
+        },
+        headers=JSON,
+    )
+    client.request("DELETE", "/profile/photo", json={}, headers=JSON)
+    assert not list(data_dir.glob("photo*"))
+    assert client.get("/profile/photo/original").status_code == 404
+
+
+def test_original_must_be_a_real_image_and_crop_in_range(client: TestClient) -> None:
+    bad_original = client.put(
+        "/profile/photo",
+        json={**body(image("JPEG")), "original_base64": base64.b64encode(b"<svg/>").decode()},
+        headers=JSON,
+    )
+    assert bad_original.status_code == 422
+    bad_crop = client.put(
+        "/profile/photo",
+        json={**body(image("JPEG")), "crop": {"x": 0, "y": 0, "width": 150, "height": 10}},
+        headers=JSON,
+    )
+    assert bad_crop.status_code == 422
+    assert not list(get_settings().data_dir.glob("photo*"))

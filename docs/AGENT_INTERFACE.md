@@ -71,7 +71,7 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `get_timeline` | `cai events list ID --json` | 04 | `job_id` | Etapa actual y eventos (sin texto crudo) | — |
 | `get_profile` | `cai profile show [--sections S1,S2] --json` | 05 | `sections?` | `profile_version_id`, `created_at`, `profile`: `CandidateProfile` sin email, teléfono ni `private` | — |
 | `get_context` | `cai context show [--sections S1,S2] --json` | 13 | `sections?` (`estilo-redaccion`, `perfil-conductual`, `criterios`, `narrativa`) | `note` y `files`: por fichero, `section`, `path`, `exists`, `empty`, `size_bytes`, `modified_at`, `hash` (sha256), `text` (sin los comentarios-guía; vacío si no hay contenido), `truncated` y `warnings` (`too_large`, `invalid_encoding`); y `style_samples` (fase 25.7): por muestra de `data/documentos/estilo/`, `name`, `text` (dentro de `<untrusted_style_sample>`), `risk_flags` y `truncated`, con 20 KB entre todas (`profile_editing.style_max_text_kb`) | — |
-| `get_match` | `cai match show ID --json` | 07 | `job_id` | `MatchView`: `score`, `triage_threshold`, `below_threshold`, `hard_filters`, `breakdown` (componentes, skills cubiertas con su nivel y ausentes, similitud, preferencias, notas), `assessment`, `assessment_stale`, `assessment_score` (el score con el que se valoró), `signals` (fase 25.3: `[{code, text}]` de las señales de oferta dudosa activas; no cuentan en el score) | `scored` si lo recalcula |
+| `get_match` | `cai match show ID --json` | 07 | `job_id` | `MatchView`: `score`, `triage_threshold`, `below_threshold`, `hard_filters`, `breakdown` (componentes, skills cubiertas con su nivel y ausentes, similitud, preferencias, notas), `assessment`, `assessment_stale`, `assessment_score` (el score con el que se valoró), `signals` (fase 25.3: `[{code, text}]` de los puntos a revisar activos (señales de oferta dudosa); no cuentan en el score) | `scored` si lo recalcula |
 | `save_fit_assessment` | `cai match save-assessment ID --file F --json` | 07 | `job_id, assessment: FitAssessment` | `ok`, `job_id`, `match_id` | `fit_assessed` |
 | `list_cv_templates` | `cai templates list --json` | 08 | — | `templates` (`id`, nombre, motor, origen, `ats_friendly`, foto, columnas, página, `capacity`, `sections`, `accent_colors`, fuentes, idiomas, `has_preview`), `invalid` (con el motivo) y `fallback_template` | — |
 | `save_cv_content` | `cai cv save ID --file F --json` | 08 | `job_id, content: CvContent, render_options?: CvRenderOptions`; por CLI, `F` = `{"content": …, "render_options": …}` | `document_id` + primer render (`RenderResult`) | `cv_generated`, `cv_rendered` |
@@ -114,7 +114,8 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `record_source_run` | `cai sources record-run ID --file F --json` | 09b | `source_id` + `SourceRunSummary`: `found, created, existing=0, incidents[{code, message}], started_at?, finished_at?`; por CLI, `F` = el resumen | `ok`, `run_id`. Actor `agent`; avanza `last_run_at`. Plataforma desactivada: `not_allowed` | — |
 | `list_agent_requests` | `cai requests list [--status S] [--limit N] --json` | 19 | `status="pending"` (`pending`, `done`, `cancelled` o `null` para todos), `limit=50` | `requests` (`id`, `action`, `label`, `job_id`, `milestone_id`, `prompt`, `status`, `summary`, `agent_name`, fechas; los pendientes, el más antiguo primero) y `pending` | — |
 | `complete_agent_request` | `cai requests complete ID --summary S --json` | 19 | `request_id`, `summary` (1-2000) | `ok`, `request_id`, `message`. Ya cerrado: `not_allowed` | — |
-| `get_assistant_request` | `cai assistant show ID --json` | 42.2 | `request_id` | `request_id`, `text` (lo que escribió el usuario en «Pídeselo a tu agente», ≤ 2000), `mode` (`background` o `session`), `open` (`false`: cancelada o ya contestada) y `created_at` | — |
+| `get_assistant_request` | `cai assistant show ID --json` | 42.2 | `request_id` | `request_id`, `text` (lo que escribió el usuario en «Asistente», ≤ 2000), `mode` (`background` o `session`), `open` (`false`: cancelada o ya contestada) y `created_at` | — |
+| `save_profile_suggestion` | `cai profile suggest --field summary.en --file F --json` | 41.2 | `field` (`summary.en`), `text` (1-4000) | `ok`, `suggestion_id`, `message`. No escribe en el perfil: el usuario la usa o la descarta en «Mi perfil». Sin perfil: `not_found`; sin resumen en español: `invalid_request` | — |
 | `save_assistant_answer` | `cai assistant answer ID --file F --json` | 42.2 | `request_id`, `answer` (1-4000), `links=[]` (≤ 8; cada uno, `job_id` o `screen`, nunca una URL) | `ok`, `request_id`, `message`. Una respuesta por petición; cerrada: `not_allowed`; `job_id` que no existe: `not_found` | — |
 | `finish_task` | `cai agents finish-task --action A --outcome O --json` | 39g | `action` (el skill), `outcome`: `done` o `stopped` | `closed`, `message`. Cierra el aviso de lo lanzado desde un botón cuando lo pendiente no se acaba del todo o has parado antes de guardar. Sin aviso abierto, `closed: false` y no es un error | — |
 | `ask_user` | `cai prompts ask --question Q [--job-id ID] [--timeout-seconds S] --json` | 39g | `question` (≤ 1500), `options?` (≤ 6, solo por MCP), `job_id?`, `timeout_seconds=600` (60-900) | `PromptView`. Pregunta en un pop-up de la app; después `wait_user_action`: con `done`, la respuesta viene en `answer`; con `skipped` o `expired`, pregunta en tu ventana | — |
@@ -395,14 +396,22 @@ definiciones de cada paso están en `DATA_MODEL.md` §Embudo. Tasas entre 0 y 1 
   "by_referral": [                  // fase 18: siempre given, requested y none, en ese orden
     {"group": "given", "found": 2, "applied": 2, "replied": 2, "…": "…"}
   ],
+  "by_channel": [                   // siempre referral, company, portal y manual, en ese orden
+    {"channel": "referral", "found": 2, "applied": 2, "replied": 2, "…": "…",
+     "median_reply_days": 1.5,       // null sin respuestas en el canal
+     "timed_replies": 2}             // las respuestas con fecha que entran en la mediana
+  ],
   "response_time": {"applied": 5, "replied": 3, "median_days": 2.0, "mean_days": 2.2,
                     "awaiting_reply": 1, "closed_without_reply": 1},
   "discard_reasons": [{"reason": "skills", "count": 1}],      // `unspecified` sin motivo
-  "hard_filter_failures": [{"filter": "location", "count": 2}]
+  "hard_filter_failures": [{"filter": "location", "count": 2}],
+  "agent_cost": {"…": "…"},
+  "min_applied": 10,                // enviadas para sacar conclusiones de una tasa
+  "min_replied": 5                  // respuestas con fecha para sacar conclusiones de una mediana
 }
 ```
 
-`reply_rate` = con respuesta / enviadas. Los motivos y los filtros cuentan ofertas, no eventos:
+`reply_rate` = con respuesta / enviadas. Qué es cada canal: `DATA_MODEL.md` §Embudo. Los motivos y los filtros cuentan ofertas, no eventos:
 cuenta toda oferta del periodo con algún `discarded` (o `hard_filter_failed`), aunque luego se
 reabriera; descartada dos veces por lo mismo cuenta una vez, y por motivos distintos (o con dos
 filtros fallidos) cuenta en cada uno, así que la suma puede pasar del número de ofertas.
@@ -598,7 +607,7 @@ próxima sesión»**. Ninguno de los dos tiene herramienta para lanzarlo: un age
 lanza a sí mismo.
 
 - **En segundo plano** (`POST /agent/runs`, solo la UI): `process-jobs`, `assess-fit`,
-  `generate-cv`, `correct-cv`, `verify-cv` y `generate-cover-letter`. El worker lanza `launch.headless` del manifiesto con la orden y **solo las
+  `generate-cv`, `correct-cv`, `verify-cv`, `generate-cover-letter` y `translate-summary`. El worker lanza `launch.headless` del manifiesto con la orden y **solo las
   herramientas MCP de la acción** (`agent_launch.ACTIONS[...].background`), su skill, los
   subagentes y la lectura de `docs/`; el resto de herramientas de esta tabla se le **deniegan**
   explícitamente. La orden añade: «no preguntes; si necesitas al usuario, termina con líneas
@@ -620,9 +629,9 @@ lanza a sí mismo.
   (`list_agent_requests` → sigue el `prompt` → `complete_agent_request`). Un encargo que no se hizo
   no se cierra.
 
-### Pídeselo a tu agente (fase 42.2)
+### Asistente (fase 42.2)
 
-La pestaña «Pídeselo a tu agente» del panel de ayuda (`POST /agent/assistant`, solo la UI) guarda
+El «Asistente» del portal (el botón del destello, abajo a la derecha) (`POST /agent/assistant`, solo la UI) guarda
 lo que escribe el usuario en `assistant_requests` y se lo pasa al agente con la acción `assistant`:
 
 - **La orden es fija** («Usa el skill assistant de CandidatAI para la petición N») y solo lleva el
@@ -685,16 +694,16 @@ antes; `POST /agent/tiers/undo` las devuelve.
 |---|---|
 | `cai worker [--once] [--interval S] [--json]` | Ejecuta la cola de tareas (`score_job`, `rescore_all`, `run_source`, `poll_email`, `expire_summaries`, `check_open`…) y, en primer plano, la ingesta diaria de las fuentes a la hora de `connectors.daily_at` (al arrancar, también las que no corrieron desde la última hora programada), la caducidad diaria de los resúmenes y la lectura de alertas cada `email_alerts.poll_minutes` (si hay IMAP o correos en `data/inbox/`). Desde la fase 19, en un hilo aparte, las ejecuciones en segundo plano de `agent_runs`: de una en una o, desde la 25.4, hasta `background_runs.max_parallel` a la vez. Log legible en consola y en `data/logs/worker.log`. `--once` vacía la cola (también las de `agent_runs`, en `agent_runs` del JSON) y termina (código 1 si alguna falla) |
 | `GET /agent/costs`, `GET`/`PUT /agent/assess-threshold`, `GET /jobs/{id}/costs` (API de la UI) | Fase 25.4: coste por acción, agente y modelo (7 y 30 días), umbral de la valoración en segundo plano y coste de una oferta. Sin herramienta MCP ni comando: son para la UI, como `POST /agent/runs` |
-| `cai jobs signals --recompute [--json]` | Fase 25.3: recalcula las señales de oferta dudosa de todas las ofertas (tras editar `config/doubtful_patterns.yaml` o `doubtful` de `config/policies.yaml`). Devuelve `jobs`, `with_signals` y `counts` por señal. No cambia el score. Sin herramienta MCP: se calculan solas al extraer |
+| `cai jobs signals --recompute [--json]` | Fase 25.3: recalcula los puntos a revisar (señales de oferta dudosa) de todas las ofertas (tras editar `config/doubtful_patterns.yaml` o `doubtful` de `config/policies.yaml`). Devuelve `jobs`, `with_signals` y `counts` por señal. No cambia el score. Sin herramienta MCP: se calculan solas al extraer |
 | `cai match rescore [--json]` | Recalcula ya los matches desfasados de las ofertas abiertas (tras instalar el extra `matching` o editar `config/policies.yaml`) y cierra las de «Por revisar» que no pasan los filtros. Devuelve `scored` y `closed` |
 | `cai eval matching [--profile RUTA] [--no-seed] [--no-embeddings] [--json]` | Precision, recall y F1 con el umbral actual y por umbral sobre `evals/matching/*.jsonl` (perfil de demo) y `data/evals/*.jsonl` (tu perfil). Guarda el informe en `data/evals/reports/` |
 | `cai demo seed [--dir data-demo] [--force] [--eval-cv] [--json]` | Crea una carpeta de datos ficticia (fase 12.1): perfil demo, 65 ofertas (5 de alertas por correo, en dos buzones), 8 semanas de historial y 2 CVs. Nunca escribe en `data/`. `--eval-cv` añade los 10 casos de `evals/cv/` aprobados y sin CV (en una demo existente, solo los que falten). `--json` devuelve `data_dir`, `jobs`, `events`, `by_stage`, `by_source`, `cvs`, `pdf_engine` y `warnings`. Sin herramienta MCP: no es para el agente |
 | `cai eval cv [--agent NOMBRE] [--min-coverage 0.8] [--json]` | Comprueba los CVs guardados de los casos de `evals/cv/` (solo en la demo): evidencias, skills, skills básicas, una página, maquetación (fase 25.5: sin avisos de maquetación en el render seleccionado o, si no hay, el último; uno anterior a la 25.5 no los tiene), cobertura, idioma y verificación. Un caso sin CV es «pendiente». Guarda el informe en `evals/reports/` de la carpeta de datos (`evals/README.md`) |
 | `cai eval compat --agent NOMBRE [--model M \| --preset P] [--timeout MIN] [--cases N] [--import] [--approve] [--json]` | Fase 24.6: la matriz de compatibilidad sobre su propia demo (`data-demo-compat-<agente>-<modelo>/`). `--cases N`: solo las N primeras ofertas, con su propia demo (`…-1-oferta`), su resultado y su columna; para comprobar con poco cupo si un agente funciona (pásalo también en `--approve` e `--import`). Lanza el agente en segundo plano para `process-jobs`, `assess-fit` y `generate-cv`, y aprueba las 5 ofertas y marca las skills ausentes solo en esa demo. Mide la extracción (11 campos), las valoraciones, `eval cv`, el tiempo, los turnos y los tokens. Guarda `evals/compat/results/<fecha>-<agente>-<modelo>.json` y regenera `evals/compat/REPORT.md`. Si un paso no tiene segundo plano, imprime los pasos manuales; `--approve` aprueba y `--import` mide lo hecho a mano. Lanza tu agente: sin herramienta MCP |
 
-### Fuentes: empresas objetivo y portales (fase 09, solo CLI)
+### Fuentes: empresas con portal propio y portales (fase 09, solo CLI)
 
-Las usa la persona (CLI o página «Dónde buscar → Empresas objetivo» de la UI). `cai sources list` es desde la 09b la
+Las usa la persona (CLI o página «Dónde buscar → Empresas con portal propio» de la UI). `cai sources list` es desde la 09b la
 herramienta `list_sources` (tabla de arriba); las plataformas `agent_browse` se ven y se activan en
 la página «Dónde buscar → Portales de empleo».
 

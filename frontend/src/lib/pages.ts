@@ -36,17 +36,15 @@ export const pages = {
   triage: lazyPage(() => import('@/pages/TriagePage').then((m) => m.TriagePage)),
   processes: lazyPage(() => import('@/pages/ProcessesPage').then((m) => m.ProcessesPage)),
   replies: lazyPage(() => import('@/pages/RepliesPage').then((m) => m.RepliesPage)),
-  search: lazyPage(() => import('@/pages/SearchPage').then((m) => m.SearchPage)),
-  searchHub: lazyPage(() => import('@/pages/HubPages').then((m) => m.SearchHubPage)),
-  searchSettings: lazyPage(() => import('@/pages/SearchSettingsPage').then((m) => m.SearchSettingsPage)),
+  // «Buscar ofertas» trae dentro su búsqueda y su configuración; las vistas de «Dónde buscar», aparte.
+  searchHub: lazyPage(() => import('@/pages/SearchHubPage').then((m) => m.SearchHubPage)),
   calendar: lazyPage(() => import('@/pages/CalendarPage').then((m) => m.CalendarPage)),
-  // Recharts pesa: va en el chunk del embudo.
+  // Recharts pesa: va en el chunk de «Resultados».
   funnel: lazyPage(() => import('@/pages/FunnelPage').then((m) => m.FunnelPage)),
   skills: lazyPage(() => import('@/pages/SkillsPage').then((m) => m.SkillsPage)),
   alerts: lazyPage(() => import('@/pages/AlertsPage').then((m) => m.AlertsPage)),
   templates: lazyPage(() => import('@/pages/TemplatesPage').then((m) => m.TemplatesPage)),
   profile: lazyPage(() => import('@/pages/ProfilePage').then((m) => m.ProfilePage)),
-  sourcesHub: lazyPage(() => import('@/pages/SourcesHubPage').then((m) => m.SourcesHubPage)),
   sources: lazyPage(() => import('@/pages/SourcesPage').then((m) => m.SourcesPage)),
   platforms: lazyPage(() => import('@/pages/PlatformsPage').then((m) => m.PlatformsPage)),
   emailAlerts: lazyPage(() => import('@/pages/EmailAlertsPage').then((m) => m.EmailAlertsPage)),
@@ -56,7 +54,7 @@ export const pages = {
 
 type PageKey = keyof typeof pages
 
-/** Las páginas que pinta cada ruta (`/fuentes` abre la de plataformas dentro de la suya; la más larga, antes). */
+/** Las páginas que pinta cada ruta (`/buscar` y `/fuentes` pintan «Buscar ofertas» con la vista de portales u otra de «Dónde buscar»; la más larga, antes). */
 const ROUTES: [prefix: string, keys: PageKey[]][] = [
   ['/como-funciona', ['howItWorks']],
   ['/bandeja/revision', ['inboxHub', 'triage']],
@@ -64,20 +62,19 @@ const ROUTES: [prefix: string, keys: PageKey[]][] = [
   ['/bandeja', ['inboxHub', 'inbox']],
   ['/jobs/', ['job']],
   ['/nueva', ['newJob']],
-  ['/buscar/ajustes', ['searchHub', 'searchSettings']],
-  ['/buscar', ['searchHub', 'search']],
+  ['/buscar', ['searchHub', 'platforms']],
   ['/procesos/calendario', ['calendar']],
   ['/procesos', ['processes']],
   ['/calendario', ['calendar']],
   ['/respuestas', ['replies']],
-  ['/embudo', ['funnel']],
+  ['/resultados', ['funnel']],
   ['/perfil/skills', ['profileHub', 'skills']],
   ['/perfil/plantillas', ['profileHub', 'templates']],
   ['/perfil', ['profileHub', 'profile']],
-  ['/fuentes/empresas', ['searchHub', 'sourcesHub', 'sources']],
-  ['/fuentes/correo', ['searchHub', 'sourcesHub', 'emailAlerts']],
-  ['/fuentes/extension', ['searchHub', 'sourcesHub', 'extension']],
-  ['/fuentes', ['searchHub', 'sourcesHub', 'platforms']],
+  ['/fuentes/empresas', ['searchHub', 'sources']],
+  ['/fuentes/correo', ['searchHub', 'emailAlerts']],
+  ['/fuentes/extension', ['searchHub', 'extension']],
+  ['/fuentes', ['searchHub', 'platforms']],
   ['/agente', ['agent']],
 ]
 

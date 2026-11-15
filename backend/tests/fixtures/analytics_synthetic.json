@@ -496,7 +496,7 @@
      "rate": 0.2879
     },
     "key": "none",
-    "label": "Sin señales",
+    "label": "Nada que revisar",
     "low_data": false,
     "replied": 46,
     "reply_rate": {
@@ -1279,7 +1279,7 @@
      "rate": 0.24
     },
     "key": "none",
-    "label": "Sin señales",
+    "label": "Nada que revisar",
     "low_data": false,
     "replied": 18,
     "reply_rate": {
@@ -1615,6 +1615,52 @@
    "tokens_per_applied": 0.0,
    "tokens_per_interview": 0.0
   },
+  "by_channel": [
+   {
+    "applied": 8,
+    "approved": 8,
+    "channel": "referral",
+    "found": 8,
+    "interview": 2,
+    "median_reply_days": 0.9,
+    "replied": 6,
+    "reply_rate": 0.75,
+    "timed_replies": 6
+   },
+   {
+    "applied": 13,
+    "approved": 19,
+    "channel": "company",
+    "found": 60,
+    "interview": 5,
+    "median_reply_days": 0.7,
+    "replied": 11,
+    "reply_rate": 0.8462,
+    "timed_replies": 11
+   },
+   {
+    "applied": 17,
+    "approved": 22,
+    "channel": "portal",
+    "found": 215,
+    "interview": 4,
+    "median_reply_days": 0.7,
+    "replied": 11,
+    "reply_rate": 0.6471,
+    "timed_replies": 11
+   },
+   {
+    "applied": 38,
+    "approved": 47,
+    "channel": "manual",
+    "found": 108,
+    "interview": 10,
+    "median_reply_days": 1.0,
+    "replied": 24,
+    "reply_rate": 0.6316,
+    "timed_replies": 24
+   }
+  ],
   "by_referral": [
    {
     "applied": 8,
@@ -2152,6 +2198,8 @@
     "filter": "salary"
    }
   ],
+  "min_applied": 10,
+  "min_replied": 5,
   "response_time": {
    "applied": 76,
    "awaiting_reply": 24,
@@ -2232,6 +2280,52 @@
    "tokens_per_applied": 0.0,
    "tokens_per_interview": 0.0
   },
+  "by_channel": [
+   {
+    "applied": 2,
+    "approved": 2,
+    "channel": "referral",
+    "found": 2,
+    "interview": 1,
+    "median_reply_days": 1.1,
+    "replied": 1,
+    "reply_rate": 0.5,
+    "timed_replies": 1
+   },
+   {
+    "applied": 3,
+    "approved": 6,
+    "channel": "company",
+    "found": 14,
+    "interview": 0,
+    "median_reply_days": 1.1,
+    "replied": 3,
+    "reply_rate": 1.0,
+    "timed_replies": 3
+   },
+   {
+    "applied": 7,
+    "approved": 10,
+    "channel": "portal",
+    "found": 176,
+    "interview": 1,
+    "median_reply_days": 0.6,
+    "replied": 5,
+    "reply_rate": 0.7143,
+    "timed_replies": 5
+   },
+   {
+    "applied": 10,
+    "approved": 11,
+    "channel": "manual",
+    "found": 32,
+    "interview": 3,
+    "median_reply_days": 0.9,
+    "replied": 7,
+    "reply_rate": 0.7,
+    "timed_replies": 7
+   }
+  ],
   "by_referral": [
    {
     "applied": 2,
@@ -2599,6 +2693,8 @@
     "filter": "salary"
    }
   ],
+  "min_applied": 10,
+  "min_replied": 5,
   "response_time": {
    "applied": 22,
    "awaiting_reply": 6,

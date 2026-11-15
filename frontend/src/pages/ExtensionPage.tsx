@@ -9,7 +9,9 @@ import { ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { errorMessage } from '@/lib/errors'
-import { askExtension, compareVersions, desktopOs, isChromium, isEdge, type ExtensionReply } from '@/lib/extension'
+import { BrowserPicker } from '@/components/BrowserPicker'
+import { supportsExtension, useBrowserChoice, type BrowserId } from '@/lib/browser'
+import { askExtension, compareVersions, desktopOs, type ExtensionReply } from '@/lib/extension'
 import { cn } from '@/lib/utils'
 
 const strong = { strong: <strong className="font-medium text-foreground" /> }
@@ -46,9 +48,17 @@ function useExtensionReply(extensionId: string | undefined) {
   })
 }
 
-function Install({ status }: { status: ExtensionStatus }) {
+/** La página de extensiones de cada navegador compatible. */
+const EXTENSIONS_PAGE: Partial<Record<BrowserId, string>> = {
+  chrome: 'chrome://extensions',
+  edge: 'edge://extensions',
+  brave: 'brave://extensions',
+}
+
+function Install({ status, browser }: { status: ExtensionStatus; browser: BrowserId }) {
   const { t } = useTranslation('extension', { keyPrefix: 'install' })
-  const page = isEdge() ? 'edge://extensions' : 'chrome://extensions'
+  const page = EXTENSIONS_PAGE[browser] ?? 'chrome://extensions'
+  const edge = browser === 'edge'
   return (
     <ol className="grid list-decimal gap-3 pl-5 text-muted-foreground marker:text-xs">
       <li className="space-y-2">
@@ -68,12 +78,12 @@ function Install({ status }: { status: ExtensionStatus }) {
         </div>
       </li>
       <li>
-        <Trans t={t} i18nKey={isEdge() ? 'devModeEdge' : 'devMode'} components={strong} />
+        <Trans t={t} i18nKey={edge ? 'devModeEdge' : 'devMode'} components={strong} />
       </li>
       {/* La ventana de elegir carpeta no recuerda la del paso 1: se pega la ruta, que es lo que lía. */}
       <li className="space-y-2">
         <p>
-          <Trans t={t} i18nKey={`load.${desktopOs()}`} components={strong} />
+          <Trans t={t} i18nKey={`load.${desktopOs()}`} values={{ button: t(edge ? 'loadButtonEdge' : 'loadButton') }} components={strong} />
         </p>
         {status.folder && (
           <div className="flex flex-wrap items-center gap-2">
@@ -165,6 +175,9 @@ export function ExtensionPage() {
   const client = useQueryClient()
   const status = useExtensionStatus()
   const reply = useExtensionReply(status.data?.extension_id)
+  const { browser, detected, choose } = useBrowserChoice()
+  const supported = supportsExtension(browser)
+  const name = t(`browser.names.${browser}`)
 
   let body
   if (status.isPending) {
@@ -178,11 +191,20 @@ export function ExtensionPage() {
       reply.data && status.data.version ? compareVersions(reply.data.version, status.data.version) < 0 : false
     body = (
       <div className="grid gap-6">
-        {!isChromium() && (
+        <BrowserPicker browser={browser} detected={detected} onChoose={choose} />
+        {/* Lo que impide seguir, antes de los pasos: un navegador sin extensiones o la app abierta en otro. */}
+        {!supported ? (
           <p role="status" className="flex gap-2 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm">
             <WarningIcon className="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-400" weight="fill" aria-hidden />
-            {t('notChromium')}
+            {t('browser.unsupported', { name })}
           </p>
+        ) : (
+          browser !== detected && (
+            <p role="status" className="flex gap-2 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm">
+              <WarningIcon className="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-400" weight="fill" aria-hidden />
+              {t('browser.openIn', { name })}
+            </p>
+          )
         )}
         {outdated && (
           <p role="status" className="flex gap-2 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm">
@@ -197,12 +219,13 @@ export function ExtensionPage() {
             </span>
           </p>
         )}
+        {supported && (
         <ol className="grid gap-6 rounded-xl border bg-card p-5 text-sm sm:p-6">
           <Step n={1} done={found} title={t('steps.install')}>
             {found ? (
               <p className="text-muted-foreground">{t('installed', { version: reply.data?.version })}</p>
             ) : (
-              <Install status={status.data} />
+              <Install status={status.data} browser={browser} />
             )}
           </Step>
           <Step n={2} done={connected} title={t('steps.connect')}>
@@ -215,7 +238,7 @@ export function ExtensionPage() {
           <Step n={3} done={false} title={t('steps.use')}>
             <ul className="grid list-disc gap-1.5 pl-5 text-muted-foreground">
               <li>
-                <Trans t={t} i18nKey="use.pin" components={strong} />
+                <Trans t={t} i18nKey={browser === 'edge' ? 'use.pinEdge' : 'use.pin'} components={strong} />
               </li>
               <li>
                 <Trans t={t} i18nKey="use.send" components={strong} />
@@ -224,17 +247,16 @@ export function ExtensionPage() {
             </ul>
           </Step>
         </ol>
+        )}
         <p className="text-xs text-muted-foreground">{t('privacy')}</p>
       </div>
     )
   }
 
   return (
-    <div className="max-w-3xl animate-in fade-in duration-300">
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
-        <p className="mt-1.5 text-sm text-muted-foreground">{t('intro')}</p>
-      </div>
+    <div className="max-w-3xl">
+      <h3 className="sr-only">{t('title')}</h3>
+      <p className="mb-6 text-sm text-muted-foreground">{t('intro')}</p>
       {body}
     </div>
   )

@@ -2,14 +2,16 @@ import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { UserCircleIcon } from '@phosphor-icons/react'
 import { useEditableProfile } from '@/api/queries'
+import { Hint } from '@/components/Hint'
 import { ProfileEditorProvider } from '@/components/profile/editor'
+import { BlockHeadingLevel } from '@/components/profile/headingLevel'
 import { SearchContractBlock, SearchExperienceBlock, SearchRoleBlock, SearchWhereBlock } from '@/components/profile/PreferencesBlocks'
 import { EmptyState, ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 
 /**
- * «Qué buscas»: puestos, experiencia, sueldo, lugar y contrato. Se guardan en tu perfil como siempre,
+ * «Configuración de tu búsqueda», una sección de «Buscar ofertas»: puestos, experiencia, sueldo, lugar y contrato. Se guardan en tu perfil como siempre,
  * pero se editan aquí, al lado de donde se usan: deciden qué busca tu agente y qué ofertas pasan.
  */
 export function SearchSettingsPage() {
@@ -43,20 +45,23 @@ export function SearchSettingsPage() {
             <Trans t={t} i18nKey="issues" components={{ to: <Link to="/perfil" className="underline underline-offset-4" /> }} />
           </p>
         )}
-        <SearchRoleBlock />
-        <SearchExperienceBlock />
-        <SearchWhereBlock />
-        <SearchContractBlock />
+        <BlockHeadingLevel.Provider value={3}>
+          <SearchRoleBlock />
+          <SearchExperienceBlock />
+          <SearchWhereBlock />
+          <SearchContractBlock />
+        </BlockHeadingLevel.Provider>
       </ProfileEditorProvider>
     )
   }
 
+  // El título es de la sección (`SearchHubPage`).
   return (
-    <div className="max-w-4xl animate-in fade-in duration-300">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
-        <p className="mt-1.5 max-w-[65ch] text-sm leading-relaxed text-muted-foreground">{t('intro')}</p>
-      </div>
+    <div className="max-w-4xl">
+      <p className="mt-1.5 mb-6 text-sm text-muted-foreground">
+        {t('intro')} <Hint text={t('introHint')} label={t('introHintLabel')} /> {t('rule')}{' '}
+        <Hint text={t('ruleHint')} label={t('ruleHintLabel')} />
+      </p>
       <div className="grid gap-6">{body}</div>
     </div>
   )

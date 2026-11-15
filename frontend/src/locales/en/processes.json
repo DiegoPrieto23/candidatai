@@ -47,5 +47,19 @@
   "seeCalendar": "See the calendar",
   "next7": "Next 7 days",
   "introHint": "Drag a card to the right or press “Update status” to record what happened, such as a reply or an interview.",
-  "introHintAria": "How to use the board"
+  "introHintAria": "How to use the board",
+  "columns": {
+    "open": "Customize columns",
+    "title": "Board columns",
+    "description": "Group consecutive stages into one column and name them. Between {{min}} and {{max}} columns; your jobs' stages stay as they are.",
+    "stages_one": "Stages · {{count}} column",
+    "stages_other": "Stages · {{count}} columns",
+    "sameColumn": "In the same column",
+    "join": "“{{a}}” and “{{b}}” in the same column",
+    "names": "Names",
+    "column": "Column {{n}}",
+    "reset": "Reset",
+    "cancel": "Cancel",
+    "save": "Save"
+  }
 }

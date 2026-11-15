@@ -56,7 +56,10 @@ búsqueda puntual con puesto, ubicación o ambos (ver «Modo búsqueda»).
      pausa de `delay_seconds` entre páginas.
    - De cada resultado, anota título, empresa, ubicación y URL. Descarta en el momento los que
      claramente no encajan con `preferences` (puesto, zona, modalidad, seniority).
-   - Abre solo los que encajan, hasta `max_offers`, y copia el texto de la descripción.
+   - Abre solo los que encajan, **de los más recientes a los más antiguos** (si el portal deja
+     ordenar por fecha, ordénalo así; si no, usa la fecha de publicación que enseñe cada resultado),
+     hasta `max_offers` por plataforma, y copia el texto de la descripción. La UI le dice al usuario
+     que entran «las más recientes que encajan»: no elijas otro orden.
    - Da de alta cada una con `add_job_from_text` (`title`, `company`, `text`, `url`, `location`,
      `source_id` = el `id` de la plataforma y, si los conoces, `platform` y `external_id`; si no,
      la app los deduce de la URL). Si responde `created: false`, ya la teníamos: cuéntala como ya

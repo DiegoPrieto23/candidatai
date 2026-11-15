@@ -45,12 +45,10 @@ export function EmailAlertsPage() {
   const empty = sources.isSuccess && sources.data.sources.length === 0
 
   return (
-    <div className="w-full max-w-3xl animate-in fade-in duration-300">
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{t('email.title')}</h1>
-          <p className="mt-1.5 max-w-prose text-sm leading-relaxed text-muted-foreground">{t('email.intro')}</p>
-        </div>
+    <div className="w-full max-w-3xl">
+      <h3 className="sr-only">{t('email.title')}</h3>
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="max-w-prose text-sm leading-relaxed text-muted-foreground">{t('email.intro')}</p>
         <div className="flex shrink-0 flex-wrap gap-2">
           <Button variant="outline" size="sm" onClick={() => setMailDialog({ mode: 'add' })} className="active:translate-y-px">
             <PlusIcon />

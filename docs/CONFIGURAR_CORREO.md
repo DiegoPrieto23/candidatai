@@ -15,11 +15,46 @@ pasos. Los detalles técnicos están en `FUENTES_OFERTAS.md` §Alertas por corre
   la misma alerta te llega a dos buzones, cuenta una vez.
 - No entra en LinkedIn: sus ofertas llegan como **resumen** (título, empresa, ubicación). La
   descripción completa la traes tú con el botón «Enviar a CandidatAI» de la extensión.
-- La contraseña vive solo en el fichero `.env` de tu equipo, que no se sube a git: cuando la
-  escribes en el asistente, la app la guarda ahí (una línea `CAI_IMAP_<NOMBRE>_PASSWORD` por
-  buzón) y no vuelve a enseñarla ni a dársela a tu agente. Al quitar el buzón, quita su línea.
-- **En Docker** la app no puede escribir tu `.env`: el asistente te dice qué línea añadir; después
-  recrea el contenedor (`docker compose up -d`).
+- La contraseña se guarda **cifrada en el llavero del sistema**: el Administrador de credenciales en
+  Windows, el Llavero en macOS y el llavero de tu escritorio (Secret Service, como GNOME Keyring o
+  KWallet) en Linux. La app no vuelve a enseñarla ni se la da a tu agente; en su base de datos solo
+  guarda una referencia (`CAI_IMAP_<NOMBRE>_PASSWORD`). Al quitar el buzón, la borra del llavero.
+- **Sin llavero** (un Linux sin sesión gráfica), la guarda en el fichero `.env` de tu equipo, que no
+  se sube a git, y el panel **Buzones** lo marca como «guardada en un fichero». `cai doctor` también
+  lo avisa.
+- **En Docker** el contenedor no tiene llavero: ver [Docker](#docker) más abajo.
+
+### Contraseñas de antes (en `.env`)
+
+Hasta ahora la app guardaba las contraseñas en `.env`, en claro. Al abrirla, un aviso ofrece
+**Mover al llavero** las que encuentre (las de los buzones y las claves de Adzuna e InfoJobs): las
+guarda en el llavero y quita sus líneas de `.env`, sin tocar el resto del fichero. Con **Ahora no**
+se quedan como estaban y cada buzón sigue marcado como «guardada en un fichero», con su propio
+botón para moverla cuando quieras.
+
+### Docker
+
+El contenedor no tiene llavero ni puede escribir tu `.env`. La contraseña de un buzón se le da de
+una de estas dos formas, con el nombre que enseña el asistente en **Detalles técnicos**
+(`CAI_IMAP_<NOMBRE>_PASSWORD`):
+
+- **Secreto de Docker** (recomendado: no queda en las variables del contenedor). En
+  `docker-compose.yml`, un `secrets:` que lea un fichero con la contraseña y lo monte en
+  `/run/secrets/<NOMBRE>`; la app lo lee de ahí:
+
+  ```yaml
+  services:
+    candidatai:
+      secrets: [CAI_IMAP_GMAIL_PASSWORD]
+  secrets:
+    CAI_IMAP_GMAIL_PASSWORD:
+      file: ./secrets/gmail.txt   # solo la contraseña; fuera de git
+  ```
+
+- **Variable de entorno:** la línea `CAI_IMAP_GMAIL_PASSWORD=…` en tu `.env`, que el contenedor lee
+  al arrancar.
+
+Después, recrea el contenedor (`docker compose up -d`).
 
 ## Añadir un buzón
 
@@ -156,8 +191,9 @@ Descargar mensaje**; en Outlook en la web, **⋯ → Descargar**) y déjalos en 
 ## La cuenta de `.env` (como antes)
 
 Si ya tenías el correo configurado en `.env`, no tienes que hacer nada: aparece sola en el panel
-**Buzones** como «Principal» (con la etiqueta «de .env»). Su servidor, usuario y carpetas se siguen cambiando en `.env`; desde la app puedes
-desactivarla, cambiarle el nombre o decidir si lee respuestas.
+**Buzones** como «Principal». Su servidor, usuario y carpetas se siguen cambiando en `.env`; desde la
+app puedes desactivarla, cambiarle el nombre o la contraseña y decidir si lee respuestas. Su
+contraseña, como las demás, se puede mover al llavero (ver [Contraseñas de antes](#contraseñas-de-antes-en-env)).
 
 Para configurarla a mano, el fichero `.env` va en la **raíz del proyecto** (junto a `README.md`):
 
@@ -165,11 +201,11 @@ Para configurarla a mano, el fichero `.env` va en la **raíz del proyecto** (jun
 CAI_IMAP_HOST=imap.gmail.com
 CAI_IMAP_PORT=993
 CAI_IMAP_USER=tu.correo@gmail.com
-CAI_IMAP_PASSWORD=abcdefghijklmnop
 CAI_IMAP_FOLDER="Alertas empleo"
 ```
 
-Reinicia la app para que lea el `.env` nuevo.
+Reinicia la app para que lea el `.env` nuevo y escribe la contraseña en **Editar**: así va al llavero
+y no al fichero. (Una línea `CAI_IMAP_PASSWORD=…` en `.env` también sirve, pero queda en claro.)
 
 ## Comprueba la conexión
 
@@ -182,9 +218,10 @@ Reinicia la app para que lea el `.env` nuevo.
 | «caracteres que IMAP no admite» | La contraseña o el usuario llevan tildes o ñ: las contraseñas de aplicación no, genera una |
 | «rechazó abrir la carpeta…» | El nombre de la carpeta o etiqueta, letra por letra |
 | «No se pudo conectar con…» | El servidor y el puerto, tu conexión, o un cortafuegos o antivirus que bloquee el puerto |
-| «Falta la contraseña» | Escríbela en **Editar** (o, en Docker, añade la línea que dice a tu `.env`) |
+| «Falta la contraseña» | Escríbela en **Editar** (en Docker, ver [Docker](#docker)) |
 | «dirección privada o local» | Si es tu propio servidor, marca **Servidor en mi equipo o mi red** |
-| «IMAP a medias» (`cai doctor`) | En la cuenta de `.env`, falta `CAI_IMAP_HOST`, `CAI_IMAP_USER` o `CAI_IMAP_PASSWORD` |
+| «IMAP a medias» (`cai doctor`) | En la cuenta de `.env`, falta `CAI_IMAP_HOST`, `CAI_IMAP_USER` o la contraseña (escríbela en **Editar**) |
+| «Contraseñas: N en claro en `.env`» (`cai doctor`) | Muévelas al llavero con el aviso de la app o el botón de cada buzón |
 
 ## Primera lectura
 
@@ -226,7 +263,7 @@ oferta. Tú decides: nada cambia de etapa hasta que pulsas «Aceptar».
 - **Lo que ve tu agente:** solo los correos guardados, para clasificarlos, y por tanto los ve también
   el proveedor de IA que uses. Nunca ve el resto de tu correo ni la contraseña.
 - **Lo que queda en tu equipo:** el texto de esos correos, sin cifrar, en la base de datos de `data/`.
-  La contraseña, en `.env`.
+  La contraseña, cifrada en el llavero del sistema (o en `.env` donde no lo hay).
 
 Para limitarlo más: una etiqueta propia con un filtro de Gmail (`CAI_IMAP_REPLIES_FOLDER="Procesos"`
 en la cuenta de `.env`), una cuenta aparte a la que reenvíes esos correos, o los `.eml` en una carpeta,

@@ -39,6 +39,7 @@ ActionId = Literal[
     "create-profile",
     "import-profile-from-cv",
     "improve-profile-item",
+    "translate-summary",
     "propose-stories",
     "import-cv-template",
     "assistant",
@@ -87,7 +88,7 @@ class Action:
     upload: bool = False
     # «Buscar ofertas»: admite elegir plataformas y una búsqueda puntual (`SearchScope`).
     search_scope: bool = False
-    # «Pídeselo a tu agente»: la orden lleva el id de una petición (`{assistant_id}`); su texto se
+    # «Asistente»: la orden lleva el id de una petición (`{assistant_id}`); su texto se
     # queda en la base de datos y lo lee el skill.
     assistant: bool = False
     # Sigue existiendo (ejecuciones antiguas, preferencias guardadas), pero la UI no la ofrece: ni
@@ -288,7 +289,8 @@ ACTIONS: dict[ActionId, Action] = {
     "add-skills": Action(
         "Añadir al perfil las que tengo",
         "Usa el skill update-profile de CandidatAI para añadir a mi perfil las skills que he "
-        "marcado como «La tengo» en la página Skills (get_skill_gaps con status have).",
+        "marcado como «La tengo» en la página «Habilidades por desarrollar» (get_skill_gaps con "
+        "status have).",
     ),
     # Perfil (fase 25.2): revisa el perfil entero y, si hay enlaces públicos, propone lo que sale de
     # ellos; pregunta antes de escribir, así que solo en terminal. El id sigue siendo `expand`.
@@ -331,6 +333,15 @@ ACTIONS: dict[ActionId, Action] = {
         "Usa el skill import-cv-template de CandidatAI para convertir en plantilla {upload}.",
         upload=True,
     ),
+    # «Mi perfil» (fase 41.2): el resumen en inglés desde el español. El agente deja una propuesta y
+    # no escribe en el perfil (la usa o la descarta el usuario), así que admite segundo plano.
+    "translate-summary": Action(
+        "Generar resumen en inglés",
+        "Usa el skill update-profile de CandidatAI en modo «Resumen en inglés»: traduce el resumen "
+        "en español de mi perfil y déjalo como propuesta.",
+        skill="update-profile",
+        background=("get_profile", "save_profile_suggestion"),
+    ),
     "propose-stories": Action(
         "Proponer historias desde mi experiencia",
         "Usa el skill update-profile de CandidatAI en modo «Proponer historias desde mi "
@@ -359,7 +370,7 @@ ACTIONS: dict[ActionId, Action] = {
         "Usa el skill broaden-search de CandidatAI para proponerme títulos de puesto cercanos a "
         "los que apruebo.",
     ),
-    # Embudo (fase 20): retrospectiva. Solo propone: los pesos y filtros los cambia el usuario.
+    # Resultados (fase 20): retrospectiva. Solo propone: los pesos y filtros los cambia el usuario.
     "review-search": Action(
         "Revisar mi búsqueda",
         "Usa el skill review-search de CandidatAI para hacer la retrospectiva de mi búsqueda: "
@@ -442,13 +453,13 @@ ACTIONS: dict[ActionId, Action] = {
         wrong_stage="Solo con un proceso abierto.",
         needs_offer=True,
     ),
-    # «Pídeselo a tu agente», en la ayuda del portal. Lo que escribe el usuario no va en la orden.
+    # «Asistente», en la ayuda del portal. Lo que escribe el usuario no va en la orden.
     # En segundo plano lee datos ya estructurados y solo escribe lo que ya escribe alguna otra
     # acción en segundo plano (`ASSISTANT_WRITES`). No lee texto crudo de ofertas ni de correos
     # (`get_job`, `get_reply`, `check_job_open`): es una sesión que escribe y que nadie mira. Sin
     # roles: lo que los necesita (un CV, una carta) se hace con su botón.
     "assistant": Action(
-        "Pídeselo a tu agente",
+        "Asistente",
         "Usa el skill assistant de CandidatAI para la petición {assistant_id}.",
         assistant=True,
         background=(

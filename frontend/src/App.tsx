@@ -14,26 +14,19 @@ import { HomePage } from '@/pages/HomePage'
 const {
   agent: { Page: AgentPage },
   alerts: { Page: AlertsPage },
-  emailAlerts: { Page: EmailAlertsPage },
   calendar: { Page: CalendarPage },
-  extension: { Page: ExtensionPage },
   funnel: { Page: FunnelPage },
   howItWorks: { Page: HowItWorksPage },
   inbox: { Page: InboxPage },
   inboxHub: { Page: InboxHubPage },
   job: { Page: JobPage },
   newJob: { Page: NewJobPage },
-  platforms: { Page: PlatformsPage },
   processes: { Page: ProcessesPage },
   profile: { Page: ProfilePage },
   profileHub: { Page: ProfileHubPage },
   replies: { Page: RepliesPage },
-  search: { Page: SearchPage },
   searchHub: { Page: SearchHubPage },
-  searchSettings: { Page: SearchSettingsPage },
   skills: { Page: SkillsPage },
-  sources: { Page: SourcesPage },
-  sourcesHub: { Page: SourcesHubPage },
   templates: { Page: TemplatesPage },
   triage: { Page: TriagePage },
 } = pages
@@ -72,14 +65,25 @@ export function AppRoutes() {
         </Route>
         <Route path="jobs/:id" element={<JobPage />} />
         <Route path="nueva" element={<NewJobPage />} />
-        <Route path="buscar" element={<SearchHubPage />}>
-          <Route index element={<SearchPage />} />
-          <Route path="ajustes" element={<SearchSettingsPage />} />
+        {/* «Buscar ofertas» es una página con tres secciones: cada ruta lleva a la suya, sin volver a montarla. */}
+        <Route element={<SearchHubPage />}>
+          <Route path="buscar">
+            <Route index element={null} />
+            <Route path="ajustes" element={null} />
+            <Route path="donde" element={<Navigate to="/fuentes/plataformas" replace />} />
+          </Route>
+          <Route path="fuentes">
+            <Route index element={<Navigate to="/fuentes/plataformas" replace />} />
+            <Route path="plataformas" element={null} />
+            <Route path="empresas" element={null} />
+            <Route path="correo" element={null} />
+            <Route path="extension" element={null} />
+          </Route>
         </Route>
         <Route path="procesos" element={<ProcessesPage />} />
         <Route path="calendario" element={<CalendarPage />} />
         <Route path="respuestas" element={<RepliesPage />} />
-        <Route path="embudo" element={<FunnelPage />} />
+        <Route path="resultados" element={<FunnelPage />} />
         <Route path="perfil" element={<ProfileHubPage />}>
           <Route index element={<ProfilePage />} />
           <Route path="skills" element={<SkillsPage />} />
@@ -91,17 +95,8 @@ export function AppRoutes() {
         <Route path="alertas" element={<MovedTo to="/bandeja/por-completar" />} />
         <Route path="procesos/calendario" element={<MovedTo to="/calendario" />} />
         <Route path="skills" element={<MovedTo to="/perfil/skills" />} />
+        <Route path="embudo" element={<MovedTo to="/resultados" />} />
         <Route path="plantillas" element={<MovedTo to="/perfil/plantillas" />} />
-        {/* «Dónde buscar» es una pestaña de «Buscar ofertas»; conserva sus direcciones de siempre. */}
-        <Route path="fuentes" element={<SearchHubPage />}>
-          <Route element={<SourcesHubPage />}>
-            <Route index element={<Navigate to="/fuentes/plataformas" replace />} />
-            <Route path="empresas" element={<SourcesPage />} />
-            <Route path="plataformas" element={<PlatformsPage />} />
-            <Route path="correo" element={<EmailAlertsPage />} />
-            <Route path="extension" element={<ExtensionPage />} />
-          </Route>
-        </Route>
         {/* Antes de la fase 23.3 eran páginas sueltas: los enlaces guardados siguen funcionando. */}
         <Route path="empresas" element={<Navigate to="/fuentes/empresas" replace />} />
         <Route path="plataformas" element={<Navigate to="/fuentes/plataformas" replace />} />

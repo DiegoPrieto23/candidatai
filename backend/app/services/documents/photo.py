@@ -6,14 +6,18 @@
   círculo y esquinas redondeadas con fondo transparente (PNG con alfa), cuadrado sin alfa.
 - Caché en `data/cache/photo/`, por hash de la foto, forma y tamaño: renderizar diez veces el
   mismo CV no recorta la foto diez veces.
+- Encuadre (desde «Mi perfil»): el navegador recorta la foto y sube el recorte como `data/photo.*`;
+  junto a él se guardan la original (`data/photo-original.*`) y dónde estaba el recuadro
+  (`data/photo-crop.json`), para volver a encuadrar sin perder calidad.
 """
 
 import hashlib
+import json
 from io import BytesIO
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, ValidationError
 
 from app.core.config import get_settings
 from app.schemas.cv import PhotoShape
@@ -123,11 +127,26 @@ MAX_PHOTO_BYTES = 10 * 1024 * 1024
 _FORMATS = {"JPEG": ".jpg", "PNG": ".png", "WEBP": ".webp"}
 
 
+ORIGINAL_STEM = "photo-original"
+CROP_FILE = "photo-crop.json"
+
+
+class PhotoCrop(BaseModel):
+    """El recuadro elegido, en porcentaje de la original (como lo da el editor del navegador)."""
+
+    x: float = Field(ge=0, le=100)
+    y: float = Field(ge=0, le=100)
+    width: float = Field(gt=0, le=100)
+    height: float = Field(gt=0, le=100)
+
+
 class PhotoInfo(BaseModel):
     exists: bool
     filename: str | None = None
     size_bytes: int | None = None
     version: str | None = None  # cambia con la foto: para que el navegador no enseñe la anterior
+    has_original: bool = False  # se guardó la original: se puede volver a encuadrar desde ella
+    crop: PhotoCrop | None = None  # el último encuadre, para empezar desde él
 
 
 def _named_photo(data_dir: Path) -> list[Path]:
@@ -148,23 +167,57 @@ def current_photo(profile: CandidateProfile | None, data_dir: Path | None = None
     return next((p for p in sorted(_named_photo(data_dir)) if _opens(p)), None)
 
 
-def photo_info(path: Path | None) -> PhotoInfo:
+def _originals(data_dir: Path) -> list[Path]:
+    if not data_dir.is_dir():
+        return []
+    return [
+        p
+        for p in data_dir.iterdir()
+        if p.is_file() and p.stem.lower() == ORIGINAL_STEM and p.suffix.lower() in PHOTO_EXTENSIONS
+    ]
+
+
+def original_photo(data_dir: Path | None = None) -> Path | None:
+    """La foto original del último encuadre, si se guardó y se puede abrir."""
+    data_dir = data_dir or get_settings().data_dir
+    return next((p for p in sorted(_originals(data_dir)) if _opens(p)), None)
+
+
+def _read_crop(data_dir: Path) -> PhotoCrop | None:
+    try:
+        return PhotoCrop.model_validate(
+            json.loads((data_dir / CROP_FILE).read_text(encoding="utf-8"))
+        )
+    except (OSError, ValueError, ValidationError):
+        return None
+
+
+def _clear_original(data_dir: Path) -> None:
+    for old in _originals(data_dir):
+        old.unlink(missing_ok=True)
+    (data_dir / CROP_FILE).unlink(missing_ok=True)
+
+
+def photo_info(path: Path | None, data_dir: Path | None = None) -> PhotoInfo:
     if path is None:
         return PhotoInfo(exists=False)
+    data_dir = data_dir or get_settings().data_dir
     stat = path.stat()
+    has_original = original_photo(data_dir) is not None
     return PhotoInfo(
-        exists=True, filename=path.name, size_bytes=stat.st_size, version=f"{stat.st_mtime_ns:x}"
+        exists=True,
+        filename=path.name,
+        size_bytes=stat.st_size,
+        version=f"{stat.st_mtime_ns:x}",
+        has_original=has_original,
+        crop=_read_crop(data_dir) if has_original else None,
     )
 
 
-def save_photo(
-    content: bytes, profile: CandidateProfile | None, data_dir: Path | None = None
-) -> PhotoInfo:
-    """Guarda la foto como `data/photo.<ext>` y quita la anterior. `PhotoError` si no es un JPEG,
-    PNG o WebP de hasta 10 MB, o si el perfil apunta a otro fichero (seguiría mandando ese)."""
+def _image_suffix(content: bytes) -> str:
+    """La extensión según el contenido. `PhotoError` si no es un JPEG, PNG o WebP de hasta 10 MB."""
     from PIL import Image, UnidentifiedImageError
 
-    data_dir = data_dir or get_settings().data_dir
     if len(content) > MAX_PHOTO_BYTES:
         raise PhotoError("La foto pasa de 10 MB: prueba con una más pequeña.")
     try:
@@ -177,6 +230,29 @@ def save_photo(
         raise PhotoError("La imagen es demasiado grande: prueba con una más pequeña.") from exc
     if suffix is None:
         raise PhotoError("Formato no admitido: usa un JPG, PNG o WebP.")
+    return suffix
+
+
+def _write(target: Path, content: bytes) -> None:
+    tmp = target.with_name(f"{target.name}.tmp")
+    tmp.write_bytes(content)
+    tmp.replace(target)
+
+
+def save_photo(
+    content: bytes,
+    profile: CandidateProfile | None,
+    data_dir: Path | None = None,
+    original: bytes | None = None,
+    crop_area: PhotoCrop | None = None,
+) -> PhotoInfo:
+    """Guarda la foto como `data/photo.<ext>` y quita la anterior. Con `original` (la foto antes
+    de encuadrarla) y `crop_area`, los guarda para volver a encuadrar; sin ellos, se olvida la
+    original anterior, que ya no corresponde. `PhotoError` si alguna no es un JPEG, PNG o WebP de
+    hasta 10 MB, o si el perfil apunta a otro fichero (seguiría mandando ese)."""
+    data_dir = data_dir or get_settings().data_dir
+    suffix = _image_suffix(content)
+    original_suffix = _image_suffix(original) if original is not None else None
     if profile is not None:
         configured = data_dir / profile.preferences.cv.photo_file
         if configured.is_file() and configured not in _named_photo(data_dir):
@@ -186,13 +262,23 @@ def save_photo(
             )
     data_dir.mkdir(parents=True, exist_ok=True)
     target = data_dir / f"photo{suffix}"
-    tmp = target.with_name(f"{target.name}.tmp")
-    tmp.write_bytes(content)
-    tmp.replace(target)
+    _write(target, content)
     for old in _named_photo(data_dir):
         if old != target:
             old.unlink(missing_ok=True)
-    return photo_info(target)
+    if original is None or original_suffix is None:
+        _clear_original(data_dir)
+    else:
+        kept = data_dir / f"{ORIGINAL_STEM}{original_suffix}"
+        _write(kept, original)
+        for old in _originals(data_dir):
+            if old != kept:
+                old.unlink(missing_ok=True)
+        if crop_area is None:
+            (data_dir / CROP_FILE).unlink(missing_ok=True)
+        else:
+            _write(data_dir / CROP_FILE, crop_area.model_dump_json().encode("utf-8"))
+    return photo_info(target, data_dir)
 
 
 def delete_photo(profile: CandidateProfile | None, data_dir: Path | None = None) -> PhotoInfo:
@@ -203,6 +289,7 @@ def delete_photo(profile: CandidateProfile | None, data_dir: Path | None = None)
         found.unlink(missing_ok=True)
     for old in _named_photo(data_dir):
         old.unlink(missing_ok=True)
+    _clear_original(data_dir)
     cache = data_dir / "cache" / "photo"
     if cache.is_dir():
         for cached in cache.iterdir():

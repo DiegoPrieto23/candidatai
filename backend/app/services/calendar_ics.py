@@ -11,6 +11,9 @@
 - El feed solo lleva los hitos programados de ofertas abiertas: un hito cancelado, hecho o de una
   oferta cerrada desaparece del feed (un calendario suscrito lo quita). `STATUS:CANCELLED` solo
   sale en el `.ics` de un hito, para reimportarlo a mano.
+- Alarmas (`VALARM`) para que el calendario avise solo, sin correos: un hito con hora, un día y
+  una hora antes; uno de todo el día (los plazos), el día anterior a las 9:00. Solo en los hitos
+  programados: uno hecho o cancelado no avisa.
 """
 
 import unicodedata
@@ -39,6 +42,11 @@ LABELS = {
     "other": "Hito",
     "application_deadline": "Plazo de la oferta",
 }
+# Antelación de las alarmas (RFC 5545 §3.8.6.3, relativa al inicio del evento).
+TIMED_ALARMS = ("-P1D", "-PT1H")
+# Todo el día empieza a las 00:00: 15 horas antes son las 9:00 del día anterior (las 8:00 o las
+# 10:00 la noche del cambio de hora; el aviso del navegador usa la misma cuenta).
+ALL_DAY_ALARMS = ("-PT15H",)
 
 
 def escape_text(value: str) -> str:
@@ -84,6 +92,7 @@ def _event_lines(
     location: str | None,
     description: str,
     cancelled: bool = False,
+    alarms: bool = True,
 ) -> list[str]:
     lines = ["BEGIN:VEVENT", f"UID:{uid}", f"DTSTAMP:{_utc(stamp)}", f"SEQUENCE:{sequence}"]
     if all_day:
@@ -95,8 +104,21 @@ def _event_lines(
         lines.append(f"LOCATION:{escape_text(location)}")
     lines.append(f"DESCRIPTION:{escape_text(description)}")
     lines.append(f"STATUS:{'CANCELLED' if cancelled else 'CONFIRMED'}")
+    if alarms and not cancelled:
+        for trigger in ALL_DAY_ALARMS if all_day else TIMED_ALARMS:
+            lines += _alarm_lines(trigger, summary)
     lines.append("END:VEVENT")
     return lines
+
+
+def _alarm_lines(trigger: str, summary: str) -> list[str]:
+    return [
+        "BEGIN:VALARM",
+        "ACTION:DISPLAY",
+        f"TRIGGER:{trigger}",
+        f"DESCRIPTION:{escape_text(summary)}",
+        "END:VALARM",
+    ]
 
 
 def _calendar(events: Iterable[list[str]]) -> str:
@@ -138,6 +160,7 @@ def _milestone_event(row: Milestone, job_title: str, company: str, stamp: dateti
         location=row.location,
         description=_description(row.job_id, row.notes),
         cancelled=row.status == "cancelled",
+        alarms=row.status == "scheduled",
     )
 
 

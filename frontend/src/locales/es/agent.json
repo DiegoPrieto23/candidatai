@@ -29,9 +29,10 @@
     "create-profile": "Crear mi perfil desde mi CV",
     "import-profile-from-cv": "Importar información desde un CV",
     "improve-profile-item": "Mejorar con mi agente",
+    "translate-summary": "Generar resumen en inglés",
     "propose-stories": "Proponer historias desde mi experiencia",
     "import-cv-template": "Convertir en plantilla",
-    "assistant": "Pídeselo a tu agente"
+    "assistant": "Asistente"
   },
   "status": {
     "queued": "En cola",

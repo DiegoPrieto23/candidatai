@@ -22,7 +22,7 @@ from app.models.jobs import Job, JobExtraction, JobSighting
 from app.models.matches import Match
 from app.models.ops import McpCall, Task
 from app.models.process import Contact, Milestone, NetworkContact, ReceivedOffer
-from app.models.profiles import ProfileEdit, ProfileVersion
+from app.models.profiles import ProfileEdit, ProfileSuggestion, ProfileVersion
 from app.models.prompts import UserPrompt
 from app.models.replies import MessageDraft, Reply
 from app.models.skills import SkillGapMark
@@ -65,6 +65,7 @@ __all__ = [
     "Milestone",
     "NetworkContact",
     "ProfileEdit",
+    "ProfileSuggestion",
     "ProfileVersion",
     "ReceivedOffer",
     "Reply",

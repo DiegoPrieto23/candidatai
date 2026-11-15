@@ -52,7 +52,7 @@ de perfil técnico.
 
 ## Funcionalidades
 
-- **Ofertas de muchas fuentes:** pega un enlace o el texto, sigue a tus empresas objetivo por sus
+- **Ofertas de muchas fuentes:** pega un enlace o el texto, sigue a las empresas con portal propio por sus
   portales de empleo públicos (Greenhouse, Lever, Ashby y cinco más), lee tus alertas de empleo por
   correo, envía la página que estás viendo con un botón del navegador o deja que tu agente busque en
   los portales que elijas. Las repetidas se juntan.
@@ -78,8 +78,9 @@ de perfil técnico.
 - **Entrevistas y ofertas:** una guía de preparación en PDF con un plan por días, simulacros,
   repasos, investigación de la empresa con fuentes y ofertas comparadas con tu sueldo mínimo sin
   que el agente lo vea nunca.
-- **Un embudo que te dice qué funciona:** dónde se paró cada candidatura, por fuente, puesto,
-  plantilla y referencia, y si el encaje acertó con lo que pasó de verdad.
+- **Resultados que te dicen qué funciona:** por qué canal te responden más y antes, dónde se paró
+  cada candidatura, por fuente, puesto, plantilla y referencia, y si el encaje acertó con lo que pasó
+  de verdad.
 
 **Todas las funcionalidades, página a página y skill a skill:** [`docs/FUNCIONALIDADES.md`](docs/FUNCIONALIDADES.md).
 
@@ -210,7 +211,7 @@ grandes que este proyecto aún no tiene.
 |---|---|---|---|
 | Qué es | Una **app** con UI web, base de datos y un proceso en segundo plano | Instrucciones y comandos para Claude Code sobre ficheros | Un agente con muchos modos y scripts de Node sobre ficheros, un panel de terminal y una UI web |
 | Instalar | Un comando, un acceso directo, nada instalado antes | Fork, y después Claude Code, Python, Bun y LaTeX | `npx … init` con Node instalado |
-| Sin el agente abierto | Revisar ofertas, tablero, calendario, embudo, perfil, diseños de CV | Nada | Buscar ofertas, el panel y la UI web |
+| Sin el agente abierto | Revisar ofertas, tablero, calendario, resultados, perfil, diseños de CV | Nada | Buscar ofertas, el panel y la UI web |
 | Reglas | **Las comprueba el código**: una línea del CV sin evidencia en tu perfil se rechaza; enviar necesita tu clic | Instrucciones, permisos mínimos y un filtro de inyección en código | Instrucciones, y comprobaciones de hechos y de redacción del CV en código |
 | Agentes | 5 configurados; Claude Code probado del todo | Claude Code | 12 CLIs, modelos gratuitos y locales |
 | Comunidad | Una persona, recién publicado | ~70k estrellas, ~90 contribuidores, la búsqueda real del autor | ~81k estrellas, ~470 contribuidores, Discord, muchas historias de éxito |

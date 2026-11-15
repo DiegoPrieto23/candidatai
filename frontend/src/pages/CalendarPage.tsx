@@ -1,13 +1,27 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router'
-import { CaretLeftIcon, CaretRightIcon, DownloadSimpleIcon } from '@phosphor-icons/react'
+import {
+  CaretLeftIcon,
+  CaretRightIcon,
+  ChatsCircleIcon,
+  ClipboardTextIcon,
+  DownloadSimpleIcon,
+  FlagIcon,
+  HourglassIcon,
+  PlusIcon,
+  PushPinIcon,
+  type Icon,
+} from '@phosphor-icons/react'
 import { fileUrls, type CalendarItem } from '@/api/client'
 import { useCalendar } from '@/api/queries'
+import { AddMilestoneDialog } from '@/components/AddMilestoneDialog'
+import { BrowserReminders } from '@/components/BrowserReminders'
 import { ErrorState } from '@/components/States'
 import { Hint } from '@/components/Hint'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { DEFAULT_TIME } from '@/components/ui/date-time-picker'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   AGENDA_DAYS,
@@ -23,6 +37,7 @@ import {
   shift,
   today,
   viewRange,
+  weekday,
   type CalendarView,
   type Day,
 } from '@/lib/calendar'
@@ -51,6 +66,33 @@ const KIND_STYLE: Record<Kind, { chip: string; dot: string }> = {
 }
 
 const KINDS: readonly Kind[] = ['interview', 'test', 'deadline', 'application_deadline', 'other']
+
+/** Cada tipo, además de su color, con su icono: se distinguen sin depender del color. */
+const KIND_ICON: Record<Kind, Icon> = {
+  interview: ChatsCircleIcon,
+  test: ClipboardTextIcon,
+  deadline: HourglassIcon,
+  application_deadline: FlagIcon,
+  other: PushPinIcon,
+}
+
+function KindIcon({ kind, className }: { kind: Kind; className?: string }) {
+  const Glyph = KIND_ICON[kind]
+  return <Glyph className={cn('inline size-3 shrink-0 align-[-0.125em]', className)} weight="bold" aria-hidden />
+}
+
+/** Sábado y domingo. */
+function isWeekend(day: Day): boolean {
+  return weekday(day) >= 5
+}
+
+/** Rayado tenue de los días de otro mes: se distinguen por la forma, no solo por el color. */
+const OTHER_MONTH = 'bg-[repeating-linear-gradient(135deg,transparent_0_7px,var(--border)_7px_8px)] text-muted-foreground'
+
+/** La hora de un hito nuevo al pulsar un día (sin hora): la de siempre del formulario. */
+function atDefaultTime(day: Day): string {
+  return `${day}T${DEFAULT_TIME}`
+}
 
 const STATUS_STYLE: Record<CalendarItem['status'], string> = {
   scheduled: '',
@@ -122,6 +164,7 @@ function EventChip({
       {block ? (
         <>
           <span className="block truncate">
+            <KindIcon kind={item.kind} className="mr-1" />
             {time && <span className="tabular font-medium">{time} </span>}
             <span className="font-medium">{item.company}</span>
           </span>
@@ -129,6 +172,7 @@ function EventChip({
         </>
       ) : (
         <>
+          <KindIcon kind={item.kind} className="mr-1" />
           {time && <span className="tabular font-medium">{time} </span>}
           {item.all_day ? `${itemTitle(item)} · ${item.company}` : item.company}
         </>
@@ -150,7 +194,7 @@ function EventDialog({ item, onClose }: { item: CalendarItem | null; onClose: ()
           <>
             <DialogHeader>
               <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                <span className={cn('size-2 rounded-full', KIND_STYLE[item.kind].dot)} aria-hidden />
+                <KindIcon kind={item.kind} className="size-3.5" />
                 {UPCOMING_KIND_LABEL[item.kind]}
               </p>
               <DialogTitle className={cn(item.status === 'cancelled' && 'line-through')}>{itemTitle(item)}</DialogTitle>
@@ -213,11 +257,13 @@ function MonthView({
   items,
   onOpen,
   onOpenDay,
+  onAdd,
 }: {
   day: Day
   items: CalendarItem[]
   onOpen: (item: CalendarItem) => void
   onOpenDay: (day: Day) => void
+  onAdd: (date: string) => void
 }) {
   const { t } = useTranslation('calendar')
   const grid = monthGrid(day)
@@ -227,7 +273,7 @@ function MonthView({
     <div className="overflow-hidden rounded-xl border bg-card">
       <div className="grid grid-cols-7 border-b bg-muted/40 text-xs font-medium text-muted-foreground" aria-hidden>
         {grid.slice(0, 7).map((d) => (
-          <div key={d} className="px-2 py-2 text-center sm:text-left">
+          <div key={d} className={cn('px-2 py-2 text-center sm:text-left', isWeekend(d) && 'bg-muted/60')}>
             {formatDay(d, { weekday: 'short' })}
           </div>
         ))}
@@ -241,13 +287,24 @@ function MonthView({
             <li
               key={d}
               aria-label={label}
+              aria-current={d === now ? 'date' : undefined}
               className={cn(
-                'flex min-h-20 min-w-0 flex-col gap-1 border-b p-1 sm:min-h-28 sm:p-1.5',
+                'group/day relative flex min-h-20 min-w-0 flex-col gap-1 border-b p-1 sm:min-h-28 sm:p-1.5',
                 i % 7 !== 6 && 'border-r',
                 i >= grid.length - 7 && 'border-b-0',
-                !sameMonth(d, day) && 'bg-muted/30 text-muted-foreground',
+                isWeekend(d) && 'bg-muted/40',
+                !sameMonth(d, day) && OTHER_MONTH,
+                d === now && 'bg-primary/[0.06] ring-2 ring-inset ring-primary/40',
               )}
             >
+              <button
+                type="button"
+                onClick={() => onAdd(atDefaultTime(d))}
+                aria-label={t('addOn', { day: label })}
+                className="absolute top-1 right-1 hidden size-6 place-items-center rounded-md text-muted-foreground opacity-0 group-hover/day:opacity-100 hover:bg-accent hover:text-foreground focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none sm:grid"
+              >
+                <PlusIcon className="size-3.5" />
+              </button>
               <button
                 type="button"
                 onClick={() => onOpenDay(d)}
@@ -257,6 +314,7 @@ function MonthView({
                 <span
                   className={cn(
                     'tabular grid size-6 place-items-center rounded-full text-xs',
+                    !sameMonth(d, day) && 'bg-card',
                     d === now && 'bg-primary font-semibold text-primary-foreground',
                   )}
                 >
@@ -338,7 +396,17 @@ function layout(items: CalendarItem[]): Placed[] {
   return placed
 }
 
-function TimeGrid({ days, items, onOpen }: { days: Day[]; items: CalendarItem[]; onOpen: (item: CalendarItem) => void }) {
+function TimeGrid({
+  days,
+  items,
+  onOpen,
+  onAdd,
+}: {
+  days: Day[]
+  items: CalendarItem[]
+  onOpen: (item: CalendarItem) => void
+  onAdd: (date: string) => void
+}) {
   const { t } = useTranslation('calendar')
   const byDate = byDay(items)
   const now = useNow()
@@ -360,7 +428,7 @@ function TimeGrid({ days, items, onOpen }: { days: Day[]; items: CalendarItem[];
         <div className="grid border-b bg-muted/40" style={cols}>
           <div />
           {days.map((d) => (
-            <div key={d} className="border-l px-2 py-2 text-xs">
+            <div key={d} className={cn('border-l px-2 py-2 text-xs', isWeekend(d) && 'bg-muted/60')}>
               <span className="text-muted-foreground">{formatDay(d, { weekday: 'short' })}</span>{' '}
               <span
                 className={cn(
@@ -400,9 +468,23 @@ function TimeGrid({ days, items, onOpen }: { days: Day[]; items: CalendarItem[];
             ))}
           </div>
           {days.map((d) => (
-            <div key={d} className="relative border-l" style={{ height: hours.length * HOUR_PX }}>
+            <div
+              key={d}
+              className={cn('relative border-l', isWeekend(d) && 'bg-muted/40', d === nowDay && 'bg-primary/[0.04]')}
+              style={{ height: hours.length * HOUR_PX }}
+            >
+              {/* Pulsar una hora libre abre el alta con esa hora; con teclado, el botón «Añadir hito». */}
               {hours.map((h) => (
-                <div key={h} className="border-b border-border/60" style={{ height: HOUR_PX }} aria-hidden />
+                <button
+                  key={h}
+                  type="button"
+                  tabIndex={-1}
+                  aria-hidden
+                  title={t('addAt', { time: hourLabel(h) })}
+                  onClick={() => onAdd(`${d}T${String(h).padStart(2, '0')}:00`)}
+                  className="block w-full cursor-copy border-b border-border/60 hover:bg-accent/50"
+                  style={{ height: HOUR_PX }}
+                />
               ))}
               <ul>
                 {(placedByDay.get(d) ?? []).map((p) => (
@@ -471,6 +553,7 @@ function AgendaView({ items, onOpen }: { items: CalendarItem[]; onOpen: (item: C
                     {item.all_day ? t('allDay') : formatTime(item.starts_at)}
                   </span>
                   <span className={cn('size-2 shrink-0 self-center rounded-full', KIND_STYLE[item.kind].dot)} aria-hidden />
+                  <KindIcon kind={item.kind} className="size-3.5 self-center text-muted-foreground" />
                   <span className="min-w-0">
                     <span className="font-medium">{itemTitle(item)}</span>
                     <span className="text-muted-foreground">
@@ -505,18 +588,26 @@ export function CalendarPage() {
   const { start, end } = viewRange(view, day)
   const calendar = useCalendar(start, end)
   const [selected, setSelected] = useState<CalendarItem | null>(null)
+  const [adding, setAdding] = useState<string | null>(null)
 
   const go = (next: { view?: CalendarView; date?: Day }) =>
     setParams({ view: next.view ?? view, date: next.date ?? day })
 
   return (
     <div className="animate-in fade-in duration-300">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
-        <p className="mt-1.5 max-w-[65ch] text-sm leading-relaxed text-muted-foreground">{t('intro')}</p>
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
+          <p className="mt-1.5 max-w-[65ch] text-sm leading-relaxed text-muted-foreground">{t('intro')}</p>
+        </div>
+        <BrowserReminders />
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-3">
+        <Button size="sm" onClick={() => setAdding(atDefaultTime(view === 'day' || today() < start || today() > end ? day : today()))}>
+          <PlusIcon />
+          {t('add.open')}
+        </Button>
         <Button variant="outline" size="sm" onClick={() => go({ date: today() })}>
           {t('today')}
         </Button>
@@ -565,17 +656,20 @@ export function CalendarPage() {
           items={calendar.data.items}
           onOpen={setSelected}
           onOpenDay={(d) => go({ view: 'day', date: d })}
+          onAdd={setAdding}
         />
       ) : view === 'agenda' ? (
         <AgendaView items={calendar.data.items} onOpen={setSelected} />
       ) : (
-        <TimeGrid days={daysBetween(start, end)} items={calendar.data.items} onOpen={setSelected} />
+        <TimeGrid days={daysBetween(start, end)} items={calendar.data.items} onOpen={setSelected} onAdd={setAdding} />
       )}
 
       <ul aria-label={t('legend')} className="mt-4 flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
         {KINDS.map((kind) => (
           <li key={kind} className="inline-flex items-center gap-1.5">
-            <span className={cn('size-2 rounded-full', KIND_STYLE[kind].dot)} aria-hidden />
+            <span className={cn('inline-grid size-5 place-items-center rounded border', KIND_STYLE[kind].chip)} aria-hidden>
+              <KindIcon kind={kind} />
+            </span>
             {UPCOMING_KIND_LABEL[kind]}
           </li>
         ))}
@@ -584,6 +678,7 @@ export function CalendarPage() {
       </ul>
 
       <EventDialog item={selected} onClose={() => setSelected(null)} />
+      <AddMilestoneDialog date={adding} onClose={() => setAdding(null)} />
     </div>
   )
 }

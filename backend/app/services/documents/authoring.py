@@ -50,10 +50,14 @@ class PreviewResult(BaseModel):
 
 
 def inspect_file(path: Path) -> inspect.DocxInspection | visual.VisualInspection:
+    from app.services.documents import uploads
+
     source = paths.source_file(path)
-    if visual.is_visual(source):
-        return visual.inspect_visual(source)
-    return inspect.inspect_docx(source)
+    report: inspect.DocxInspection | visual.VisualInspection = (
+        visual.inspect_visual(source) if visual.is_visual(source) else inspect.inspect_docx(source)
+    )
+    report.requested_name = uploads.requested_name(source)
+    return report
 
 
 def scaffold_html(

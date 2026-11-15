@@ -8,6 +8,7 @@ import hashlib
 import re
 import unicodedata
 from functools import lru_cache
+from typing import Any
 
 # Formas jurídicas, ya sin puntos y en minúsculas. Solo se quitan al final del nombre.
 LEGAL_FORMS = frozenset(
@@ -92,34 +93,71 @@ def title_segments(title: str) -> list[str]:
     return [seg for part in parts if (seg := normalize_title(part))]
 
 
-def _title_aliases() -> tuple[tuple[re.Pattern[str], str], ...]:
+def _title_aliases() -> tuple[re.Pattern[str] | None, dict[str, str]]:
     from app.core.policies import get_title_aliases  # config/: solo al usarse
 
-    # Caché por contenido: si alguien edita el fichero, el worker lo ve igual que `scoring_key`.
-    return _compile_title_aliases(tuple((k, tuple(v)) for k, v in get_title_aliases().items()))
+    # `get_title_aliases` devuelve el mismo diccionario mientras no se edite el fichero: se compila
+    # una vez por versión, sin reconstruir la clave en cada título (el filtro previo pasa miles).
+    aliases = get_title_aliases()
+    if _COMPILED[0] is not aliases:
+        frozen = tuple((k, tuple(v)) for k, v in aliases.items())
+        _COMPILED[:] = [aliases, _compile_title_aliases(frozen)]
+    return _COMPILED[1]
+
+
+# El último diccionario leído y su compilación.
+_COMPILED: list[Any] = [None, (None, {})]
 
 
 @lru_cache(maxsize=4)
 def _compile_title_aliases(
     frozen: tuple[tuple[str, tuple[str, ...]], ...],
-) -> tuple[tuple[re.Pattern[str], str], ...]:
-    pairs = [
-        (fold(alias), fold(name))
-        for name, aliases in frozen
-        for alias in aliases
-        if fold(alias) and fold(name)
-    ]
+) -> tuple[re.Pattern[str] | None, dict[str, str]]:
+    """Una sola expresión con todas las formas (se buscan en una pasada: el filtro previo pasa
+    miles de títulos) y la forma -> su puesto en inglés."""
+    names: dict[str, str] = {}
+    for name, aliases in frozen:
+        for alias in aliases:
+            if (key := fold(alias)) and fold(name):
+                names.setdefault(key, fold(name))
+    if not names:
+        return None, names
     # Las variantes largas primero: «ingeniero de big data» antes que «ingeniero de datos».
-    pairs.sort(key=lambda pair: len(pair[0]), reverse=True)
-    return tuple((re.compile(rf"\b{re.escape(alias)}\b"), name) for alias, name in pairs)
+    ordered = sorted(names, key=len, reverse=True)
+    return re.compile(r"\b(?:" + "|".join(map(re.escape, ordered)) + r")\b"), names
 
 
 def translate_title(segment: str) -> str:
     """Un segmento normalizado con los puestos de `config/title_aliases.yaml` en inglés:
     «ingeniero de datos snowflake» -> «data engineer snowflake». Sin cambios si no hay ninguno."""
-    for pattern, name in _title_aliases():
-        segment = pattern.sub(name, segment)
-    return segment
+    pattern, names = _title_aliases()
+    if pattern is None:
+        return segment
+    return pattern.sub(lambda m: names[m.group(0)], segment)
+
+
+def role_forms(text: str) -> tuple[str, ...]:
+    """Un puesto o una frase de título normalizados y, si cambia, también en inglés: así da igual
+    en qué idioma lo escriba el usuario y en cuál la oferta («ingeniero de datos» y «data
+    engineer» se comparan como «data engineer»)."""
+    base = normalize_title(text)
+    translated = " ".join(translate_title(base).split())
+    return (base,) if translated == base else (base, translated)
+
+
+def phrase_in_title(phrase: str, title: str) -> bool:
+    """`phrase` como palabras completas dentro de `title`, sin importar tildes, mayúsculas ni el
+    idioma de los puestos de `config/title_aliases.yaml`: «analista de datos» está en «Senior
+    Data Analyst» y «data engineer» en «Ingeniera de datos»."""
+    folded = fold(phrase)
+    if not folded:
+        return False
+    if f" {folded} " in f" {fold(title)} ":
+        return True
+    translated = " ".join(translate_title(normalize_title(phrase)).split())
+    if not translated:
+        return False
+    return f" {translated} " in f" {' '.join(translate_title(normalize_title(title)).split())} "
 
 
 def normalize_location(location: str | None) -> str:

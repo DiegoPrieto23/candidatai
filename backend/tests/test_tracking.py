@@ -438,6 +438,50 @@ def test_milestone_ics_and_feed(session: Session, job_at) -> None:
         calendar_ics.milestone_ics(session, 999)
 
 
+def _alarms(body: str, uid: str) -> list[str]:
+    """Los `TRIGGER` de las alarmas del evento con ese `UID`."""
+    event = body.split(f"UID:{uid}", 1)[1].split("END:VEVENT", 1)[0]
+    lines = event.split("\r\n")
+    return [line.removeprefix("TRIGGER:") for line in lines if line.startswith("TRIGGER:")]
+
+
+def test_ics_alarms(session: Session, job_at) -> None:
+    job = job_at(Stage.APPLIED)
+    timed = process.create_milestone(session, job.id, interview(title="Técnica, con el equipo"))
+    deadline = process.create_milestone(
+        session,
+        job.id,
+        process.MilestoneCreate(kind="deadline", starts_at=_at(3), all_day=True, title="Docs"),
+    )
+    body, _ = calendar_ics.milestone_ics(session, timed.id)
+    assert _alarms(body, f"milestone-{timed.id}@candidatai.local") == ["-P1D", "-PT1H"]
+    assert "BEGIN:VALARM\r\nACTION:DISPLAY\r\n" in body
+    assert "DESCRIPTION:Técnica\\, con el equipo · Data Engineer (Acme 1)" in body
+
+    feed = calendar_ics.feed_ics(session, now=NOW)
+    assert _alarms(feed, f"milestone-{timed.id}@candidatai.local") == ["-P1D", "-PT1H"]
+    assert _alarms(feed, f"milestone-{deadline.id}@candidatai.local") == ["-PT15H"]
+    assert feed.count("BEGIN:VALARM") == feed.count("END:VALARM") == 3
+
+    # El plazo de una oferta sin enviar (sin hito) avisa como los de todo el día.
+    approved = job_at(Stage.APPROVED, title="Analytics Engineer")
+    _extraction(session, approved.id, date(2026, 9, 25))
+    feed = calendar_ics.feed_ics(session, now=NOW)
+    assert _alarms(feed, f"deadline-{approved.id}-20260925@candidatai.local") == ["-PT15H"]
+
+    # Hecho o cancelado: sin alarma (el `.ics` del hito sigue saliendo, para reimportarlo).
+    process.set_milestone_status(
+        session, timed.id, process.MilestoneStatusChange(status="cancelled"), now=NOW
+    )
+    body, _ = calendar_ics.milestone_ics(session, timed.id)
+    assert "STATUS:CANCELLED" in body and "VALARM" not in body
+    process.set_milestone_status(
+        session, deadline.id, process.MilestoneStatusChange(status="done"), now=NOW
+    )
+    body, _ = calendar_ics.milestone_ics(session, deadline.id)
+    assert "VALARM" not in body
+
+
 def test_ics_filename_is_ascii(session: Session, job_at) -> None:
     job = job_at(Stage.APPLIED)
     from app.models import Company

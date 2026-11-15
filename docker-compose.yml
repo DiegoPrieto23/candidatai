@@ -27,6 +27,10 @@ services:
     environment:
       CAI_IN_DOCKER: "1"
       CAI_DATA_DIR: /data
+    # El contenedor no tiene llavero del sistema: la contraseña de un buzón entra como secreto de
+    # Docker (la app la lee de /run/secrets/<nombre>) o como variable en tu .env. El nombre lo
+    # enseña el asistente del buzón en «Detalles técnicos». Ver docs/CONFIGURAR_CORREO.md (Docker).
+    # secrets: [CAI_IMAP_GMAIL_PASSWORD]
     volumes:
       - candidatai-data:/data
       # O una carpeta de tu equipo (en Linux, tiene que poder escribirla el uid 1000):
@@ -40,6 +44,11 @@ services:
       start_period: 60s
       retries: 3
     restart: unless-stopped
+
+# Con el `secrets:` de arriba: un fichero con solo la contraseña, fuera de git.
+# secrets:
+#   CAI_IMAP_GMAIL_PASSWORD:
+#     file: ./secrets/gmail.txt
 
 # Con nombre fijo, para la copia de seguridad (`docker run -v candidatai-data:/data …`).
 volumes:

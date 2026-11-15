@@ -1,7 +1,7 @@
 {
   "hub": {
     "label": "Dónde buscar",
-    "companies": "Empresas objetivo",
+    "companies": "Empresas con portal propio",
     "platforms": "Portales de empleo",
     "extension": "Botón del navegador"
   },
@@ -117,7 +117,7 @@
   },
   "title": "Portales de empleo",
   "broaden": "Ampliar búsqueda",
-  "intro": "Portales que tu agente recorre con tu navegador, en este orden, cuando pulsas «Buscar ofertas». Solo lee: nunca se postula por ti.",
+  "intro": "Tu agente los recorre en este orden cuando buscas.",
   "add": {
     "linkedinTitle": "Se guarda con la búsqueda desactivada, y es lo recomendable.",
     "linkedinP1": "Las condiciones de LinkedIn prohíben recorrer su web con herramientas automáticas y puede restringir o cerrar tu cuenta si lo detecta, aunque el agente use tu navegador y solo lea. Lo seguro es recibir sus ofertas por las alertas por correo («Dónde buscar → Alertas por correo») o con el botón «Enviar a CandidatAI».",
@@ -145,8 +145,8 @@
     "submit": "Añadir",
     "button": "Añadir portal",
     "fromProfile": "Rellenar desde mi perfil",
-    "urlsHintGenerated": "Salen de los puestos y las ubicaciones de tu perfil («Buscar ofertas → Qué buscas»). Puedes quitar o añadir líneas: una dirección por búsqueda.",
-    "urlsHintNoRoles": "Añade en «Buscar ofertas → Qué buscas» los puestos que buscas y se rellenan solas. O haz la búsqueda en el portal y copia aquí la dirección de los resultados.",
+    "urlsHintGenerated": "Salen de los puestos y las ubicaciones de tu perfil («Buscar ofertas → Configuración de tu búsqueda»). Puedes quitar o añadir líneas: una dirección por búsqueda.",
+    "urlsHintNoRoles": "Añade en «Buscar ofertas → Configuración de tu búsqueda» los puestos que buscas y se rellenan solas. O haz la búsqueda en el portal y copia aquí la dirección de los resultados.",
     "willSearch": "Buscará:"
   },
   "edit": {

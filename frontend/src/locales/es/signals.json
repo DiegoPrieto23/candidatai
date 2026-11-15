@@ -35,7 +35,7 @@
       "ai_screening": "Dice que la cribará una IA o un test automático antes de hablar con nadie.",
       "ai_screening_phrase": "Dice que la cribará una IA o un test automático antes de hablar con nadie («{{phrase}}»)."
     },
-    "label": "Señales de oferta dudosa",
+    "label": "Puntos a revisar",
     "title": "Antes de dedicarle tiempo",
     "intro": "Son observaciones para que decidas tú: el encaje y la oferta siguen igual. Si quieres que descarten, pídeselo a tu agente («descarta las ofertas de empresa oculta»)."
   }

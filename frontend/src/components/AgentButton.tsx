@@ -77,6 +77,7 @@ export function AgentButton({
   prepare,
   disabled = false,
   className,
+  onStarted,
 }: {
   action: AgentAction
   jobId?: number
@@ -96,6 +97,8 @@ export function AgentButton({
   prepare?: () => Promise<unknown>
   disabled?: boolean
   className?: string
+  /** Se abrió en una terminal o se puso en marcha en segundo plano (no al dejarlo para luego). */
+  onStarted?: () => void
 }) {
   const { t } = useTranslation('agentButton')
   const { t: tAgent } = useTranslation('agent')
@@ -136,6 +139,7 @@ export function AgentButton({
         const watched = WATCHED_ACTIONS[action] ? ` ${t('ready.watching')}` : ''
         show({ tone: 'ok', text: (warning ? `${opened} ${t('warning', { warning })}` : opened) + watched })
         watchFor(action, result.job_id ?? jobId, milestoneId)
+        onStarted?.()
       },
       onError: (error) => {
         const order = error instanceof ApiError ? error.details.find((d) => d.field === 'prompt')?.received : null
@@ -158,6 +162,7 @@ export function AgentButton({
           link: true,
         })
         watchFor(action, result.job_id ?? jobId, milestoneId)
+        onStarted?.()
       },
       onError: (error) => failed(error, t('backgroundFailed')),
     }))

@@ -5,13 +5,14 @@
  */
 import { useState, type FormEvent, type ReactNode } from 'react'
 import type { ParseKeys } from 'i18next'
-import { useTranslation } from 'react-i18next'
-import { ArrowSquareOutIcon, CaretDownIcon, CheckCircleIcon, EnvelopeSimpleIcon, FolderIcon, WarningIcon } from '@phosphor-icons/react'
+import { Trans, useTranslation } from 'react-i18next'
+import { ArrowSquareOutIcon, CaretDownIcon, CheckCircleIcon, EnvelopeSimpleIcon, FolderIcon, LockKeyIcon, WarningIcon } from '@phosphor-icons/react'
 import type { MailSourceInput, MailSourceView, MailTestResult } from '@/api/client'
 import {
   useCreateMailSource,
   useDeleteMailSource,
   useMailSources,
+  useMoveSecretsToKeyring,
   useTestMailSource,
   useTestNewMailSource,
   useUpdateMailSource,
@@ -40,6 +41,8 @@ interface Provider {
   host?: string
   port?: number
   steps: Key[]
+  /** El enlace oficial que va dentro de un paso (su `<a>`): la página donde se hace lo que pide. */
+  stepLinks?: Partial<Record<Key, string>>
   /** La sección de `docs/CONFIGURAR_CORREO.md` de este proveedor. */
   guide: string
   /** El texto del enlace y su URL oficial. */
@@ -52,13 +55,13 @@ const PROVIDERS: Record<ProviderId, Provider> = {
     host: 'imap.gmail.com',
     port: 993,
     steps: ['providers.gmail.step1', 'providers.gmail.step2', 'providers.gmail.step3', 'providers.gmail.step4'],
+    stepLinks: {
+      'providers.gmail.step1': 'https://myaccount.google.com/security',
+      'providers.gmail.step2': 'https://myaccount.google.com/apppasswords',
+      'providers.gmail.step3': 'https://support.google.com/mail/answer/6579',
+    },
     guide: 'https://github.com/DiegoPrieto23/candidatai/blob/main/docs/CONFIGURAR_CORREO.md#gmail',
-    links: [
-      ['providers.gmail.linkTwoStep', 'https://myaccount.google.com/security'],
-      ['providers.gmail.linkAppPasswords', 'https://myaccount.google.com/apppasswords'],
-      ['providers.gmail.linkHelp', 'https://support.google.com/mail/answer/185833'],
-      ['providers.gmail.linkFilters', 'https://support.google.com/mail/answer/6579'],
-    ],
+    links: [['providers.gmail.linkHelp', 'https://support.google.com/mail/answer/185833']],
   },
   outlook: {
     host: 'outlook.office365.com',
@@ -80,21 +83,17 @@ const PROVIDERS: Record<ProviderId, Provider> = {
     host: 'imap.mail.yahoo.com',
     port: 993,
     steps: ['providers.yahoo.step1', 'providers.yahoo.step2'],
+    stepLinks: { 'providers.yahoo.step1': 'https://help.yahoo.com/kb/SLN15241.html' },
     guide: 'https://github.com/DiegoPrieto23/candidatai/blob/main/docs/CONFIGURAR_CORREO.md#yahoo',
-    links: [
-      ['providers.yahoo.linkAppPasswords', 'https://help.yahoo.com/kb/SLN15241.html'],
-      ['providers.yahoo.linkImap', 'https://help.yahoo.com/kb/SLN4075.html'],
-    ],
+    links: [['providers.yahoo.linkImap', 'https://help.yahoo.com/kb/SLN4075.html']],
   },
   icloud: {
     host: 'imap.mail.me.com',
     port: 993,
     steps: ['providers.icloud.step1', 'providers.icloud.step2', 'providers.icloud.step3'],
+    stepLinks: { 'providers.icloud.step2': 'https://support.apple.com/en-us/102654' },
     guide: 'https://github.com/DiegoPrieto23/candidatai/blob/main/docs/CONFIGURAR_CORREO.md#icloud',
-    links: [
-      ['providers.icloud.linkAppPasswords', 'https://support.apple.com/en-us/102654'],
-      ['providers.icloud.linkImap', 'https://support.apple.com/en-us/102525'],
-    ],
+    links: [['providers.icloud.linkImap', 'https://support.apple.com/en-us/102525']],
   },
   imap: { port: 993, steps: ['providers.imap.step1', 'providers.imap.step2', 'providers.imap.step3'], guide: 'https://github.com/DiegoPrieto23/candidatai/blob/main/docs/CONFIGURAR_CORREO.md#otro-proveedor-imap', links: [] },
   folder: { steps: ['providers.folder.step1', 'providers.folder.step2', 'providers.folder.step3'], guide: 'https://github.com/DiegoPrieto23/candidatai/blob/main/docs/CONFIGURAR_CORREO.md#carpeta-de-eml', links: [] },
@@ -134,7 +133,40 @@ function TestOutcome({ result }: { result: MailTestResult }) {
 
 // --- Panel ---------------------------------------------------------------------------------------
 
-function MailboxRow({ source, onEdit }: { source: MailSourceView; onEdit: () => void }) {
+/** Dónde está la contraseña: en el llavero, en un fichero (con el botón para moverla) o fuera de la app. */
+function PasswordStorage({ source, keyring }: { source: MailSourceView; keyring: boolean }) {
+  const { t } = useTranslation('mailboxes')
+  const move = useMoveSecretsToKeyring()
+  const storage = source.password_storage
+  if (!storage || !source.secret_ref) return null
+  if (storage !== 'file') {
+    return (
+      <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        {storage === 'keyring' && <LockKeyIcon className="size-3.5 shrink-0" weight="duotone" aria-hidden />}
+        {t(`row.storage.${storage}`)}
+      </p>
+    )
+  }
+  const ref = source.secret_ref
+  return (
+    <div className="flex flex-wrap items-center gap-2 rounded-md border border-warning-border bg-warning px-2.5 py-1.5 text-xs text-warning-foreground">
+      <WarningIcon className="size-3.5 shrink-0" weight="fill" />
+      <span className="flex-1">{t(keyring ? 'row.storage.file' : 'row.storage.fileNoKeyring')}</span>
+      {keyring && (
+        <Button size="xs" disabled={move.isPending} onClick={() => move.mutate([ref])}>
+          {move.isPending ? t('row.storage.moving') : t('row.storage.move')}
+        </Button>
+      )}
+      {(move.error || (move.data && move.data.failed.length > 0)) && (
+        <p role="alert" className="basis-full">
+          {move.error ? errorMessage(move.error) : t('keyringNotice.failed')}
+        </p>
+      )}
+    </div>
+  )
+}
+
+function MailboxRow({ source, keyring, onEdit }: { source: MailSourceView; keyring: boolean; onEdit: () => void }) {
   const { t } = useTranslation('mailboxes')
   const update = useUpdateMailSource()
   const remove = useDeleteMailSource()
@@ -185,6 +217,7 @@ function MailboxRow({ source, onEdit }: { source: MailSourceView; onEdit: () => 
           </Button>
         </div>
       )}
+      <PasswordStorage source={source} keyring={keyring} />
       {error && (
         <div className="rounded-md bg-destructive/5 px-2.5 py-1.5 text-xs">
           <p className="font-medium">{t('row.lastError')}</p>
@@ -267,7 +300,7 @@ export function MailboxesPanel({ onEdit, defaultOpen = false }: { onEdit: (sourc
         {query.data?.demo && <p className="px-4 pt-3 text-xs text-muted-foreground">{t('panel.demo')}</p>}
         <ul className="divide-y">
           {sources.map((source) => (
-            <MailboxRow key={source.id} source={source} onEdit={() => onEdit(source)} />
+            <MailboxRow key={source.id} source={source} keyring={query.data?.keyring ?? false} onEdit={() => onEdit(source)} />
           ))}
         </ul>
       </CollapsibleContent>
@@ -372,9 +405,28 @@ function ProviderGuide({ provider }: { provider: ProviderId }) {
     <div className="space-y-2 rounded-lg bg-muted/40 p-3 text-sm">
       {preset.steps.length > 0 && (
         <ol className="list-decimal space-y-1 pl-5">
-          {preset.steps.map((key) => (
-            <li key={key}>{t(key)}</li>
-          ))}
+          {preset.steps.map((key) => {
+            const url = preset.stepLinks?.[key]
+            return (
+              <li key={key}>
+                {url ? (
+                  <Trans
+                    t={t}
+                    i18nKey={key}
+                    components={{
+                      a: (
+                        // El texto del enlace lo pone la traducción.
+                        // oxlint-disable-next-line jsx-a11y/anchor-has-content
+                        <a href={url} target="_blank" rel="noopener noreferrer" className="font-medium underline underline-offset-2" />
+                      ),
+                    }}
+                  />
+                ) : (
+                  t(key)
+                )}
+              </li>
+            )
+          })}
         </ol>
       )}
       <p className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
@@ -515,6 +567,7 @@ function MailboxForm({
   const create = useCreateMailSource()
   const update = useUpdateMailSource()
   const test = useTestNewMailSource()
+  const list = useMailSources().data
   const [provider, setProvider] = useState<ProviderId>(editing ? (editing.kind === 'folder' ? 'folder' : 'imap') : initialProvider)
   const [form, setForm] = useState<Form>(() => initialForm(provider, editing))
   const [envLine, setEnvLine] = useState<string | null>(null)
@@ -616,14 +669,23 @@ function MailboxForm({
     <form onSubmit={submit} className="grid gap-4">
       <DialogHeader>
         <DialogTitle>{editing ? t('dialog.editTitle', { name: editing.label }) : t('dialog.addTitle')}</DialogTitle>
-        <DialogDescription>{t('dialog.description')}</DialogDescription>
+        <DialogDescription>
+          {list && !list.can_store_passwords
+            ? t('dialog.descriptionDocker')
+            : list && !list.keyring
+              ? t('dialog.descriptionFile')
+              : t('dialog.description')}
+        </DialogDescription>
       </DialogHeader>
       {body}
       {test.data && <TestOutcome result={test.data} />}
       {envLine && (
-        <p role="status" className="rounded-lg border border-warning-border bg-warning p-3 text-sm text-warning-foreground">
-          <InlineCode text={t('dialog.envLine', { line: envLine })} />
-        </p>
+        <div role="status" className="grid gap-1.5 rounded-lg border border-warning-border bg-warning p-3 text-sm text-warning-foreground">
+          <p>{t('dialog.envLine')}</p>
+          <Reveal label={t('technicalDetails', { ns: 'common' })} className="text-xs">
+            <InlineCode text={t('dialog.envLineName', { line: `\`${envLine.replace(/=.*$/, '')}\`` })} />
+          </Reveal>
+        </div>
       )}
       {error && (
         <p role="alert" className="text-sm text-destructive">

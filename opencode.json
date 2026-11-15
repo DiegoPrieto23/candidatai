@@ -58,6 +58,7 @@
     "candidatai_list_agent_requests": "allow",
     "candidatai_get_assistant_request": "allow",
     "candidatai_save_assistant_answer": "allow",
+    "candidatai_save_profile_suggestion": "allow",
     "read": {
       "*": "allow",
       ".env": "deny",

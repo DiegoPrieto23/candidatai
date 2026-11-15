@@ -1,6 +1,6 @@
 {
   "title": "Calendario",
-  "intro": "Tus entrevistas, pruebas y plazos, también los pasados. Se añaden desde la ficha de cada oferta o al mover una tarjeta en Procesos.",
+  "intro": "Tus entrevistas, pruebas y plazos, también los pasados. Añádelos aquí, desde la ficha de cada oferta o al mover una tarjeta en Procesos.",
   "views": {
     "label": "Vista",
     "month": "Mes",
@@ -27,5 +27,25 @@
     "stage": "Proceso",
     "openJob": "Ver la oferta",
     "ics": "Añadir a mi calendario"
+  },
+  "addOn": "Añadir un hito el {{day}}",
+  "addAt": "Añadir un hito a las {{time}}",
+  "add": {
+    "open": "Añadir hito",
+    "title": "Añadir un hito",
+    "description": "Elige la oferta y completa el hito: se guarda en su ficha.",
+    "job": "Oferta",
+    "pickJob": "Elige una oferta…",
+    "none": "Los hitos se guardan en una oferta abierta.",
+    "toBoard": "Ver los procesos"
+  },
+  "reminders": {
+    "label": "Avisos del navegador",
+    "hintAria": "Cómo funcionan los avisos",
+    "hint": "Con CandidatAI abierta, el navegador te avisa una hora antes de cada entrevista o prueba, el día anterior de cada plazo y una vez al día de los seguimientos pendientes. Para avisos con la app cerrada, lleva los hitos a tu calendario desde cada hito o desde Procesos.",
+    "blocked": "Permite los avisos de esta página en la configuración del navegador para activarlos.",
+    "followupsTitle": "Seguimientos pendientes",
+    "followupsBody_one": "{{count}} candidatura espera tu seguimiento.",
+    "followupsBody_other": "{{count}} candidaturas esperan tu seguimiento."
   }
 }

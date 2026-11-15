@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockApi, renderApp, status } from '@/test/utils'
@@ -32,6 +32,7 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  localStorage.removeItem('cai.browser')
   vi.unstubAllGlobals()
   vi.restoreAllMocks()
 })
@@ -105,7 +106,7 @@ describe('«Dónde buscar → Botón del navegador»', () => {
     renderApp('/fuentes/extension')
 
     await userEvent.click(await screen.findByRole('button', { name: 'Conectar' }))
-    expect(await screen.findByRole('alert')).toHaveTextContent('La app no acepta esta extensión.')
+    expect(await screen.findByText('La app no acepta esta extensión.')).toHaveAttribute('role', 'alert')
   })
 
   it('fuera de Chrome, Edge o Brave, avisa', async () => {
@@ -113,6 +114,30 @@ describe('«Dónde buscar → Botón del navegador»', () => {
     mockApi({ 'GET /status': status(), 'GET /capture/extension': STATUS })
     renderApp('/fuentes/extension')
 
-    expect(await screen.findByText(/funciona en Chrome, Edge o Brave/)).toBeInTheDocument()
+    // Lo dice antes de los pasos, que no salen: con Firefox no se puede seguir.
+    expect(await screen.findByText(/funciona en Chrome, Edge y Brave/)).toBeInTheDocument()
+    const picker = screen.getByRole('radiogroup', { name: '¿Qué navegador usas?' })
+    expect(within(picker).getByRole('radio', { name: /Firefox/ })).toHaveAttribute('aria-checked', 'true')
+    expect(screen.queryByText('firefox://extensions')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Conectar' })).not.toBeInTheDocument()
+  })
+
+  it('primero el navegador: con Edge, los pasos de Edge y el aviso de abrir la app en él', async () => {
+    mockApi({ 'GET /status': status(), 'GET /capture/extension': STATUS })
+    renderApp('/fuentes/extension')
+
+    const picker = await screen.findByRole('radiogroup', { name: '¿Qué navegador usas?' })
+    // Detecta Chrome (el de la prueba) y enseña sus pasos.
+    expect(within(picker).getByRole('radio', { name: /Chrome \(este\)/ })).toHaveAttribute('aria-checked', 'true')
+    expect(screen.getByText('chrome://extensions')).toBeInTheDocument()
+
+    await userEvent.click(within(picker).getByRole('radio', { name: 'Edge' }))
+    expect(screen.getByText('edge://extensions')).toBeInTheDocument()
+    expect(screen.getByText(/en el panel de la izquierda/)).toBeInTheDocument()
+    expect(screen.getByText('Cargar desempaquetada')).toBeInTheDocument()
+    expect(screen.getAllByText((_, el) => el?.tagName === 'LI' && /^Pulsa el botón Extensiones/.test(el.textContent ?? ''))).toHaveLength(1)
+    expect(screen.getByText(/abre CandidatAI en Edge/)).toBeInTheDocument()
+    // Se recuerda para la próxima vez.
+    expect(localStorage.getItem('cai.browser')).toBe('edge')
   })
 })

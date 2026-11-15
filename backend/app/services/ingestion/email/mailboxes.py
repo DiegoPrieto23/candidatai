@@ -21,6 +21,7 @@ from email import message_from_bytes, policy
 from pathlib import Path
 from typing import Literal
 
+from app.core import secrets
 from app.core.config import Settings
 
 IMAP_TIMEOUT = 30
@@ -61,12 +62,13 @@ def settings_account(settings: Settings, folder: str | None = None) -> ImapAccou
     """La cuenta `CAI_IMAP_*` de `.env`, si está configurada (nunca en una demo)."""
     if not settings.imap_configured:
         return None
-    assert settings.imap_host and settings.imap_user and settings.imap_password
+    password = secrets.get(secrets.IMAP_PASSWORD)
+    assert settings.imap_host and settings.imap_user and password
     return ImapAccount(
         settings.imap_host,
         settings.imap_port,
         settings.imap_user,
-        settings.imap_password.get_secret_value(),
+        password,
         folder or settings.imap_folder,
     )
 

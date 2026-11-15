@@ -28,7 +28,8 @@
   "import-profile-from-cv": "Lee el CV que has subido y propone añadir a tu perfil lo que le falte, como experiencia o logros. Te enseña las diferencias y tú decides qué se guarda.",
   "expand": "Revisa tu perfil entero y propone mejoras: logros más concretos, huecos y datos que faltan, y proyectos, skills y certificaciones de tus enlaces públicos (GitHub, portfolio…), con su fuente. Tú decides qué se guarda.",
   "improve-profile-item": "Propone una versión más clara y concreta de este elemento de tu perfil, sin inventar nada. Te enseña el cambio y te pregunta antes de guardarlo.",
+  "translate-summary": "Traduce al inglés el resumen en español de tu perfil, sin añadir nada. La propuesta aparece junto al campo para usarla, editarla o descartarla antes de guardar.",
   "propose-stories": "Propone historias para entrevistas (situación, tarea, acción, resultado) a partir de tu experiencia y tus logros. Las añade a tu perfil solo con tu confirmación.",
   "import-cv-template": "Convierte este CV subido en una plantilla con el mismo diseño para tus próximos CVs. Te deja comparar el resultado antes de guardarla.",
-  "assistant": "Atiende lo que has escrito en «Pídeselo a tu agente», en la ayuda del portal, y deja la respuesta en ese panel."
+  "assistant": "Atiende lo que has escrito en el «Asistente» del portal, y deja la respuesta en ese panel."
 }

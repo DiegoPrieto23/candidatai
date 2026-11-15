@@ -32,7 +32,7 @@ requests_app = typer.Typer(
     no_args_is_help=True,
 )
 assistant_app = typer.Typer(
-    help="«Pídeselo a tu agente»: lo que escribiste en la ayuda del portal.",
+    help="«Asistente»: lo que escribiste en la ayuda del portal.",
     no_args_is_help=True,
 )
 profile_app = typer.Typer(help="Perfil del candidato.", no_args_is_help=True)
@@ -41,8 +41,8 @@ eval_app = typer.Typer(help="Evaluación de la calidad del matching.", no_args_i
 cv_app = typer.Typer(help="CVs a medida: contenido, renders y verificación.", no_args_is_help=True)
 templates_app = typer.Typer(help="Plantillas de CV.", no_args_is_help=True)
 sources_app = typer.Typer(
-    help="Fuentes de ofertas: empresas objetivo (ATS), portales con API y plataformas para la "
-    "búsqueda con navegador.",
+    help="Fuentes de ofertas: empresas con portal propio (ATS), portales con API y plataformas "
+    "para la búsqueda con navegador.",
     no_args_is_help=True,
 )
 mail_sources_app = typer.Typer(
@@ -283,7 +283,7 @@ def _render_match(view: Any) -> None:
     for note in breakdown.notes:
         typer.secho(f"\nNota: {note}", fg="yellow")
     if view.signals:
-        typer.echo("\nSeñales de oferta dudosa (no cuentan en el score):")
+        typer.echo("\nPuntos a revisar (no cuentan en el score):")
         for signal in view.signals:
             typer.echo(f"  - {signal.code}: {signal.text}")
     if view.assessment:
@@ -970,13 +970,13 @@ def _render_context(view: Any) -> None:
 @jobs_app.command("signals")
 def jobs_signals(
     recompute: bool = typer.Option(
-        False, "--recompute", help="Recalcula las señales de oferta dudosa de todas las ofertas."
+        False, "--recompute", help="Recalcula los puntos a revisar de todas las ofertas."
     ),
     as_json: bool = JSON_OPTION,
 ) -> None:
-    """Señales de oferta dudosa (rango salarial amplio, empresa oculta, temporal, publicada hace
-    meses, cribado con IA). Se calculan solas al extraer; esto las recalcula todas, p. ej. tras
-    editar config/doubtful_patterns.yaml. No cambian el score."""
+    """Puntos a revisar de cada oferta (rango salarial amplio, empresa oculta, temporal,
+    publicada hace meses, cribado con IA). Se calculan solos al extraer; esto los recalcula todos,
+    p. ej. tras editar config/doubtful_patterns.yaml. No cambian el score."""
     from app.services import doubtful
 
     if not recompute:
@@ -1329,7 +1329,7 @@ def templates_preview(
         typer.secho(f"  Aviso: {warning}", fg=typer.colors.YELLOW)
 
 
-# --- Fuentes: empresas objetivo y portales -----------------------------------------------------
+# --- Fuentes: empresas con portal propio y portales -----------------------------------------------
 
 KIND_OPTION = typer.Option(
     ...,
@@ -1463,7 +1463,7 @@ def sources_add(
     website: str | None = WEBSITE_OPTION,
     as_json: bool = JSON_OPTION,
 ) -> None:
-    """Añade una empresa objetivo (ATS + slug) o una búsqueda en un portal con API."""
+    """Añade una empresa con portal propio (ATS + slug) o una búsqueda en un portal con API."""
     from app.services.ingestion import service as sources
 
     try:
@@ -1514,6 +1514,8 @@ def _render_mail_sources(result: Any) -> None:
             where = f"{box.user} en {box.host}:{box.port}, carpeta «{box.folder}»"
             if not box.has_password:
                 where += f" (falta la contraseña: {box.secret_ref})"
+            elif box.password_storage == "file":
+                where += " (contraseña en claro en .env: muévela al llavero desde la UI)"
         origin = " (de .env)" if box.from_env else ""
         typer.echo(f"[{box.id}] {box.label}{origin}: {where}; {state}")
         if box.last_error:
@@ -2046,6 +2048,20 @@ def _render_funnel(result: Any) -> None:
                 f"  {labels[group.group]}: {group.applied} enviadas, "
                 f"respuesta {_pct(group.reply_rate)}"
             )
+    channels = {
+        "referral": "Por referencia",
+        "company": "Web de la empresa",
+        "portal": "Portales de empleo",
+        "manual": "Añadidas por ti",
+    }
+    for channel in result.by_channel:
+        if channel.applied:
+            median = channel.median_reply_days
+            days = "" if median is None else f", mediana {median} días"
+            typer.echo(
+                f"  {channels[channel.channel]}: {channel.applied} enviadas, "
+                f"respuesta {_pct(channel.reply_rate)}{days}"
+            )
     if result.discard_reasons:
         reasons = ", ".join(f"{r.reason} ({r.count})" for r in result.discard_reasons)
         typer.echo(f"Descartes: {reasons}")
@@ -2070,7 +2086,7 @@ def _render_calibration(result: Any) -> None:
         ("Referencia", result.by_referral),
         ("Días hasta el envío", result.by_days_to_apply),
         (
-            "Señal de oferta dudosa (las de ahora; una oferta puede estar en varias)",
+            "Puntos a revisar (los de ahora; una oferta puede estar en varios)",
             result.by_signal,
         ),
     )
@@ -2516,6 +2532,7 @@ register_tools(
         "complete_agent_request": _render_message,
         "get_assistant_request": _render_assistant_request,
         "save_assistant_answer": _render_message,
+        "save_profile_suggestion": _render_message,
         "get_status": _render_status,
         "get_job_contacts": _render_job_contacts,
         "get_company_research": _render_company_research,

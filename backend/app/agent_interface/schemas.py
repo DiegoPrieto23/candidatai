@@ -58,7 +58,7 @@ CATALOG: tuple[SchemaEntry, ...] = (
     SchemaEntry("interview-notes", "save_interview_notes", "Notas del repaso de una entrevista"),
     SchemaEntry("source", "save_source", "Plataforma de búsqueda con el navegador"),
     SchemaEntry("source-run", "record_source_run", "Resultado de un recorrido por una plataforma"),
-    SchemaEntry("assistant-answer", "save_assistant_answer", "Respuesta a «Pídeselo a tu agente»"),
+    SchemaEntry("assistant-answer", "save_assistant_answer", "Respuesta a «Asistente»"),
 )
 BY_NAME = {entry.name: entry for entry in CATALOG}
 BY_TOOL = {entry.tool: entry for entry in CATALOG}

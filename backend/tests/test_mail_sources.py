@@ -88,7 +88,8 @@ def test_in_docker_the_password_is_not_stored(
         env_file.write_secret("CAI_IMAP_A_PASSWORD", "x")
     result = mail_sources.create_mail_source(session, _imap("Trabajo", 993))
     assert result.env_line == "CAI_IMAP_TRABAJO_PASSWORD=…"
-    assert "recrea Docker" in result.message and PASSWORD not in result.message
+    assert "en Docker" in result.message and PASSWORD not in result.message
+    assert ".env" not in result.message and "CAI_" not in result.message
     assert not result.source.has_password
     assert not mail_sources.list_mail_sources(session).can_store_passwords
 
@@ -196,11 +197,11 @@ def test_env_account_appears_as_principal(
     assert (principal.host, principal.user, principal.folder) == ("127.0.0.1", USER, FOLDER)
     assert principal.has_password and principal.secret_ref == "CAI_IMAP_PASSWORD"
     # Se cambia en `.env`; aquí solo activarla, el nombre o si lee respuestas.
-    with pytest.raises(mail_sources.MailSourceNotAllowedError, match="host"):
+    with pytest.raises(mail_sources.MailSourceNotAllowedError, match="configuración de la"):
         mail_sources.update_mail_source(
             session, principal.id, MailSourcePatch.model_validate({"host": "imap.otro.com"})
         )
-    with pytest.raises(mail_sources.MailSourceNotAllowedError, match="borra CAI_IMAP_HOST"):
+    with pytest.raises(mail_sources.MailSourceNotAllowedError, match="desactívala aquí"):
         mail_sources.delete_mail_source(session, principal.id)
     mail_sources.update_mail_source(
         session, principal.id, MailSourcePatch.model_validate({"enabled": False})

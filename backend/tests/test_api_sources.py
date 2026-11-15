@@ -1,4 +1,4 @@
-"""API de fuentes (`/sources`) para la página «Dónde buscar → Empresas objetivo» de la UI."""
+"""API de fuentes (`/sources`) para «Dónde buscar → Empresas con portal propio» de la UI."""
 
 from collections.abc import Iterator
 

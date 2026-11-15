@@ -56,7 +56,7 @@ describe('Buzones de las alertas (fase 27.4)', () => {
     renderApp('/fuentes/correo')
     const dialog = await openWizard()
     expect(within(dialog).getByRole('tab', { name: 'Gmail', selected: true })).toBeInTheDocument()
-    expect(within(dialog).getByRole('link', { name: /Contraseñas de aplicación/ })).toHaveAttribute(
+    expect(within(dialog).getByRole('link', { name: 'contraseña de aplicación' })).toHaveAttribute(
       'href',
       'https://myaccount.google.com/apppasswords',
     )
@@ -125,9 +125,10 @@ describe('Buzones de las alertas (fase 27.4)', () => {
     })
   })
 
-  it('en Docker dice qué línea añadir a .env en vez de cerrar', async () => {
+  it('en Docker dice con palabras dónde va la contraseña, y el nombre en los detalles técnicos', async () => {
     mockApi(
       routes([], {
+        'GET /mail-sources': { sources: [], demo: false, can_store_passwords: false, keyring: false },
         'POST /mail-sources': {
           status: 201,
           body: { source: mailbox(1, { has_password: false }), message: 'ok', env_line: 'CAI_IMAP_GMAIL_PASSWORD=…' },
@@ -139,8 +140,64 @@ describe('Buzones de las alertas (fase 27.4)', () => {
     await userEvent.type(within(dialog).getByLabelText('Correo electrónico'), 'ana@gmail.com')
     await userEvent.type(within(dialog).getByLabelText('Contraseña de aplicación'), 'x')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Guardar' }))
-    expect(await within(dialog).findByText('CAI_IMAP_GMAIL_PASSWORD=…')).toBeInTheDocument()
+    expect(await within(dialog).findByText(/En Docker, la contraseña se configura en el contenedor/)).toBeInTheDocument()
+    expect(within(dialog).getByText('La app solo lee: tus correos se quedan tal cual. La contraseña se configura en el contenedor.')).toBeInTheDocument()
+    await userEvent.click(within(dialog).getByRole('button', { name: /Detalles técnicos/ }))
+    expect(within(dialog).getByText('CAI_IMAP_GMAIL_PASSWORD')).toBeInTheDocument()
     expect(screen.getByRole('dialog')).toBeInTheDocument()
+  })
+
+  it('cada buzón dice dónde está su contraseña y mueve al llavero la que está en un fichero', async () => {
+    const calls = mockApi(
+      routes([], {
+        'GET /mail-sources': {
+          sources: [
+            mailbox(1, { label: 'Gmail', password_storage: 'keyring' }),
+            mailbox(2, { label: 'Trabajo', password_storage: 'file' }),
+          ],
+          demo: false,
+          can_store_passwords: true,
+          keyring: true,
+        },
+        'POST /secrets/move-to-keyring': { status: 200, body: { moved: ['CAI_IMAP_BUZON_2_PASSWORD'], failed: [], message: 'ok' } },
+      }),
+    )
+    renderApp('/fuentes/correo')
+    expect(await screen.findByText('Contraseña en el llavero del sistema')).toBeInTheDocument()
+    expect(screen.getByText('Contraseña guardada en un fichero de tu equipo, sin cifrar.')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Mover al llavero' }))
+    expect(calls.find((c) => c.path === '/secrets/move-to-keyring')?.body).toEqual({ names: ['CAI_IMAP_BUZON_2_PASSWORD'] })
+  })
+
+  it('el aviso ofrece mover al llavero las contraseñas en claro y «Ahora no» las deja como están', async () => {
+    const plaintext = {
+      secrets: [
+        { name: 'CAI_IMAP_GMAIL_PASSWORD', kind: 'mailbox', label: 'Gmail' },
+        { name: 'CAI_ADZUNA_APP_KEY', kind: 'adzuna', label: null },
+      ],
+      keyring: true,
+    }
+    const calls = mockApi(
+      routes([], {
+        'GET /secrets/plaintext': plaintext,
+        'POST /secrets/move-to-keyring': { status: 200, body: { moved: [], failed: [], message: 'ok' } },
+      }),
+    )
+    const view = renderApp('/fuentes/correo')
+    const notice = (await screen.findByText('Guarda tus contraseñas en el llavero del sistema')).closest('[role="status"]') as HTMLElement
+    expect(within(notice).getByText('Buzón «Gmail»')).toBeInTheDocument()
+    expect(within(notice).getByText('Clave de Adzuna')).toBeInTheDocument()
+    expect(calls.some((c) => c.path === '/secrets/move-to-keyring')).toBe(false) // nada sin pulsar
+    await userEvent.click(within(notice).getByRole('button', { name: 'Mover al llavero' }))
+    expect(calls.find((c) => c.path === '/secrets/move-to-keyring')?.body).toEqual({
+      names: ['CAI_IMAP_GMAIL_PASSWORD', 'CAI_ADZUNA_APP_KEY'],
+    })
+    await userEvent.click(within(notice).getByRole('button', { name: 'Ahora no' }))
+    expect(screen.queryByText('Guarda tus contraseñas en el llavero del sistema')).not.toBeInTheDocument()
+    view.unmount()
+    renderApp('/fuentes/correo')
+    await screen.findAllByRole('button', { name: 'Añadir buzón' })
+    expect(screen.queryByText('Guarda tus contraseñas en el llavero del sistema')).not.toBeInTheDocument()
   })
 
   it('el panel enseña el estado, se abre solo con un error y prueba, desactiva y quita', async () => {

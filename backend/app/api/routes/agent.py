@@ -464,7 +464,7 @@ def cancel_agent_request(
         raise ToolError("invalid_request", str(exc)) from exc
 
 
-# --- «Pídeselo a tu agente», en la ayuda del portal -----------------------------------------------
+# --- «Asistente», en la ayuda del portal -----------------------------------------------
 
 
 class AssistantBody(BaseModel):

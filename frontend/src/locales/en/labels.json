@@ -192,7 +192,7 @@
     "location": "Location",
     "language": "Language",
     "title_keyword": "Title keywords",
-    "signal": "Doubtful-job signals you excluded",
+    "signal": "Doesn't say which company is hiring",
     "salary": "Below your salary minimum",
     "contract": "Contract or working-time type",
     "employer_kind": "Employer type"

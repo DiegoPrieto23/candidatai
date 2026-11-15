@@ -95,8 +95,28 @@ describe('Buscar ofertas', () => {
     await userEvent.click(box)
     await userEvent.click(screen.getByRole('button', { name: /Afinar esta búsqueda/ }))
     await userEvent.type(screen.getByLabelText('Puesto'), 'x"; rm')
-    expect(screen.getByRole('alert')).toHaveTextContent(/solo letras/i)
+    expect(within(screen.getByRole('region', { name: 'Buscar' })).getByRole('alert')).toHaveTextContent(/solo letras/i)
     expect(screen.getByRole('button', { name: /^Buscar ahora/ })).toBeDisabled()
+  })
+
+  it('una casilla encima de la lista selecciona o quita todos los portales', async () => {
+    mockApi(routes([platform(1, 'InfoJobs'), platform(2, 'Tecnoempleo')]))
+    renderApp('/buscar')
+    const all = await screen.findByRole('checkbox', { name: 'Quitar selección' })
+    expect(all).toBeChecked()
+    await userEvent.click(all)
+    expect(screen.getByRole('checkbox', { name: /InfoJobs/ })).not.toBeChecked()
+    expect(screen.getByRole('checkbox', { name: /Tecnoempleo/ })).not.toBeChecked()
+    expect(screen.getByText('Elige al menos un portal.')).toBeInTheDocument()
+    // Con uno solo, la casilla queda a medias.
+    await userEvent.click(screen.getByRole('checkbox', { name: /InfoJobs/ }))
+    const some = screen.getByRole('checkbox', { name: 'Seleccionar todos' })
+    expect(some).not.toBeChecked()
+    expect((some as HTMLInputElement).indeterminate).toBe(true)
+    await userEvent.click(some)
+    expect(screen.getByRole('checkbox', { name: /Tecnoempleo/ })).toBeChecked()
+    // «Gestionar portales» ya no está junto a la selección: va en «Dónde buscar».
+    expect(screen.queryByRole('link', { name: 'Gestionar portales' })).not.toBeInTheDocument()
   })
 
   it('avisa de lo que hay que preparar y resume la búsqueda', async () => {
@@ -109,7 +129,8 @@ describe('Buscar ofertas', () => {
     )
     renderApp('/buscar')
     expect(await screen.findByText('2 portales, 3 búsquedas')).toBeInTheDocument()
-    expect(screen.getByText(/Hasta 25 ofertas/)).toBeInTheDocument()
+    expect(screen.getByText(/Hasta 25 ofertas, las más recientes/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Qué ofertas cuentan' })).toBeInTheDocument()
     expect(screen.getByText('Ten el navegador conectado a tu agente.')).toBeInTheDocument()
     expect(screen.getByText('Inicia sesión en Glassdoor.')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('checkbox', { name: /Glassdoor/ }))

@@ -181,13 +181,15 @@ def test_reads_with_contact_are_only_for_the_ui(client: TestClient, url: str) ->
 
 def test_no_agent_tool_or_command_writes_the_profile() -> None:
     """El agente sigue escribiendo el perfil con `update-profile` (pregunta antes), nunca con una
-    herramienta: ninguna de la MCP lo hace ni hay un comando nuevo."""
+    herramienta: ninguna de la MCP lo hace ni hay un comando nuevo. `save_profile_suggestion` solo
+    deja una propuesta, que el usuario usa o descarta en la UI (fase 41.2)."""
     names = {tool.name for tool in TOOLS}
-    assert not {n for n in names if "profile" in n and not n.startswith("get_")}
+    proposals = {"save_profile_suggestion"}
+    assert not {n for n in names if "profile" in n and not n.startswith("get_")} - proposals
     assert not {n for n in names if n.startswith(("save_context", "save_style", "upload_style"))}
     profile_commands = next(g for g in cli_app.registered_groups if g.name == "profile")
     commands = {c.name for c in profile_commands.typer_instance.registered_commands}
-    assert commands <= {"validate", "import", "diff", "init", "show"}
+    assert commands <= {"validate", "import", "diff", "init", "show", "suggest"}
 
 
 def test_context_file_is_edited_with_its_guides(client: TestClient) -> None:

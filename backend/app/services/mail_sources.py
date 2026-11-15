@@ -4,8 +4,8 @@ Un buzón es IMAP (siempre en solo lectura, ver `mailboxes.py`) o una carpeta `d
 de `.eml`/`.mbox`. La cuenta `CAI_IMAP_*` de `.env` aparece sola como «Principal» (`from_env`):
 servidor, usuario y carpetas se siguen leyendo de `.env` y se cambian ahí.
 
-Las contraseñas viven solo en `.env` (`core/env_file.py`); aquí solo se guarda el nombre de la
-variable. Nunca salen en una vista, un error ni un log.
+Las contraseñas viven en el llavero del sistema (`core/secrets.py`; donde no lo hay, en `.env`);
+aquí solo se guarda su nombre. Nunca salen en una vista, un error ni un log.
 """
 
 import ipaddress
@@ -18,7 +18,7 @@ from typing import Literal
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.core import env_file
+from app.core import env_file, secrets
 from app.core.config import get_settings
 from app.models import MailSource, MailSourceChange
 from app.models.base import utcnow
@@ -40,8 +40,12 @@ from app.services.ingestion.email.mailboxes import (
 
 logger = logging.getLogger(__name__)
 
-ENV_SECRET = "CAI_IMAP_PASSWORD"
+ENV_SECRET = secrets.IMAP_PASSWORD
 PRINCIPAL = "Principal"
+_DOCKER_PASSWORD = (
+    " Falta su contraseña: en Docker se configura en el contenedor (ver «Detalles técnicos» y la "
+    "guía del correo)."
+)
 # Lo que de la cuenta de `.env` se cambia en `.env`, no aquí.
 _ENV_FIELDS = ("host", "port", "security", "user", "folder", "replies_folder", "allow_private")
 
@@ -134,6 +138,7 @@ def effective(row: MailSource) -> dict[str, object]:
 def _view(row: MailSource) -> MailSourceView:
     fields = effective(row)
     error = MailError.model_validate(row.last_error) if row.last_error else None
+    storage = secrets.location(row.secret_ref) if row.secret_ref else None
     return MailSourceView(
         id=row.id,
         label=row.label,
@@ -143,7 +148,8 @@ def _view(row: MailSource) -> MailSourceView:
         read_replies=row.read_replies,
         allow_private=row.allow_private,
         from_env=row.from_env,
-        has_password=bool(row.secret_ref and env_file.read_secret(row.secret_ref)),
+        has_password=storage is not None,
+        password_storage=storage,
         secret_ref=row.secret_ref,
         path=f"data/inbox/{row.folder}/" if row.kind == "folder" else None,
         last_polled_at=row.last_polled_at,
@@ -157,6 +163,7 @@ def list_mail_sources(session: Session) -> MailSourceList:
         sources=[_view(row) for row in _visible(session)],
         demo=get_settings().demo_mode,
         can_store_passwords=env_file.can_write(),
+        keyring=secrets.keyring_available(),
     )
 
 
@@ -195,17 +202,18 @@ def _secret_name(session: Session, label: str) -> str:
     slug = re.sub(r"[^A-Z0-9]+", "_", ascii_label.upper()).strip("_")[:40] or "BUZON"
     taken = set(session.scalars(select(MailSource.secret_ref)))
     name, n = f"CAI_IMAP_{slug}_PASSWORD", 2
-    while name in taken or name == ENV_SECRET or env_file.is_defined(name):
+    while name in taken or name == ENV_SECRET or env_file.is_defined(name) or secrets.get(name):
         name, n = f"CAI_IMAP_{slug}_{n}_PASSWORD", n + 1
     return name
 
 
 def _store_password(row: MailSource, password: str) -> str | None:
-    """Guarda la contraseña en `.env`. En Docker no se puede: la línea que tiene que añadir."""
+    """Guarda la contraseña en el llavero (o en `.env`). En Docker no se puede: la variable o el
+    secreto que tiene que añadir."""
     assert row.secret_ref
     try:
-        env_file.write_secret(row.secret_ref, password)
-    except env_file.SecretNotWritableError:
+        secrets.store(row.secret_ref, password)
+    except secrets.SecretNotWritableError:
         return f"{row.secret_ref}=…"
     return None
 
@@ -238,7 +246,7 @@ def create_mail_source(session: Session, data: MailSourceInput) -> MailSaveResul
     _audit(session, row, "created", list(data.model_fields_set) + ["label", "kind"])
     message = f"Buzón «{label}» añadido."
     if env_line:
-        message += f" Falta su contraseña: añade a tu .env la línea `{env_line}` y recrea Docker."
+        message += _DOCKER_PASSWORD
     elif data.kind == "imap" and data.password is None:
         message += " Falta su contraseña: escríbela en «Editar»."
     return MailSaveResult(source=_view(row), message=message, env_line=env_line)
@@ -247,10 +255,11 @@ def create_mail_source(session: Session, data: MailSourceInput) -> MailSaveResul
 def update_mail_source(session: Session, source_id: int, patch: MailSourcePatch) -> MailSaveResult:
     row = _get(session, source_id)
     changes = patch.model_dump(exclude_unset=True, exclude={"password"})
-    if row.from_env and (blocked := [f for f in _ENV_FIELDS if f in changes]):
+    if row.from_env and any(f in changes for f in _ENV_FIELDS):
         raise MailSourceNotAllowedError(
-            f"«{row.label}» es la cuenta de .env: {', '.join(blocked)} se cambian en .env "
-            "(CAI_IMAP_*)."
+            f"«{row.label}» es la cuenta configurada al instalar: su servidor, su usuario y sus "
+            "carpetas se cambian en la configuración de la instalación (ver la guía del correo). "
+            "Aquí puedes cambiar su nombre, su contraseña y si se lee."
         )
     if "label" in changes:
         changes["label"] = _check_label(session, changes["label"], exclude=row.id)
@@ -277,7 +286,7 @@ def update_mail_source(session: Session, source_id: int, patch: MailSourcePatch)
     fields = list(changes)
     if patch.password is not None:
         if row.secret_ref is None:
-            raise MailSourceNotAllowedError("Una carpeta de .eml no lleva contraseña.")
+            raise MailSourceNotAllowedError("Una carpeta de correos no lleva contraseña.")
         env_line = _store_password(row, patch.password.get_secret_value())
         fields.append("password")
     if row.kind == "folder":
@@ -287,24 +296,24 @@ def update_mail_source(session: Session, source_id: int, patch: MailSourcePatch)
         _audit(session, row, "updated", fields)
     message = f"Buzón «{row.label}» actualizado."
     if env_line:
-        message += f" Falta su contraseña: añade a tu .env la línea `{env_line}` y recrea Docker."
+        message += _DOCKER_PASSWORD
     return MailSaveResult(source=_view(row), message=message, env_line=env_line)
 
 
 def delete_mail_source(session: Session, source_id: int) -> str:
-    """Quita el buzón y su línea de `.env`. Los correos ya leídos y sus ofertas se quedan."""
+    """Quita el buzón y su contraseña. Los correos ya leídos y sus ofertas se quedan."""
     row = _get(session, source_id)
     if row.from_env:
         raise MailSourceNotAllowedError(
-            f"«{row.label}» es la cuenta de .env: para quitarla, borra CAI_IMAP_HOST, "
-            "CAI_IMAP_USER y CAI_IMAP_PASSWORD de .env, o desactívala aquí."
+            f"«{row.label}» es la cuenta configurada al instalar: desactívala aquí o quítala de "
+            "la configuración de la instalación (ver la guía del correo)."
         )
     message = f"Buzón «{row.label}» quitado."
     if row.secret_ref:
         try:
-            env_file.write_secret(row.secret_ref, None)
-        except env_file.SecretNotWritableError:
-            message += f" Quita también la línea {row.secret_ref} de tu .env."
+            secrets.delete(row.secret_ref)
+        except secrets.SecretNotWritableError:
+            message += " Quita también su contraseña de la configuración del contenedor."
     if row.kind == "folder":
         message += f" La carpeta data/inbox/{row.folder}/ se queda como está."
     _audit(session, row, "deleted", [])
@@ -365,11 +374,11 @@ def _account(
 
 
 def account_of(row: MailSource, purpose: Purpose = "alerts") -> ImapAccount:
-    """La cuenta de un buzón IMAP, con su contraseña leída de `.env`. `MailboxError` si falta
-    algo o el servidor no está permitido."""
+    """La cuenta de un buzón IMAP, con su contraseña (del llavero, del entorno o de `.env`).
+    `MailboxError` si falta algo o el servidor no está permitido."""
     fields = effective(row)
     folder = str(fields["replies_folder" if purpose == "replies" else "folder"])
-    password = env_file.read_secret(row.secret_ref) if row.secret_ref else None
+    password = secrets.get(row.secret_ref) if row.secret_ref else None
     return _account(
         fields["host"],  # type: ignore[arg-type]
         fields["port"],  # type: ignore[arg-type]

@@ -165,7 +165,7 @@ toca tus datos.
    `CAI_DATA_DIR=data-demo uv run cai start`.
 3. Se abre el navegador con un aviso de **«Modo demo»**. Prueba **Revisión rápida**, en la Bandeja (muévete con
    `J`/`K`, aprueba con `A`, descarta con `D`), abre una oferta, cambia la plantilla del CV y pulsa
-   **Generar**, y mira el **Tablero** y el **Embudo**.
+   **Generar**, y mira el **Tablero** y los **Resultados**.
 
 Para volver a tus datos, cierra esa ventana y abre CandidatAI como siempre.
 
@@ -184,7 +184,7 @@ perfil aparece solo en **Mi perfil**: sigue en el paso 3.
 Sin agente (o sin CV), pulsa **Empezar a mano** en **Mi perfil**: escribe tu nombre, tu titular, el
 puesto que buscas y los niveles que aceptas, y pulsa **Crear mi perfil**. Se abre el editor para que
 sigas bloque a bloque; lo que no te ha preguntado (modalidad, ubicaciones, foto en el CV) empieza
-abierto a todo y lo cambias en **Buscar ofertas → Qué buscas** y en **Mi perfil**.
+abierto a todo y lo cambias en **Buscar ofertas → Configuración de tu búsqueda** y en **Mi perfil**.
 
 Si prefieres hacerlo desde tu agente:
 
@@ -201,11 +201,11 @@ Si prefieres hacerlo desde tu agente:
 2. Pídele: *«Crea mi perfil a partir de mi CV»* y dile dónde está tu CV (Word o PDF). Usa el skill
    `update-profile`: lee tu CV, te pregunta lo que falta y lo guarda, sin inventarse nada.
 3. Luego revísalo bloque a bloque en **Mi perfil**: experiencia y logros (con cifras si las tienes),
-   skills e idiomas; y en **Buscar ofertas → Qué buscas**, lo que buscas: puestos, ubicaciones, teletrabajo y tu mínimo
+   skills e idiomas; y en **Buscar ofertas → Configuración de tu búsqueda**, lo que buscas: puestos, ubicaciones, teletrabajo y tu mínimo
    salarial. Cada bloque se guarda solo y se puede deshacer.
 
 <!-- media:provisional -->
-<img src="img/es/search-settings.webp" alt="«Qué buscas», en Buscar ofertas" width="88%">
+<img src="img/es/search-settings.webp" alt="«Configuración de tu búsqueda», en Buscar ofertas" width="88%">
 
 Tu mínimo salarial sirve para descartar ofertas que pagan menos y para comparar ofertas recibidas,
 pero **tu agente nunca ve la cifra**.
@@ -215,7 +215,7 @@ pero **tu agente nunca ve la cifra**.
 Las ofertas pueden entrar de varias formas; empieza con una o dos:
 
 - **Pega una oferta** que hayas visto: **Nueva oferta**, pega su enlace o su texto.
-- **Empresas en las que te gustaría trabajar**: en **Buscar ofertas**, pestaña **Dónde buscar → Empresas objetivo**. Si usan
+- **Empresas en las que te gustaría trabajar**: en **Buscar ofertas**, sección **Dónde buscar → Empresas con portal propio**. Si usan
   Greenhouse, Lever, Ashby y similares, sus ofertas nuevas llegan solas cada día.
 - **Alertas de empleo por correo** (LinkedIn, InfoJobs, Indeed…): **Dónde buscar → Alertas por correo**, añade tu buzón paso
   a paso. La app solo lee; nunca envía ni borra correos.
@@ -268,7 +268,7 @@ o su búsqueda pública sin tu cuenta) solo pasa si lo activas, y es bajo tu res
 Claude Pro o ChatGPT Plus.
 
 **¿Puedo usarla sin agente?** En parte: puedes añadir, aprobar y descartar ofertas, seguir tus procesos, ver el
-calendario y el embudo, editar tu perfil y volver a renderizar un CV con otro diseño. Leer ofertas y
+calendario y los resultados, editar tu perfil y volver a renderizar un CV con otro diseño. Leer ofertas y
 redactar CVs necesita el agente.
 
 **¿Dónde pido ayuda?** En las

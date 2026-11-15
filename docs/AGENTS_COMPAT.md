@@ -376,7 +376,7 @@ un agente de nivel C avisa de usar una sesión dedicada solo a eso.
 
 ### Botones «en tu agente» de la UI
 «Buscar ofertas», «Valorar las ofertas nuevas» (y «Valorar esta oferta» de una oferta),
-«Generar CV», en la página Skills (fase 14) «Añadir al perfil las que tengo» (`update-profile`)
+«Generar CV», en la página «Habilidades por desarrollar» «Añadir al perfil las que tengo» (`update-profile`)
 y «Plan de formación», y desde la fase 15 «Revisar respuestas» (Inicio y «Respuestas»), «Redactar borradores» (Procesos) y
 «Redactar seguimiento» (ficha de una candidatura enviada), desde la fase 16 «Ampliar búsqueda»
 («Dónde buscar»), desde la 17 los de las entrevistas y desde la 18 «Redactar mensaje» e «Investigar
@@ -399,7 +399,7 @@ la orden para que la pegues tú. Probado con Claude Code; Codex, sin probar.
 
 ### En segundo plano y cola de encargos (fase 19; varios agentes en la 24.5)
 El desplegable de cada botón ofrece **«En segundo plano»** en `process-jobs`, `assess-fit`,
-`generate-cv`, `correct-cv`, `verify-cv` y `generate-cover-letter` (en OpenCode, solo en las dos
+`generate-cv`, `correct-cv`, `verify-cv`, `generate-cover-letter` y `translate-summary` (en OpenCode, solo en las dos
 primeras: las demás delegan en el rol `verifier`, que lee ficheros): el worker lanza tu agente sin ventana y la página «Agente» enseña el progreso, el
 resultado, el uso (turnos, tokens y coste si el agente lo da) y, si el skill necesita algo, sus
 preguntas, con «Contestar en terminal» para seguir en la misma sesión. Sale de `launch.headless`

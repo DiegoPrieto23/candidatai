@@ -1,13 +1,15 @@
 /** Campos de «Mi perfil» (fase 25.7b): etiqueta, pista y el error de validación de su ruta. */
-import { useId, useState, type ReactNode } from 'react'
+import { useContext, useId, useMemo, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ArrowDownIcon, ArrowUpIcon, CheckIcon, TrashIcon, WarningIcon, XIcon } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { codeName, codeOptions, findCode, type CodeKind } from '@/lib/codes'
 import { cn } from '@/lib/utils'
 import { blockAnchor, type BlockEditor } from './editor'
+import { BlockHeadingLevel } from './headingLevel'
 import { PRESENT } from './types'
 
 const SELECT = 'h-9 w-full rounded-md border border-input bg-background px-3 text-sm'
@@ -283,6 +285,93 @@ export function TagsField({
   )
 }
 
+/**
+ * Idiomas o países (fase 41.4): se escriben por su nombre, con autocompletado en el idioma de la UI
+ * («francés», «Reino Unido»), y se guardan como código (`fr`, `GB`). También acepta el código.
+ */
+export function CodeTagsField({
+  kind,
+  value,
+  onChange,
+  error,
+  ...props
+}: FieldProps & { kind: CodeKind; value: string[] | undefined; onChange: (value: string[]) => void }) {
+  const { t, i18n } = useTranslation('profileEditor')
+  const locale = i18n.language
+  const [text, setText] = useState('')
+  const [unknown, setUnknown] = useState<string | null>(null)
+  const listId = useId()
+  const items = value ?? []
+  const options = useMemo(() => codeOptions(kind, locale), [kind, locale])
+  const name = (code: string) => codeName(kind, code, locale)
+  const add = () => {
+    const typed = text.trim()
+    if (!typed) return
+    const code = findCode(kind, typed, locale)
+    if (!code) {
+      setUnknown(typed)
+      return
+    }
+    if (!items.some((i) => i.toLowerCase() === code.toLowerCase())) onChange([...items, code])
+    setText('')
+    setUnknown(null)
+  }
+  const tags = items.length > 0 && (
+    <ul className="flex flex-wrap gap-1.5" aria-label={props.label}>
+      {items.map((item) => (
+        <li key={item} className="flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-sm" title={item}>
+          {name(item)}
+          <button
+            type="button"
+            className="rounded text-muted-foreground hover:text-foreground"
+            aria-label={t('fields.removeTag', { item: name(item) })}
+            onClick={() => onChange(items.filter((i) => i !== item))}
+          >
+            <XIcon className="size-3.5" />
+          </button>
+        </li>
+      ))}
+    </ul>
+  )
+  const shown = unknown ? t(kind === 'language' ? 'fields.unknownLanguage' : 'fields.unknownCountry', { text: unknown }) : error
+  return (
+    <Field {...props} error={shown} after={tags}>
+      {(id, describedBy) => (
+        <div className="flex gap-2">
+          <Input
+            id={id}
+            className="min-w-0"
+            value={text}
+            list={listId}
+            autoComplete="off"
+            aria-invalid={unknown ? true : undefined}
+            aria-describedby={describedBy}
+            placeholder={t(kind === 'language' ? 'fields.addLanguage' : 'fields.addCountry')}
+            onChange={(e) => {
+              setText(e.target.value)
+              setUnknown(null)
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                add()
+              }
+            }}
+          />
+          <Button type="button" variant="outline" size="sm" onClick={add} disabled={!text.trim()}>
+            {t('fields.add')}
+          </Button>
+          <datalist id={listId}>
+            {options.map((o) => (
+              <option key={o.code} value={o.name} />
+            ))}
+          </datalist>
+        </div>
+      )}
+    </Field>
+  )
+}
+
 /** Subir, bajar y borrar un elemento de una lista. */
 export function ItemControls({
   label,
@@ -389,6 +478,7 @@ export function Block({
   actions?: ReactNode
   children: ReactNode
 }) {
+  const Heading = useContext(BlockHeadingLevel) === 3 ? 'h3' : 'h2'
   return (
     <section
       id={id && blockAnchor(id)}
@@ -398,7 +488,7 @@ export function Block({
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h2 className="font-medium">{title}</h2>
+          <Heading className="font-medium">{title}</Heading>
           {hint && <p className="mt-0.5 text-sm text-muted-foreground">{hint}</p>}
         </div>
         {actions}

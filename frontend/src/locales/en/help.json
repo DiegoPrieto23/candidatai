@@ -1,7 +1,10 @@
 {
   "button": "Help",
   "buttonHint": "Help: frequent questions and guide",
+  "launcher": "Assistant",
+  "launcherHint": "Ask for whatever you need in your own words: your agent does it",
   "title": "Help",
+  "assistantTitle": "Your assistant",
   "close": "Close help",
   "searchLabel": "Search help",
   "searchPlaceholder": "What do you want to do?",
@@ -16,11 +19,11 @@
   "tabs": {
     "label": "Help sections",
     "help": "Help",
-    "assistant": "Ask your agent"
+    "assistant": "Assistant"
   },
   "assistant": {
     "label": "What you want to ask your agent",
-    "placeholder": "For example: what do I have pending this week?",
+    "placeholder": "How can I help?",
     "hint": "Your agent reads the app's data and answers here. Submitting an application, approving, discarding and deleting are always confirmed by you. Ctrl+Enter sends it.",
     "left_one": "{{count}} character left.",
     "left_other": "{{count}} characters left.",
@@ -29,7 +32,14 @@
     "noBackground": "Your agent does not run in the background from the app: leave the request for your next session.",
     "noAgentTitle": "To ask your agent, install one",
     "noAgentBody": "The app does not include artificial intelligence: it uses the agent you have installed. The “Help” tab works without an agent.",
-    "empty": "Your requests and their answers will appear here.",
+    "empty": "Ask for something in your own words and the answer will appear here. For example:",
+    "suggestionsLabel": "Example requests",
+    "suggestions": {
+      "pending": "What do I have pending this week?",
+      "reviewFirst": "Which jobs should I review first?",
+      "noReply": "Which companies haven't replied to me?",
+      "howItGoes": "Sum up how my search is going this month"
+    },
     "history": "Previous requests",
     "asked": "Asked on {{when}}",
     "jobLink": "Job {{id}}",
@@ -49,12 +59,12 @@
     "home": "Home",
     "howItWorks": "How it works",
     "profile": "My profile",
-    "skills": "Skills you lack",
+    "skills": "Skills to build",
     "templates": "CV templates",
     "search": "Search jobs",
-    "searchSettings": "What you're after",
+    "searchSettings": "Your search settings",
     "sources": "Where to search",
-    "companies": "Target companies",
+    "companies": "Company career sites",
     "email": "Email alerts",
     "extension": "Browser button",
     "newJob": "New job",
@@ -64,7 +74,7 @@
     "board": "Board",
     "calendar": "Calendar",
     "replies": "Replies",
-    "funnel": "Funnel",
+    "funnel": "Results",
     "agent": "Agent"
   },
   "groups": {
@@ -99,7 +109,7 @@
     },
     "withoutAgent": {
       "q": "What can I do without an agent?",
-      "a": "Add, approve and discard jobs, track your processes, use the calendar and the funnel, edit your profile and change the design of a CV you already have. Reading jobs and writing CVs, letters and interview guides requires the agent.",
+      "a": "Add, approve and discard jobs, track your processes, use the calendar and the results, edit your profile and change the design of a CV you already have. Reading jobs and writing CVs, letters and interview guides requires the agent.",
       "keywords": "without ai without agent free limits"
     },
     "language": {
@@ -144,7 +154,7 @@
     },
     "askAgent": {
       "q": "Can I ask my agent for something from the portal?",
-      "a": "Yes. Open the help, choose “Ask your agent” and write what you need. “Send now” runs it in the background and the answer appears in the same panel, with links to whatever changed. “Leave it for my next session” saves it as a request.",
+      "a": "Yes. Click “Assistant”, at the bottom right, and write what you need. “Send now” runs it in the background and the answer appears in the same panel, with links to whatever changed. “Leave it for my next session” saves it as a request.",
       "keywords": "assistant chat ask request agent text box portal"
     },
     "askAgentLimits": {
@@ -159,7 +169,7 @@
     },
     "sources": {
       "q": "How do I get jobs to arrive on their own?",
-      "a": "In “Where to search” you choose where they come from: job boards, target companies, email alerts and the browser button. What arrives appears in the Job inbox.",
+      "a": "In “Where to search” you choose where they come from: job boards, company career sites, email alerts and the browser button. What arrives appears in the Job inbox.",
       "keywords": "sources boards infojobs indeed companies automatic arrive jobs"
     },
     "searchNow": {
@@ -194,7 +204,7 @@
     },
     "filters": {
       "q": "Where do I say which jobs I want and which are discarded?",
-      "a": "In “What you're after”: roles, work mode, areas, years of experience, contract type, words that discard a job and your minimum salary. Your agent never sees that figure.",
+      "a": "In “Your search settings”: roles, work mode, areas, years of experience, contract type, words that discard a job and your minimum salary. Your agent never sees that figure.",
       "keywords": "filters salary minimum remote work mode location preferences discard"
     },
     "toComplete": {
@@ -258,13 +268,13 @@
       "keywords": "follow-up reminder no reply write company thank you"
     },
     "funnel": {
-      "q": "What does the Funnel tell me?",
-      "a": "How far each application has gone and where they stop: by source, by week and by discard reason, with how well each route performs.",
-      "keywords": "funnel statistics results conversion figures analysis"
+      "q": "What do the Results tell me?",
+      "a": "What works for you: which channel gets you more replies, and sooner (referral, company careers site, job boards), how far each application goes, which roles reply and why you discard jobs.",
+      "keywords": "results funnel statistics conversion figures analysis channel reply"
     },
     "skillGaps": {
-      "q": "What are the “Skills you lack”?",
-      "a": "What the jobs you approve ask for and your profile doesn't yet include. Mark them as yours, as a synonym of one in your profile or for the training plan your agent prepares.",
+      "q": "What are the “Skills to build”?",
+      "a": "The skills the jobs you approve ask for that aren't in your profile yet. Mark them as yours, as a synonym of one in your profile or for the training plan your agent prepares.",
       "keywords": "skills training learn gaps courses plan"
     },
     "dataLeaving": {
@@ -279,8 +289,8 @@
     },
     "mailSafe": {
       "q": "Is it safe to connect my email?",
-      "a": "The app opens only the folder or label you choose, and only to read. Use an app password, different from your own, which you can revoke whenever you like; it stays on your computer and your agent never sees it.",
-      "keywords": "safe password email gmail read permissions revoke"
+      "a": "The app opens only the folder or label you choose, and only to read. Use an app password, different from your own, which you can revoke whenever you like; it is stored encrypted in the system keychain and your agent never sees it.",
+      "keywords": "safe password email gmail read permissions revoke keychain encrypted"
     },
     "linkedin": {
       "q": "And LinkedIn?",

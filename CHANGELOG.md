@@ -10,8 +10,45 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
-- **Pídeselo a tu agente, en la ayuda:** el panel de ayuda tiene una pestaña nueva con una caja de
-  texto para pedirle algo a tu agente con tus palabras («¿qué tengo pendiente esta semana?»).
+- **Tiempo y tasa de respuesta por canal:** en **Resultados**, cuánto te responden y en cuántos días
+  (mediana) por referencia, en la web de la empresa, en los portales de empleo y en las ofertas que
+  añades tú. También en `cai stats funnel` y en la interfaz para agentes.
+- **Columnas del Tablero a tu gusto:** con **Personalizar columnas** eliges entre 3 y 5 columnas
+  juntando etapas seguidas y les pones nombre. Solo cambia la vista: las etapas de tus ofertas siguen
+  igual, cada tarjeta de una columna con varias etapas dice la suya y **Restablecer** vuelve a las de
+  siempre.
+- **Añadir hitos desde el Calendario:** con **Añadir hito**, el «+» de un día o pulsando una hora
+  libre de la semana o del día. Eliges la oferta y el hito se guarda en su ficha, con la fecha ya
+  puesta.
+- **Avisos sin correos:** el fichero del calendario y la suscripción llevan alarmas (un día y una
+  hora antes de cada hito con hora; a las 9:00 del día anterior en los plazos) para que Outlook o
+  Apple Calendar te avisen solos. Y con **Avisos del navegador** en el Calendario, mientras la app
+  está abierta, el navegador te avisa de las entrevistas, las pruebas, los plazos y los seguimientos
+  pendientes.
+- **Puestos en cualquier idioma:** da igual si escribes tus puestos buscados o tus palabras de
+  descarte en español o en inglés: «Ingeniero de datos» encuentra ofertas de «Data Engineer» y al
+  revés, también en el encaje por título. La lista de equivalencias trae puestos de datos,
+  desarrollo, producto y negocio, y se puede ampliar en `config/title_aliases.yaml`.
+- **Idiomas y países por su nombre:** en «Idiomas de trabajo», «Países sin foto» y los campos de país
+  e idioma de las fuentes escribes «francés» o «Reino Unido», con autocompletado en el idioma de la
+  app, en vez de códigos de dos letras.
+- **Elige tu navegador antes de instalar «Enviar a CandidatAI»:** en **Dónde buscar → Botón del
+  navegador** eliges Chrome, Edge o Brave (se propone el que usas) y los pasos se adaptan a él. Con
+  Firefox o Safari, o con la app abierta en otro navegador, el aviso sale al principio.
+- **Encuadrar la foto del CV:** al subirla en **Mi perfil → Sobre ti**, la colocas con zoom y arrastre
+  antes de guardarla, con la forma (redonda o cuadrada) de tu plantilla por defecto. Se hace en tu
+  navegador, y **Volver a encuadrar** parte de la foto original.
+- **Generar resumen en inglés:** un botón junto a «Resumen (inglés)» pide a tu agente que traduzca tu
+  resumen en español, sin añadir nada. La propuesta aparece junto al campo para usarla, editarla o
+  descartarla antes de guardar; puede ir en segundo plano.
+- **Subir una plantilla, más cómodo:** en **Plantillas de CV** puedes arrastrar el fichero, eliges su
+  nombre antes de subirlo («Mi CV» por defecto, o «Mi CV 2» si ya existe) y la tarjeta dice
+  «Convirtiendo en plantilla…» mientras tu agente trabaja.
+- **Ayuda del periodo en Habilidades por desarrollar:** junto a 30/60/90/180 días, qué ofertas cuenta
+  cada ventana y para qué sirve cambiarla.
+- **Asistente:** un botón con rótulo abajo a la derecha, junto al de ayuda, abre una caja
+  de texto para pedirle algo a tu agente con tus palabras. La primera vez propone ejemplos («¿qué
+  tengo pendiente esta semana?») que se escriben en la caja al pulsarlos.
   **Enviar ahora** lo lanza en segundo plano y la respuesta aparece ahí mismo, con enlaces a la oferta
   o a la pantalla de la que habla; **Dejar para mi próxima sesión** lo guarda como encargo. Puede
   consultar tus datos, valorar una oferta ya leída y guardar las indicaciones de una carta. Enviar una
@@ -125,6 +162,47 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   vez de 23).
 
 ### Cambiado
+- **«Embudo» pasa a llamarse «Resultados»** y responde a qué te funciona. Arriba, frases sacadas de
+  tus datos («Te responden más por referencia: 40 % frente a 12 % en el resto», cuánto tardan las
+  empresas, por dónde responden antes y tu mejor fuente), que salen cuando hay candidaturas
+  suficientes. Debajo, todo agrupado por pregunta: por dónde te responden, dónde se quedan tus
+  candidaturas, qué puestos te responden y por qué descartas. Los enlaces guardados a la dirección
+  antigua siguen funcionando.
+- **Tablero que se ajusta al ancho:** las columnas reparten el espacio de la pantalla, los títulos
+  largos pasan a otra línea en vez de cortarse y solo aparece la barra de desplazamiento si de verdad
+  no caben.
+- **Calendario más fácil de leer:** hoy resaltado, fines de semana con su fondo, días de otro mes
+  rayados y cada tipo de hito con su icono, además de su color, en claro y en oscuro.
+- **Buzones con mensajes que dicen qué hacer:** al editar o quitar la cuenta configurada al instalar, o
+  al añadir un buzón en Docker, la app explica con palabras dónde se cambia y deja los nombres técnicos
+  en «Detalles técnicos».
+- **Ubicaciones más claras:** en **Configuración de tu búsqueda → Dónde y cómo**, cada ubicación lleva
+  un selector: «Cualquier modalidad», «Solo híbrido o remoto» o «Descartar». Sustituye a los tres
+  campos de antes («Ubicaciones preferidas», «Solo si no es presencial» y «Excluidas»); tus
+  ubicaciones guardadas siguen igual.
+- **«Puntos a revisar»** sustituye a «Señales de oferta dudosa» en la ficha, en Resultados y en la
+  CLI: rango salarial amplio, empresa oculta, temporal, publicada hace meses y cribado con IA son
+  cosas que conviene mirar, no un veredicto. «Excluir las que no dicen qué empresa contrata» pasa
+  a «Tipo de empresa».
+- **La regla de los datos que faltan, una sola vez:** la cabecera de la configuración de tu búsqueda
+  dice que cada filtro se aplica solo cuando la oferta indica ese dato, con un ejemplo en su ayuda.
+- **El encaje se vuelve a calcular** una vez al actualizar, por las equivalencias de puestos.
+- **«Buscar ofertas» es una sola página** con tres secciones y un índice fijo arriba: **Buscar**,
+  **Configuración de tu búsqueda** (antes, la pestaña «Qué buscas») y **Dónde buscar**. Los enlaces de
+  siempre llevan a su sección.
+- **Seleccionar los portales:** una casilla encima de la lista los selecciona o los quita todos.
+- **Qué ofertas entran:** junto a «Hasta N ofertas» se dice cuáles: las más recientes que encajan
+  con tu perfil, en cada portal. Tu agente sigue ese orden.
+- **«Buscar ofertas» en Inicio:** sin portales en los que buscar, el botón dice **Ir a buscar
+  ofertas** y lleva a elegirlos.
+- **«Empresas objetivo» pasa a llamarse «Empresas con portal propio»** (en inglés, «Company career
+  sites»).
+- **Contraseña de aplicación del correo:** el enlace a la página de Google, Yahoo o iCloud va dentro
+  del paso que lo pide.
+- **«Skills que te faltan» pasa a llamarse «Habilidades por desarrollar»** (en inglés, «Skills to
+  build»), con textos que hablan de lo que piden tus ofertas.
+- **Plantillas importadas:** la tarjeta enseña la plantilla; el CV original se ve con **Comparar con
+  el original**.
 - **Textos más claros y profesionales en toda la app:** en español y en inglés, dicen lo que puedes
   hacer en vez de lo que no se hace, explican cada regla una sola vez y dejan las explicaciones largas
   en una ayuda (ⓘ). Algunos ejemplos: «Correo electrónico» en vez de «Usuario (tu dirección)»,
@@ -332,6 +410,13 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   oferta».
 
 ### Seguridad
+- **Contraseñas cifradas en el llavero del sistema:** las de tus buzones de correo y las claves de
+  Adzuna e InfoJobs se guardan en el Administrador de credenciales de Windows, el Llavero de macOS o
+  el llavero de tu escritorio en Linux, y ya no en un fichero de texto. Si tenías alguna guardada
+  así, un aviso te ofrece **Mover al llavero** (o **Ahora no**), y cada buzón dice dónde está su
+  contraseña. Sin llavero (Linux sin sesión gráfica) se siguen guardando en el fichero, avisado; en
+  Docker van como secreto o variable del contenedor. `cai doctor` avisa de las que siguen en claro.
+  Al copiar tus datos a otro equipo, vuelve a escribirlas en **Editar**.
 - **pypdf** sube a la 6.21.4, que corrige 7 vulnerabilidades conocidas.
 - **Las ofertas con texto dirigido a una IA nunca salen como encaje fuerte:** tu agente avisa
   siempre de ellas al valorarlas y en el resumen del día, y la app rechaza una valoración «fuerte»

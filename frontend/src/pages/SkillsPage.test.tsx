@@ -40,7 +40,7 @@ function view(changes: Partial<View> = {}): View {
 const AGENT = { available: true, agent: 'claude', reason: null, actions: [] }
 
 const skillNames = () =>
-  within(screen.getByRole('table', { name: 'Skills ausentes por frecuencia' }))
+  within(screen.getByRole('table', { name: 'Skills por desarrollar, por frecuencia' }))
     .getAllByRole('rowheader')
     .map((cell) => cell.textContent)
 
@@ -49,7 +49,7 @@ describe('Skills', () => {
     const calls = mockApi({ 'GET /status': status(), 'GET /skills/gaps': view(), 'GET /agent': AGENT })
     renderApp('/skills')
 
-    await screen.findByRole('table', { name: 'Skills ausentes por frecuencia' })
+    await screen.findByRole('table', { name: 'Skills por desarrollar, por frecuencia' })
     expect(skillNames()).toEqual(['Data Warehousing', 'Kafka', 'Terraform'])
     expect(screen.getByText('obligatoria en 2, deseable en 1')).toBeInTheDocument()
     expect(screen.getAllByRole('link', { name: /Data Engineer · Brétema Analytics/ })[0]).toHaveAttribute('href', '/jobs/7')
@@ -57,6 +57,8 @@ describe('Skills', () => {
     // Hay una marcada «La tengo»: aparece el botón para añadirlas al perfil.
     expect(screen.getByRole('button', { name: /Añadir al perfil las que tengo \(1\)/ })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Plan de formación/ })).toBeInTheDocument()
+    // El periodo explica qué ofertas cuenta.
+    expect(screen.getByRole('button', { name: 'Qué ofertas cuenta el periodo' })).toBeInTheDocument()
   })
 
   it('van de 25 en 25 y un filtro vuelve a la primera página', async () => {
@@ -65,7 +67,7 @@ describe('Skills', () => {
     )
     mockApi({ 'GET /status': status(), 'GET /skills/gaps': view({ gaps: many }), 'GET /agent': AGENT })
     renderApp('/skills')
-    await screen.findByRole('table', { name: 'Skills ausentes por frecuencia' })
+    await screen.findByRole('table', { name: 'Skills por desarrollar, por frecuencia' })
     expect(skillNames()).toHaveLength(25)
     expect(screen.getByText('1-25 de 30')).toBeInTheDocument()
 
@@ -78,7 +80,7 @@ describe('Skills', () => {
   it('ordena por peso y filtra por tipo, marca y periodo', async () => {
     const calls = mockApi({ 'GET /status': status(), 'GET /skills/gaps': view(), 'GET /agent': AGENT })
     renderApp('/skills')
-    await screen.findByRole('table', { name: 'Skills ausentes por frecuencia' })
+    await screen.findByRole('table', { name: 'Skills por desarrollar, por frecuencia' })
 
     await userEvent.click(screen.getByRole('button', { name: 'Peso' }))
     expect(skillNames()).toEqual(['Kafka', 'Data Warehousing', 'Terraform'])
@@ -109,7 +111,7 @@ describe('Skills', () => {
       },
     })
     renderApp('/skills')
-    await screen.findByRole('table', { name: 'Skills ausentes por frecuencia' })
+    await screen.findByRole('table', { name: 'Skills por desarrollar, por frecuencia' })
 
     const row = screen.getByRole('group', { name: 'Acciones para Data Warehousing' })
     await userEvent.click(within(row).getByRole('button', { name: /Es lo mismo que/ }))
@@ -142,7 +144,7 @@ describe('Skills', () => {
       },
     })
     renderApp('/skills')
-    await screen.findByRole('table', { name: 'Skills ausentes por frecuencia' })
+    await screen.findByRole('table', { name: 'Skills por desarrollar, por frecuencia' })
     await userEvent.click(
       within(screen.getByRole('group', { name: 'Acciones para Kafka' })).getByRole('button', { name: /Es lo mismo que/ }),
     )
@@ -166,7 +168,7 @@ describe('Skills', () => {
         })),
     })
     renderApp('/skills')
-    await screen.findByRole('table', { name: 'Skills ausentes por frecuencia' })
+    await screen.findByRole('table', { name: 'Skills por desarrollar, por frecuencia' })
 
     const dwh = screen.getByRole('group', { name: 'Acciones para Data Warehousing' })
     await userEvent.click(within(dwh).getByRole('button', { name: /No la tengo/ }))
@@ -189,7 +191,7 @@ describe('Skills', () => {
     })
     renderApp('/skills')
     expect(await screen.findByText('Aún no tienes perfil')).toBeInTheDocument()
-    expect(screen.getByRole('heading', { level: 1, name: 'Skills' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'Habilidades por desarrollar' })).toBeInTheDocument()
     expect(calls.some((c) => c.path.startsWith('/skills/gaps'))).toBe(false)
   })
 

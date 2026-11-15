@@ -20,6 +20,8 @@ import { cn } from '@/lib/utils'
 const ASSISTANT_MAX_CHARS = 2000
 
 const ACTIVE: AssistantView['status'][] = ['queued', 'running']
+/** Ejemplos para la primera vez: una pulsación los escribe en la caja, sin enviarlos. */
+const SUGGESTIONS = ['pending', 'reviewFirst', 'noReply', 'howItGoes'] as const
 const linkClass =
   'inline-flex items-center gap-1 rounded-sm text-sm font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50'
 
@@ -103,7 +105,7 @@ function RequestCard({ request, asking, onGo }: { request: AssistantView; asking
 }
 
 /**
- * «Pídeselo a tu agente»: lo que escribes se guarda en la app y se lo pasa a tu agente, ahora en
+ * «Asistente»: lo que escribes se guarda en la app y se lo pasa a tu agente, ahora en
  * segundo plano o como encargo para tu próxima sesión. La app no llama a ningún modelo. Debajo,
  * las últimas peticiones con su progreso, su respuesta y enlaces a lo que ha cambiado.
  */
@@ -190,7 +192,29 @@ export function AssistantTab({ onGo }: { onGo: () => void }) {
       </form>
       <div className="min-h-0 flex-1 overflow-y-auto px-4">
         {list.length === 0 ? (
-          <p className="py-4 text-sm text-pretty text-muted-foreground">{t('assistant.empty')}</p>
+          <section aria-label={t('assistant.suggestionsLabel')} className="py-3">
+            <p className="text-sm text-pretty text-muted-foreground">{t('assistant.empty')}</p>
+            <ul className="mt-2.5 flex flex-col items-start gap-1.5">
+              {SUGGESTIONS.map((key) => {
+                const suggestion = t(`assistant.suggestions.${key}`)
+                return (
+                  <li key={key}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        // Solo la escribe: enviarla sigue siendo cosa tuya.
+                        setText(suggestion)
+                        field.current?.focus()
+                      }}
+                      className="rounded-full border bg-background px-3 py-1 text-left text-sm text-pretty outline-none hover:border-primary/40 hover:bg-accent focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                    >
+                      {suggestion}
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
+          </section>
         ) : (
           <section aria-label={t('assistant.history')}>
             <ul>

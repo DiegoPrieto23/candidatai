@@ -1,11 +1,18 @@
 {
   "title": "Search jobs",
-  "intro": "Your agent walks your job boards with your browser and adds what fits your profile. It only reads: it never applies for you.",
+  "intro": "Your agent goes through your job boards and adds the jobs that fit you.",
+  "introHint": "It only reads: it never applies for you. It searches in a separate window where you see what it does.",
+  "introHintLabel": "What your agent does when it searches",
+  "nav": {
+    "label": "Search jobs sections",
+    "search": "Search",
+    "settings": "Your search settings",
+    "where": "Where to search"
+  },
   "where": "Job boards",
   "platforms": "Job boards to search",
   "selectAll": "Select all",
-  "selectNone": "Clear all",
-  "manage": "Manage job boards",
+  "selectNone": "Clear selection",
   "tile": {
     "size_one": "{{count}} search · up to {{offers}} jobs",
     "size_other": "{{count}} searches · up to {{offers}} jobs",
@@ -23,11 +30,11 @@
   "noneChosen": "Choose at least one job board.",
   "searchNow": "Search now",
   "plan": {
-    "title": "Your search",
+    "title": "Your search settings",
     "summary_one": "{{portals}} job boards, {{count}} search",
     "summary_other": "{{portals}} job boards, {{count}} searches",
-    "offers_one": "Up to {{count}} job",
-    "offers_other": "Up to {{count}} jobs",
+    "offers_one": "Up to {{count}} job, the most recent",
+    "offers_other": "Up to {{count}} jobs, the most recent",
     "saved": "with your saved searches",
     "oneOff": "just this once",
     "before": "Before you start",
@@ -38,7 +45,9 @@
     "safe": "It opens in a separate window where you see what it does. It can take several minutes.",
     "looking": "You're after:",
     "lookingNone": "no roles yet",
-    "change": "Change"
+    "change": "Change",
+    "offersHint": "On each job board, your agent adds the most recent jobs that fit your profile, up to its limit.",
+    "offersHintLabel": "Which jobs count"
   },
   "noBrowser": {
     "title": "Without a browser",
@@ -51,7 +60,7 @@
     "created_other": "{{count}} new jobs",
     "failed_one": "{{count}} source with problems",
     "failed_other": "{{count}} sources with problems",
-    "none": "Add <to>target companies</to> to check their jobs with no agent or browser.",
+    "none": "Add <to>company career sites</to> to check their jobs with no agent or browser.",
     "others": "Your <to>email alerts</to> and what you send with the <ext>browser button</ext> also come in on their own."
   },
   "refine": {
@@ -70,14 +79,18 @@
     "manage": "Go to “Where to search”"
   },
   "settings": {
-    "title": "What you're after",
-    "intro": "Your roles, salary, place and contract decide what your agent looks for and which jobs pass your filters. Each block saves separately.",
+    "intro": "They decide what your agent looks for and which jobs pass your filters.",
     "issues": "Your profile has errors to fix. See them in <to>My profile</to>.",
     "noProfile": {
       "title": "Your profile first",
-      "body": "What you're after is saved in your profile, and you don't have a readable one yet.",
+      "body": "Your search settings are saved in your profile, and you don't have a readable one yet.",
       "go": "Go to “My profile”"
-    }
+    },
+    "introHint": "Saved in your profile. Each block is saved on its own.",
+    "introHintLabel": "Where it is saved",
+    "rule": "Each filter applies only when the job states that detail.",
+    "ruleHint": "For example, a job that doesn't state the contract type passes the contract filter, and one with no published salary passes the minimum salary one.",
+    "ruleHintLabel": "Jobs without that detail"
   },
   "searching": "Searching…"
 }

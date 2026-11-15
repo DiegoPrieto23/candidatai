@@ -24,7 +24,7 @@
     "howItWorks": "Cómo funciona",
     "inbox": "Bandeja de ofertas",
     "processes": "Tablero",
-    "funnel": "Embudo",
+    "funnel": "Resultados",
     "profile": "Mi perfil",
     "agent": "Agente",
     "calendar": "Calendario",
@@ -77,12 +77,9 @@
     "withCount": "{{label}} ({{count}})",
     "profileLabel": "Apartados de tu perfil",
     "profile": "Mi perfil",
-    "skills": "Skills que te faltan",
+    "skills": "Habilidades por desarrollar",
     "templates": "Plantillas de CV",
     "email": "Alertas por correo",
-    "searchLabel": "Apartados de la búsqueda",
-    "search": "Buscar",
-    "searchSettings": "Qué buscas",
     "sources": "Dónde buscar"
   },
   "searchRun": {

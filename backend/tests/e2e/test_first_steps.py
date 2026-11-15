@@ -113,7 +113,7 @@ EMPTY_STATES = {
     "/bandeja": "inbox.empty.title",
     "/bandeja/revision": "triage.empty.title",
     "/procesos": "processes.none.title",
-    "/embudo": "funnel.empty.title",
+    "/resultados": "funnel.empty.title",
     "/fuentes/plataformas": "platforms.empty.title",
     "/fuentes/empresas": "sources.empty.title",
     "/bandeja/por-completar": "alerts.empty.title",

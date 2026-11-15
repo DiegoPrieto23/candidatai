@@ -3,6 +3,7 @@ data/
 data-demo*/
 .env
 .env.*
+/secrets/
 !.env.example
 
 # Python

@@ -103,7 +103,7 @@ SHOTS = {
     "search-settings": ("/buscar/ajustes", False, []),
     "calendar": ("/calendario", False, []),
     "replies": ("/respuestas", False, []),
-    "funnel": ("/embudo", False, []),
+    "funnel": ("/resultados", False, []),
     "skills": ("/perfil/skills", False, []),
     "templates": ("/perfil/plantillas", False, []),
     "profile-experience": ("/perfil", False, [tab("profileEditor:tabs.career"), anchor("[role=tablist]", 30)]),

@@ -1,7 +1,19 @@
 {
   "title": "“Send to CandidatAI” button",
   "intro": "Saves the job you're looking at in one click, on LinkedIn, InfoJobs or any website, and completes the LinkedIn jobs that arrive as a summary.",
-  "notChromium": "The extension works in Chrome, Edge or Brave. Open CandidatAI in one of them to install and connect it.",
+  "browser": {
+    "question": "Which browser do you use?",
+    "detected": "(this one)",
+    "names": {
+      "chrome": "Chrome",
+      "edge": "Edge",
+      "brave": "Brave",
+      "firefox": "Firefox",
+      "safari": "Safari"
+    },
+    "unsupported": "The extension works in Chrome, Edge and Brave. To use it, open CandidatAI in one of them.",
+    "openIn": "You are in a different browser: open CandidatAI in {{name}} to install and connect it there."
+  },
   "outdated": "You have an old version of the extension (<strong>{{installed}}</strong>; this app's is <strong>{{current}}</strong>). On the browser's extensions page, press the reload button (⟳) on its card.",
   "installed": "Installed (version {{version}}).",
   "steps": {
@@ -17,11 +29,13 @@
     "devMode": "Turn on <strong>Developer mode</strong> (top right).",
     "devModeEdge": "Turn on <strong>Developer mode</strong> (in the left panel).",
     "load": {
-      "windows": "Click <strong>Load unpacked</strong>. A window to pick a folder opens: click the address bar at the top, paste this path, press Enter and then <strong>Select Folder</strong>.",
-      "mac": "Click <strong>Load unpacked</strong>. A window to pick a folder opens: press <strong>Cmd+Shift+G</strong>, paste this path, press Enter and then <strong>Select</strong>.",
-      "linux": "Click <strong>Load unpacked</strong>. A window to pick a folder opens: press <strong>Ctrl+L</strong>, paste this path, press Enter and then <strong>Select</strong>.",
+      "windows": "Click <strong>{{button}}</strong>. A window to pick a folder opens: click the address bar at the top, paste this path, press Enter and then <strong>Select Folder</strong>.",
+      "mac": "Click <strong>{{button}}</strong>. A window to pick a folder opens: press <strong>Cmd+Shift+G</strong>, paste this path, press Enter and then <strong>Select</strong>.",
+      "linux": "Click <strong>{{button}}</strong>. A window to pick a folder opens: press <strong>Ctrl+L</strong>, paste this path, press Enter and then <strong>Select</strong>.",
       "whole": "Pick the whole <strong>extension</strong> folder, without going into it or opening any file inside."
     },
+    "loadButton": "Load unpacked",
+    "loadButtonEdge": "Load unpacked",
     "update": "If you already had it loaded, don't load it again: press the reload button (<strong>⟳</strong>) on its card.",
     "waiting": "Waiting for you to load it. When you do, this page moves on to the next step by itself.",
     "copyFolder": "Copy the extension folder path"
@@ -38,6 +52,7 @@
   },
   "use": {
     "pin": "Press the puzzle icon in the browser toolbar and the <strong>pin</strong> next to “Enviar a CandidatAI” (its name in the browser, in Spanish), so it's always at hand.",
+    "pinEdge": "Press the <strong>Extensions</strong> button in the browser toolbar and the <strong>eye</strong> icon next to “Enviar a CandidatAI” (its name in the browser, in Spanish), so it's always at hand.",
     "send": "Open a job (for example, on LinkedIn while signed in) and press the button. It tells you whether it's <strong>new</strong>, whether it <strong>completed</strong> a summary or whether you <strong>already had it</strong>, with a link to its page.",
     "selection": "If it can't find the description, select the job's text with the mouse, company included, and press again."
   },

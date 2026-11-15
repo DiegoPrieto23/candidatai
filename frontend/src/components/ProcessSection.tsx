@@ -16,9 +16,7 @@ import {
   fileUrls,
   type ContactOut,
   type ContactRelation,
-  type InterviewType,
   type JobView,
-  type MilestoneKind,
   type MilestoneOut,
   type ProcessView,
   type ReferralStatus,
@@ -49,30 +47,27 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { DatePicker, DateTimePicker } from '@/components/ui/date-time-picker'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Textarea } from '@/components/ui/textarea'
 import {
   channelLabel,
   CONTACT_RELATION_LABEL,
   formatDate,
   INTERVIEW_TYPE_LABEL,
-  MILESTONE_KIND_LABEL,
   MILESTONE_STATUS_LABEL,
   REFERRAL_LABEL,
 } from '@/lib/labels'
-import { formatWhen, fromLocalInput, toLocalDateInput, toLocalInput } from '@/lib/time'
+import { formatWhen, toLocalDateInput } from '@/lib/time'
 import { errorMessage } from '@/lib/errors'
 import { cn } from '@/lib/utils'
 import { MILESTONES_ID } from '@/components/StatusUpdate'
 import { BusyLabel } from '@/components/StableLabel'
+import { MilestoneForm } from '@/components/MilestoneForm'
+import { milestoneBody } from '@/lib/milestoneDraft'
 
 /** Etapas con ficha de proceso: desde que se aprueba la oferta. */
 const PROCESS_STAGES = new Set<Stage>(['approved', 'cv_ready', 'applied', 'in_process', 'closed'])
-/** Entrevistas y pruebas registran su evento: solo tras enviar la candidatura. */
-const AFTER_APPLIED = new Set<Stage>(['applied', 'in_process'])
 
 function Block({ id, title, action, children }: { id?: string; title: string; action?: ReactNode; children: ReactNode }) {
   return (
@@ -92,164 +87,6 @@ function isUrl(value: string): boolean {
 
 // --- Hitos ----------------------------------------------------------------------------------
 
-interface MilestoneDraft {
-  kind: MilestoneKind
-  title: string
-  date: string // datetime-local o date
-  allDay: boolean
-  location: string
-  notes: string
-  interviewType: InterviewType | ''
-}
-
-function draftFrom(m?: MilestoneOut): MilestoneDraft {
-  if (!m) return { kind: 'interview', title: '', date: '', allDay: false, location: '', notes: '', interviewType: '' }
-  return {
-    kind: m.kind,
-    title: m.title,
-    date: m.all_day ? toLocalDateInput(m.starts_at) : toLocalInput(m.starts_at),
-    allDay: m.all_day,
-    location: m.location ?? '',
-    notes: m.notes ?? '',
-    interviewType: m.interview_type ?? '',
-  }
-}
-
-function MilestoneForm({
-  stage,
-  initial,
-  pending,
-  error,
-  onSubmit,
-  onCancel,
-}: {
-  stage: Stage | null
-  initial?: MilestoneOut
-  pending: boolean
-  error: Error | null
-  onSubmit: (draft: MilestoneDraft, startsAt: string) => void
-  onCancel: () => void
-}) {
-  const { t } = useTranslation('process', { keyPrefix: 'milestoneForm' })
-  const [draft, setDraft] = useState<MilestoneDraft>(() => draftFrom(initial))
-  const set = (changes: Partial<MilestoneDraft>) => setDraft((d) => ({ ...d, ...changes }))
-  const startsAt = draft.date ? fromLocalInput(draft.date) : null
-  const eventKind = draft.kind === 'interview' || draft.kind === 'test'
-  const blocked = !initial && eventKind && (!stage || !AFTER_APPLIED.has(stage))
-
-  const submit = (e: FormEvent) => {
-    e.preventDefault()
-    if (startsAt && !blocked) onSubmit(draft, startsAt)
-  }
-
-  return (
-    <form onSubmit={submit} className="grid gap-3 rounded-lg border bg-background p-3">
-      <div className="grid gap-3 sm:grid-cols-2">
-        {!initial && (
-          <div className="space-y-1.5">
-            <Label htmlFor="ms-kind">{t('kind')}</Label>
-            <select
-              id="ms-kind"
-              value={draft.kind}
-              onChange={(e) => set({ kind: e.target.value as MilestoneKind })}
-              className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
-            >
-              {Object.entries(MILESTONE_KIND_LABEL).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-        {draft.kind === 'interview' && (
-          <div className="space-y-1.5">
-            <Label htmlFor="ms-interview-type">{t('interviewType')}</Label>
-            <select
-              id="ms-interview-type"
-              value={draft.interviewType}
-              onChange={(e) => set({ interviewType: e.target.value as InterviewType | '' })}
-              className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
-            >
-              <option value="">{t('noInterviewType')}</option>
-              {Object.entries(INTERVIEW_TYPE_LABEL).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-        <div className="space-y-1.5">
-          <Label htmlFor="ms-title">{t('title')}</Label>
-          <Input
-            id="ms-title"
-            value={draft.title}
-            maxLength={200}
-            placeholder={MILESTONE_KIND_LABEL[draft.kind]}
-            onChange={(e) => set({ title: e.target.value })}
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="ms-date">{draft.allDay ? t('day') : t('dateTime')}</Label>
-          {draft.allDay ? (
-            <DatePicker id="ms-date" required value={draft.date} onChange={(date) => set({ date })} />
-          ) : (
-            <DateTimePicker id="ms-date" required value={draft.date} onChange={(date) => set({ date })} />
-          )}
-          <label className="flex items-center gap-2 text-xs text-muted-foreground">
-            <input
-              type="checkbox"
-              checked={draft.allDay}
-              onChange={(e) =>
-                set({ allDay: e.target.checked, date: e.target.checked ? draft.date.slice(0, 10) : '' })
-              }
-            />
-            {t('allDay')}
-          </label>
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="ms-location">{t('location')}</Label>
-          <Input
-            id="ms-location"
-            value={draft.location}
-            maxLength={500}
-            onChange={(e) => set({ location: e.target.value })}
-          />
-        </div>
-      </div>
-      <div className="space-y-1.5">
-        <Label htmlFor="ms-notes">{t('notes')}</Label>
-        <Textarea
-          id="ms-notes"
-          rows={2}
-          maxLength={4000}
-          value={draft.notes}
-          onChange={(e) => set({ notes: e.target.value })}
-          className="resize-y"
-        />
-      </div>
-      {blocked && (
-        <p className="text-xs text-muted-foreground">
-          {t('blocked')}
-        </p>
-      )}
-      {error && (
-        <p role="alert" className="text-sm text-destructive">
-          {errorMessage(error)}
-        </p>
-      )}
-      <div className="flex justify-end gap-2">
-        <Button type="button" variant="outline" size="sm" onClick={onCancel}>
-          {t('cancel')}
-        </Button>
-        <Button type="submit" size="sm" disabled={!startsAt || blocked || pending}>
-          <BusyLabel busy={pending} busyText={t('saving')} text={t('save')} />
-        </Button>
-      </div>
-    </form>
-  )
-}
 
 /** Confirma antes de borrar un hito: dice qué se pierde (eventos, guía, plan, repaso). */
 function DeleteMilestoneDialog({
@@ -499,15 +336,7 @@ function Milestones({ process }: { process: ProcessView }) {
             create.mutate(
               {
                 jobId: process.job_id,
-                body: {
-                  kind: draft.kind,
-                  title: draft.title.trim() || undefined,
-                  starts_at: startsAt,
-                  all_day: draft.allDay,
-                  location: draft.location.trim() || undefined,
-                  notes: draft.notes.trim() || undefined,
-                  interview_type: (draft.kind === 'interview' && draft.interviewType) || undefined,
-                },
+                body: milestoneBody(draft, startsAt),
               },
               { onSuccess: () => setAdding(false) },
             )

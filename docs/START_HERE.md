@@ -164,7 +164,7 @@ data.
    `CAI_DATA_DIR=data-demo-en uv run cai start`.
 3. Your browser opens with a **"Demo mode"** banner. Try **Quick review**, in the Inbox (move with `J`/`K`, approve
    with `A`, discard with `D`), open a job, change the CV template and press **Generate**, and look at
-   the **Board** and the **Funnel**.
+   the **Board** and the **Results**.
 
 To go back to your own data, close that window and open CandidatAI as usual.
 
@@ -184,7 +184,7 @@ own in **My profile**: carry on with step 3.
 With no agent (or no CV), click **Start by hand** in **My profile**: write your name, your headline,
 the role you're looking for and the levels you accept, and click **Create my profile**. The editor
 opens so you can carry on block by block; what it didn't ask (work mode, locations, photo on the CV)
-starts open to anything and you change it in **Search jobs → What you're after** and in **My profile**.
+starts open to anything and you change it in **Search jobs → Your search settings** and in **My profile**.
 
 If you'd rather do it from your agent:
 
@@ -202,11 +202,11 @@ If you'd rather do it from your agent:
    `update-profile` skill: it reads your CV, asks you for what's missing and saves it, without
    making anything up.
 3. Then review it block by block in **My profile**: experience and achievements (with numbers if you
-   have them), skills and languages; and in **Search jobs → What you're after**, what you're looking for: roles, locations,
+   have them), skills and languages; and in **Search jobs → Your search settings**, what you're looking for: roles, locations,
    remote work and your salary minimum. Each block saves on its own and can be undone.
 
 <!-- media:provisional -->
-<img src="img/en/search-settings.webp" alt="“What you're after”, in Search jobs" width="88%">
+<img src="img/en/search-settings.webp" alt="“Your search settings”, in Search jobs" width="88%">
 
 Your salary minimum is used to discard jobs below it and to compare offers, but **your agent never
 sees the figure**.
@@ -216,7 +216,7 @@ sees the figure**.
 Jobs can come in several ways; start with one or two:
 
 - **Paste a job** you've seen: **New job**, paste its link or its text.
-- **Companies you'd like to work for**: in **Search jobs**, the **Where to search → Target companies** tab. If they use Greenhouse, Lever,
+- **Companies you'd like to work for**: in **Search jobs**, the **Where to search → Company career sites** section. If they use Greenhouse, Lever,
   Ashby and the like, their new jobs arrive every day by themselves.
 - **Job alerts by email** (LinkedIn, InfoJobs, Indeed…): **Where to search → Email alerts**, add your mailbox step by step.
   The app only reads; it never sends or deletes email.
@@ -269,7 +269,7 @@ without your account) only happens if you turn it on, and it's at your own risk.
 Pro or ChatGPT Plus.
 
 **Can I use it without an agent?** In part: you can add, approve and discard jobs, follow your processes, see
-the calendar and the funnel, edit your profile and re-render a CV with another design. Reading
+the calendar and the results, edit your profile and re-render a CV with another design. Reading
 postings and writing CVs needs the agent.
 
 **Where do I ask for help?** In the repository's

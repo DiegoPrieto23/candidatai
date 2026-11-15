@@ -49,3 +49,16 @@ export function noMoveReason(card: BoardCard, target: Stage): string {
     return card.reopen_to ? t('reopenTo', { stage: STAGE_LABEL[card.reopen_to] }) : t('cannotReopen')
   return t('noEvent', { from: STAGE_LABEL[card.stage], to: STAGE_LABEL[target] })
 }
+
+/**
+ * Movimientos al soltar en una columna que junta varias etapas: los que llevan a una etapa de esa
+ * columna posterior a la de la tarjeta. Las reglas son las de la etapa, no las de la columna.
+ */
+export function columnMoveOptions(
+  card: BoardCard,
+  moves: BoardMove[],
+  order: readonly Stage[],
+  stages: readonly Stage[],
+): MoveOption[] {
+  return stages.filter((stage) => isForward(order, card.stage, stage)).flatMap((stage) => moveOptions(card, moves, stage))
+}

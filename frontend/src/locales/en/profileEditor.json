@@ -26,10 +26,10 @@
       "open": "Start by hand",
       "headlineHint": "What you'd put under your name on a CV, e.g. “Data Analyst · SQL · Power BI”.",
       "role": "Role you're looking for",
-      "roleHint": "One to start with; add more later in “Search jobs → What you're after”.",
+      "roleHint": "One to start with; add more later in “Search jobs → Your search settings”.",
       "summary": "Summary (optional)",
       "summaryHint": "Two or three sentences about you. Left empty, your headline is used.",
-      "defaults": "Everything else, such as work mode or the photo on the CV, starts open to anything and you change it in “What you're after” and “Documents”. Your experience and skills go in “Experience and education”.",
+      "defaults": "Everything else, such as work mode or the photo on the CV, starts open to anything and you change it in “Your search settings” and “Documents”. Your experience and skills go in “Experience and education”.",
       "required": "Needed to create your profile.",
       "pickOne": "Pick at least one.",
       "create": "Create my profile",
@@ -163,7 +163,7 @@
     },
     "searchContract": {
       "title": "Contract and employer",
-      "hint": "With no option ticked, all are accepted. If a job doesn't state the contract, working time or type of employer, it isn't discarded."
+      "hint": "With no option ticked, all are accepted."
     },
     "cv": {
       "title": "CV preferences",
@@ -182,12 +182,24 @@
       "choose": "Choose a photo",
       "upload": "Upload photo",
       "replace": "Change photo",
-      "uploading": "Uploading…",
       "remove": "Remove",
       "confirmRemove": "Yes, remove the photo",
       "cancel": "Cancel",
-      "formats": "JPG, PNG or WebP, up to 10 MB. Square works best: it's cropped from the centre.",
-      "policyOff": "To include it in your CVs, turn on “Put a photo on the CV” in the “Documents” tab."
+      "formats": "JPG, PNG or WebP, up to 10 MB. You frame it after choosing it.",
+      "policyOff": "To include it in your CVs, turn on “Put a photo on the CV” in the “Documents” tab.",
+      "reframe": "Reframe",
+      "opening": "Opening…",
+      "originalFailed": "The photo couldn't be opened for framing. Please try again.",
+      "crop": {
+        "title": "Frame your photo",
+        "description": "Drag the photo to position it and use the zoom to get closer. This is how it will appear on your CVs.",
+        "area": "Photo framing area",
+        "zoom": "Zoom",
+        "cancel": "Cancel",
+        "save": "Save photo",
+        "saving": "Saving…",
+        "failed": "The photo couldn't be cropped. Try another image."
+      }
     }
   },
   "fields": {
@@ -262,15 +274,16 @@
     "rolesHint": "By priority. Anything unlike them gets a lower fit.",
     "seniority": "Levels you would apply for",
     "workLanguages": "Working languages",
-    "workLanguagesHint": "Two-letter codes: es, en…",
     "remoteModes": "Work mode",
     "locations": {
-      "preferred": "Preferred locations",
-      "preferredHint": "Always apply.",
-      "allowed": "Only if not on-site",
-      "allowedHint": "Fine if the job is hybrid or remote; if it's on-site, it's discarded.",
-      "excluded": "Excluded",
-      "excludedHint": "Always discarded. With no preferred or \"only if not on-site\" ones, anywhere else is fine."
+      "label": "Locations",
+      "hint": "If you accept remote work, remote jobs apply wherever you are. If you only add locations to exclude, all others apply.",
+      "hintLabel": "How locations apply",
+      "preferred": "Any work mode",
+      "allowed": "Hybrid or remote only",
+      "excluded": "Exclude",
+      "modeFor": "What you accept in {{place}}",
+      "add": "Add a location"
     },
     "defaultTemplate": "Default template",
     "templateAuto": "The app's",
@@ -278,7 +291,6 @@
     "maxPagesAuto": "Each template's own",
     "photoDefault": "Include a photo in the CV",
     "photoNo": "Countries without a photo",
-    "photoNoHint": "Two-letter codes in capitals, such as GB or US.",
     "cvInstructions": "Instructions for your CVs",
     "instructionsHint": "Emphasis or style. They guide the writing but are never a fact: new information goes in its own section.",
     "avoid": "What it must never say",
@@ -328,8 +340,11 @@
       "agency": "Exclude temp and recruitment agencies"
     },
     "employerKindsHint": "Your agent notes it when it reads each job.",
-    "doubtful": "Doubtful jobs",
-    "employerHidden": "Discard jobs that don't say which company is hiring"
+    "employerHidden": "Exclude jobs that don't say which company is hiring",
+    "addLanguage": "Type a language",
+    "addCountry": "Type a country",
+    "unknownLanguage": "“{{text}}” isn't a language on the list.",
+    "unknownCountry": "“{{text}}” isn't a country on the list."
   },
   "star": {
     "situation": {
@@ -408,5 +423,14 @@
     "saveFirst": "Save or discard the blocks with changes first.",
     "copies_one": "{{count}} copy saved",
     "copies_other": "{{count}} copies saved"
+  },
+  "summarySuggestion": {
+    "generate": "Generate English summary",
+    "label": "Your agent's suggestion",
+    "outdated": "It was made from another version of your Spanish summary.",
+    "use": "Use in the field",
+    "discard": "Discard",
+    "saveFirst": "Your agent translates the saved summary. Save your changes to the Spanish summary first.",
+    "saveFirstLabel": "Why it's disabled"
   }
 }

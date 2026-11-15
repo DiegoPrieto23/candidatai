@@ -5,6 +5,7 @@ data-*
 **/data-*
 .env
 .env.*
+secrets/
 **/.env
 **/*.db
 

@@ -1,6 +1,6 @@
 ---
 name: review-search
-description: Retrospectiva de la búsqueda en CandidatAI («¿acierta el score?») que, con la calibración y el embudo, explica qué está funcionando (tramos de score, veredicto, fuentes, plantilla, carta, referencias, rapidez al enviar) y propone qué cambiar, sin tocar nunca pesos ni filtros. Úsalo cuando se pida la retrospectiva semanal, revisar la búsqueda, si el score acierta o dónde rinde más el tiempo. Antes se llamaba revisar-busqueda.
+description: Retrospectiva de la búsqueda en CandidatAI («¿acierta el score?») que, con la calibración y los resultados por canal, explica qué está funcionando (tramos de score, veredicto, fuentes, plantilla, carta, referencias, rapidez al enviar) y propone qué cambiar, sin tocar nunca pesos ni filtros. Úsalo cuando se pida la retrospectiva semanal, revisar la búsqueda, si el score acierta o dónde rinde más el tiempo. Antes se llamaba revisar-busqueda.
 argument-hint: '[nada para la última semana, o un número de días]'
 allowed-tools: Read mcp__candidatai__get_calibration mcp__candidatai__get_funnel_stats
 ---
@@ -40,8 +40,11 @@ para la ventana reciente.
   solapan), el score infravalora algo: busca qué tienen en común esas ofertas (fuente, puesto).
 - **¿Acierta el veredicto?** `by_verdict`, igual. Si «Débil» responde como «Fuerte», la valoración
   del agente no está aportando.
-- **Dónde rinde el tiempo**: fuentes y portales con más respuesta por envío; plantilla; carta;
-  referencia; días hasta el envío (¿responde más lo que se envía rápido?).
+- **Dónde rinde el tiempo**: canales (`by_channel` de `get_funnel_stats()` sin `since`: referencia,
+  web de la empresa, portal, añadidas por ti), con la tasa y la mediana de días hasta la respuesta,
+  que solo compara con `min_applied` enviadas y `min_replied` respuestas por canal; fuentes y
+  portales con más respuesta por envío; plantilla; carta; referencia; días hasta el envío (¿responde
+  más lo que se envía rápido?).
 - **La semana**: entradas, aprobadas, enviadas y respuestas de la ventana; descartes que se
   repiten (un motivo frecuente puede ser un filtro duro que falta).
 

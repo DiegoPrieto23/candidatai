@@ -245,3 +245,34 @@ describe('Procesos (kanban)', () => {
   })
 })
 
+
+describe('Columnas configurables', () => {
+  it('junta etapas y renombra sin tocar las etapas; «Restablecer» vuelve a las de siempre', async () => {
+    const calls = mockApi(routes())
+    renderApp('/procesos')
+    await screen.findByRole('region', { name: 'Enviada' })
+    await userEvent.click(screen.getByRole('button', { name: 'Personalizar columnas' }))
+    const dialog = await screen.findByRole('dialog')
+    await userEvent.click(within(dialog).getByRole('switch', { name: '«Aprobada» y «CV listo» en la misma columna' }))
+    await userEvent.click(within(dialog).getByRole('switch', { name: '«Enviada» y «En proceso» en la misma columna' }))
+    // Con 3 columnas no se junta nada más.
+    expect(within(dialog).getByRole('switch', { name: '«CV listo» y «Enviada» en la misma columna' })).toBeDisabled()
+    await userEvent.type(within(dialog).getByLabelText('Columna 2'), 'En marcha')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Guardar' }))
+
+    const running = await screen.findByRole('region', { name: 'En marcha' })
+    expect(within(running).getByText('Oferta 2')).toBeInTheDocument()
+    expect(within(running).getByText('Oferta 3')).toBeInTheDocument()
+    // Cada tarjeta de una columna con varias etapas dice la suya.
+    expect(within(running).getByText('En proceso')).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Aprobada · CV listo' })).toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: 'Enviada' })).not.toBeInTheDocument()
+    // Solo es una vista: ninguna llamada que cambie nada.
+    expect(calls.filter((c) => c.method !== 'GET')).toEqual([])
+
+    await userEvent.click(screen.getByRole('button', { name: 'Personalizar columnas' }))
+    await userEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Restablecer' }))
+    expect(await screen.findByRole('region', { name: 'Enviada' })).toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: 'En marcha' })).not.toBeInTheDocument()
+  })
+})

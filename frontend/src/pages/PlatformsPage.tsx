@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { ArrowSquareOutIcon, ClockIcon, CompassIcon, GlobeIcon, WarningIcon } from '@phosphor-icons/react'
-import { Link } from 'react-router'
 import type { AgentBrowseLimits, BrowseAccess, LinkedInPublicView, SourceView } from '@/api/client'
 import {
   useLinkedInPublic,
@@ -267,7 +266,7 @@ function LinkedInPublicPanel() {
       <div className="flex flex-wrap items-start gap-x-4 gap-y-2">
         <GlobeIcon className="mt-0.5 size-5 shrink-0 text-muted-foreground" aria-hidden />
         <div className="min-w-0 flex-1">
-          <h4 className="text-sm font-medium">{t('title')}</h4>
+          <h5 className="text-sm font-medium">{t('title')}</h5>
           <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
             {t('intro')}
           </p>
@@ -455,7 +454,7 @@ function PlatformRow({ source, order, limits }: { source: SourceView; order: Slo
   if (!browse) {
     return (
       <li className="px-4 py-4 sm:px-5">
-        <h3 className="font-medium">{source.name}</h3>
+        <h4 className="font-medium">{source.name}</h4>
         <p className="mt-1 text-sm text-destructive">
           <InlineCode text={t('row.invalid')} />
         </p>
@@ -489,9 +488,10 @@ function PlatformRow({ source, order, limits }: { source: SourceView; order: Slo
     <li className={cn('grid gap-3 px-4 py-4 sm:px-5', !enabled && 'bg-muted/30')}>
       <div className="flex flex-wrap items-start gap-x-4 gap-y-2">
         <SiteIcon key={home?.host ?? ''} name={source.name} sourceId={source.id} host={home?.host ?? null} />
-        <div className="min-w-0 flex-1">
+        {/* Con poco ancho, los controles bajan a otra línea en vez de pisar el nombre. */}
+        <div className="min-w-0 flex-1 basis-48">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="font-medium">{source.name}</h3>
+            <h4 className="font-medium">{source.name}</h4>
             {linkedin && (
               <span className="rounded-md bg-amber-500/10 px-1.5 py-0.5 text-xs text-amber-700 dark:text-amber-400">
                 {t('row.risk')}
@@ -708,27 +708,22 @@ export function PlatformsPage() {
     )
   }
 
-  // Con plataformas, lo destacado es buscar; sin ninguna, añadir la primera (en el estado vacío).
+  // Sin ninguna plataforma, las acciones van en el estado vacío. Buscar, en la sección de arriba.
   const any = (platforms.data?.sources.length ?? 0) > 0
   return (
-    <div className="max-w-3xl animate-in fade-in duration-300">
-      <div className="mb-8">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
-          {any && (
-            <div className="flex flex-wrap gap-2">
-              <AddPlatformButton />
-              <AgentButton action="configure-platforms">{tAgent('actions.configure-platforms')}</AgentButton>
-              <AgentButton action="broaden-search">{t('broaden')}</AgentButton>
-              <Button asChild size="sm">
-                <Link to="/buscar">{t('search')}</Link>
-              </Button>
-            </div>
-          )}
-        </div>
-        <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+    <div className="max-w-3xl">
+      <h3 className="sr-only">{t('title')}</h3>
+      <div className="mb-6 grid gap-3">
+        <p className="text-sm leading-relaxed text-muted-foreground">
           <InlineCode text={t('intro')} />
         </p>
+        {any && (
+          <div className="flex flex-wrap gap-2">
+            <AddPlatformButton />
+            <AgentButton action="configure-platforms">{tAgent('actions.configure-platforms')}</AgentButton>
+            <AgentButton action="broaden-search">{t('broaden')}</AgentButton>
+          </div>
+        )}
       </div>
       {body}
     </div>

@@ -52,8 +52,8 @@ COMMANDS: dict[str, str] = {
     "cv": "CVs a medida: contenido, renders y verificación.",
     "templates": "Plantillas de CV.",
     "sources": (
-        "Fuentes de ofertas: empresas objetivo (ATS), portales con API y plataformas para la "
-        "búsqueda con navegador."
+        "Fuentes de ofertas: empresas con portal propio (ATS), portales con API y plataformas "
+        "para la búsqueda con navegador."
     ),
     "alerts": "Alertas de empleo por correo y ofertas resumen (pending_detail).",
     "mail-sources": (
@@ -77,7 +77,7 @@ COMMANDS: dict[str, str] = {
         "La oferta que te ha hecho la empresa (lo que ve el agente; los datos, en la ficha)."
     ),
     "requests": "Cola de encargos: lo que dejaste en la UI para tu agente (fase 19).",
-    "assistant": "«Pídeselo a tu agente»: lo que escribiste en la ayuda del portal.",
+    "assistant": "«Asistente»: lo que escribiste en la ayuda del portal.",
     "demo": "Modo demo: una búsqueda ficticia para probar la app.",
 }
 

@@ -4,6 +4,9 @@ import { describe, expect, it, vi } from 'vitest'
 import type { AgentBrowseSource, LinkedInPublicView, SourceView } from '@/api/client'
 import { mockApi, renderApp, status } from '@/test/utils'
 
+/** «Dónde buscar»: la sección de «Buscar ofertas» donde está la lista de portales. */
+const where = () => within(screen.getByRole('region', { name: 'Dónde buscar' }))
+
 const LIMITS = { max_result_pages: 2, delay_seconds: 5, default_max_offers: 15 }
 
 function platform(id: number, browse: Partial<AgentBrowseSource>, overrides: Partial<SourceView> = {}): SourceView {
@@ -102,9 +105,9 @@ describe('Plataformas', () => {
     })
     renderApp('/plataformas')
 
-    const headings = await screen.findAllByRole('heading', { level: 3 })
+    const headings = await where().findAllByRole('heading', { level: 4 })
     expect(headings.map((h) => h.textContent)).toEqual(['LinkedIn', 'Tecnoempleo'])
-    expect(calls.find((c) => c.path === '/sources')?.search.get('kind')).toBe('agent_browse')
+    expect(calls.some((c) => c.path === '/sources' && c.search.get('kind') === 'agent_browse')).toBe(true)
     // Cada una, en una línea: su último recorrido; lo demás, plegado.
     expect(screen.getByText(/12 encontradas,\s+3 nuevas$/)).toBeInTheDocument()
     expect(screen.getByText(/· 1 problema/)).toBeInTheDocument()
@@ -135,8 +138,8 @@ describe('Plataformas', () => {
       'GET /sources/linkedin-public': publicView(),
     })
     const { container } = renderApp('/plataformas')
-    await screen.findAllByRole('heading', { level: 3 })
-    const icons = [...container.querySelectorAll('img')].map((img) => img.getAttribute('src'))
+    await where().findAllByRole('heading', { level: 4 })
+    const icons = [...container.querySelectorAll('#donde img')].map((img) => img.getAttribute('src'))
     expect(icons).toEqual([
       `http://127.0.0.1:8000/sources/${linkedin.id}/icon?v=linkedin.com`,
       `http://127.0.0.1:8000/sources/${tecno.id}/icon?v=tecnoempleo.com`,
@@ -240,7 +243,7 @@ describe('Plataformas', () => {
     })
     // Tras guardar, la lista se vuelve a pedir y se reordena.
     await vi.waitFor(() =>
-      expect(screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent)).toEqual([
+      expect(where().getAllByRole('heading', { level: 4 }).map((h) => h.textContent)).toEqual([
         'LinkedIn',
         'Indeed',
         'Tecnoempleo',
@@ -271,7 +274,7 @@ describe('Plataformas', () => {
     await userEvent.click(await screen.findByRole('combobox', { name: 'Prioridad de Tecnoempleo' }))
     const before = gets
     await userEvent.click(screen.getByRole('option', { name: /1 · LinkedIn/ }))
-    expect(await screen.findByRole('alert')).toHaveTextContent('El orden ha cambiado')
+    expect(await where().findByRole('alert')).toHaveTextContent('El orden ha cambiado')
     await vi.waitFor(() => expect(gets).toBeGreaterThan(before))
   })
 

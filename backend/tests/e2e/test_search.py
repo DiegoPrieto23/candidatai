@@ -37,9 +37,31 @@ def test_the_agent_button_stays_put_when_it_shows_its_notice(
     assert launches[0]["action"] == "search-jobs"
 
 
+def test_search_jobs_is_one_page_with_an_index(page: Page, demo_app: AppServer) -> None:
+    # Una ruta de antes abre la página en su sección, ya a la vista.
+    page.goto("/fuentes/correo")
+    expect(page.get_by_role("heading", level=1, name=t("search.title"))).to_be_attached()
+    expect(page.get_by_role("heading", level=2, name=t("search.nav.where"))).to_be_in_viewport()
+    expect(page.get_by_role("heading", level=3, name=t("alerts.email.title"))).to_be_attached()
+
+    # El índice lleva a cada sección sin salir de la página, y la URL dice dónde estás.
+    index = page.get_by_role("navigation", name=t("search.nav.label"))
+    index.get_by_role("link", name=t("search.nav.settings")).click()
+    expect(page).to_have_url(f"{demo_app.url}/buscar/ajustes")
+    expect(page.get_by_role("heading", level=2, name=t("search.nav.settings"))).to_be_in_viewport()
+    index.get_by_role("link", name=t("search.nav.search"), exact=True).click()
+    expect(page).to_have_url(f"{demo_app.url}/buscar")
+    expect(
+        page.get_by_role("button", name=t("search.searchNow"), exact=False).first
+    ).to_be_in_viewport()
+    # «Dónde buscar» vuelve a la vista que tenías abierta.
+    index.get_by_role("link", name=t("search.nav.where")).click()
+    expect(page).to_have_url(f"{demo_app.url}/fuentes/correo")
+
+
 def test_what_you_are_after_lives_in_search_jobs(page: Page, demo_app: AppServer) -> None:
     page.goto("/buscar/ajustes")
-    expect(page.get_by_role("heading", level=1, name=t("search.settings.title"))).to_be_visible()
+    expect(page.get_by_role("heading", level=2, name=t("search.nav.settings"))).to_be_visible()
     expect(
         page.get_by_role("region", name=t("profileEditor.blocks.searchRole.title"))
     ).to_be_visible()

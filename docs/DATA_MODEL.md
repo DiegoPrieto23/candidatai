@@ -357,7 +357,11 @@ Fase 18 (migración 0017):
   `cv_ready`.
 - **Calendario**: `.ics` por hito y feed con los próximos sin límite de días (solo hitos
   programados de ofertas abiertas: lo cancelado o cerrado sale del feed) (RFC 5545, UTC, `UID`
-  `milestone-<id>@candidatai.local` y `deadline-<job_id>-<fecha>@candidatai.local`).
+  `milestone-<id>@candidatai.local` y `deadline-<job_id>-<fecha>@candidatai.local`). Cada hito
+  programado lleva `VALARM` (`ACTION:DISPLAY`): `-P1D` y `-PT1H` si tiene hora; `-PT15H` (las 9:00
+  del día anterior) si es de todo el día. Un hito hecho o cancelado, sin alarma.
+- **Columnas del Tablero**: preferencia de la UI en el navegador (`localStorage`), una vista sobre
+  las etapas: no hay tabla ni evento, y agrupar o renombrar no toca la proyección.
 
 ### Embudo (fase 10.2)
 
@@ -392,6 +396,16 @@ conversión nunca pasa del 100 %.
 - **Por referencia** (fase 18): `given` si algún contacto del proceso tiene `referral = given`; si
   no, `requested` si alguno la tiene pedida; si no, `none`. Siempre los tres grupos. La marca no
   tiene fecha de corte: cuenta aunque se pusiera después del envío.
+- **Por canal** (`by_channel`, para «Resultados»): `referral` si hay referencia dada (manda sobre la
+  fuente); si no, `company` si `sources.kind` es un ATS (la web de empleo de una empresa), `manual`
+  si es `manual_url`, `manual_text` o `browser_capture` (las que añades tú) y `portal` en el resto
+  (portales, alertas por correo, búsqueda con navegador, LinkedIn). Siempre los cuatro, en ese orden,
+  con `median_reply_days`: la mediana de días hasta la primera respuesta de las enviadas con
+  respuesta del canal (`null` sin ninguna), y `timed_replies`, cuántas entran en esa mediana (las
+  que llegaron a entrevista sin una respuesta registrada antes cuentan en `replied`, no aquí).
+- **Mínimos** (`min_applied` = 10, `min_replied` = 5): por debajo, la página no saca una frase de
+  una tasa (enviadas de cada grupo comparado) ni de una mediana (respuestas con fecha). Además, la
+  frase pide una diferencia clara: 10 puntos de tasa o un día de mediana. Los números se dan igual.
 - **Motivos**: ofertas con `discarded` por `payload.reason` (`unspecified` si falta) y con
   `hard_filter_failed` por cada `payload.failures[].filter` (`json_each`).
 - `json_each` es de SQLite: pasar a Postgres exigiría reescribir esa expresión.
@@ -505,7 +519,8 @@ Ficheros en `data/` (gitignored), fuera de la BD:
 ### `mail_sources` (migración 0027)
 
 Buzones de los que se leen las alertas y, si se pide, las respuestas de las empresas. **Nunca la
-contraseña**: vive en `.env`, en la variable que nombra `secret_ref`.
+contraseña**: vive en el llavero del sistema (fase 41.5; donde no lo hay, en `.env` o en el
+entorno), con el nombre que guarda `secret_ref`.
 
 | Columna | Tipo | Notas |
 |---|---|---|
@@ -519,7 +534,7 @@ contraseña**: vive en `.env`, en la variable que nombra `secret_ref`.
 | replies_folder | str | Carpeta IMAP de las respuestas (`INBOX`) |
 | enabled | bool | |
 | read_replies | bool | Si se leen de aquí las respuestas de las empresas. Se activa a propósito, también en la «Principal» |
-| secret_ref | str? | Nombre de la variable de `.env` con la contraseña (`CAI_IMAP_<ALIAS>_PASSWORD`) |
+| secret_ref | str? | Nombre de la contraseña en el llavero, o de su variable de entorno (`CAI_IMAP_<ALIAS>_PASSWORD`) |
 | from_env | bool | La cuenta `CAI_IMAP_*` de `.env`: servidor, usuario y carpetas salen de ahí |
 | allow_private | bool | «Servidor en mi equipo o mi red» (un servidor propio) |
 | last_polled_at | datetime? | Última lectura |
@@ -571,7 +586,7 @@ Un guardado del perfil que no cambia los datos (comentarios aparte) no crea vers
 ## Ampliaciones de la fase 14
 
 ### `skill_gap_marks`
-Lo que el usuario dijo, en «Mi perfil → Skills que te faltan», de una skill que piden las ofertas y su perfil no
+Lo que el usuario dijo, en «Mi perfil → Habilidades por desarrollar», de una skill que piden las ofertas y su perfil no
 cubre (migración 0013). No es estado de una oferta: no lleva evento.
 
 | Columna | Tipo | Notas |
@@ -652,7 +667,7 @@ Observaciones del código sobre la oferta que **no** son riesgo de inyección (m
 | `ai_screening` (25.3) | `origin` (`extraction`, `text`), `matched?` | Ídem: `mentions_ai_screening`, o una frase de `ai_screening` en el texto |
 | `stale_repost` (25.3) | `count`, `channel`, `first_seen`, `last_seen`, `span_days` | `services/reposts.py`, con todo el historial de `job_sightings` del grupo, sin ventana: `count ≥ doubtful.stale_repost_min_count` o `span_days ≥ doubtful.stale_repost_min_span_days` |
 
-Las cinco de la fase 25.3 son **señales de oferta dudosa**: no cambian el score ni los filtros
+Las cinco de la fase 25.3 son **señales de oferta dudosa** («Puntos a revisar» en la UI): no cambian el score ni los filtros
 duros, salvo `employer_hidden` y `fixed_term` si están en `preferences.exclude_signals` del perfil
 (filtro `signal`; `fixed_term`, desde la fase 27.5, en el filtro `contract`). `cai jobs signals --recompute` las recalcula todas. Sin migración: es la misma
 columna JSON. Las extracciones anteriores a la fase no traen los campos nuevos, así que solo
@@ -793,8 +808,23 @@ Cola de encargos: lo que la UI deja para la próxima sesión interactiva del age
 Mismo encargo pendiente (acción, oferta e hito) no se duplica. `get_status` cuenta los pendientes
 en `agent_requests`.
 
+### `profile_suggestions`
+Lo que tu agente propone para un campo del perfil (fase 41.2, migración 0038): hoy, el resumen en
+inglés traducido del español. El agente nunca escribe en el perfil desde aquí: la propuesta sale
+junto al campo en «Mi perfil» y el perfil solo cambia con «Guardar».
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | int PK | |
+| field | str | `summary.en` |
+| text | text | La propuesta (≤ 4000), de `save_profile_suggestion` |
+| source | text? | El texto del que sale (el resumen en español vigente): si cambia, la UI avisa |
+| agent_name | str? | |
+| status | str | `pending`, `used` (pasó al formulario), `discarded` o `replaced` (llegó otra del mismo campo) |
+| created_at / resolved_at | datetime | |
+
 ### `assistant_requests`
-Lo que escribes en «Pídeselo a tu agente», en la ayuda del portal (fase 42.2, migración 0037), y
+Lo que escribes en «Asistente», en la ayuda del portal (fase 42.2, migración 0037), y
 la respuesta de tu agente. Es también el historial del panel.
 
 | Columna | Tipo | Notas |

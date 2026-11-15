@@ -1,4 +1,4 @@
-"""«Pídeselo a tu agente»: el texto se guarda y no va en la orden, la ejecución solo tiene las
+"""«Asistente»: el texto se guarda y no va en la orden, la ejecución solo tiene las
 herramientas de la acción `assistant` y nada de lo que la app protege se puede confirmar desde ahí.
 Con el agente falso de `test_agent_runs` (sin red ni LLM)."""
 # ruff: noqa: F811 - los fixtures importados se usan como parámetros

@@ -47,5 +47,19 @@
   "seeCalendar": "Ver el calendario",
   "next7": "Próximos 7 días",
   "introHint": "Arrastra una tarjeta hacia la derecha o pulsa «Actualizar estado» para anotar lo que ha pasado, como una respuesta o una entrevista.",
-  "introHintAria": "Cómo se usa el tablero"
+  "introHintAria": "Cómo se usa el tablero",
+  "columns": {
+    "open": "Personalizar columnas",
+    "title": "Columnas del tablero",
+    "description": "Junta etapas seguidas en una columna y ponles nombre. Entre {{min}} y {{max}} columnas; las etapas de tus ofertas no cambian.",
+    "stages_one": "Etapas · {{count}} columna",
+    "stages_other": "Etapas · {{count}} columnas",
+    "sameColumn": "En la misma columna",
+    "join": "«{{a}}» y «{{b}}» en la misma columna",
+    "names": "Nombres",
+    "column": "Columna {{n}}",
+    "reset": "Restablecer",
+    "cancel": "Cancelar",
+    "save": "Guardar"
+  }
 }

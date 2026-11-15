@@ -22,6 +22,7 @@ from app.services.normalize import (
     fold,
     normalize_location,
     normalize_title,
+    role_forms,
     title_segments,
     translate_title,
 )
@@ -46,9 +47,17 @@ class Verdict:
 PASS = Verdict(True)
 
 
-def _folded(phrases: list[str]) -> list[tuple[str, str]]:
-    """Cada frase con su forma plegada (las que se quedan vacías no cuentan)."""
-    return [(phrase, folded) for phrase in phrases if (folded := fold(phrase))]
+def _folded(phrases: list[str]) -> list[tuple[str, str, str]]:
+    """Cada frase con su forma plegada y la traducida con `config/title_aliases.yaml` (las que se
+    quedan vacías no cuentan)."""
+    return [
+        (phrase, folded, role_forms(phrase)[-1]) for phrase in phrases if (folded := fold(phrase))
+    ]
+
+
+def _english(title: str) -> str:
+    """El título normalizado con los puestos en inglés, entre espacios para buscar palabras."""
+    return f" {' '.join(translate_title(normalize_title(title)).split())} "
 
 
 class Prefilter:
@@ -63,7 +72,8 @@ class Prefilter:
         # Lo del perfil, normalizado una vez: las alertas pasan miles de títulos por aquí.
         self._discard = _folded(self.discard)
         self._extra = _folded(self.extra)
-        self._roles = [normalize_title(r) for r in preferences.roles] if preferences else []
+        # Cada puesto buscado, también en inglés: da igual el idioma en que lo escribas.
+        self._roles = [role_forms(r) for r in preferences.roles] if preferences else []
         # Veredictos ya calculados: el del título solo depende del título, y el de la ubicación,
         # de la ubicación (en las alertas se repiten mucho).
         self._titles: dict[str, Verdict] = {}
@@ -103,16 +113,22 @@ class Prefilter:
     def _title(self, title: str) -> Verdict:
         assert self.preferences is not None
         words = f" {fold(title)} "
-        hits = [k for k, folded in self._discard if f" {folded} " in words]
+        english = _english(title)
+
+        def found(folded: str, translated: str) -> bool:
+            # En los dos idiomas: «analista de datos» también está en «Data Analyst».
+            return f" {folded} " in words or bool(translated) and f" {translated} " in english
+
+        hits = [k for k, folded, translated in self._discard if found(folded, translated)]
         if hits:
             return Verdict(False, f"El título contiene palabras de descarte: {', '.join(hits)}.")
-        if any(f" {folded} " in words for _, folded in self._extra):
+        if any(found(folded, translated) for _, folded, translated in self._extra):
             return PASS
         segments = title_forms(title)
         # Todas las palabras de algún puesto buscado deben estar en el título (con margen para
         # variantes como «engineering»); el parecido fino lo calcula el score.
-        for wanted in self._roles:
-            if any(role_similarity(segment, wanted) > 0 for segment in segments):
+        for forms in self._roles:
+            if any(role_similarity(seg, wanted) > 0 for seg in segments for wanted in forms):
                 return PASS
         return Verdict(False, "El título no encaja con tus puestos (`preferences.roles`).")
 

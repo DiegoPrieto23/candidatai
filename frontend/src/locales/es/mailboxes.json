@@ -24,15 +24,23 @@
     "remove": "Quitar",
     "confirmRemove": "¿Quitar? Sí",
     "cancelRemove": "No",
-    "fromEnvHint": "Es la cuenta configurada al instalar: su servidor y su usuario se cambian en el fichero .env (CAI_IMAP_*).",
+    "fromEnvHint": "Es la cuenta configurada al instalar: su servidor y su usuario se cambian en la configuración de la instalación, como explica la guía del correo.",
     "writePassword": "Escribir la contraseña",
     "serverSaid": "El servidor respondió: {{message}}",
-    "secretRef": "La contraseña se guarda en la variable {{ref}}."
+    "secretRef": "Referencia de la contraseña: {{ref}}",
+    "storage": {
+      "keyring": "Contraseña en el llavero del sistema",
+      "file": "Contraseña guardada en un fichero de tu equipo, sin cifrar.",
+      "fileNoKeyring": "Contraseña guardada en un fichero de tu equipo: este equipo no tiene llavero del sistema.",
+      "environment": "Contraseña configurada fuera de la app",
+      "move": "Mover al llavero",
+      "moving": "Moviendo…"
+    }
   },
   "dialog": {
     "addTitle": "Añadir buzón",
     "editTitle": "Editar «{{name}}»",
-    "description": "La app solo lee y no envía nada: tus correos se quedan tal cual. La contraseña se queda en tu equipo.",
+    "description": "La app solo lee: tus correos se quedan tal cual. La contraseña se guarda cifrada en el llavero del sistema.",
     "provider": "Proveedor",
     "guide": "Guía completa",
     "officialLinks": "Ayuda oficial",
@@ -43,8 +51,11 @@
     "cancel": "Cancelar",
     "testOk": "Conexión correcta",
     "testFailed": "No se pudo conectar",
-    "envLine": "En Docker la app no puede guardar la contraseña: añade a tu .env la línea `{{line}}` con ella y recrea el contenedor.",
-    "advanced": "Servidor y cifrado"
+    "envLine": "En Docker, la contraseña se configura en el contenedor, como secreto o como variable de entorno: la guía del correo explica cómo.",
+    "advanced": "Servidor y cifrado",
+    "descriptionFile": "La app solo lee: tus correos se quedan tal cual. La contraseña se guarda en un fichero de tu equipo.",
+    "descriptionDocker": "La app solo lee: tus correos se quedan tal cual. La contraseña se configura en el contenedor.",
+    "envLineName": "Nombre que tiene que llevar: {{line}}"
   },
   "fields": {
     "label": "Nombre",
@@ -71,14 +82,11 @@
   "providers": {
     "gmail": {
       "name": "Gmail",
-      "step1": "Activa la verificación en dos pasos en tu cuenta de Google.",
-      "step2": "Crea una contraseña de aplicación y cópiala: Google solo enseña sus 16 letras una vez.",
-      "step3": "Opcional: crea una etiqueta (p. ej. «Alertas empleo») y un filtro que lleve ahí los correos de LinkedIn o InfoJobs. Escribe ese nombre en «Carpeta».",
+      "step1": "Activa la <a>verificación en dos pasos</a> en tu cuenta de Google.",
+      "step2": "Crea una <a>contraseña de aplicación</a> y cópiala: Google solo enseña sus 16 letras una vez.",
+      "step3": "Opcional: crea una etiqueta (p. ej. «Alertas empleo») y un <a>filtro</a> que lleve ahí los correos de LinkedIn o InfoJobs. Escribe ese nombre en «Carpeta».",
       "step4": "Solo sirve con cuentas personales de Google sin Protección Avanzada: en las de trabajo o de un centro educativo, Google no da contraseñas de aplicación.",
-      "linkTwoStep": "Verificación en dos pasos",
-      "linkAppPasswords": "Contraseñas de aplicación",
-      "linkHelp": "Ayuda de Google sobre contraseñas de aplicación",
-      "linkFilters": "Crear filtros en Gmail"
+      "linkHelp": "Ayuda de Google sobre contraseñas de aplicación"
     },
     "outlook": {
       "name": "Outlook / Hotmail",
@@ -96,17 +104,15 @@
     },
     "yahoo": {
       "name": "Yahoo",
-      "step1": "En la seguridad de tu cuenta de Yahoo, ve a «Conexiones externas» y genera una contraseña de aplicación.",
+      "step1": "En la seguridad de tu cuenta de Yahoo, ve a «Conexiones externas» y genera una <a>contraseña de aplicación</a>.",
       "step2": "Escribe aquí tu dirección completa y esa contraseña.",
-      "linkAppPasswords": "Contraseñas de aplicación de Yahoo",
       "linkImap": "Datos IMAP de Yahoo"
     },
     "icloud": {
       "name": "iCloud",
       "step1": "Activa la autenticación de doble factor en tu cuenta de Apple.",
-      "step2": "En account.apple.com → Inicio de sesión y seguridad → Contraseñas específicas de app, genera una.",
+      "step2": "En account.apple.com → Inicio de sesión y seguridad, genera una <a>contraseña específica de app</a>.",
       "step3": "Usuario de iCloud: lo que va antes de @icloud.com. Si no conecta, prueba con la dirección completa.",
-      "linkAppPasswords": "Contraseñas específicas de app",
       "linkImap": "Datos IMAP de iCloud"
     },
     "imap": {
@@ -132,5 +138,20 @@
     "inbox_error": "Esa carpeta ya no existe: vuelve a crearla con «Editar» o quita el buzón.",
     "time_budget": "No dio tiempo en esta pasada: se leerá en la siguiente.",
     "imap_error": "El servidor respondió con un error. Vuelve a probar más tarde."
+  },
+  "keyringNotice": {
+    "title": "Guarda tus contraseñas en el llavero del sistema",
+    "body_one": "Una contraseña está en un fichero de tu equipo, sin cifrar. En el llavero queda cifrada y protegida por tu sesión.",
+    "body_other": "{{count}} contraseñas están en un fichero de tu equipo, sin cifrar. En el llavero quedan cifradas y protegidas por tu sesión.",
+    "item": {
+      "mailbox": "Buzón «{{name}}»",
+      "mailboxInstall": "Buzón configurado al instalar",
+      "adzuna": "Clave de Adzuna",
+      "infojobs": "Clave de InfoJobs"
+    },
+    "move": "Mover al llavero",
+    "moving": "Moviendo…",
+    "later": "Ahora no",
+    "failed": "No se pudieron mover todas: inténtalo de nuevo o revisa el llavero del sistema."
   }
 }

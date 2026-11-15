@@ -731,7 +731,7 @@ BACKGROUND_NOTE = (
 # nada que preguntar. Los nombres de las skills salen de las ofertas: no van en la orden.
 GAPS_MARKED_NOTE = (
     " Las skills obligatorias ausentes de esa oferta ya las he marcado como «No la tengo» en la "
-    "página Skills: no preguntes por ellas ni las pongas en el CV."
+    "página «Habilidades por desarrollar»: no preguntes por ellas ni las pongas en el CV."
 )
 # El asistente del portal sí puede preguntar: con un aviso de la app, que el usuario tiene delante.
 ASSISTANT_NOTE = (

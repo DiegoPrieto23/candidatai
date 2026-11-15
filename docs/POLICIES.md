@@ -61,6 +61,12 @@ Las reglas con valores ajustables tienen su parámetro en `config/policies.yaml`
 
 - Seniority objetivo, años máximos exigidos, modalidad, ubicaciones preferidas y descartadas: en
   `preferences` del perfil. No hay nada fijo para perfiles junior.
+- Cada filtro se aplica solo cuando la oferta indica ese dato: una oferta sin tipo de contrato
+  pasa el filtro de contrato, y una sin sueldo publicado, el de sueldo mínimo. La configuración de
+  la búsqueda lo dice una vez, en su cabecera.
+- Ubicaciones: en la configuración, cada una lleva un selector, «Cualquier modalidad»
+  (`locations.preferred`), «Solo híbrido o remoto» (`locations.allowed`) o «Descartar»
+  (`locations.excluded`). Se guardan en esas tres listas.
 - Las ofertas fuera de zona solo pasan si son remotas o si la ubicación está permitida.
 - Prestigio de la empresa o salario alto **no** compensan un encaje técnico pobre.
 - Veredicto `strong` exige cubrir la mayoría de `must_have_skills` con nivel `F`/`C+`.
@@ -100,9 +106,9 @@ Combinación ponderada (`scoring.weights`) de cuatro componentes entre 0 y 1:
   `similarity_floor` y `similarity_ceiling`.
 - **Preferencias**: media de puesto (parecido con `preferences.roles`, según su orden; todas las
   palabras del puesto buscado deben estar en el título o en una de sus partes, sin contar la
-  seniority: «Sales Engineer (Data Platform)» no cuenta como «Data Engineer»; los puestos en
-  español se leen en inglés con `config/title_aliases.yaml`: «Ingeniero de datos» cuenta como
-  «Data Engineer»), modalidad
+  seniority: «Sales Engineer (Data Platform)» no cuenta como «Data Engineer»; los puestos se
+  comparan en inglés con `config/title_aliases.yaml`, tanto los de la oferta como los buscados:
+  «Ingeniero de datos» casa con «Data Engineer» y al revés), modalidad
   (según el orden de `remote_modes`) y zona (preferida 1, permitida 0,6, desconocida 0,5).
 
 Un componente que no se puede calcular (la oferta no lista skills de ese tipo o no hay modelo de
@@ -112,7 +118,7 @@ duros no cambian el score. Por debajo de `triage_threshold`, la oferta se ve ate
 
 ### Sinónimos y huecos de skills (fase 14)
 
-El score mide experiencia, no vocabulario. «Mi perfil → Skills que te faltan» agrega las skills que piden las
+El score mide experiencia, no vocabulario. «Mi perfil → Habilidades por desarrollar» agrega las skills que piden las
 ofertas (abiertas y aprobadas o enviadas en los últimos 60 días, ajustable) y el perfil no cubre,
 y para cada una el usuario decide:
 
@@ -138,7 +144,7 @@ Los pesos del score no cambian con esto; solo qué nombres casan.
 - **«Republicada ×N» es una observación**, no un motivo de descarte ni un dato para el score: puede
   ser una vacante difícil de cubrir, un portal que renueva la publicación o una oferta fantasma.
 
-### Señales de oferta dudosa (fase 25.3)
+### Puntos a revisar: señales de oferta dudosa (fase 25.3)
 
 Una oferta puede encajar en el papel y aun así no merecer la pena. El código marca cinco señales en
 `jobs.signals`, con reglas fijas y configurables (`doubtful` en `config/policies.yaml` y
@@ -256,8 +262,13 @@ Una oferta puede encajar en el papel y aun así no merecer la pena. El código m
    el agente propone qué significan y nada cambia de etapa hasta que lo aceptas en la UI.
 6. **Cuentas y credenciales**: las creas e introduces tú. El perfil de navegador persistente
    vive en `data/browser-profile/` y nadie más lo lee. Las contraseñas de los buzones de correo
-   (fase 27.4) viven solo en `.env`: la UI las escribe ahí y no vuelven nunca por la API
-   ni por la interfaz para agentes, que solo ve si están puestas.
+   y las claves de los portales se guardan cifradas en el llavero del sistema operativo
+   (Administrador de credenciales, Llavero de macOS o Secret Service); la base de datos y `.env`
+   solo guardan su nombre. La app no guarda contraseñas en claro donde hay llavero: las que
+   estaban en `.env` se mueven a él con confirmación en la UI. Sin llavero (Docker, Linux sin
+   sesión gráfica), un secreto o una variable del contenedor, o `.env` marcada en la UI como
+   «guardada en un fichero». Ninguna vuelve por la API, por la interfaz para agentes ni por los
+   logs: solo se ve si está puesta y dónde.
 
 ## 6. Contenido no confiable
 
@@ -290,7 +301,7 @@ Una oferta puede encajar en el papel y aun así no merecer la pena. El código m
   solo `docs/`. Lo que intente fuera de eso queda en el progreso como «denegada». Solo se lanzan
   así los skills que no preguntan; si uno necesita al usuario, para y deja la pregunta en la UI.
   Tiempo máximo: `background_runs.timeout_minutes` de `config/policies.yaml`.
-- **Pídeselo a tu agente** (fase 42.2): lo que escribes en la ayuda del portal es tuyo, pero no
+- **Asistente** (fase 42.2): lo que escribes en el asistente del portal es tuyo, pero no
   amplía lo que tu agente puede hacer. El texto se guarda en la app y no va en la orden del agente,
   que solo lleva el número de la petición. En segundo plano, esa ejecución lee datos que la app ya
   tiene estructurados y escribe solo lo que ya escribe otra acción en segundo plano (la valoración

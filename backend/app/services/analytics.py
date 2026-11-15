@@ -14,6 +14,10 @@ Todo sale de `events` con consultas agregadas en la BD. Definiciones (también e
 - **Por referencia** (fase 18): `given` si algún contacto del proceso tiene la referencia dada;
   si no, `requested` si se pidió; si no, `none`. La marca no lleva fecha de corte: cuenta aunque
   se diera después del envío.
+- **Por canal**: `referral` si hay referencia dada (manda sobre la fuente); si no, `company` si la
+  fuente es la web de empleo de una empresa (ATS), `manual` si la añadiste tú (URL, texto o la
+  extensión) y `portal` en el resto (portales, alertas, búsqueda con navegador, LinkedIn). Con la
+  tasa de respuesta y la mediana de días hasta la primera respuesta de cada uno.
 
 Solo SQLite: los filtros duros usan `json_each`.
 
@@ -78,11 +82,16 @@ from app.models import (
     Source,
 )
 from app.models.base import UTCDateTime
+from app.schemas.sources import ATS_KINDS
 from app.services.documents.cover_letter import LETTER_KIND
 from app.services.pipeline import EventType, Stage
 from app.services.process import local_zone, start_of_local_day
 
 TOP_TITLES = 8
+# Por debajo, el grupo de la calibración lleva `low_data` y la página no saca conclusiones de una
+# tasa; una mediana de días necesita al menos `MIN_REPLIES` respuestas.
+MIN_CASES = 10
+MIN_REPLIES = 5
 
 FunnelStepName = Literal[
     "found", "triaged", "approved", "applied", "replied", "interview", "offer", "accepted"
@@ -181,6 +190,20 @@ class ReferralFunnel(FunnelSummary):
     group: ReferralGroup  # referencia dada, solo pedida o sin referencia
 
 
+ChannelName = Literal["referral", "company", "portal", "manual"]
+CHANNELS: tuple[ChannelName, ...] = ("referral", "company", "portal", "manual")
+# Lo que añades tú: por URL, pegando el texto o con la extensión desde cualquier web.
+MANUAL_KINDS = ("manual_url", "manual_text", "browser_capture")
+
+
+class ChannelFunnel(FunnelSummary):
+    channel: ChannelName
+    median_reply_days: float | None  # del envío a la primera respuesta; `null` sin respuestas
+    # Las que cuentan en la mediana: con fecha de respuesta. `replied` incluye también las que
+    # llegaron a entrevista sin una respuesta registrada antes.
+    timed_replies: int
+
+
 class ResponseTime(BaseModel):
     applied: int  # ofertas enviadas (con `applied` o `applied_manually`)
     replied: int
@@ -233,10 +256,13 @@ class FunnelStats(BaseModel):
     by_title: list[TitleFunnel]
     by_week: list[WeekFunnel]
     by_referral: list[ReferralFunnel]  # siempre los tres grupos, en ese orden
+    by_channel: list[ChannelFunnel]  # siempre los cuatro canales, en ese orden
     response_time: ResponseTime
     discard_reasons: list[ReasonCount]
     hard_filter_failures: list[FilterCount]
     agent_cost: FunnelCost
+    min_applied: int  # enviadas que necesita una tasa para sacar conclusiones
+    min_replied: int  # respuestas que necesita una mediana de días
 
 
 # --- Consultas ------------------------------------------------------------------------------
@@ -670,6 +696,52 @@ def _by_referral(session: Session, per_job: FromClause) -> list[ReferralFunnel]:
     ]
 
 
+def _channel(per_job: FromClause) -> Any:
+    """El canal de cada oferta: la referencia dada manda; si no, el tipo de su fuente."""
+    given = (
+        exists()
+        .where(Contact.job_id == per_job.c.job_id, Contact.referral == "given")
+        .correlate(per_job)
+    )
+    return case(
+        (given, "referral"),
+        (Source.kind.in_(ATS_KINDS), "company"),
+        (Source.kind.in_(MANUAL_KINDS), "manual"),
+        else_="portal",
+    )
+
+
+def _reply_days(per_job: FromClause) -> Any:
+    return func.julianday(per_job.c.reply_at) - func.julianday(per_job.c.applied_at)
+
+
+def _by_channel(session: Session, per_job: FromClause) -> list[ChannelFunnel]:
+    channel = _channel(per_job).label("channel")
+    base = select().select_from(per_job).outerjoin(Source, Source.id == per_job.c.source_id)
+    rows = {
+        r.channel: r
+        for r in session.execute(
+            base.add_columns(channel, *_sums(per_job, SUMMARY_STEPS)).group_by(channel)
+        ).all()
+    }
+    days: dict[str, list[float]] = {}
+    replied = and_(per_job.c.reply_at.is_not(None), per_job.c.applied_at.is_not(None))
+    for name, value in session.execute(
+        base.add_columns(channel, _reply_days(per_job)).where(replied)
+    ):
+        days.setdefault(name, []).append(value)
+    empty = dict.fromkeys(SUMMARY_STEPS, 0) | {"reply_rate": None}
+    return [
+        ChannelFunnel(
+            channel=c,
+            median_reply_days=round(statistics.median(days[c]), 1) if c in days else None,
+            timed_replies=len(days.get(c, [])),
+            **(_summary(rows[c]) if c in rows else empty),
+        )
+        for c in CHANNELS
+    ]
+
+
 def _response_time(session: Session, per_job: FromClause) -> ResponseTime:
     sent = per_job.c.applied_at.is_not(None)
     no_reply = and_(sent, per_job.c.reply_at.is_(None))
@@ -685,9 +757,7 @@ def _response_time(session: Session, per_job: FromClause) -> ResponseTime:
         .outerjoin(Application, Application.job_id == per_job.c.job_id)
     ).one()
     days = session.scalars(
-        select(func.julianday(per_job.c.reply_at) - func.julianday(per_job.c.applied_at)).where(
-            per_job.c.reply_at.is_not(None), sent
-        )
+        select(_reply_days(per_job)).where(per_job.c.reply_at.is_not(None), sent)
     ).all()
     return ResponseTime(
         applied=row.applied,
@@ -731,8 +801,8 @@ def _hard_filter_failures(session: Session, per_job: FromClause) -> list[FilterC
 def get_funnel_stats(
     session: Session, since: date | None = None, top_titles: int = TOP_TITLES
 ) -> FunnelStats:
-    """Embudo, desglose por fuente, puesto y semana, tiempo hasta la primera respuesta y motivos
-    de descarte de las ofertas vistas desde `since` (todas si es `None`)."""
+    """Embudo, desglose por fuente, puesto, semana y canal, tiempo hasta la primera respuesta y
+    motivos de descarte de las ofertas vistas desde `since` (todas si es `None`)."""
     spend, job_runs = _job_spend(session)
     with _per_job(session, since) as (per_job, duplicates):
         rows = session.execute(select(per_job.c.job_id, per_job.c.source_id))
@@ -745,10 +815,13 @@ def get_funnel_stats(
             by_title=_by_title(session, per_job, top_titles),
             by_week=_by_week(session, per_job),
             by_referral=_by_referral(session, per_job),
+            by_channel=_by_channel(session, per_job),
             response_time=_response_time(session, per_job),
             discard_reasons=_discard_reasons(session, per_job),
             hard_filter_failures=_hard_filter_failures(session, per_job),
             agent_cost=_agent_cost(session, per_job, spend, job_runs, sources_of),
+            min_applied=MIN_CASES,
+            min_replied=MIN_REPLIES,
         )
 
 
@@ -815,7 +888,6 @@ def get_funnel_flow(session: Session, since: date | None = None) -> FunnelFlow:
 
 # --- Calibración (fase 20) -------------------------------------------------------------------
 
-MIN_CASES = 10  # por debajo, el grupo lleva `low_data`
 CONFIDENCE = 0.95
 _Z = 1.959964  # cuantil normal del 97,5 %: intervalo bilateral al 95 %
 
@@ -845,15 +917,16 @@ DAY_BUCKETS: tuple[tuple[str, str, float], ...] = (
     ("4_7", "4-7 días", 8),
     ("8_plus", "8 días o más", math.inf),
 )
-# Señales de oferta dudosa (fase 25.3). Una oferta cuenta en cada señal que tenga; «Sin señales»
-# son las que no tienen ninguna. Son las señales de ahora, no las que tenía al enviarla.
+# Señales de oferta dudosa (fase 25.3), «Puntos a revisar» en la UI. Una oferta cuenta en cada
+# señal que tenga; «Nada que revisar» son las que no tienen ninguna. Son las señales de ahora,
+# no las que tenía al enviarla.
 SIGNAL_LABELS: tuple[tuple[str, str], ...] = (
     ("salary_range_wide", "Rango salarial muy amplio"),
     ("employer_hidden", "Empresa oculta o agencia"),
     ("fixed_term", "Temporal"),
     ("stale_repost", "Publicada hace meses"),
     ("ai_screening", "Cribado con IA"),
-    ("none", "Sin señales"),
+    ("none", "Nada que revisar"),
 )
 # Grupos sin dato. Una plantilla del usuario con id «none» se sumaría a «Sin CV de la app».
 NO_PLATFORM = "none"
@@ -1025,7 +1098,7 @@ def _counts(session: Session, cal: FromClause, key: Any = None) -> list[Any]:
 
 
 def _by_signal(session: Session, cal: FromClause, min_cases: int) -> list[CalibrationGroup]:
-    """Un grupo por señal (una oferta puede estar en varios) y «Sin señales»."""
+    """Un grupo por señal (una oferta puede estar en varios) y «Nada que revisar»."""
     columns = [cal.c[f"signal_{code}"] for code, _ in SIGNAL_LABELS[:-1]]
     sums = [
         func.count().label("applied"),

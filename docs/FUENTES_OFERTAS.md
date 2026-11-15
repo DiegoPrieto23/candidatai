@@ -6,7 +6,7 @@ mismo sitio: la tabla `jobs`, con deduplicación, detección de riesgo e histori
 | Vía | Fase | Automática | Cubre |
 |---|---|---|---|
 | Alta manual por URL o texto | 03 | No | Cualquier oferta |
-| APIs y feeds públicos de ATS (Greenhouse, Lever, Ashby; Personio, Teamtailor, Workable, SmartRecruiters y Recruitee desde la 25.1) | 09, 25.1 | Sí, diaria | Tus empresas objetivo |
+| APIs y feeds públicos de ATS (Greenhouse, Lever, Ashby; Personio, Teamtailor, Workable, SmartRecruiters y Recruitee desde la 25.1) | 09, 25.1 | Sí, diaria | Tus empresas con portal propio |
 | APIs de portales: InfoJobs y Adzuna (si hay claves), Manfred y freehire (sin claves) | 09, 25.1 | Sí, diaria | Búsquedas por palabras clave |
 | **Alertas de empleo por correo** | 09b | Sí | LinkedIn, InfoJobs, Indeed, Tecnoempleo… (lo que te envíen) |
 | **Botón «Enviar a CandidatAI»** | 09b | No (un clic) | Cualquier página que estés viendo, LinkedIn incluido |
@@ -24,7 +24,7 @@ del agente o la búsqueda pública sin sesión que hace la propia app (abajo).
 
 ## APIs de ATS y portales (fases 09 y 25.1)
 
-- **Empresas objetivo:** nombre + ATS + slug del tablero, en la página «Dónde buscar → Empresas objetivo» o con
+- **Empresas con portal propio:** nombre + ATS + slug del tablero, en «Dónde buscar → Empresas con portal propio» o con
   `cai sources add`. Solo APIs y feeds públicos, sin autenticación ni scraping de HTML.
   La tabla de abajo dice qué usa cada uno.
 - **Portales con API:** búsquedas por palabras clave, no por empresa. InfoJobs y Adzuna necesitan
@@ -95,9 +95,10 @@ la inicial. `cai sources discover` lo prueba solo para una lista de
 empresas (abajo). Antes de guardar, «Probar» enseña cuántas ofertas tiene y cuántas pasan tus
 filtros.
 - **Filtro previo** antes de guardar (`ingestion/prefilter.py`): el título debe contener todas las
-  palabras de alguno de tus `preferences.roles` (también en español, con
-  `config/title_aliases.yaml`; o una `title_keywords` de la fuente) y ninguna palabra de descarte
-  (las de `preferences.discard_title_keywords` del perfil más las de `policies.yaml`); la ubicación, encajar con tus zonas o ser remota si aceptas remoto.
+  palabras de alguno de tus `preferences.roles` (o una `title_keywords` de la fuente) y ninguna
+  palabra de descarte (las de `preferences.discard_title_keywords` del perfil más las de
+  `policies.yaml`). Puestos y palabras se comparan también en inglés con
+  `config/title_aliases.yaml`, así que da igual el idioma en que los escribas; la ubicación, encajar con tus zonas o ser remota si aceptas remoto.
   Ante la duda deja pasar (sin ubicación, sin perfil). La 09b lo reutiliza para los resúmenes.
 - **Idempotente:** lo ya visto (por id en la fuente, URL o huella) no se vuelve a crear ni a
   descargar. Lo nuevo queda en `pending_extraction` con el evento `found`.
@@ -135,10 +136,14 @@ found ─► pending_detail ─(detail_captured)─► pending_extraction ─►
   cuenta de siempre de `.env` (`CAI_IMAP_HOST`, `CAI_IMAP_PORT` (993), `CAI_IMAP_USER`,
   `CAI_IMAP_PASSWORD`, `CAI_IMAP_FOLDER`) aparece sola como «Principal» y se sigue cambiando en
   `.env`.
-  - **Contraseñas solo en `.env`**, una variable por buzón (`CAI_IMAP_<ALIAS>_PASSWORD`), que
-    escribe la app de forma atómica cuando la escribes en la UI. La tabla guarda el nombre de la
-    variable, nunca el valor, y la contraseña no vuelve por la API ni por MCP (solo
-    `has_password`). En Docker la app no puede guardarla: te dice qué línea añadir a tu `.env`.
+  - **Contraseñas en el llavero del sistema** (fase 41.5, con `keyring`): una por buzón, con el
+    nombre `CAI_IMAP_<ALIAS>_PASSWORD`. La tabla guarda ese nombre, nunca el valor, y la
+    contraseña no vuelve por la API ni por MCP (solo `has_password` y `password_storage`). Donde
+    no hay llavero, en `.env`, marcada como «guardada en un fichero»; las que ya estaban en `.env`
+    se mueven al llavero con confirmación en la UI. En Docker, como secreto (`/run/secrets/`) o
+    variable de entorno del contenedor (ver `CONFIGURAR_CORREO.md`). Las claves de Adzuna e
+    InfoJobs (`CAI_ADZUNA_APP_KEY`, `CAI_INFOJOBS_CLIENT_SECRET`) se leen igual: entorno, llavero
+    y, por último, `.env`.
   - Se leen uno detrás de otro, con un tope de 5 minutos por pasada: el fallo de uno no frena a
     los demás y queda en su `last_error`. El mismo aviso recibido en dos buzones cuenta una vez
     (por `Message-ID`).

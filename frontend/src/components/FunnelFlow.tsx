@@ -42,7 +42,7 @@ function outcomeColor(step: FlowStep, outcome: StopOutcome | null): string {
   return STEP_COLOR[step]
 }
 
-/** Los periodos de la portada; en «Embudo», el selector de la página manda. */
+/** Los periodos de la portada; en «Resultados», el selector de la página manda. */
 const PERIODS = [
   { id: '30', days: 30 },
   { id: '90', days: 90 },
@@ -253,9 +253,11 @@ function Numbers({ flow }: { flow: Flow }) {
 /**
  * «Tu embudo»: hasta dónde ha llegado cada candidatura enviada y dónde están las que pararon. Cada
  * rama lleva a esas candidaturas. Sin `since`, tiene su propio selector de periodo (la portada); con
- * él, el periodo lo decide quien lo pinta (la página «Embudo»).
+ * él, el periodo lo decide quien lo pinta (la página «Resultados», que lo pone bajo una pregunta:
+ * `level` 3).
  */
-export function FunnelFlow({ since, more = false }: { since?: string | null; more?: boolean }) {
+export function FunnelFlow({ since, more = false, level = 2 }: { since?: string | null; more?: boolean; level?: 2 | 3 }) {
+  const Heading = level === 2 ? 'h2' : 'h3'
   const { t } = useTranslation('funnel', { keyPrefix: 'flow' })
   const { t: tRoot } = useTranslation('funnel')
   const [period, setPeriod] = useState<(typeof PERIODS)[number]['id']>('all')
@@ -274,7 +276,9 @@ export function FunnelFlow({ since, more = false }: { since?: string | null; mor
       <div className="flex flex-wrap items-start justify-between gap-x-8 gap-y-4">
         <div className="min-w-0 max-w-[75ch]">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-            <h2 id="funnel-flow" className="text-lg font-semibold tracking-tight">{t('title')}</h2>
+            <Heading id="funnel-flow" className={cn('font-semibold tracking-tight', level === 2 ? 'text-lg' : 'text-base')}>
+              {t('title')}
+            </Heading>
             {ownPeriod && (
               <div role="group" aria-label={tRoot('period')} className="flex gap-1">
                 {PERIODS.map((p) => (
@@ -297,8 +301,7 @@ export function FunnelFlow({ since, more = false }: { since?: string | null; mor
             {!ownPeriod && !!flow?.duplicates_excluded && tRoot('funnel.duplicates', { count: flow.duplicates_excluded })}
           </p>
         </div>
-        {/* En «Embudo», estas cifras ya están en las tarjetas de arriba. */}
-        {ownPeriod && flow && counts.applied > 0 && (
+        {flow && counts.applied > 0 && (
           <dl className="flex gap-7">
             {[
               { label: t('stats.sent'), value: formatNumber(counts.applied) },
@@ -340,7 +343,7 @@ export function FunnelFlow({ since, more = false }: { since?: string | null; mor
               </p>
             )}
             {more && (
-              <Link to="/embudo" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+              <Link to="/resultados" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
                 {t('more')}
                 <ArrowRightIcon className="size-3" />
               </Link>

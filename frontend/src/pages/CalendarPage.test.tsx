@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import type { CalendarItem } from '@/api/client'
 import { addMonths, monthGrid, shift, viewRange } from '@/lib/calendar'
-import { mockApi, renderApp, status } from '@/test/utils'
+import { board, boardCard, mockApi, renderApp, status } from '@/test/utils'
 
 function item(changes: Partial<CalendarItem> = {}): CalendarItem {
   return {
@@ -120,5 +120,39 @@ describe('Calendario', () => {
     mockApi({ 'GET /status': status(), 'GET /calendar': { start: '2027-01-01', end: '2027-01-30', items: [] } })
     renderApp('/calendario?view=agenda&date=2027-01-01')
     expect(await screen.findByText('Nada en los 30 días a partir de esta fecha.')).toBeInTheDocument()
+  })
+})
+
+describe('Calendario: añadir un hito', () => {
+  it('el «+» de un día abre el alta con esa fecha y guarda el hito en la oferta elegida', async () => {
+    const calls = mockApi({
+      ...routes(),
+      'GET /board': board([boardCard(3, 'in_process'), boardCard(4, 'closed')]),
+      'POST /jobs/3/milestones': { id: 21 },
+    })
+    renderApp('/calendario?view=month&date=2026-10-05')
+    const day = await screen.findByRole('listitem', { name: 'jueves, 15 de octubre' })
+    await userEvent.click(within(day).getByRole('button', { name: 'Añadir un hito el jueves, 15 de octubre' }))
+    const dialog = await screen.findByRole('dialog')
+    const job = await within(dialog).findByLabelText('Oferta')
+    // Solo los procesos abiertos.
+    expect(within(job).queryByText(/Oferta 4/)).not.toBeInTheDocument()
+    await userEvent.selectOptions(job, '3')
+    await userEvent.type(within(dialog).getByLabelText('Título (opcional)'), 'Técnica')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Guardar hito' }))
+    await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true))
+    const post = calls.find((c) => c.method === 'POST')!
+    expect(post.path).toBe('/jobs/3/milestones')
+    // 14:00 en Madrid el 15 de octubre (horario de verano).
+    expect(post.body).toMatchObject({ kind: 'interview', title: 'Técnica', starts_at: '2026-10-15T14:00:00+02:00', all_day: false })
+  })
+
+  it('distingue hoy, fines de semana y días de otro mes', async () => {
+    mockApi(routes())
+    renderApp('/calendario?view=month&date=2026-10-05')
+    const outside = await screen.findByRole('listitem', { name: 'lunes, 28 de septiembre' })
+    expect(outside.className).toMatch(/repeating-linear-gradient/)
+    const weekend = screen.getByRole('listitem', { name: 'sábado, 10 de octubre' })
+    expect(weekend.className).toMatch(/bg-muted/)
   })
 })

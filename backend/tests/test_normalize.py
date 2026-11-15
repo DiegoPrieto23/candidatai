@@ -7,7 +7,9 @@ from app.services.normalize import (
     normalize_company,
     normalize_location,
     normalize_title,
+    phrase_in_title,
     title_segments,
+    translate_title,
 )
 
 
@@ -104,3 +106,23 @@ def test_fingerprint_differs_on_meaningful_changes() -> None:
     assert fingerprint("Acme", "Senior Data Engineer", "Madrid") != base
     assert fingerprint("Acme", "Data Engineer", "Barcelona") != base
     assert fingerprint("Acme", "Data Engineer", None) != base
+
+
+@pytest.mark.parametrize(
+    ("segment", "expected"),
+    [
+        ("programador backend", "backend developer"),
+        ("programadores", "programadores"),  # palabra completa, no prefijo
+        ("analista binario", "analista binario"),
+        ("jefa de proyectos", "project manager"),
+    ],
+)
+def test_translate_title_whole_words(segment: str, expected: str) -> None:
+    assert translate_title(segment) == expected
+
+
+def test_short_discard_words_are_not_translated_loosely() -> None:
+    # Igual que en inglés: «manager» está en «Project Manager», y por tanto en «Jefe de proyecto».
+    assert phrase_in_title("manager", "Jefe de proyecto")
+    assert phrase_in_title("project manager", "Jefe de proyecto")
+    assert not phrase_in_title("datos", "Data Engineer")

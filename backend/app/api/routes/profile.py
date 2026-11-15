@@ -18,6 +18,7 @@ from app.api.deps import EmptyBody, SessionDep, require_ui, require_ui_read
 from app.core.config import get_settings
 from app.services import profile as profiles
 from app.services import profile_editor
+from app.services import profile_suggestions as suggestions
 from app.services.documents import photo
 from app.services.profile import ProfileSection
 
@@ -126,6 +127,9 @@ class UploadPhotoBody(BaseModel):
 
     # En JSON para que `require_ui` lo compruebe (un formulario no puede). Unos 14 MB en base64.
     content_base64: str = Field(max_length=photo.MAX_PHOTO_BYTES * 4 // 3 + 8)
+    # La foto antes de encuadrarla y el recuadro elegido, para volver a encuadrar desde ella.
+    original_base64: str | None = Field(default=None, max_length=photo.MAX_PHOTO_BYTES * 4 // 3 + 8)
+    crop: photo.PhotoCrop | None = None
 
 
 def _profile_or_none() -> profiles.CandidateProfile | None:
@@ -159,12 +163,32 @@ def get_profile_photo_file() -> FileResponse:
     return FileResponse(found, headers={"Cache-Control": "no-store"})
 
 
+@router.get(
+    "/profile/photo/original",
+    operation_id="get_profile_photo_original",
+    dependencies=[Depends(require_ui_read)],
+    response_class=FileResponse,
+)
+def get_profile_photo_original() -> FileResponse:
+    """La foto antes de encuadrarla, para volver a encuadrar. Sin original, la foto actual."""
+    found = photo.original_photo() or photo.current_photo(_profile_or_none())
+    if found is None:
+        raise ToolError("not_found", "No hay foto.")
+    return FileResponse(found, headers={"Cache-Control": "no-store"})
+
+
 @router.put("/profile/photo", operation_id="save_profile_photo", dependencies=[Depends(require_ui)])
 def save_profile_photo(session: SessionDep, body: UploadPhotoBody) -> photo.PhotoInfo:
-    """Sube la foto (JPG, PNG o WebP, hasta 10 MB) y sustituye la anterior."""
+    """Sube la foto (JPG, PNG o WebP, hasta 10 MB) y sustituye la anterior. Si se encuadró en la
+    página, con la original y el recuadro."""
     try:
         content = base64.b64decode(body.content_base64, validate=True)
-        info = photo.save_photo(content, _profile_or_none())
+        original = (
+            base64.b64decode(body.original_base64, validate=True)
+            if body.original_base64 is not None
+            else None
+        )
+        info = photo.save_photo(content, _profile_or_none(), original=original, crop_area=body.crop)
     except (binascii.Error, ValueError) as exc:  # `PhotoError` es un `ValueError`
         raise ToolError("invalid_request", str(exc)) from exc
     profile_editor.record_edit(
@@ -181,3 +205,41 @@ def delete_profile_photo(session: SessionDep, body: EmptyBody) -> photo.PhotoInf
     info = photo.delete_photo(_profile_or_none())
     profile_editor.record_edit(session, "photo", None, "delete", None, None)
     return info
+
+
+# --- Propuestas de tu agente (fase 41.2) ------------------------------------------------------
+
+
+@router.get(
+    "/profile/suggestions",
+    operation_id="list_profile_suggestions",
+    dependencies=[Depends(require_ui_read)],
+)
+def list_profile_suggestions(session: SessionDep) -> suggestions.PendingSuggestions:
+    """Lo que tu agente propone para tu perfil (hoy, el resumen en inglés), pendiente de revisar."""
+    return suggestions.pending(session)
+
+
+@router.post(
+    "/profile/suggestions/{suggestion_id}/used",
+    operation_id="use_profile_suggestion",
+    dependencies=[Depends(require_ui)],
+)
+def use_profile_suggestion(
+    session: SessionDep, suggestion_id: int, body: EmptyBody
+) -> suggestions.PendingSuggestions:
+    """La pasaste al formulario: deja de estar pendiente. El perfil se guarda con «Guardar»."""
+    suggestions.resolve(session, suggestion_id, "used")
+    return suggestions.pending(session)
+
+
+@router.post(
+    "/profile/suggestions/{suggestion_id}/discard",
+    operation_id="discard_profile_suggestion",
+    dependencies=[Depends(require_ui)],
+)
+def discard_profile_suggestion(
+    session: SessionDep, suggestion_id: int, body: EmptyBody
+) -> suggestions.PendingSuggestions:
+    suggestions.resolve(session, suggestion_id, "discarded")
+    return suggestions.pending(session)

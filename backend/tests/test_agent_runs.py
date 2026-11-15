@@ -118,6 +118,7 @@ def test_only_these_actions_run_in_background() -> None:
         "verify-cv",
         "generate-cover-letter",
         "assistant",
+        "translate-summary",
     }
 
 

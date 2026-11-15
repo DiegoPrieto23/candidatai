@@ -205,8 +205,9 @@ class Settings(BaseSettings):
         correo se prueba con `.eml` en su `inbox/`."""
         if self.demo_mode:
             return False
-        password = self.imap_password.get_secret_value() if self.imap_password else ""
-        return bool(self.imap_host and self.imap_user and password)
+        from app.core import secrets  # la contraseña puede estar en el llavero (fase 41.5)
+
+        return bool(self.imap_host and self.imap_user and secrets.get(secrets.IMAP_PASSWORD))
 
     @property
     def capture_token_path(self) -> Path:

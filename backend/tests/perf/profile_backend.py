@@ -97,6 +97,7 @@ def _setup(data_dir: Path) -> None:
             "CAI_IMAP_USER": "",
             "CAI_IMAP_PASSWORD": "",
             "CAI_ENV_FILE": str(data_dir / ".env"),
+            "CAI_SECRET_STORE": "file",
         }
     )
     os.environ.pop("CAI_DB_URL", None)

@@ -34,7 +34,7 @@ Dónde: «Mi perfil».
 
 ### ¿Qué puedo hacer sin agente?
 
-Añadir, aprobar y descartar ofertas, seguir tus procesos, usar el calendario y el embudo, editar tu perfil y cambiar el diseño de un CV ya generado. Leer ofertas y redactar CVs, cartas y guías de entrevista requiere el agente.
+Añadir, aprobar y descartar ofertas, seguir tus procesos, usar el calendario y los resultados, editar tu perfil y cambiar el diseño de un CV ya generado. Leer ofertas y redactar CVs, cartas y guías de entrevista requiere el agente.
 
 Dónde: «Agente».
 
@@ -86,7 +86,7 @@ Dónde: «Agente».
 
 ### ¿Puedo pedirle algo a mi agente desde el portal?
 
-Sí. Abre la ayuda, elige «Pídeselo a tu agente» y escribe lo que necesitas. «Enviar ahora» lo lanza en segundo plano y la respuesta aparece en el mismo panel, con enlaces a lo que haya cambiado. «Dejar para mi próxima sesión» lo guarda como encargo.
+Sí. Pulsa «Asistente», abajo a la derecha, y escribe lo que necesitas. «Enviar ahora» lo lanza en segundo plano y la respuesta aparece en el mismo panel, con enlaces a lo que haya cambiado. «Dejar para mi próxima sesión» lo guarda como encargo.
 
 ### ¿Qué puede hacer mi agente cuando se lo pido desde el portal?
 
@@ -102,7 +102,7 @@ Dónde: «Nueva oferta».
 
 ### ¿Cómo consigo que las ofertas lleguen solas?
 
-En «Dónde buscar» eliges de dónde vienen: portales de empleo, empresas objetivo, alertas por correo y el botón del navegador. Lo que llega aparece en la Bandeja de ofertas.
+En «Dónde buscar» eliges de dónde vienen: portales de empleo, empresas con portal propio, alertas por correo y el botón del navegador. Lo que llega aparece en la Bandeja de ofertas.
 
 Dónde: «Dónde buscar».
 
@@ -144,9 +144,9 @@ Dónde: «Revisión rápida».
 
 ### ¿Dónde indico qué ofertas quiero y cuáles se descartan?
 
-En «Qué buscas»: puestos, modalidad, zonas, años de experiencia, tipo de contrato, palabras que descartan y tu mínimo salarial. Tu agente nunca ve esa cifra.
+En «Configuración de tu búsqueda»: puestos, modalidad, zonas, años de experiencia, tipo de contrato, palabras que descartan y tu mínimo salarial. Tu agente nunca ve esa cifra.
 
-Dónde: «Qué buscas».
+Dónde: «Configuración de tu búsqueda».
 
 ### ¿Qué son las ofertas «Por completar»?
 
@@ -224,17 +224,17 @@ Inicio te avisa de las candidaturas que llevan días sin respuesta. Tu agente re
 
 Dónde: «Inicio».
 
-### ¿Qué me dice el Embudo?
+### ¿Qué me dicen los Resultados?
 
-Hasta dónde ha llegado cada candidatura y dónde se detienen: por fuente, por semana y por motivo de descarte, con lo que rinde cada vía.
+Qué te funciona: por qué canal te responden más y antes (referencia, web de la empresa, portales), hasta dónde llega cada candidatura, qué puestos te responden y por qué descartas.
 
-Dónde: «Embudo».
+Dónde: «Resultados».
 
-### ¿Qué son las «Skills que te faltan»?
+### ¿Qué son las «Habilidades por desarrollar»?
 
-Lo que piden las ofertas que apruebas y tu perfil aún no recoge. Márcalas como tuyas, como sinónimo de una de tu perfil o para el plan de formación que prepara tu agente.
+Las skills que piden las ofertas que apruebas y que aún no figuran en tu perfil. Márcalas como tuyas, como sinónimo de una de tu perfil o para el plan de formación que prepara tu agente.
 
-Dónde: «Skills que te faltan».
+Dónde: «Habilidades por desarrollar».
 
 ## Tus datos
 
@@ -248,7 +248,7 @@ En una carpeta de tu equipo; la guía de uso indica cuál según tu sistema. Par
 
 ### ¿Es seguro conectar mi correo?
 
-La app abre solo la carpeta o etiqueta que elijas y solo para leer. Usa una contraseña de aplicación, distinta de la tuya, que puedes revocar cuando quieras; se queda en tu equipo y tu agente nunca la ve.
+La app abre solo la carpeta o etiqueta que elijas y solo para leer. Usa una contraseña de aplicación, distinta de la tuya, que puedes revocar cuando quieras; se guarda cifrada en el llavero del sistema y tu agente nunca la ve.
 
 Dónde: «Alertas por correo».
 

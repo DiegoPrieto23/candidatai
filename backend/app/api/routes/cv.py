@@ -6,7 +6,7 @@ Los ficheros solo se sirven desde `data/` (renders) y desde las carpetas de plan
 
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, File, Path, Response, UploadFile, status
+from fastapi import APIRouter, File, Form, Path, Response, UploadFile, status
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
@@ -138,10 +138,14 @@ def list_uploads() -> list[uploads.UploadInfo]:
 
 
 @router.post("/uploads", operation_id="upload_cv", status_code=status.HTTP_201_CREATED)
-async def upload_cv(file: UploadFile = File(...)) -> uploads.UploadInfo:  # noqa: B008
-    """Guarda un CV en data/uploads/ (máximo 10 MB) para importarlo con tu agente."""
+async def upload_cv(
+    file: UploadFile = File(...),  # noqa: B008
+    template_name: str | None = Form(default=None, max_length=200),  # noqa: B008
+) -> uploads.UploadInfo:
+    """Guarda un CV en data/uploads/ (máximo 10 MB) para importarlo con tu agente, con el nombre
+    que tendrá la plantilla (opcional)."""
     data = await file.read(uploads.MAX_BYTES + 1)
-    return uploads.save_upload(file.filename or "cv", data)
+    return uploads.save_upload(file.filename or "cv", data, template_name)
 
 
 @router.delete(

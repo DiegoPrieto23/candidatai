@@ -196,6 +196,7 @@ def test_cli_doctor_json() -> None:
         "Alertas por correo",
         "Respuestas por correo",
         "Buzones",
+        "Contraseñas",
         "Botón de captura",
         "Agentes",
     ]

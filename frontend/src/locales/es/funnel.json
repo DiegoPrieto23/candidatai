@@ -65,15 +65,6 @@
     "byFiltersCaption": "Cierres por filtro duro",
     "noFilters": "Ningún cierre por filtros en este periodo."
   },
-  "stats": {
-    "found": "Encontradas",
-    "applied": "Enviadas",
-    "appliedDetail": "{{pct}} de las encontradas",
-    "replyRate": "Tasa de respuesta",
-    "replyDetail": "{{count}} con respuesta",
-    "firstReply": "Primera respuesta (mediana)",
-    "waitingDetail": "{{count}} esperando respuesta"
-  },
   "bySource": {
     "title": "Por fuente",
     "hint": "Por dónde llegan las ofertas que avanzan.",
@@ -98,6 +89,25 @@
       "given": "Con referencia",
       "requested": "Referencia pedida",
       "none": "Sin referencia"
+    }
+  },
+  "byChannel": {
+    "title": "Por canal",
+    "hint": "Referencia: algún contacto del proceso te la dio. Añadidas por ti: con un enlace, el texto o la extensión.",
+    "caption": "Respuesta por canal",
+    "head": "Canal",
+    "median": "Mediana hasta la respuesta",
+    "names": {
+      "referral": "Referencia",
+      "company": "Web de la empresa",
+      "portal": "Portales de empleo",
+      "manual": "Añadidas por ti"
+    },
+    "in": {
+      "referral": "por referencia",
+      "company": "en la web de la empresa",
+      "portal": "en los portales de empleo",
+      "manual": "en las ofertas que añades tú"
     }
   },
   "calibration": {
@@ -152,8 +162,8 @@
         "hint": "Días entre que entró la oferta y la enviaste."
       },
       "signal": {
-        "label": "Señal",
-        "hint": "Tasa de las enviadas con cada señal de oferta dudosa (las de ahora; una oferta cuenta en cada una que tenga) frente a las que no tienen ninguna. ¿Responden peor?"
+        "label": "Puntos a revisar",
+        "hint": "Tasa de las enviadas con cada punto a revisar (las de ahora; una oferta cuenta en cada una que tenga) frente a las que no tienen ninguna. ¿Responden peor?"
       }
     },
     "groups": {
@@ -193,18 +203,38 @@
         "fixed_term": "Temporal",
         "stale_repost": "Publicada hace meses",
         "ai_screening": "Cribado con IA",
-        "none": "Sin señales"
+        "none": "Nada que revisar"
       }
     }
   },
   "loading": "Cargando",
-  "title": "Embudo",
-  "intro": "Qué funciona en tu búsqueda: cuántas ofertas avanzan, por qué canal llegan, cuánto tardan en responder y por qué se descartan.",
+  "title": "Resultados",
+  "intro": "Qué te funciona: dónde te responden más y cuánto tardan.",
+  "insights": {
+    "label": "Lo que dicen tus datos",
+    "kinds": {
+      "bestChannel": "Dónde te responden más",
+      "medianReply": "Cuánto tardan",
+      "fastestChannel": "Dónde responden antes",
+      "bestSource": "Tu mejor fuente"
+    },
+    "bestChannel": "Te responden más {{channel}}: <strong>{{rate}}</strong> frente a {{others}} en el resto.",
+    "medianReply": "Las empresas tardan <strong>{{days}}</strong> de mediana en responder.",
+    "fastestChannel": "Responden antes {{channel}}: <strong>{{days}}</strong> de mediana, frente a {{slowDays}} {{slowChannel}}.",
+    "bestSource": "Tu fuente con más respuesta es <strong>{{name}}</strong>, con un {{rate}}.",
+    "none": "Con unas {{count}} candidaturas enviadas, aquí verás qué te funciona."
+  },
+  "questions": {
+    "channels": "¿Por dónde me responden más y antes?",
+    "stall": "¿Dónde se quedan mis candidaturas?",
+    "titles": "¿Qué puestos me responden?",
+    "discards": "¿Por qué descarto?"
+  },
   "empty": {
     "periodTitle": "No hay ofertas en este periodo",
     "title": "Aún no hay datos",
     "period": "Prueba con un periodo más largo.",
-    "body": "El embudo se llena a medida que das de alta ofertas (<to>Nueva oferta</to>), las revisas y registras lo que pasa con cada candidatura."
+    "body": "Los resultados se llenan a medida que das de alta ofertas (<to>Nueva oferta</to>), las revisas y registras lo que pasa con cada candidatura."
   },
   "cost": {
     "title": "Coste del agente",

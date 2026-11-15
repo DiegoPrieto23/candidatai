@@ -34,7 +34,7 @@ Where: “My profile”.
 
 ### What can I do without an agent?
 
-Add, approve and discard jobs, track your processes, use the calendar and the funnel, edit your profile and change the design of a CV you already have. Reading jobs and writing CVs, letters and interview guides requires the agent.
+Add, approve and discard jobs, track your processes, use the calendar and the results, edit your profile and change the design of a CV you already have. Reading jobs and writing CVs, letters and interview guides requires the agent.
 
 Where: “Agent”.
 
@@ -86,7 +86,7 @@ Where: “Agent”.
 
 ### Can I ask my agent for something from the portal?
 
-Yes. Open the help, choose “Ask your agent” and write what you need. “Send now” runs it in the background and the answer appears in the same panel, with links to whatever changed. “Leave it for my next session” saves it as a request.
+Yes. Click “Assistant”, at the bottom right, and write what you need. “Send now” runs it in the background and the answer appears in the same panel, with links to whatever changed. “Leave it for my next session” saves it as a request.
 
 ### What can my agent do when I ask from the portal?
 
@@ -102,7 +102,7 @@ Where: “New job”.
 
 ### How do I get jobs to arrive on their own?
 
-In “Where to search” you choose where they come from: job boards, target companies, email alerts and the browser button. What arrives appears in the Job inbox.
+In “Where to search” you choose where they come from: job boards, company career sites, email alerts and the browser button. What arrives appears in the Job inbox.
 
 Where: “Where to search”.
 
@@ -144,9 +144,9 @@ Where: “Quick review”.
 
 ### Where do I say which jobs I want and which are discarded?
 
-In “What you're after”: roles, work mode, areas, years of experience, contract type, words that discard a job and your minimum salary. Your agent never sees that figure.
+In “Your search settings”: roles, work mode, areas, years of experience, contract type, words that discard a job and your minimum salary. Your agent never sees that figure.
 
-Where: “What you're after”.
+Where: “Your search settings”.
 
 ### What are the jobs “To complete”?
 
@@ -224,17 +224,17 @@ Home tells you about the applications that have gone days without a reply. Your 
 
 Where: “Home”.
 
-### What does the Funnel tell me?
+### What do the Results tell me?
 
-How far each application has gone and where they stop: by source, by week and by discard reason, with how well each route performs.
+What works for you: which channel gets you more replies, and sooner (referral, company careers site, job boards), how far each application goes, which roles reply and why you discard jobs.
 
-Where: “Funnel”.
+Where: “Results”.
 
-### What are the “Skills you lack”?
+### What are the “Skills to build”?
 
-What the jobs you approve ask for and your profile doesn't yet include. Mark them as yours, as a synonym of one in your profile or for the training plan your agent prepares.
+The skills the jobs you approve ask for that aren't in your profile yet. Mark them as yours, as a synonym of one in your profile or for the training plan your agent prepares.
 
-Where: “Skills you lack”.
+Where: “Skills to build”.
 
 ## Your data
 
@@ -248,7 +248,7 @@ In a folder on your computer; the user guide says which one for your system. To 
 
 ### Is it safe to connect my email?
 
-The app opens only the folder or label you choose, and only to read. Use an app password, different from your own, which you can revoke whenever you like; it stays on your computer and your agent never sees it.
+The app opens only the folder or label you choose, and only to read. Use an app password, different from your own, which you can revoke whenever you like; it is stored encrypted in the system keychain and your agent never sees it.
 
 Where: “Email alerts”.
 

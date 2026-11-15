@@ -1,4 +1,4 @@
-"""Fuentes de ofertas con conector (fase 09): ATS de empresas objetivo y portales con API."""
+"""Fuentes de ofertas con conector (fase 09): ATS de empresas con portal propio y portales API."""
 
 import re
 from datetime import datetime
@@ -184,7 +184,7 @@ class SourceInput(_Strict):
         if self.remote_only and self.kind != "freehire":
             raise ValueError("«Solo remotas» (`remote_only`) solo se usa en freehire.")
         if self.website and self.kind not in ATS_KINDS:
-            raise ValueError("La web (`website`) solo se usa en las empresas objetivo.")
+            raise ValueError("La web (`website`) solo se usa en las empresas con portal propio.")
         if self.kind in ATS_KINDS:
             if not self.slug:
                 raise ValueError(f"Falta el slug del tablero de {KIND_LABELS[self.kind]}.")

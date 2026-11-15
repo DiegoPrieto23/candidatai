@@ -75,6 +75,7 @@ policy:
     - mcp:list_agent_requests
     - mcp:get_assistant_request
     - mcp:save_assistant_answer
+    - mcp:save_profile_suggestion
   # Rutas (relativas a la raíz, con comodines) que ningún agente lee o edita.
   deny_read: [.env, .env.*, data/browser-profile/**]
   deny_edit: [data/browser-profile/**]
@@ -189,7 +190,7 @@ targets:
         argument-hint: "[job_id] [milestone_id], o 'dudas' con una oferta recibida"
         allowed-tools: ["mcp:get_interviews", "mcp:get_extraction", "mcp:get_profile", "mcp:get_context", "mcp:get_timeline", "mcp:save_interview_notes"]
       update-profile:
-        allowed-tools: ["read", "cai_profile_cli", "cai_context_cli", "cai_skills_cli"]
+        allowed-tools: ["read", "cai_profile_cli", "cai_context_cli", "cai_skills_cli", "mcp:get_profile", "mcp:save_profile_suggestion"]
       # Fase 25.2: revisa tu perfil y lee tus enlaces públicos; editar data/profile.yaml sigue pidiendo permiso.
       expand:
         argument-hint: "[nada para revisar el perfil y leer sus enlaces, «sin enlaces» para solo revisarlo, o URLs públicas: GitHub, portfolio, Kaggle, Scholar]"
@@ -199,7 +200,7 @@ targets:
       handle-requests:                   # fase 19: la cola de encargos que deja la UI
         argument-hint: "[nada para todos, o números de encargo]"
         allowed-tools: ["mcp:list_agent_requests"]
-      assistant:                         # «Pídeselo a tu agente», en la ayuda del portal
+      assistant:                         # «Asistente», en la ayuda del portal
         argument-hint: "[id de la petición]"
         allowed-tools: ["mcp:get_assistant_request", "mcp:save_assistant_answer", "mcp:ask_user", "mcp:wait_user_action", "mcp:get_status", "mcp:list_jobs", "mcp:get_extraction", "mcp:get_match", "mcp:get_timeline", "mcp:get_profile", "mcp:get_context", "mcp:list_upcoming", "mcp:list_followups_due", "mcp:get_funnel_stats", "mcp:get_skill_gaps", "mcp:get_interviews", "mcp:save_fit_assessment", "mcp:save_cover_letter_brief"]
       import-cv-template:

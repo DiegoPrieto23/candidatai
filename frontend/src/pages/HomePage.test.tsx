@@ -32,6 +32,24 @@ describe('Inicio', () => {
     expect(screen.getByText(/Para tu agente: 3 por leer/)).toBeInTheDocument()
   })
 
+  it('con portales en los que buscar, «Buscar ofertas» lanza la búsqueda con lo guardado', async () => {
+    const portal = {
+      id: 1, kind: 'agent_browse', kind_label: 'Portal', name: 'InfoJobs', active: true, config: {}, keys_missing: false,
+      browse: { allow_agent_browsing: true, search_urls: [], priority: 1, access: 'free', max_offers: 10, notes: '' },
+      website: null, last_run_at: null, last_run: null,
+    }
+    mockApi({
+      'GET /status': status(),
+      'GET /followups': noFollowups,
+      'GET /upcoming': noUpcoming,
+      'GET /jobs': page([]),
+      'GET /sources': { sources: [portal], agent_browse: { max_result_pages: 2, delay_seconds: 5, default_max_offers: 15 } },
+    })
+    renderApp('/')
+    expect(await screen.findByRole('button', { name: 'Buscar ofertas' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Ir a buscar ofertas' })).not.toBeInTheDocument()
+  })
+
   it('sin nada pendiente lo dice', async () => {
     mockApi({ 'GET /status': status(), 'GET /followups': noFollowups, 'GET /upcoming': noUpcoming, 'GET /jobs': page([]) })
     renderApp('/')
@@ -109,9 +127,15 @@ describe('Primeros pasos (app recién instalada)', () => {
       await screen.findByRole('heading', { level: 1, name: 'Te quedan 2 primeros pasos para empezar.' }),
     ).toBeInTheDocument()
     await screen.findByRole('region', { name: 'Primeros pasos' })
-    const filled = screen.getAllByRole('button').filter((b) => b.getAttribute('data-variant') === 'default')
+    // En la página: el botón del agente de la esquina es del marco y está en todas.
+    const page = within(screen.getByRole('main'))
+    const filled = page.getAllByRole('button').filter((b) => b.getAttribute('data-variant') === 'default')
     expect(filled.map((b) => b.textContent)).toEqual(['Subir mi CV'])
-    expect(screen.getByRole('button', { name: 'Buscar ofertas' })).toHaveAttribute('data-variant', 'outline')
+    // Sin portales, buscar no podría hacer nada: el botón lleva a elegirlos y lo dice.
+    const go = screen.getByRole('link', { name: 'Ir a buscar ofertas' })
+    expect(go).toHaveAttribute('href', '/buscar')
+    expect(go).toHaveAttribute('data-variant', 'outline')
+    expect(screen.queryByRole('button', { name: 'Buscar ofertas' })).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Valorar las ofertas nuevas' })).toHaveAttribute('data-variant', 'outline')
   })
 

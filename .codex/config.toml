@@ -124,3 +124,6 @@ approval_mode = "approve"
 
 [mcp_servers.candidatai.tools.save_assistant_answer]
 approval_mode = "approve"
+
+[mcp_servers.candidatai.tools.save_profile_suggestion]
+approval_mode = "approve"

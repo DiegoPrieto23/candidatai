@@ -22,16 +22,6 @@ function runtime(): ChromeRuntime | null {
   return typeof chrome?.runtime?.sendMessage === 'function' ? (chrome.runtime as ChromeRuntime) : null
 }
 
-/** Chrome, Edge, Brave… La extensión no funciona en Firefox ni en Safari. */
-export function isChromium(): boolean {
-  const agent = typeof navigator === 'undefined' ? '' : navigator.userAgent
-  return /(Chrome|Chromium|Edg)\//.test(agent) // también «HeadlessChrome/»
-}
-
-export function isEdge(): boolean {
-  return typeof navigator !== 'undefined' && /\bEdg\//.test(navigator.userAgent)
-}
-
 /** El sistema del equipo: cambia cómo se escribe una ruta en la ventana de elegir carpeta. */
 export function desktopOs(): 'windows' | 'mac' | 'linux' {
   const agent = typeof navigator === 'undefined' ? '' : navigator.userAgent

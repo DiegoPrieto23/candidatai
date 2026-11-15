@@ -17,6 +17,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
+from app.core import secrets
 from app.core.config import get_settings
 from app.core.policies import get_policies
 from app.models import Company, Job, Source, SourceRun
@@ -136,9 +137,9 @@ class NotAConnectorError(ValueError):
 def keys_missing(kind: str) -> bool:
     settings = get_settings()
     if kind == "infojobs":
-        return not (settings.infojobs_client_id and settings.infojobs_client_secret)
+        return not (settings.infojobs_client_id and secrets.get(secrets.INFOJOBS_CLIENT_SECRET))
     if kind == "adzuna":
-        return not (settings.adzuna_app_id and settings.adzuna_app_key)
+        return not (settings.adzuna_app_id and secrets.get(secrets.ADZUNA_APP_KEY))
     return False
 
 
@@ -321,10 +322,10 @@ def set_active(session: Session, source_id: int, active: bool) -> SourceView:
 
 
 def set_website(session: Session, source_id: int, website: str | None) -> SourceView:
-    """Pone o quita la web de una empresa objetivo, que la UI usa para su logo."""
+    """Pone o quita la web de una empresa con portal propio, que la UI usa para su logo."""
     source = _source(session, source_id)
     if source.kind not in ATS_KINDS:
-        raise NotAConnectorError("Solo las empresas objetivo (ATS) tienen web.")
+        raise NotAConnectorError("Solo las empresas con portal propio (ATS) tienen web.")
     config = dict(source.config or {})
     value = _WEBSITE.validate_python(website.strip() if website and website.strip() else None)
     if value is None:

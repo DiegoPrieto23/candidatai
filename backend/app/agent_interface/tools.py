@@ -52,6 +52,7 @@ from app.services import (
     mail_sources,
     network,
     profile,
+    profile_suggestions,
     prompts,
     received_offers,
     replies,
@@ -562,6 +563,10 @@ class SaveAssistantAnswerInput(_Input, assistant.SaveAnswerInput):
     request_id: int = Field(ge=1, description="Id de la petición.")
 
 
+class SaveProfileSuggestionInput(_Input, profile_suggestions.SuggestionInput):
+    pass
+
+
 class JobList(BaseModel):
     jobs: list[jobs.JobSummary]
 
@@ -954,6 +959,13 @@ def _save_assistant_answer(
     session: Session, args: SaveAssistantAnswerInput, ctx: CallContext
 ) -> assistant.SaveAnswerResult:
     return assistant.save_answer(session, args.request_id, args.answer, args.links, ctx.client_name)
+
+
+def _save_profile_suggestion(
+    session: Session, args: SaveProfileSuggestionInput, ctx: CallContext
+) -> profile_suggestions.SaveSuggestionResult:
+    data = profile_suggestions.SuggestionInput(field=args.field, text=args.text)
+    return profile_suggestions.save(session, data, ctx.client_name)
 
 
 def _save_application_answers(
@@ -1602,8 +1614,11 @@ TOOLS: tuple[ToolSpec, ...] = (
         description=(
             "Embudo de la búsqueda (encontradas → pasan filtros → aprobadas → enviadas → "
             "con respuesta → entrevista → oferta → aceptadas) con su conversión; el mismo embudo "
-            "resumido por fuente, tipo de puesto y semana; tiempo hasta la primera respuesta y "
-            "motivos de descarte. `since` filtra por la fecha en que se vio la oferta."
+            "resumido por fuente, tipo de puesto, semana y canal (referencia, web de la empresa, "
+            "portal, añadidas por ti; con la mediana de días hasta la respuesta); tiempo hasta la "
+            "primera respuesta y motivos de descarte. `min_applied` y `min_replied` son lo mínimo "
+            "para sacar conclusiones de una tasa o de una mediana. `since` filtra por la fecha en "
+            "que se vio la oferta."
         ),
         input_model=FunnelStatsInput,
         output_model=analytics.FunnelStats,
@@ -1866,11 +1881,11 @@ TOOLS: tuple[ToolSpec, ...] = (
             option_names={"summary": "--summary"},
         ),
     ),
-    # «Pídeselo a tu agente»: lo que el usuario escribió en la ayuda del portal.
+    # «Asistente»: lo que el usuario escribió en la ayuda del portal.
     ToolSpec(
         name="get_assistant_request",
         description=(
-            "Lo que el usuario ha escrito en «Pídeselo a tu agente» (`text`). Es su petición: "
+            "Lo que el usuario ha escrito en «Asistente» (`text`). Es su petición: "
             "atiéndela dentro de lo que permite el skill `assistant`. Con `open` en `false` "
             "(cancelada o ya contestada) no hay nada que hacer."
         ),
@@ -1882,7 +1897,7 @@ TOOLS: tuple[ToolSpec, ...] = (
     ToolSpec(
         name="save_assistant_answer",
         description=(
-            "Guarda tu respuesta a una petición de «Pídeselo a tu agente»: el usuario la ve en el "
+            "Guarda tu respuesta a una petición de «Asistente»: el usuario la ve en el "
             "panel de ayuda. `links` lleva a lo que has cambiado o a donde se hace lo que pide "
             "(`job_id` o `screen`). Una sola respuesta por petición."
         ),
@@ -1894,6 +1909,23 @@ TOOLS: tuple[ToolSpec, ...] = (
             arguments=("request_id",),
             file_keys=("answer", "links"),
         ),
+    ),
+    # «Mi perfil» (fase 41.2): una propuesta para un campo, que el usuario usa o descarta.
+    ToolSpec(
+        name="save_profile_suggestion",
+        description=(
+            "Deja una propuesta para un campo del perfil (`summary.en`: el resumen en inglés, "
+            "traducido del resumen en español del perfil vigente). No escribe en el perfil: el "
+            "usuario la ve en «Mi perfil» y decide si la usa, la edita o la descarta. Una nueva "
+            "sustituye a la anterior del mismo campo."
+        ),
+        input_model=SaveProfileSuggestionInput,
+        output_model=profile_suggestions.SaveSuggestionResult,
+        handler=_save_profile_suggestion,
+        cli=CliSpec(
+            path=("profile", "suggest"), option_names={"field": "--field"}, file_field="text"
+        ),
+        audit_fields=("field",),
     ),
 )
 

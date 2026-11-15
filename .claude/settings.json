@@ -55,7 +55,8 @@
       "mcp__candidatai__finish_search",
       "mcp__candidatai__list_agent_requests",
       "mcp__candidatai__get_assistant_request",
-      "mcp__candidatai__save_assistant_answer"
+      "mcp__candidatai__save_assistant_answer",
+      "mcp__candidatai__save_profile_suggestion"
     ],
     "ask": [
       "Bash(git commit *)",

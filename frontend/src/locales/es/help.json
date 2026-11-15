@@ -1,7 +1,10 @@
 {
   "button": "Ayuda",
   "buttonHint": "Ayuda: preguntas frecuentes y guía",
+  "launcher": "Asistente",
+  "launcherHint": "Pide lo que necesites con tus palabras: lo hace tu agente",
   "title": "Ayuda",
+  "assistantTitle": "Tu asistente",
   "close": "Cerrar la ayuda",
   "searchLabel": "Buscar en la ayuda",
   "searchPlaceholder": "¿Qué quieres hacer?",
@@ -16,11 +19,11 @@
   "tabs": {
     "label": "Secciones de la ayuda",
     "help": "Ayuda",
-    "assistant": "Pídeselo a tu agente"
+    "assistant": "Asistente"
   },
   "assistant": {
     "label": "Qué quieres pedirle a tu agente",
-    "placeholder": "Por ejemplo: ¿qué tengo pendiente esta semana?",
+    "placeholder": "¿En qué te ayudo?",
     "hint": "Tu agente lee los datos de la app y te contesta aquí. Enviar una candidatura, aprobar, descartar y borrar los confirmas siempre tú. Ctrl+Intro lo envía.",
     "left_one": "Queda {{count}} carácter.",
     "left_other": "Quedan {{count}} caracteres.",
@@ -29,7 +32,14 @@
     "noBackground": "Tu agente no trabaja en segundo plano desde la app: deja la petición para tu próxima sesión.",
     "noAgentTitle": "Para pedirle algo a tu agente, instala uno",
     "noAgentBody": "La app no incluye inteligencia artificial: usa el agente que tengas instalado. La pestaña «Ayuda» funciona sin agente.",
-    "empty": "Aquí verás lo que le pidas y sus respuestas.",
+    "empty": "Pídele algo con tus palabras y la respuesta aparecerá aquí. Por ejemplo:",
+    "suggestionsLabel": "Ejemplos de peticiones",
+    "suggestions": {
+      "pending": "¿Qué tengo pendiente esta semana?",
+      "reviewFirst": "¿Qué ofertas debería revisar primero?",
+      "noReply": "¿Qué empresas no me han contestado?",
+      "howItGoes": "Resúmeme cómo va mi búsqueda este mes"
+    },
     "history": "Peticiones anteriores",
     "asked": "Pedido el {{when}}",
     "jobLink": "Oferta {{id}}",
@@ -49,12 +59,12 @@
     "home": "Inicio",
     "howItWorks": "Cómo funciona",
     "profile": "Mi perfil",
-    "skills": "Skills que te faltan",
+    "skills": "Habilidades por desarrollar",
     "templates": "Plantillas de CV",
     "search": "Buscar ofertas",
-    "searchSettings": "Qué buscas",
+    "searchSettings": "Configuración de tu búsqueda",
     "sources": "Dónde buscar",
-    "companies": "Empresas objetivo",
+    "companies": "Empresas con portal propio",
     "email": "Alertas por correo",
     "extension": "Botón del navegador",
     "newJob": "Nueva oferta",
@@ -64,7 +74,7 @@
     "board": "Tablero",
     "calendar": "Calendario",
     "replies": "Respuestas",
-    "funnel": "Embudo",
+    "funnel": "Resultados",
     "agent": "Agente"
   },
   "groups": {
@@ -99,7 +109,7 @@
     },
     "withoutAgent": {
       "q": "¿Qué puedo hacer sin agente?",
-      "a": "Añadir, aprobar y descartar ofertas, seguir tus procesos, usar el calendario y el embudo, editar tu perfil y cambiar el diseño de un CV ya generado. Leer ofertas y redactar CVs, cartas y guías de entrevista requiere el agente.",
+      "a": "Añadir, aprobar y descartar ofertas, seguir tus procesos, usar el calendario y los resultados, editar tu perfil y cambiar el diseño de un CV ya generado. Leer ofertas y redactar CVs, cartas y guías de entrevista requiere el agente.",
       "keywords": "sin ia sin agente gratis limitaciones"
     },
     "language": {
@@ -144,7 +154,7 @@
     },
     "askAgent": {
       "q": "¿Puedo pedirle algo a mi agente desde el portal?",
-      "a": "Sí. Abre la ayuda, elige «Pídeselo a tu agente» y escribe lo que necesitas. «Enviar ahora» lo lanza en segundo plano y la respuesta aparece en el mismo panel, con enlaces a lo que haya cambiado. «Dejar para mi próxima sesión» lo guarda como encargo.",
+      "a": "Sí. Pulsa «Asistente», abajo a la derecha, y escribe lo que necesitas. «Enviar ahora» lo lanza en segundo plano y la respuesta aparece en el mismo panel, con enlaces a lo que haya cambiado. «Dejar para mi próxima sesión» lo guarda como encargo.",
       "keywords": "asistente chat preguntar pedir agente caja texto portal"
     },
     "askAgentLimits": {
@@ -159,7 +169,7 @@
     },
     "sources": {
       "q": "¿Cómo consigo que las ofertas lleguen solas?",
-      "a": "En «Dónde buscar» eliges de dónde vienen: portales de empleo, empresas objetivo, alertas por correo y el botón del navegador. Lo que llega aparece en la Bandeja de ofertas.",
+      "a": "En «Dónde buscar» eliges de dónde vienen: portales de empleo, empresas con portal propio, alertas por correo y el botón del navegador. Lo que llega aparece en la Bandeja de ofertas.",
       "keywords": "fuentes portales infojobs indeed empresas automático llegar ofertas"
     },
     "searchNow": {
@@ -194,7 +204,7 @@
     },
     "filters": {
       "q": "¿Dónde indico qué ofertas quiero y cuáles se descartan?",
-      "a": "En «Qué buscas»: puestos, modalidad, zonas, años de experiencia, tipo de contrato, palabras que descartan y tu mínimo salarial. Tu agente nunca ve esa cifra.",
+      "a": "En «Configuración de tu búsqueda»: puestos, modalidad, zonas, años de experiencia, tipo de contrato, palabras que descartan y tu mínimo salarial. Tu agente nunca ve esa cifra.",
       "keywords": "filtros salario mínimo remoto modalidad ubicación preferencias descartar"
     },
     "toComplete": {
@@ -258,13 +268,13 @@
       "keywords": "seguimiento recordatorio sin respuesta escribir empresa agradecimiento"
     },
     "funnel": {
-      "q": "¿Qué me dice el Embudo?",
-      "a": "Hasta dónde ha llegado cada candidatura y dónde se detienen: por fuente, por semana y por motivo de descarte, con lo que rinde cada vía.",
-      "keywords": "embudo estadísticas resultados conversión cifras análisis"
+      "q": "¿Qué me dicen los Resultados?",
+      "a": "Qué te funciona: por qué canal te responden más y antes (referencia, web de la empresa, portales), hasta dónde llega cada candidatura, qué puestos te responden y por qué descartas.",
+      "keywords": "resultados embudo estadísticas conversión cifras análisis canal respuesta"
     },
     "skillGaps": {
-      "q": "¿Qué son las «Skills que te faltan»?",
-      "a": "Lo que piden las ofertas que apruebas y tu perfil aún no recoge. Márcalas como tuyas, como sinónimo de una de tu perfil o para el plan de formación que prepara tu agente.",
+      "q": "¿Qué son las «Habilidades por desarrollar»?",
+      "a": "Las skills que piden las ofertas que apruebas y que aún no figuran en tu perfil. Márcalas como tuyas, como sinónimo de una de tu perfil o para el plan de formación que prepara tu agente.",
       "keywords": "habilidades formación aprender huecos cursos plan"
     },
     "dataLeaving": {
@@ -279,8 +289,8 @@
     },
     "mailSafe": {
       "q": "¿Es seguro conectar mi correo?",
-      "a": "La app abre solo la carpeta o etiqueta que elijas y solo para leer. Usa una contraseña de aplicación, distinta de la tuya, que puedes revocar cuando quieras; se queda en tu equipo y tu agente nunca la ve.",
-      "keywords": "seguro contraseña correo gmail lectura permisos revocar"
+      "a": "La app abre solo la carpeta o etiqueta que elijas y solo para leer. Usa una contraseña de aplicación, distinta de la tuya, que puedes revocar cuando quieras; se guarda cifrada en el llavero del sistema y tu agente nunca la ve.",
+      "keywords": "seguro contraseña correo gmail lectura permisos revocar llavero cifrada"
     },
     "linkedin": {
       "q": "¿Y LinkedIn?",

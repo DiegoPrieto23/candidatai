@@ -63,6 +63,14 @@ function stats(overrides: Partial<FunnelStats> = {}): FunnelStats {
       { group: 'requested', ...summary(1, 1, 1, 0, 0) },
       { group: 'none', ...summary(7, 3, 2, 1, 0) },
     ],
+    by_channel: [
+      { channel: 'referral', ...summary(2, 2, 2, 2, 1), median_reply_days: 1, timed_replies: 2 },
+      { channel: 'company', ...summary(3, 1, 1, 0, 0), median_reply_days: null, timed_replies: 0 },
+      { channel: 'portal', ...summary(5, 3, 2, 1, 0), median_reply_days: 4, timed_replies: 1 },
+      { channel: 'manual', ...summary(0, 0, 0, 0, 0), median_reply_days: null, timed_replies: 0 },
+    ],
+    min_applied: 10,
+    min_replied: 5,
     response_time: {
       applied: 5,
       replied: 3,
@@ -107,7 +115,7 @@ async function openMore() {
   await userEvent.click(await screen.findByRole('button', { name: 'Más análisis' }))
 }
 
-describe('Embudo', () => {
+describe('Resultados', () => {
   // La ruta carga la página en diferido (Recharts): se precarga para no depender de lo que tarde
   // la importación con toda la batería en paralelo.
   beforeAll(async () => {
@@ -116,7 +124,7 @@ describe('Embudo', () => {
 
   it('muestra el embudo, las cifras clave, los desgloses y los motivos', async () => {
     mockApi({ 'GET /status': status(), 'GET /stats/funnel': stats() })
-    renderApp('/embudo')
+    renderApp('/resultados')
 
     await userEvent.click(await screen.findByRole('button', { name: 'Ver las cifras' }))
     const funnel = await screen.findByRole('table', { name: 'Ofertas por paso del embudo' })
@@ -162,13 +170,55 @@ describe('Embudo', () => {
     const filters = screen.getByRole('table', { name: 'Cierres por filtro duro' })
     expect(within(filters).getByRole('rowheader', { name: 'Ubicación' })).toBeInTheDocument()
 
-    // Lo de vez en cuando va plegado: por tipo de puesto, sin «Sin leer» como si fuera un puesto.
-    expect(screen.queryByRole('table', { name: 'Embudo por tipo de puesto' })).not.toBeInTheDocument()
-    await openMore()
+    // Por tipo de puesto, sin «Sin leer» como si fuera un puesto.
     const titles = screen.getByRole('table', { name: 'Embudo por tipo de puesto' })
     expect(within(titles).getByRole('rowheader', { name: 'Otros' })).toBeInTheDocument()
     expect(within(titles).queryByRole('rowheader', { name: 'Sin leer' })).not.toBeInTheDocument()
     expect(screen.getByText('Falta que tu agente lea 1 oferta: no cuenta aquí hasta entonces.')).toBeInTheDocument()
+  })
+
+  it('responde arriba con frases y agrupa lo demás por pregunta', async () => {
+    mockApi({ 'GET /status': status(), 'GET /stats/funnel': stats({ min_applied: 2, min_replied: 1 }) })
+    renderApp('/resultados')
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Resultados' })).toBeInTheDocument()
+    const cards = await screen.findByRole('list', { name: 'Lo que dicen tus datos' })
+    const text = (el: HTMLElement) => el.textContent?.replace(/ /g, ' ')
+    expect(within(cards).getAllByRole('listitem').map(text)).toEqual([
+      // Referencia, 2 de 2, frente al resto, 1 de 3.
+      'Dónde te responden másTe responden más por referencia: 100 % frente a 33 % en el resto.',
+      'Cuánto tardanLas empresas tardan 2 días de mediana en responder.',
+      'Dónde responden antesResponden antes por referencia: 1 día de mediana, frente a 4 días en los portales de empleo.',
+      'Tu mejor fuenteTu fuente con más respuesta es Greenhouse Acme, con un 67 %.',
+    ])
+    for (const question of ['¿Por dónde me responden más y antes?', '¿Dónde se quedan mis candidaturas?', '¿Qué puestos me responden?', '¿Por qué descarto?']) {
+      expect(screen.getByRole('heading', { level: 2, name: question })).toBeInTheDocument()
+    }
+    const channels = screen.getByRole('table', { name: 'Respuesta por canal' })
+    const referral = within(channels).getByRole('row', { name: /Referencia/ })
+    expect(within(referral).getAllByRole('cell').map(text)).toEqual(['2', '2', '100 %', '1 día'])
+    // Sin ofertas, el canal no sale.
+    expect(within(channels).queryByRole('rowheader', { name: 'Añadidas por ti' })).not.toBeInTheDocument()
+  })
+
+  it('sin candidaturas suficientes, dice cuándo saldrán las frases', async () => {
+    mockApi({ 'GET /status': status(), 'GET /stats/funnel': stats() })
+    renderApp('/resultados')
+    expect(await screen.findByText('Con unas 10 candidaturas enviadas, aquí verás qué te funciona.')).toBeInTheDocument()
+    expect(screen.queryByRole('list', { name: 'Lo que dicen tus datos' })).not.toBeInTheDocument()
+  })
+
+  it('el nombre de una fuente se ve tal cual, sin tomarse por marcado', async () => {
+    const sources = stats().by_source.map((s, i) => (i ? s : { ...s, name: '<strong>Acme</strong>' }))
+    mockApi({ 'GET /status': status(), 'GET /stats/funnel': stats({ min_applied: 2, min_replied: 1, by_source: sources }) })
+    renderApp('/resultados')
+    expect(await screen.findByText('<strong>Acme</strong>', { selector: 'strong' })).toBeInTheDocument()
+  })
+
+  it('la dirección antigua lleva a «Resultados»', async () => {
+    mockApi({ 'GET /status': status(), 'GET /stats/funnel': stats() })
+    renderApp('/embudo')
+    expect(await screen.findByRole('heading', { level: 1, name: 'Resultados' })).toBeInTheDocument()
   })
 
   it('con una sola oferta da la cifra real de cada etapa, sin dividir por cero', async () => {
@@ -184,7 +234,7 @@ describe('Embudo', () => {
         })),
       }),
     })
-    renderApp('/embudo')
+    renderApp('/resultados')
 
     await userEvent.click(await screen.findByRole('button', { name: 'Ver las cifras' }))
     const funnel = await screen.findByRole('table', { name: 'Ofertas por paso del embudo' })
@@ -200,7 +250,7 @@ describe('Embudo', () => {
     await i18n.changeLanguage('en')
     try {
       mockApi({ 'GET /status': status(), 'GET /stats/funnel': stats() })
-      renderApp('/embudo')
+      renderApp('/resultados')
       await userEvent.click(await screen.findByRole('button', { name: 'Show the numbers' }))
       const funnel = await screen.findByRole('table', { name: 'Jobs per funnel step' })
       expect(within(funnel).getByRole('columnheader', { name: '% of previous step' })).toBeInTheDocument()
@@ -212,7 +262,7 @@ describe('Embudo', () => {
 
   it('enseña el coste del agente por candidatura y por entrevista, y por fuente (fase 25.4)', async () => {
     mockApi({ 'GET /status': status(), 'GET /stats/funnel': stats(), 'GET /stats/calibration': calibration(), 'GET /agent': AGENT })
-    renderApp('/embudo')
+    renderApp('/resultados')
     await openMore()
     const panel = await screen.findByRole('region', { name: 'Coste del agente' })
     expect(within(panel).getByText('Por candidatura enviada').nextSibling).toHaveTextContent(/0[.,]3000 USD/)
@@ -247,7 +297,7 @@ describe('Embudo', () => {
     const writeText = vi.fn().mockResolvedValue(undefined)
     Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
     mockApi({ 'GET /status': status(), 'GET /stats/funnel': stats(), 'GET /stats/story': story })
-    renderApp('/embudo')
+    renderApp('/resultados')
 
     await openMore()
     const panel = await screen.findByRole('region', { name: 'Tu búsqueda en números' })
@@ -261,7 +311,7 @@ describe('Embudo', () => {
 
   it('pide el periodo elegido con `since`', async () => {
     const calls = mockApi({ 'GET /status': status(), 'GET /stats/funnel': stats() })
-    renderApp('/embudo')
+    renderApp('/resultados')
     await screen.findByRole('img', { name: /^5 enviadas/ })
     const funnelCalls = () => calls.filter((c) => c.path === '/stats/funnel')
     expect(funnelCalls()[0].search.get('since')).toBeNull()
@@ -280,7 +330,7 @@ describe('Embudo', () => {
 
   it('explica el estado vacío', async () => {
     mockApi({ 'GET /status': status(), 'GET /stats/funnel': EMPTY })
-    renderApp('/embudo')
+    renderApp('/resultados')
     expect(await screen.findByText('Aún no hay datos')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: '90 días' }))
     expect(await screen.findByText('No hay ofertas en este periodo')).toBeInTheDocument()
@@ -291,7 +341,7 @@ describe('Embudo', () => {
       'GET /status': status(),
       'GET /stats/funnel': { status: 500, body: { ok: false, error: { type: 'internal', message: 'Fallo', details: [] } } },
     })
-    renderApp('/embudo')
+    renderApp('/resultados')
     expect(await screen.findByRole('alert')).toHaveTextContent('No se ha podido cargar')
   })
 })
@@ -339,7 +389,7 @@ function calibration(overrides: Partial<Calibration> = {}): Calibration {
     by_signal: [
       group('employer_hidden', 'Empresa oculta o agencia', 6, 1, 0),
       group('fixed_term', 'Temporal', 3, 1, 1),
-      group('none', 'Sin señales', 16, 7, 3),
+      group('none', 'Nada que revisar', 16, 7, 3),
     ],
     ...overrides,
   }
@@ -360,7 +410,7 @@ describe('¿Acierta el encaje?', () => {
       'GET /stats/calibration': calibration(),
       'GET /agent': AGENT,
     })
-    renderApp('/embudo')
+    renderApp('/resultados')
 
     await openMore()
     const panel = await screen.findByRole('region', { name: '¿Acierta el encaje?' })
@@ -384,20 +434,20 @@ describe('¿Acierta el encaje?', () => {
     expect(within(sources).getByRole('row', { name: /Alertas por correo/ })).toBeInTheDocument()
   })
 
-  it('agrupa por señal de oferta dudosa (fase 25.3)', async () => {
+  it('agrupa por puntos a revisar (fase 25.3)', async () => {
     mockApi({
       'GET /status': status(),
       'GET /stats/funnel': stats(),
       'GET /stats/calibration': calibration(),
       'GET /agent': AGENT,
     })
-    renderApp('/embudo')
+    renderApp('/resultados')
     await openMore()
     const panel = await screen.findByRole('region', { name: '¿Acierta el encaje?' })
-    await userEvent.click(await within(panel).findByRole('tab', { name: 'Señal' }))
-    const table = await within(panel).findByRole('table', { name: 'Calibración por señal' })
+    await userEvent.click(await within(panel).findByRole('tab', { name: 'Puntos a revisar' }))
+    const table = await within(panel).findByRole('table', { name: 'Calibración por puntos a revisar' })
     expect(within(table).getByRole('row', { name: /Empresa oculta o agencia/ })).toBeInTheDocument()
-    expect(within(within(table).getByRole('row', { name: /Sin señales/ })).getAllByRole('cell')[0]).toHaveTextContent('16')
+    expect(within(within(table).getByRole('row', { name: /Nada que revisar/ })).getAllByRole('cell')[0]).toHaveTextContent('16')
     expect(within(panel).getByText(/¿Responden peor\?/)).toBeInTheDocument()
   })
 
@@ -408,7 +458,7 @@ describe('¿Acierta el encaje?', () => {
       'GET /stats/calibration': calibration(),
       'GET /agent': AGENT,
     })
-    renderApp('/embudo')
+    renderApp('/resultados')
     await openMore()
     await screen.findByRole('table', { name: 'Calibración por encaje' })
     const calibrationCalls = () => calls.filter((c) => c.path === '/stats/calibration')
@@ -425,7 +475,7 @@ describe('¿Acierta el encaje?', () => {
       'GET /stats/calibration': calibration(),
       'GET /agent': AGENT,
     })
-    renderApp('/embudo')
+    renderApp('/resultados')
     expect(await screen.findByText('Aún no hay datos')).toBeInTheDocument()
     expect(screen.queryByRole('region', { name: '¿Acierta el encaje?' })).not.toBeInTheDocument()
 
@@ -443,7 +493,7 @@ describe('¿Acierta el encaje?', () => {
       'GET /stats/calibration': calibration({ total: none }),
       'GET /agent': AGENT,
     })
-    renderApp('/embudo')
+    renderApp('/resultados')
     await openMore()
     const panel = await screen.findByRole('region', { name: '¿Acierta el encaje?' })
     expect(await within(panel).findByText(/Aún no has enviado ninguna candidatura/)).toBeInTheDocument()

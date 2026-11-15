@@ -17,7 +17,7 @@ primeros pasos.
 6. [Arrancar la app cada día](#6-arrancar-la-app-cada-día)
 7. [Configurar las fuentes de ofertas](#7-configurar-las-fuentes-de-ofertas)
 8. [De la oferta al envío](#8-de-la-oferta-al-envío)
-9. [Seguimiento, respuestas y embudo](#9-seguimiento-respuestas-y-embudo)
+9. [Seguimiento, respuestas y resultados](#9-seguimiento-respuestas-y-resultados)
 10. [Entrevistas y ofertas recibidas](#10-entrevistas-y-ofertas-recibidas)
 11. [El agente desde la UI](#11-el-agente-desde-la-ui)
 12. [Configuración](#12-configuración)
@@ -129,9 +129,10 @@ docker compose up -d --build        # la primera vez tarda unos minutos (constru
 La app queda en `http://127.0.0.1:8000`, solo en tu equipo. Tus datos van en el volumen
 `candidatai-data`, que sobrevive a parar, actualizar o borrar el contenedor. Si hay un `.env` en
 la carpeta, el contenedor lo lee (claves de portales, IMAP…): con IMAP configurado, su worker lee
-tus alertas por correo igual que el de la instalación nativa, pero las guarda en el volumen. Al
-añadir un buzón desde la UI, la app no puede escribir tu `.env`: te dice qué línea añadir y
-luego recreas el contenedor (`docker compose up -d`).
+tus alertas por correo igual que el de la instalación nativa, pero las guarda en el volumen. El
+contenedor no tiene llavero: la contraseña de un buzón añadido desde la UI va como secreto de
+Docker o variable de entorno ([`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md#docker)) y luego
+recreas el contenedor (`docker compose up -d`).
 
 - **Parar y arrancar:** `docker compose stop` y `docker compose start`.
 - **Actualizar:** `git pull` y `docker compose up -d --build`.
@@ -145,7 +146,7 @@ luego recreas el contenedor (`docker compose up -d`).
 
 | | Con Docker |
 |---|---|
-| UI, ofertas, revisión, seguimiento y embudo | Sí |
+| UI, ofertas, revisión, seguimiento y resultados | Sí |
 | Fuentes de ofertas y alertas por correo (el worker) | Sí |
 | CVs y cartas en PDF | Sí, con las plantillas html (`moderna-2col`…). Las docx no, porque no hay LibreOffice: si te toca una, se usa `moderna-2col` y la app te avisa |
 | Tu agente por MCP o `cai … --json` | Sí, desde fuera del contenedor (abajo) |
@@ -153,6 +154,7 @@ luego recreas el contenedor (`docker compose up -d`).
 | «En segundo plano» | No: el agente no está en el contenedor |
 | Candidatura asistida | La oferta se abre en tu navegador, la envías tú y pulsas «Marcar como enviada» |
 | Similitud semántica del score | No (la imagen no trae torch); el score funciona igual |
+| Contraseñas de los buzones | No hay llavero en el contenedor: van como secreto de Docker o variable de entorno ([`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md#docker)) |
 
 **Tu agente, desde fuera.** El agente se ejecuta en tu equipo, en la carpeta del repositorio (lee
 de ahí los skills y `AGENTS.md`), y habla con la app del contenedor:
@@ -220,7 +222,7 @@ Trae también lo que habrían dejado ella y su agente, para que ninguna pantalla
 valoración del encaje, carta y respuestas de screening de una oferta, un mensaje de LinkedIn y un
 seguimiento, dos dosieres de empresa (uno con bandera roja), el plan de una entrevista y el repaso
 de dos, los datos de la oferta recibida, tres correos de empresas en «Respuestas» (dos con
-propuesta y uno sin clasificar, con texto oculto para una IA), dos huecos en «Skills», un encargo
+propuesta y uno sin clasificar, con texto oculto para una IA), dos huecos en «Habilidades por desarrollar», un encargo
 pendiente, el contexto, una muestra de estilo y una tabla de salarios.
 
 ```powershell
@@ -251,16 +253,16 @@ documentos y correos. Las claves van en `.env`, también fuera de git.
 |---|---|---|
 | **Perfil** (la fuente de verdad de todo lo que se escribe sobre ti) | `data/profile.yaml` | Para empezar, sube tu CV en «Mi perfil» y pulsa «Crear mi perfil desde mi CV» (o pídeselo a tu agente): el skill `update-profile` lo lee, te pregunta lo que falte y lo valida. Sin agente, «Empezar a mano» crea un perfil mínimo (nombre, titular, puesto y niveles) y abre el editor. Después, **rellénalo y retócalo en «Mi perfil»**: experiencia y logros, proyectos, formación, skills e idiomas, historias STAR, qué buscas y tus preferencias de CV y carta, por bloques. Cada bloque se guarda solo, conserva el formato y los comentarios de tu fichero, avisa si lo cambiaste por fuera y se puede deshacer. Cada cambio crea una versión. Con el perfil ya hecho, «Importar información desde un CV» añade lo que le falte desde otro CV y te enseña las diferencias antes de escribir. Si prefieres, sigue valiendo editar el YAML |
 | **Tu CV como diseño** | `data/templates/<id>/` | Sube un CV con el diseño que te gusta en «Mi perfil → Plantillas de CV → Subir nueva plantilla» y pulsa «Convertir en plantilla» (usa el skill `import-cv-template`). Vale Word, PDF, imagen o HTML (Canva, Google Docs…) |
-| **Foto** | `data/photo.jpg` (o png) | La subes, la cambias o la quitas en «Mi perfil → Sobre ti». Cada plantilla la recorta a su forma; se incluye o no según el país de la oferta |
+| **Foto** | `data/photo.jpg` (o png), y la original en `data/photo-original.*` | La subes, la encuadras (zoom y arrastre, en tu navegador), la vuelves a encuadrar o la quitas en «Mi perfil → Sobre ti». Cada plantilla la recorta a su forma; se incluye o no según el país de la oferta |
 | **Contexto** (estilo, narrativa, criterios) | `data/contexto/*.md` | Se edita en «Mi perfil → Documentos» (con vista previa) o en tu editor. Orienta al agente, pero nunca respalda un hecho del CV |
 | **Muestras de estilo** (cartas, correos o posts tuyos) | `data/documentos/estilo/` | Súbelas en «Mi perfil → Documentos» (.txt, .md, .docx, .pdf). Tu agente toma de ellas el tono, nunca los hechos, y las lee como dato: si traen texto de otros con órdenes, no las sigue |
 | **Documentos fuente** (CVs antiguos, títulos, referencias) | `data/documentos/` | Tu CV y tu exportación de LinkedIn se suben en «Mi perfil → Documentos»; el resto, en su carpeta. `update-profile` los puede leer, confirmando antes de escribir |
 | **Lo que has hecho en público** (repositorios, portfolio, Kaggle, Scholar, certificaciones verificables) | `data/profile.yaml` | Skill `expand`, o «Mejorar el contenido de mi perfil» en «Mi perfil». Úsalo **justo después de crear el perfil** y cuando quieras pulirlo: revisa el perfil entero (logros sin cifra, textos de relleno, huecos) y propone proyectos, skills (sin nivel: lo pones tú), logros con los números que da la fuente y certificaciones, cada uno con su enlace en `source`, y solo escribe lo que aceptes. Solo web pública: ni LinkedIn ni nada con login. Leer los enlaces necesita un agente con búsqueda web; revisar el perfil, no |
 
-Tu mínimo salarial va en «Buscar ofertas → Qué buscas» (o en `private.salary_floor_eur` del perfil): la
+Tu mínimo salarial va en «Buscar ofertas → Configuración de tu búsqueda» (o en `private.salary_floor_eur` del perfil): la
 app descarta las ofertas que publican un sueldo por debajo y lo usa para comparar las ofertas
 recibidas, pero el agente nunca ve la cifra; solo sabe que una oferta cayó «por debajo de tu
-mínimo salarial». En «Qué buscas» también eliges años mínimo y máximo, palabras que descartan,
+mínimo salarial». En «Configuración de tu búsqueda» también eliges años mínimo y máximo, palabras que descartan,
 tipo de contrato y jornada, y si excluyes consultoras o agencias de selección.
 
 **Dónde están tus datos y cómo copiarlos.** `uv run cai paths` (o `cai paths` en la carpeta de la
@@ -276,13 +278,15 @@ app) dice qué carpeta usas. Con el instalador:
 
 Para hacer una copia de seguridad, **cierra CandidatAI** (la base de datos tiene que estar quieta) y
 copia esa carpeta entera donde quieras: un zip, otro disco o tu nube. Para restaurarla, con la app
-cerrada, pon la copia en su sitio. Guarda también el `.env` de la app si tiene claves tuyas.
+cerrada, pon la copia en su sitio. Guarda también el `.env` de la app si tiene claves tuyas. Las
+contraseñas del llavero del sistema no van en la copia: en otro equipo, vuelve a escribirlas en
+«Editar» de cada buzón.
 
 En «Mi perfil», cada logro y cada historia tienen **«Mejorar con mi agente»**: tu agente propone
 una versión más clara, te pregunta los números que falten (nunca los inventa) y solo escribe con tu
 OK. En «Historias STAR», **«Proponer historias desde mi experiencia»** te sugiere historias a partir
 de los logros que aún no tienen. Tu correo y tu teléfono se editan ahí, pero tu agente sigue sin
-verlos. Lo mismo tu mínimo salarial (`private`), en «Qué buscas».
+verlos. Lo mismo tu mínimo salarial (`private`), en «Configuración de tu búsqueda».
 
 ## 5. Conectar tu agente
 
@@ -334,8 +338,10 @@ también se abre con la tecla `?` y se cierra con `Esc`) busca en las
 [preguntas frecuentes](PREGUNTAS.md) y en esta guía, y cada respuesta lleva a la pantalla donde se
 hace. Funciona sin conexión y sin agente.
 
-En el mismo panel, la pestaña **Pídeselo a tu agente** es una caja de texto para pedirle algo con
-tus palabras («¿qué tengo pendiente esta semana?», «valora la oferta de Acme»). La app no llama a
+Al lado, el botón **Asistente** (el del destello, también en todas las páginas) abre el
+mismo panel en su otra pestaña: una caja de texto para pedirle algo a tu agente con tus palabras
+(«¿qué tengo pendiente esta semana?», «valora la oferta de Acme»). La primera vez propone unos
+ejemplos; al pulsar uno se escribe en la caja, y lo envías tú. La app no llama a
 ningún modelo: le pasa la petición al agente que ya usas.
 
 - **Enviar ahora** la lanza en segundo plano. El panel enseña el progreso y la respuesta, con
@@ -353,10 +359,11 @@ Sin agente instalado, la pestaña lo dice y la ayuda sigue funcionando. El panel
 20 peticiones en tu equipo.
 
 El menú tiene nueve entradas: **Inicio** y **Mi perfil**; en Búsqueda, **Buscar ofertas** y
-**Bandeja de ofertas**; en Procesos, **Tablero**, **Calendario**, **Respuestas** y **Embudo**; y
+**Bandeja de ofertas**; en Procesos, **Tablero**, **Calendario**, **Respuestas** y **Resultados**; y
 **Agente**. Lo demás son pestañas dentro de ellas: la Bandeja tiene **Revisión rápida** y **Por
-completar**; Buscar ofertas, **Qué buscas** y **Dónde buscar**; y Mi perfil, **Skills que te
-faltan** y **Plantillas de CV**.
+completar**, y Mi perfil, **Habilidades por desarrollar** y **Plantillas de CV**. Buscar ofertas es
+una sola página con tres secciones, con un índice arriba: **Buscar**, **Configuración de tu
+búsqueda** y **Dónde buscar**.
 
 Un día normal:
 
@@ -371,10 +378,10 @@ Un día normal:
 | Fuente | Cómo se configura |
 |---|---|
 | **Alta manual** | «Nueva oferta» en la UI (URL o texto pegado; con texto, el puesto y la empresa son obligatorios porque con ellos se detectan duplicados, y el botón dice qué falta) |
-| **Empresas objetivo** (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee) | En «Buscar ofertas», pestaña «Dónde buscar → Empresas objetivo» o `cai sources add --kind greenhouse --name "Acme" --slug acme`. `cai sources discover --file empresas.txt` busca el tablero de cada empresa de una lista. Cómo encontrar el slug, en [`FUENTES_OFERTAS.md`](FUENTES_OFERTAS.md#cómo-encontrar-el-slug) |
+| **Empresas con portal propio** (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee) | En «Buscar ofertas», sección «Dónde buscar → Empresas con portal propio» o `cai sources add --kind greenhouse --name "Acme" --slug acme`. `cai sources discover --file empresas.txt` busca el tablero de cada empresa de una lista. Cómo encontrar el slug, en [`FUENTES_OFERTAS.md`](FUENTES_OFERTAS.md#cómo-encontrar-el-slug) |
 | **InfoJobs y Adzuna** | Sus claves en `.env` (`CAI_INFOJOBS_CLIENT_ID`/`_SECRET`, `CAI_ADZUNA_APP_ID`/`_KEY`) y una búsqueda con `cai sources add` |
 | **Manfred y freehire.me** | Sin claves: una búsqueda en la misma página o con `cai sources add --kind manfred --name Manfred --query "data engineer"` (en freehire, también `--country` y `--remote-only`) |
-| **Alertas por correo** | Crea alertas en LinkedIn, InfoJobs, Indeed… y que lleguen a una etiqueta de tu correo. En «Dónde buscar → Alertas por correo → Añadir buzón» conecta uno o varios buzones (Gmail, Outlook, Yahoo, iCloud u otro IMAP, siempre en solo lectura) o una carpeta de `.eml`; el asistente explica cada proveedor y prueba la conexión antes de guardar. La contraseña se guarda en tu `.env` y no vuelve a salir. Paso a paso en [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md). Lo que llega aparece en la **Bandeja de ofertas**; las que solo traen título y enlace esperan en su pestaña «Por completar» |
+| **Alertas por correo** | Crea alertas en LinkedIn, InfoJobs, Indeed… y que lleguen a una etiqueta de tu correo. En «Dónde buscar → Alertas por correo → Añadir buzón» conecta uno o varios buzones (Gmail, Outlook, Yahoo, iCloud u otro IMAP, siempre en solo lectura) o una carpeta de `.eml`; el asistente explica cada proveedor y prueba la conexión antes de guardar. La contraseña se guarda cifrada en el llavero del sistema (Administrador de credenciales en Windows, Llavero en macOS) y no vuelve a salir. Paso a paso en [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md). Lo que llega aparece en la **Bandeja de ofertas**; las que solo traen título y enlace esperan en su pestaña «Por completar» |
 | **Botón «Enviar a CandidatAI»** | En **Dónde buscar → Botón del navegador**: la app te guía para cargar `extension/` en Chrome, Edge o Brave y la conecta con un clic. Instrucciones: [`extension/README.md`](../extension/README.md) |
 | **Tu agente con tu navegador** | En «Dónde buscar → Portales de empleo», «Configurar con mi agente» (`search-jobs configurar`) elige portales y búsquedas; o añádelos tú: en InfoJobs, Tecnoempleo, Indeed y LinkedIn las búsquedas salen solas de los puestos y las ubicaciones de tu perfil, y cada portal se edita con su lápiz; `search-jobs` los recorre. LinkedIn queda desactivado hasta que lo actives tú. Al pulsar «Buscar ahora», un aviso dice «Buscando…» en todas las páginas y cambia cuando tu agente termina. En cada portal, los **problemas** son lo que impidió leerlo (captcha, inicio de sesión, página cambiada) y las **notas**, lo que tu agente apuntó sin que fallara nada, como las búsquedas que dejó sin recorrer |
 | **Búsqueda pública de LinkedIn** | Interruptor «Búsqueda pública sin sesión» en la tarjeta de LinkedIn de «Dónde buscar → Portales de empleo». Apagado por defecto: va contra las condiciones de LinkedIn y puede bloquear tu IP un tiempo |
@@ -419,7 +426,7 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
    captcha o un login, se para y te pasa la pestaña. Si la envías tú por otro lado, márcala como
    enviada a mano.
 
-## 9. Seguimiento, respuestas y embudo
+## 9. Seguimiento, respuestas y resultados
 
 - **Tablero:** kanban por etapas. Una tarjeta solo cambia de columna registrando lo que pasó
   (respuesta, entrevista, prueba, oferta, rechazo), y las tarjetas solo van hacia la derecha: al
@@ -428,8 +435,20 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
   exportable a tu calendario (`.ics`). En la ficha, «¿Qué ha pasado?» registra también lo que no
   cambia de etapa (otra respuesta, otra entrevista, una prueba, la oferta) y enlaza a «Anotar
   oferta» y a «Hitos» para los detalles; «Acepto la oferta» sale cuando ya hay una oferta.
+  Con «Personalizar columnas» eliges entre 3 y 5 columnas juntando etapas seguidas (p. ej. «Aprobada»
+  y «CV listo») y les pones nombre; es solo la vista, las etapas no cambian, y «Restablecer» vuelve a
+  las de siempre. Se guarda en tu navegador.
 - **Calendario:** todos tus hitos (entrevistas, pruebas, plazos y otros, también los pasados) por
-  mes, semana, día o agenda. Pulsa uno para ver sus datos e ir a la oferta.
+  mes, semana, día o agenda. Pulsa uno para ver sus datos e ir a la oferta. Para añadir uno, «Añadir
+  hito», el «+» de un día o una hora libre de la semana: eliges la oferta y se guarda en su ficha.
+  Hoy, los fines de semana y los días de otro mes se distinguen a simple vista, y cada tipo de hito
+  lleva su color y su icono.
+- **Avisos:** el `.ics` y el feed llevan alarmas, para que tu calendario te avise sin que la app
+  envíe correos: un día y una hora antes de cada hito con hora, y a las 9:00 del día anterior de
+  cada plazo. Outlook y Apple Calendar las usan; Google Calendar aplica sus propias notificaciones.
+  Además, con «Avisos del navegador» (en el Calendario) y la app abierta, el navegador te avisa una
+  hora antes de cada entrevista o prueba, el día anterior de cada plazo y una vez al día de los
+  seguimientos pendientes.
 - **Seguimientos:** te avisa de las candidaturas sin respuesta; `draft-follow-up` deja los
   borradores (máximo 2 por candidatura) y el de agradecimiento tras una entrevista. Los envías tú.
 - **Respuestas:** si lo activas en un buzón, la app lee los correos de las empresas de tus procesos;
@@ -438,14 +457,17 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
   Con el teclado: `J`/`K` para pasar de un correo a otro, `A` para aceptar, `I` para ignorar. Si no lo
   activas, anótalo en su ficha o en el tablero con «Actualizar estado». Qué lee exactamente:
   [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md#respuestas-de-las-empresas).
-- **Embudo:** «Tu embudo» (también en Inicio) enseña hasta dónde ha llegado cada candidatura y
-  dónde están las que pararon; cada rama lleva a esas candidaturas. Debajo, una franja por paso con
-  su cifra y dos porcentajes, la conversión por fuente, semana y referencia, y los motivos de
-  descarte. En «Más
-  análisis», plegado al final: «¿Acierta el encaje?» (por encaje, veredicto, plantilla, carta…), por
-  tipo de puesto, el coste del agente y «Tu búsqueda en números» (o `cai stats story`): tus cifras
-  desde el principio, sin empresas, con una línea para compartir si quieres. `review-search` hace
-  la retrospectiva semanal.
+- **Resultados:** qué te funciona. Arriba, frases sacadas de tus datos: por qué canal te responden
+  más (referencia, web de la empresa, portales de empleo o las ofertas que añades tú), cuánto tardan
+  las empresas en responder, por dónde responden antes y tu mejor fuente. Cada frase sale cuando hay
+  datos suficientes (unas 10 candidaturas enviadas por grupo; 5 respuestas para los tiempos) y una diferencia clara. Debajo,
+  agrupado por pregunta: «¿Por dónde me responden más y antes?» (por canal, con la tasa y la mediana
+  de días, por fuente y por referencia); «¿Dónde se quedan mis candidaturas?» («Tu embudo», también
+  en Inicio, con una rama por cada grupo que paró, la primera respuesta y la gráfica por semana);
+  «¿Qué puestos me responden?» y «¿Por qué descarto?». En «Más análisis», plegado al final:
+  «¿Acierta el encaje?» (por encaje, veredicto, plantilla, carta…), el coste del agente y «Tu
+  búsqueda en números» (o `cai stats story`): tus cifras desde el principio, sin empresas, con una
+  línea para compartir si quieres. `review-search` hace la retrospectiva semanal.
 - **Red:** importa tus contactos de LinkedIn (exportación CSV) con `cai contacts import-linkedin`
   y verás «Conoces a N» en las ofertas de sus empresas; `draft-message` prepara el mensaje.
 
@@ -496,7 +518,7 @@ Muchas pantallas tienen botones que abren tu agente con la orden ya escrita:
   permisos que pide y las conversaciones (un simulacro, p. ej.) siguen en su ventana.
 - **En segundo plano** (Claude Code; OpenCode solo en `process-jobs` y `assess-fit`): para los skills que no preguntan
   (`process-jobs`, `assess-fit`, `generate-cv`, `correct-cv`, `verify-cv`,
-  `generate-cover-letter`). Corre sin ventana, solo con las herramientas de la app que necesita, y
+  `generate-cover-letter` y el resumen en inglés). Corre sin ventana, solo con las herramientas de la app que necesita, y
   ves el progreso y el uso en la página «Agente». Si tu agente no puede, el desplegable propone
   uno que sí. Necesita `cai worker` en marcha.
   - **Coste:** la sección «Coste» de la página «Agente» suma tokens, tiempo y, si el agente lo da,
@@ -535,7 +557,9 @@ clasificar respuestas, y tu agente más capaz para el CV. Rellénalos una vez y 
   `CAI_IMAP_FOLDER`, `CAI_IMAP_REPLIES_FOLDER`), `CAI_BROWSER_CHANNEL` (`chrome` o `msedge` para la
   candidatura asistida), `CAI_EMBEDDINGS=off`, `UV_PATH` (uv fuera del PATH), `CAI_LANG` (`es` o
   `en`: idioma de los mensajes de `cai start` en la terminal; sin ella, el del sistema). Nada es
-  obligatorio.
+  obligatorio. Las contraseñas y claves (`CAI_IMAP_PASSWORD`, `CAI_ADZUNA_APP_KEY`,
+  `CAI_INFOJOBS_CLIENT_SECRET`) mejor en el llavero del sistema: si las pones en `.env`, la app
+  ofrece moverlas allí.
 - **`config/policies.yaml`:** umbral de score, pesos del score, hora de la ingesta diaria,
   frecuencia del correo, límites de la búsqueda con navegador y de la búsqueda pública de
   LinkedIn, frases de oferta cerrada… Tras cambiar el score, `cai match rescore` recalcula y

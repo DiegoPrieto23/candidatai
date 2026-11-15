@@ -28,7 +28,7 @@ antes al perfil con `update-profile`, a `extra_sections` si no encaja en otra se
 |---|---|---|
 | `templates/<id>/` | Plantillas integradas, genéricas y sin datos personales | Sí |
 | `data/templates/<id>/` | Tus plantillas, creadas a partir de tus CVs o de diseños que tengas | No |
-| `data/uploads/` | Los ficheros originales que subes para convertirlos en plantilla | No |
+| `data/uploads/` | Los ficheros originales que subes para convertirlos en plantilla y, en `names.json`, el nombre que elegiste para cada una (el agente lo lee en `requested_name` de `inspect`) | No |
 | `data/photo.<ext>` | Tu foto original (jpg, png, webp; heic si Pillow lo abre). Otra ruta dentro de `data/` con `preferences.cv.photo_file` | No |
 | `data/cache/photo/` | La foto recortada para cada forma y tamaño (se regenera sola) | No |
 | `data/cache/previews/` | Previews con tu perfil y de las integradas (se regeneran solas) | No |

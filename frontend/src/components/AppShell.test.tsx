@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockApi, renderApp, status } from '@/test/utils'
@@ -79,7 +79,7 @@ describe('Barra lateral (fase 23.3)', () => {
       'Tablero',
       'Calendario',
       'Respuestas',
-      'Embudo',
+      'Resultados',
       'Agente',
     ])
     expect(await within(nav).findByRole('link', { name: 'Bandeja de ofertas' })).toHaveAttribute('aria-current', 'page')
@@ -103,7 +103,7 @@ describe('Barra lateral (fase 23.3)', () => {
     ['/triaje', /^Revisión rápida/],
     ['/alertas', /^Por completar/],
     ['/procesos/calendario?view=agenda', /^Calendario/],
-    ['/skills', /^Skills que te faltan/],
+    ['/skills', /^Habilidades por desarrollar/],
     ['/plantillas', /^Plantillas de CV/],
   ])('la ruta antigua %s abre su pestaña nueva', async (from, tab) => {
     mockApi(routes())
@@ -126,8 +126,8 @@ describe('Barra lateral (fase 23.3)', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Plegar el menú' }))
     const nav = screen.getByRole('navigation', { name: 'Navegación principal' })
     // Plegada, cada enlace conserva su nombre accesible aunque solo se vea el icono.
-    expect(within(nav).getByRole('link', { name: 'Embudo' })).toBeInTheDocument()
-    expect(within(nav).queryByText('Embudo')).not.toBeInTheDocument()
+    expect(within(nav).getByRole('link', { name: 'Resultados' })).toBeInTheDocument()
+    expect(within(nav).queryByText('Resultados')).not.toBeInTheDocument()
     expect(localStorage.getItem('cai-sidebar-collapsed')).toBe('1')
     unmount()
 
@@ -140,16 +140,16 @@ describe('Barra lateral (fase 23.3)', () => {
     renderApp('/bandeja')
     await userEvent.click(screen.getByRole('button', { name: 'Abrir el menú' }))
     const drawer = await screen.findByRole('dialog')
-    await userEvent.click(within(drawer).getByRole('link', { name: 'Embudo' }))
+    await userEvent.click(within(drawer).getByRole('link', { name: 'Resultados' }))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 
   it('las rutas antiguas de Empresas y Plataformas llevan a «Dónde buscar»', async () => {
     mockApi({ ...routes(), 'GET /sources': { sources: [], agent_browse: { max_result_pages: 2, delay_seconds: 5, default_max_offers: 15 } } })
     renderApp('/empresas')
-    expect(await screen.findByRole('heading', { name: 'Empresas objetivo' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Empresas con portal propio' })).toBeInTheDocument()
     const tabs = screen.getByRole('navigation', { name: 'Dónde buscar' })
-    expect(within(tabs).getByRole('link', { name: 'Empresas objetivo' })).toHaveAttribute('aria-current', 'page')
+    expect(within(tabs).getByRole('link', { name: 'Empresas con portal propio' })).toHaveAttribute('aria-current', 'page')
     await userEvent.click(within(tabs).getByRole('link', { name: 'Portales de empleo' }))
     expect(await screen.findByRole('heading', { name: 'Portales de empleo' })).toBeInTheDocument()
   })
@@ -161,10 +161,37 @@ describe('Barra lateral (fase 23.3)', () => {
     const tabs = screen.getByRole('navigation', { name: 'Dónde buscar' })
     expect(within(tabs).getAllByRole('link').map((link) => link.textContent)).toEqual([
       'Portales de empleo',
-      'Empresas objetivo',
+      'Empresas con portal propio',
       'Alertas por correo',
       'Botón del navegador',
     ])
+  })
+
+  it('«Buscar ofertas» es una página: las rutas de antes llevan a su sección y el índice, a las demás', async () => {
+    mockApi({ ...routes(), 'GET /sources': { sources: [], agent_browse: { max_result_pages: 2, delay_seconds: 5, default_max_offers: 15 } } })
+    const scrolled: string[] = []
+    const original = Element.prototype.scrollIntoView
+    Element.prototype.scrollIntoView = function (this: Element) {
+      scrolled.push(this.id)
+    }
+    try {
+      renderApp('/buscar/ajustes')
+      // Las tres secciones, en la misma página.
+      expect(await screen.findByRole('heading', { level: 1, name: 'Buscar ofertas' })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { level: 2, name: 'Configuración de tu búsqueda' })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { level: 2, name: 'Dónde buscar' })).toBeInTheDocument()
+      expect(await screen.findByRole('heading', { name: 'Portales de empleo' })).toBeInTheDocument()
+      await waitFor(() => expect(scrolled).toContain('ajustes'))
+
+      const index = screen.getByRole('navigation', { name: 'Secciones de «Buscar ofertas»' })
+      expect(within(index).getByRole('link', { name: 'Configuración de tu búsqueda' })).toHaveAttribute('aria-current', 'location')
+      expect(within(index).queryByRole('tab')).not.toBeInTheDocument()
+      await userEvent.click(within(index).getByRole('link', { name: 'Dónde buscar' }))
+      await waitFor(() => expect(scrolled.at(-1)).toBe('donde'))
+      expect(within(index).getByRole('link', { name: 'Dónde buscar' })).toHaveAttribute('aria-current', 'location')
+    } finally {
+      Element.prototype.scrollIntoView = original
+    }
   })
 })
 

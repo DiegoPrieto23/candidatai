@@ -41,7 +41,7 @@ def list_sources(session: SessionDep, kind: str | None = None) -> SourceList:
 
 @router.post("", operation_id="add_source", status_code=status.HTTP_201_CREATED)
 def add_source(session: SessionDep, body: SourceInput) -> SourceView:
-    """Añade una empresa objetivo (ATS + slug) o una búsqueda en un portal con API."""
+    """Añade una empresa con portal propio (ATS + slug) o una búsqueda en un portal con API."""
     return sources.add_source(session, body)
 
 
@@ -125,7 +125,7 @@ def set_source_active(session: SessionDep, source_id: int, body: SetActiveBody) 
 
 @router.post("/{source_id}/website", operation_id="set_source_website")
 def set_source_website(session: SessionDep, source_id: int, body: SetWebsiteBody) -> SourceView:
-    """Pone o quita la web de una empresa objetivo, que la UI usa para su logo."""
+    """Pone o quita la web de una empresa con portal propio, que la UI usa para su logo."""
     return sources.set_website(session, source_id, body.website)
 
 

@@ -1,11 +1,18 @@
 {
   "title": "Buscar ofertas",
-  "intro": "Tu agente recorre tus portales con tu navegador y da de alta lo que encaja con tu perfil. Solo lee: nunca se postula por ti.",
+  "intro": "Tu agente recorre tus portales y da de alta las ofertas que encajan contigo.",
+  "introHint": "Solo lee: nunca se postula por ti. Busca en una ventana aparte, donde ves lo que hace.",
+  "introHintLabel": "Qué hace tu agente al buscar",
+  "nav": {
+    "label": "Secciones de «Buscar ofertas»",
+    "search": "Buscar",
+    "settings": "Configuración de tu búsqueda",
+    "where": "Dónde buscar"
+  },
   "where": "Portales",
   "platforms": "Portales en los que buscar",
-  "selectAll": "Marcar todos",
-  "selectNone": "Desmarcar todos",
-  "manage": "Gestionar portales",
+  "selectAll": "Seleccionar todos",
+  "selectNone": "Quitar selección",
   "tile": {
     "size_one": "{{count}} búsqueda · hasta {{offers}} ofertas",
     "size_other": "{{count}} búsquedas · hasta {{offers}} ofertas",
@@ -23,11 +30,11 @@
   "noneChosen": "Elige al menos un portal.",
   "searchNow": "Buscar ahora",
   "plan": {
-    "title": "Tu búsqueda",
+    "title": "Configuración de tu búsqueda",
     "summary_one": "{{portals}} portales, {{count}} búsqueda",
     "summary_other": "{{portals}} portales, {{count}} búsquedas",
-    "offers_one": "Hasta {{count}} oferta",
-    "offers_other": "Hasta {{count}} ofertas",
+    "offers_one": "Hasta {{count}} oferta, las más recientes",
+    "offers_other": "Hasta {{count}} ofertas, las más recientes",
     "saved": "con tus búsquedas guardadas",
     "oneOff": "solo para esta vez",
     "before": "Antes de empezar",
@@ -38,7 +45,9 @@
     "safe": "Se abre en una ventana aparte, donde ves lo que hace. Puede tardar varios minutos.",
     "looking": "Buscas:",
     "lookingNone": "sin puestos todavía",
-    "change": "Cambiar"
+    "change": "Cambiar",
+    "offersHint": "En cada portal, tu agente da de alta las más recientes que encajan con tu perfil, hasta su límite.",
+    "offersHintLabel": "Qué ofertas cuentan"
   },
   "noBrowser": {
     "title": "Sin navegador",
@@ -51,7 +60,7 @@
     "created_other": "{{count}} ofertas nuevas",
     "failed_one": "{{count}} fuente con problemas",
     "failed_other": "{{count}} fuentes con problemas",
-    "none": "Añade <to>empresas objetivo</to> para consultar sus ofertas sin agente ni navegador.",
+    "none": "Añade <to>empresas con portal propio</to> para consultar sus ofertas sin agente ni navegador.",
     "others": "También entran solas tus <to>alertas por correo</to> y lo que envíes con el <ext>botón del navegador</ext>."
   },
   "refine": {
@@ -70,14 +79,18 @@
     "manage": "Ir a «Dónde buscar»"
   },
   "settings": {
-    "title": "Qué buscas",
-    "intro": "Tus puestos, tu sueldo, dónde y con qué contrato: deciden qué busca tu agente y qué ofertas pasan tus filtros. Cada bloque se guarda por separado.",
+    "intro": "Deciden qué busca tu agente y qué ofertas pasan tus filtros.",
     "issues": "Tu perfil tiene errores que hay que arreglar. Los ves en <to>Mi perfil</to>.",
     "noProfile": {
       "title": "Primero, tu perfil",
       "body": "Lo que buscas se guarda en tu perfil, y aún no tienes uno que se pueda leer.",
       "go": "Ir a «Mi perfil»"
-    }
+    },
+    "introHint": "Se guarda en tu perfil. Cada bloque se guarda por separado.",
+    "introHintLabel": "Dónde se guarda",
+    "rule": "Cada filtro se aplica solo cuando la oferta indica ese dato.",
+    "ruleHint": "Por ejemplo, una oferta que no dice el tipo de contrato pasa el filtro de contrato, y una sin sueldo publicado pasa el del sueldo mínimo.",
+    "ruleHintLabel": "Ofertas sin ese dato"
   },
   "searching": "Buscando…"
 }

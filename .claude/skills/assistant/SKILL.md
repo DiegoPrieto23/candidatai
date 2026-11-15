@@ -1,6 +1,6 @@
 ---
 name: assistant
-description: Atiende lo que el usuario ha escrito en «Pídeselo a tu agente», la caja de la ayuda del portal de CandidatAI. Lee su petición, la resuelve con los datos de la app y deja la respuesta en el panel, con enlaces a lo que ha cambiado o a la pantalla donde se hace. Úsalo cuando la orden traiga una petición del asistente.
+description: Atiende lo que el usuario ha escrito en el «Asistente» del portal de CandidatAI (el botón de abajo a la derecha). Lee su petición, la resuelve con los datos de la app y deja la respuesta en el panel, con enlaces a lo que ha cambiado o a la pantalla donde se hace. Úsalo cuando la orden traiga una petición del asistente.
 argument-hint: '[id de la petición]'
 allowed-tools: mcp__candidatai__get_assistant_request mcp__candidatai__save_assistant_answer mcp__candidatai__ask_user mcp__candidatai__wait_user_action mcp__candidatai__get_status mcp__candidatai__list_jobs mcp__candidatai__get_extraction mcp__candidatai__get_match mcp__candidatai__get_timeline mcp__candidatai__get_profile mcp__candidatai__get_context mcp__candidatai__list_upcoming mcp__candidatai__list_followups_due mcp__candidatai__get_funnel_stats mcp__candidatai__get_skill_gaps mcp__candidatai__get_interviews mcp__candidatai__save_fit_assessment mcp__candidatai__save_cover_letter_brief
 ---

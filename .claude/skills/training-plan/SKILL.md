@@ -1,6 +1,6 @@
 ---
 name: training-plan
-description: Convierte los huecos reales de skills (los marcados «No la tengo» en la página Skills de CandidatAI) en un plan de formación con recursos verificados, tiempo estimado y orden, y valora un curso o proyecto concreto frente a esos huecos. Úsalo cuando se pida un plan de formación, qué estudiar o si merece la pena un curso o un proyecto. Antes se llamaba plan-formacion.
+description: Convierte los huecos reales de skills (los marcados «No la tengo» en la página «Habilidades por desarrollar» de CandidatAI) en un plan de formación con recursos verificados, tiempo estimado y orden, y valora un curso o proyecto concreto frente a esos huecos. Úsalo cuando se pida un plan de formación, qué estudiar o si merece la pena un curso o un proyecto. Antes se llamaba plan-formacion.
 argument-hint: '[nada para el plan, o URL o descripción de un curso o proyecto a valorar]'
 allowed-tools: Read WebSearch WebFetch mcp__candidatai__get_skill_gaps mcp__candidatai__get_profile mcp__candidatai__get_context
 ---
@@ -22,13 +22,13 @@ Sigue `docs/POLICIES.md` §1 y §6. Dos modos, según los argumentos:
 - El plan no cambia el perfil: una skill entra en `data/profile.yaml` solo cuando el usuario la
   tiene de verdad, con `update-profile` (§1.4).
 - Nunca añadas un alias tú: si un «hueco» parece otra forma de llamar a algo que ya tiene, díselo
-  y que lo confirme con «Es lo mismo que…» en la página Skills.
+  y que lo confirme con «Es lo mismo que…» en la página «Habilidades por desarrollar».
 
 ## 1. Reunir
 1. `get_skill_gaps(status="gap")`: los huecos reales, con cuántas ofertas los piden como
    obligatorios y deseables, su peso y ofertas de ejemplo. Si no hay ninguno, mira
    `get_skill_gaps(status="unmarked")`: dile cuántas skills ausentes hay sin decidir, las 5 de más
-   peso, y pídele que las marque en la página Skills («La tengo», «No la tengo» o «Es lo mismo
+   peso, y pídele que las marque en la página «Habilidades por desarrollar» («La tengo», «No la tengo» o «Es lo mismo
    que…»). No decidas por él. Para.
 2. `get_profile(sections=["headline", "skills", "basic_skills", "education", "certifications"])`:
    el punto de partida. Un básico (`basic_skills`) o una skill parecida de nivel C cambian el nivel
@@ -74,7 +74,7 @@ versión anterior como `data/documentos/plan-formacion-<AAAA-MM-DD>.md`) con:
 5. **Proyectos propuestos**: qué haría, qué skills demuestra y cuánto le llevaría.
 6. **Después**: cuando termine algo, que lo añada al perfil con `update-profile` (nivel y dónde
    lo usó; el proyecto, como logro si tiene resultado). Entonces el hueco desaparece solo de la
-   página Skills y el score de sus ofertas sube.
+   página «Habilidades por desarrollar» y el score de sus ofertas sube.
 
 En el chat, enseña el resumen y el plan por semanas, y pregunta si quiere ajustar algo.
 
