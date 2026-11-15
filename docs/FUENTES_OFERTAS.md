@@ -196,8 +196,14 @@ found ─► pending_detail ─(detail_captured)─► pending_extraction ─►
   como «extensión sin empaquetar»; no se publica en ninguna tienda.
 - **Solo actúa cuando pulsas su botón** en la pestaña actual (permisos `activeTab` y
   `scripting`). Lee de esa página: URL, título, el texto seleccionado si lo hay y, si no, la
-  descripción de la oferta con extractores por sitio (LinkedIn, InfoJobs, Indeed, Tecnoempleo;
-  JSON-LD `JobPosting` si existe; `main` como último recurso).
+  descripción de la oferta con extractores por sitio (LinkedIn, InfoJobs, Indeed, Tecnoempleo,
+  Glassdoor, Manfred, Ticjob, Greenhouse, Workday y Workable); si no, los datos estructurados
+  `JobPosting` de la página (JSON-LD, aunque venga mal escapado, o microdatos de schema.org), que
+  cubren JobFluent, Domestika, Welcome to the Jungle, Lever, Ashby, SmartRecruiters, Teamtailor,
+  Recruitee, Personio y muchas webs de empleo de empresa; `main` como último recurso. Un JSON-LD
+  cuyo puesto no aparece en la página (una web que cambió de oferta sin recargar) no se usa.
+  Una oferta dentro de un `iframe` de otra web (un formulario de Greenhouse incrustado en la web
+  de la empresa) no se puede leer: ábrela en su propia pestaña.
 - **Se instala y se conecta desde la app**, en «Dónde buscar → Botón del navegador» (`/fuentes/extension`):
   la página detecta la extensión, guía la carga sin empaquetar, avisa si es de una versión antigua
   y la conecta con un clic. Al pulsar «Conectar», la app crea un token (`POST /capture/pair`, solo

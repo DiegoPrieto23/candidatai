@@ -10,6 +10,12 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **El botón «Enviar a CandidatAI» funciona en más portales:** Glassdoor (también con la oferta
+  abierta a la derecha de la búsqueda), Manfred, Ticjob, JobFluent, Domestika, Welcome to the
+  Jungle y las webs de empleo de las empresas que usan Greenhouse, Lever, Workday, Ashby,
+  SmartRecruiters, Teamtailor, Recruitee, Personio o Workable. En una web que cambia de oferta sin
+  recargar la página (Workday, Ashby…) ya no manda por error los datos de la oferta anterior.
+  Recarga la extensión (⟳ en `chrome://extensions`) para tenerlo.
 - **Tiempo y tasa de respuesta por canal:** en **Resultados**, cuánto te responden y en cuántos días
   (mediana) por referencia, en la web de la empresa, en los portales de empleo y en las ofertas que
   añades tú. También en `cai stats funnel` y en la interfaz para agentes.
@@ -410,6 +416,13 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   oferta».
 
 ### Seguridad
+- **Ninguna web que visites puede cambiar nada en CandidatAI:** antes, una página cualquiera
+  abierta en tu navegador podía disparar sin que lo vieras algunas acciones de la app (subir un
+  fichero, borrar un hito o un contacto, marcar una candidatura como enviada, abrir el navegador de
+  las candidaturas…). Ahora la app solo acepta cambios de su propia ventana, de la CLI y de tu
+  agente, y del botón del navegador solo el envío de ofertas, con su clave.
+- **«Añadir desde URL» no descarga direcciones de tu red local** aunque lleguen con un nombre de
+  dominio que apunte a ellas (por ejemplo, desde el enlace de un correo de alertas).
 - **Contraseñas cifradas en el llavero del sistema:** las de tus buzones de correo y las claves de
   Adzuna e InfoJobs se guardan en el Administrador de credenciales de Windows, el Llavero de macOS o
   el llavero de tu escritorio en Linux, y ya no en un fichero de texto. Si tenías alguna guardada

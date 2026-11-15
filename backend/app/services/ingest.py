@@ -251,6 +251,14 @@ def check_request(request: httpx.Request) -> None:
     _check_url(str(request.url))
 
 
+def _check_resolved(request: httpx.Request) -> None:
+    """Un dominio que apunta a la red local (`127.0.0.1.nip.io`, uno de tu router) tampoco: la URL
+    puede llegar de un correo de alertas. Lo resuelve `liveness`, que importa este módulo."""
+    from app.services import liveness
+
+    liveness.check_resolved(request)
+
+
 def looks_like_login(final_url: httpx.URL, html: str) -> bool:
     path = final_url.path.lower()
     if any(word in path for word in _LOGIN_PATH_WORDS):
@@ -274,7 +282,7 @@ def fetch_page(url: str) -> str:
         timeout=FETCH_TIMEOUT,
         headers=headers,
         follow_redirects=True,
-        event_hooks={"request": [check_request]},
+        event_hooks={"request": [check_request, _check_resolved]},
     )
     try:
         with client, client.stream("GET", url) as response:

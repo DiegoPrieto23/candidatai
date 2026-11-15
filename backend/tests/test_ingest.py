@@ -471,6 +471,19 @@ def test_redirect_to_private_ip_blocked(session: Session) -> None:
 
 
 @respx.mock
+def test_domain_resolving_to_local_address_blocked(
+    session: Session, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from app.services import liveness
+
+    monkeypatch.setattr(liveness, "_resolve", lambda _host: ["127.0.0.1"])
+    internal = respx.get("http://127.0.0.1.nip.io/jobs")
+    with pytest.raises(IngestError, match="red privada"):
+        add_from_url(session, "http://127.0.0.1.nip.io/jobs")
+    assert not internal.called
+
+
+@respx.mock
 def test_download_size_limit(session: Session, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("app.services.ingest.MAX_DOWNLOAD_BYTES", 1_000)
     respx.get(f"{BASE}/jobs/big").mock(return_value=httpx.Response(200, text="x" * 5_000))
