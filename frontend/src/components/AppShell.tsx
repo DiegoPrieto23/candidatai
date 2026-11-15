@@ -11,7 +11,6 @@ import { PageErrorBoundary } from '@/components/PageErrorBoundary'
 import { AgentTaskNotices } from '@/components/AgentTaskNotices'
 import { HelpPanel } from '@/components/HelpPanel'
 import { BrowserRemindersWatcher } from '@/components/BrowserReminders'
-import { KeyringNotice } from '@/components/KeyringNotice'
 import { ReadyNotices } from '@/components/ReadyNotices'
 import { SearchRunNotice } from '@/components/SearchRunNotice'
 import { UserPrompts } from '@/components/UserPrompts'
@@ -175,7 +174,6 @@ export function AppShell() {
         <SearchRunNotice />
         <AgentTaskNotices />
         <ReadyNotices />
-        <KeyringNotice />
         {/* La ayuda, la última: los avisos se apilan encima y ninguno la tapa. */}
         <HelpPanel />
       </div>

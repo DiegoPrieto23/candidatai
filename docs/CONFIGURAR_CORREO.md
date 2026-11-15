@@ -221,7 +221,7 @@ y no al fichero. (Una línea `CAI_IMAP_PASSWORD=…` en `.env` también sirve, p
 | «Falta la contraseña» | Escríbela en **Editar** (en Docker, ver [Docker](#docker)) |
 | «dirección privada o local» | Si es tu propio servidor, marca **Servidor en mi equipo o mi red** |
 | «IMAP a medias» (`cai doctor`) | En la cuenta de `.env`, falta `CAI_IMAP_HOST`, `CAI_IMAP_USER` o la contraseña (escríbela en **Editar**) |
-| «Contraseñas: N en claro en `.env`» (`cai doctor`) | Muévelas al llavero con el aviso de la app o el botón de cada buzón |
+| «Contraseñas: N en claro en `.env`» (`cai doctor`) | Muévelas al llavero con el aviso de Inicio o de «Alertas por correo», o con el botón de cada buzón |
 
 ## Primera lectura
 

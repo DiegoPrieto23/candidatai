@@ -184,9 +184,8 @@ describe('Buzones de las alertas (fase 27.4)', () => {
       }),
     )
     const view = renderApp('/fuentes/correo')
-    const notice = (await screen.findByText('Guarda tus contraseñas en el llavero del sistema')).closest('[role="status"]') as HTMLElement
-    expect(within(notice).getByText('Buzón «Gmail»')).toBeInTheDocument()
-    expect(within(notice).getByText('Clave de Adzuna')).toBeInTheDocument()
+    const notice = await screen.findByRole('region', { name: 'Guarda tus contraseñas en el llavero del sistema' })
+    expect(within(notice).getByText('Buzón «Gmail» · Clave de Adzuna')).toBeInTheDocument()
     expect(calls.some((c) => c.path === '/secrets/move-to-keyring')).toBe(false) // nada sin pulsar
     await userEvent.click(within(notice).getByRole('button', { name: 'Mover al llavero' }))
     expect(calls.find((c) => c.path === '/secrets/move-to-keyring')?.body).toEqual({

@@ -1,4 +1,5 @@
 import { screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { jobRow, mockApi, renderApp, status } from '@/test/utils'
 
@@ -48,6 +49,25 @@ describe('Inicio', () => {
     renderApp('/')
     expect(await screen.findByRole('button', { name: 'Buscar ofertas' })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Ir a buscar ofertas' })).not.toBeInTheDocument()
+  })
+
+  it('las contraseñas sin cifrar salen en una banda de Inicio, no flotando en la esquina', async () => {
+    mockApi({
+      'GET /status': status(),
+      'GET /followups': noFollowups,
+      'GET /upcoming': noUpcoming,
+      'GET /jobs': page([]),
+      'GET /secrets/plaintext': {
+        keyring: true,
+        secrets: [{ name: 'IMAP_PASSWORD_PRINCIPAL', kind: 'mailbox', label: 'Principal' }],
+      },
+    })
+    renderApp('/')
+    const band = await screen.findByRole('region', { name: 'Guarda tus contraseñas en el llavero del sistema' })
+    expect(screen.getByRole('main')).toContainElement(band)
+    expect(within(band).getByText('Buzón «Principal»')).toBeInTheDocument()
+    await userEvent.click(within(band).getByRole('button', { name: 'Ahora no' }))
+    expect(band).not.toBeInTheDocument()
   })
 
   it('sin nada pendiente lo dice', async () => {
