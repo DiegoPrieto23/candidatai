@@ -357,7 +357,11 @@ Fase 18 (migración 0017):
   `cv_ready`.
 - **Calendario**: `.ics` por hito y feed con los próximos sin límite de días (solo hitos
   programados de ofertas abiertas: lo cancelado o cerrado sale del feed) (RFC 5545, UTC, `UID`
-  `milestone-<id>@candidatai.local` y `deadline-<job_id>-<fecha>@candidatai.local`).
+  `milestone-<id>@candidatai.local` y `deadline-<job_id>-<fecha>@candidatai.local`). Cada hito
+  programado lleva `VALARM` (`ACTION:DISPLAY`): `-P1D` y `-PT1H` si tiene hora; `-PT15H` (las 9:00
+  del día anterior) si es de todo el día. Un hito hecho o cancelado, sin alarma.
+- **Columnas del Tablero**: preferencia de la UI en el navegador (`localStorage`), una vista sobre
+  las etapas: no hay tabla ni evento, y agrupar o renombrar no toca la proyección.
 
 ### Embudo (fase 10.2)
 

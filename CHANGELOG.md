@@ -10,6 +10,18 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Columnas del Tablero a tu gusto:** con **Personalizar columnas** eliges entre 3 y 5 columnas
+  juntando etapas seguidas y les pones nombre. Solo cambia la vista: las etapas de tus ofertas siguen
+  igual, cada tarjeta de una columna con varias etapas dice la suya y **Restablecer** vuelve a las de
+  siempre.
+- **Añadir hitos desde el Calendario:** con **Añadir hito**, el «+» de un día o pulsando una hora
+  libre de la semana o del día. Eliges la oferta y el hito se guarda en su ficha, con la fecha ya
+  puesta.
+- **Avisos sin correos:** el fichero del calendario y la suscripción llevan alarmas (un día y una
+  hora antes de cada hito con hora; a las 9:00 del día anterior en los plazos) para que Outlook o
+  Apple Calendar te avisen solos. Y con **Avisos del navegador** en el Calendario, mientras la app
+  está abierta, el navegador te avisa de las entrevistas, las pruebas, los plazos y los seguimientos
+  pendientes.
 - **Puestos en cualquier idioma:** da igual si escribes tus puestos buscados o tus palabras de
   descarte en español o en inglés: «Ingeniero de datos» encuentra ofertas de «Data Engineer» y al
   revés, también en el encaje por título. La lista de equivalencias trae puestos de datos,
@@ -146,6 +158,11 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   vez de 23).
 
 ### Cambiado
+- **Tablero que se ajusta al ancho:** las columnas reparten el espacio de la pantalla, los títulos
+  largos pasan a otra línea en vez de cortarse y solo aparece la barra de desplazamiento si de verdad
+  no caben.
+- **Calendario más fácil de leer:** hoy resaltado, fines de semana con su fondo, días de otro mes
+  rayados y cada tipo de hito con su icono, además de su color, en claro y en oscuro.
 - **Buzones con mensajes que dicen qué hacer:** al editar o quitar la cuenta configurada al instalar, o
   al añadir un buzón en Docker, la app explica con palabras dónde se cambia y deja los nombres técnicos
   en «Detalles técnicos».

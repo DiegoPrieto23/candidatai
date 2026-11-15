@@ -433,8 +433,20 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
   exportable a tu calendario (`.ics`). En la ficha, «¿Qué ha pasado?» registra también lo que no
   cambia de etapa (otra respuesta, otra entrevista, una prueba, la oferta) y enlaza a «Anotar
   oferta» y a «Hitos» para los detalles; «Acepto la oferta» sale cuando ya hay una oferta.
+  Con «Personalizar columnas» eliges entre 3 y 5 columnas juntando etapas seguidas (p. ej. «Aprobada»
+  y «CV listo») y les pones nombre; es solo la vista, las etapas no cambian, y «Restablecer» vuelve a
+  las de siempre. Se guarda en tu navegador.
 - **Calendario:** todos tus hitos (entrevistas, pruebas, plazos y otros, también los pasados) por
-  mes, semana, día o agenda. Pulsa uno para ver sus datos e ir a la oferta.
+  mes, semana, día o agenda. Pulsa uno para ver sus datos e ir a la oferta. Para añadir uno, «Añadir
+  hito», el «+» de un día o una hora libre de la semana: eliges la oferta y se guarda en su ficha.
+  Hoy, los fines de semana y los días de otro mes se distinguen a simple vista, y cada tipo de hito
+  lleva su color y su icono.
+- **Avisos:** el `.ics` y el feed llevan alarmas, para que tu calendario te avise sin que la app
+  envíe correos: un día y una hora antes de cada hito con hora, y a las 9:00 del día anterior de
+  cada plazo. Outlook y Apple Calendar las usan; Google Calendar aplica sus propias notificaciones.
+  Además, con «Avisos del navegador» (en el Calendario) y la app abierta, el navegador te avisa una
+  hora antes de cada entrevista o prueba, el día anterior de cada plazo y una vez al día de los
+  seguimientos pendientes.
 - **Seguimientos:** te avisa de las candidaturas sin respuesta; `draft-follow-up` deja los
   borradores (máximo 2 por candidatura) y el de agradecimiento tras una entrevista. Los envías tú.
 - **Respuestas:** si lo activas en un buzón, la app lee los correos de las empresas de tus procesos;

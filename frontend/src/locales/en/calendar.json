@@ -1,6 +1,6 @@
 {
   "title": "Calendar",
-  "intro": "Your interviews, tests and deadlines, past ones too. They're added from each job's page or when you move a card in Processes.",
+  "intro": "Your interviews, tests and deadlines, past ones included. Add them here, from each job's page, or by moving a card in Processes.",
   "views": {
     "label": "View",
     "month": "Month",
@@ -27,5 +27,25 @@
     "stage": "Process",
     "openJob": "Open the job",
     "ics": "Add to my calendar"
+  },
+  "addOn": "Add a milestone on {{day}}",
+  "addAt": "Add a milestone at {{time}}",
+  "add": {
+    "open": "Add milestone",
+    "title": "Add a milestone",
+    "description": "Choose the job and fill in the milestone: it is saved on the job's page.",
+    "job": "Job",
+    "pickJob": "Choose a job…",
+    "none": "Milestones are saved on an open job.",
+    "toBoard": "See your processes"
+  },
+  "reminders": {
+    "label": "Browser reminders",
+    "hintAria": "How reminders work",
+    "hint": "While CandidatAI is open, your browser reminds you one hour before each interview or test, the day before each deadline, and once a day about pending follow-ups. For reminders with the app closed, add your milestones to your calendar from each milestone or from Processes.",
+    "blocked": "Allow notifications for this page in your browser settings to turn reminders on.",
+    "followupsTitle": "Pending follow-ups",
+    "followupsBody_one": "{{count}} application is waiting for your follow-up.",
+    "followupsBody_other": "{{count}} applications are waiting for your follow-up."
   }
 }

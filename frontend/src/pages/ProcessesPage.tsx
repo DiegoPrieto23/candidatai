@@ -22,6 +22,7 @@ import {
   CalendarPlusIcon,
   DownloadSimpleIcon,
   KanbanIcon,
+  SlidersHorizontalIcon,
 } from '@phosphor-icons/react'
 import { fileUrls, type BoardCard, type BoardMove, type Stage, type UpcomingItem } from '@/api/client'
 import { useBoard, useFollowups, useUpcoming } from '@/api/queries'
@@ -30,13 +31,16 @@ import { ScoreBadge } from '@/components/MatchDetails'
 import { CopyButton } from '@/components/CopyButton'
 import { Hint } from '@/components/Hint'
 import { MoveDialog } from '@/components/MoveDialog'
+import { BoardColumnsDialog } from '@/components/BoardColumnsDialog'
+import { StageBadge } from '@/components/StageBadge'
 import { ReceivedOffersComparison } from '@/components/ReceivedOffersComparison'
 import { EmptyState, ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Skeleton } from '@/components/ui/skeleton'
-import { eventLabel, STAGE_LABEL, UPCOMING_KIND_LABEL } from '@/lib/labels'
-import { isForward, moveOptions, noMoveReason, type MoveOption } from '@/lib/moves'
+import { eventLabel, UPCOMING_KIND_LABEL } from '@/lib/labels'
+import { columnMoveOptions, isForward, moveOptions, noMoveReason, type MoveOption } from '@/lib/moves'
+import { BOARD_STAGES, columnId, columnName, useBoardLayout, type BoardColumnSetting, type BoardStage } from '@/lib/boardColumns'
 import { formatWhen } from '@/lib/time'
 import { i18n } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
@@ -44,10 +48,12 @@ import { cn } from '@/lib/utils'
 
 // --- Tarjeta --------------------------------------------------------------------------------
 
-function CardBody({ card, onMove }: { card: BoardCard; onMove?: () => void }) {
+function CardBody({ card, onMove, showStage }: { card: BoardCard; onMove?: () => void; showStage?: boolean }) {
   const { t } = useTranslation('processes', { keyPrefix: 'card' })
   return (
     <>
+      {/* En una columna que junta etapas, cada tarjeta dice la suya. */}
+      {showStage && <StageBadge stage={card.stage} className="mb-2 h-5 px-2" />}
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <Link
@@ -96,7 +102,7 @@ function CardBody({ card, onMove }: { card: BoardCard; onMove?: () => void }) {
   )
 }
 
-function DraggableCard({ card, onMove }: { card: BoardCard; onMove: () => void }) {
+function DraggableCard({ card, onMove, showStage }: { card: BoardCard; onMove: () => void; showStage: boolean }) {
   const { t } = useTranslation('processes', { keyPrefix: 'card' })
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: card.job_id,
@@ -113,52 +119,53 @@ function DraggableCard({ card, onMove }: { card: BoardCard; onMove: () => void }
         isDragging && 'opacity-40',
       )}
     >
-      <CardBody card={card} onMove={onMove} />
+      <CardBody card={card} onMove={onMove} showStage={showStage} />
     </li>
   )
 }
 
 // --- Columnas -------------------------------------------------------------------------------
 
+interface ViewColumn {
+  id: Stage
+  name: string
+  stages: Stage[]
+  cards: BoardCard[]
+  total: number
+}
+
 function Column({
-  stage,
-  total,
+  column,
   children,
-  empty,
   dropHint,
 }: {
-  stage: Stage
-  total: number
+  column: ViewColumn
   children: ReactNode
-  empty: boolean
   /** Mientras arrastras: `target`, se puede soltar aquí; `blocked`, no. */
   dropHint?: 'target' | 'blocked'
 }) {
   const { t } = useTranslation('processes')
-  const { setNodeRef, isOver } = useDroppable({ id: stage })
+  const { setNodeRef, isOver } = useDroppable({ id: column.id })
+  const single = column.stages.length === 1 ? column.stages[0] : null
   return (
     <section
       ref={setNodeRef}
-      aria-label={STAGE_LABEL[stage]}
+      aria-label={column.name}
       className={cn(
-        'flex w-[17rem] shrink-0 flex-col rounded-xl border bg-muted/40 p-2 transition lg:w-auto',
+        'flex min-w-0 flex-col rounded-xl border bg-muted/40 p-2 transition',
         dropHint === 'target' && 'border-dashed border-primary/50',
         dropHint === 'blocked' && 'opacity-50',
         isOver && dropHint !== 'blocked' && 'border-primary/50 bg-accent/60',
       )}
     >
-      <header className="flex items-baseline justify-between px-1.5 pt-1 pb-2.5">
-        <div>
-          <h2 className="text-sm font-semibold">{STAGE_LABEL[stage]}</h2>
-          <p className="text-xs text-muted-foreground">
-            {stage === 'pending_detail' || stage === 'pending_extraction' || stage === 'pending_triage'
-              ? null
-              : t(`columnHint.${stage}`)}
-          </p>
+      <header className="flex items-start justify-between gap-2 px-1.5 pt-1 pb-2.5">
+        <div className="min-w-0">
+          <h2 className="text-sm font-semibold text-balance break-words">{column.name}</h2>
+          {single && <p className="text-xs text-muted-foreground">{t(`columnHint.${single as BoardStage}`)}</p>}
         </div>
-        <span className="tabular text-xs font-medium text-muted-foreground">{total}</span>
+        <span className="tabular pt-0.5 text-xs font-medium text-muted-foreground">{column.total}</span>
       </header>
-      {empty ? (
+      {column.cards.length === 0 ? (
         <p className="rounded-lg border border-dashed px-3 py-6 text-center text-xs text-muted-foreground">{t('empty')}</p>
       ) : (
         <ul className="flex flex-col gap-2">{children}</ul>
@@ -169,15 +176,28 @@ function Column({
 
 const dnd = () => i18n.getFixedT(null, 'processes', 'dnd')
 
-const ANNOUNCEMENTS: Announcements = {
-  onDragStart: ({ active }) => dnd()('start', { title: (active.data.current?.card as BoardCard | undefined)?.title ?? '' }),
-  onDragOver: ({ over }) => (over ? dnd()('over', { stage: STAGE_LABEL[over.id as Stage] }) : dnd()('outside')),
-  onDragEnd: ({ over }) => (over ? dnd()('end', { stage: STAGE_LABEL[over.id as Stage] }) : dnd()('endNone')),
-  onDragCancel: () => dnd()('cancel'),
+type StageColumn = { stage: Stage; cards: BoardCard[]; total: number }
+
+/** Columnas de la vista con sus tarjetas: cada una junta las de sus etapas. */
+function viewColumns(layout: BoardColumnSetting[], columns: StageColumn[]): ViewColumn[] {
+  const byStage = new Map(columns.map((column) => [column.stage, column]))
+  return layout.map((setting) => {
+    const own = setting.stages.flatMap((stage) => byStage.get(stage) ?? [])
+    return {
+      id: columnId(setting),
+      name: columnName(setting),
+      stages: setting.stages,
+      cards: own.flatMap((c) => c.cards),
+      total: own.reduce((sum, c) => sum + c.total, 0),
+    }
+  })
 }
 
-function Board({ columns, moves }: { columns: { stage: Stage; cards: BoardCard[]; total: number }[]; moves: BoardMove[] }) {
+function Board({ columns, moves }: { columns: StageColumn[]; moves: BoardMove[] }) {
   const { t } = useTranslation('processes')
+  const layout = useBoardLayout()
+  const view = viewColumns(layout, columns)
+  const byId = new Map(view.map((column) => [column.id, column]))
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor),
@@ -186,30 +206,40 @@ function Board({ columns, moves }: { columns: { stage: Stage; cards: BoardCard[]
   const [moving, setMoving] = useState<{ card: BoardCard; options: MoveOption[] } | null>(null)
   const [refused, setRefused] = useState<string | null>(null)
 
-  // Las tarjetas avanzan: se arrastran solo hacia la derecha. Reabrir una cerrada, con su botón.
-  const order = columns.map((column) => column.stage)
-  const dropHint = (stage: Stage) => {
-    if (!dragging || stage === dragging.stage) return undefined
-    return isForward(order, dragging.stage, stage) && moveOptions(dragging, moves, stage).length > 0 ? 'target' : 'blocked'
+  // Las tarjetas avanzan: se arrastran solo hacia etapas posteriores. Reabrir una cerrada, con su
+  // botón. La regla mira la etapa, no la columna: una columna puede juntar varias.
+  const forwardStages = (card: BoardCard, column: ViewColumn) =>
+    column.stages.filter((stage) => isForward(BOARD_STAGES, card.stage, stage))
+  const dropHint = (column: ViewColumn) => {
+    if (!dragging || column.stages.includes(dragging.stage)) return undefined
+    return columnMoveOptions(dragging, moves, BOARD_STAGES, column.stages).length > 0 ? 'target' : 'blocked'
   }
 
-  const openMove = (card: BoardCard, target?: Stage) => {
-    const options = moveOptions(card, moves, target)
+  const openMove = (card: BoardCard, column?: ViewColumn) => {
+    const options = column ? columnMoveOptions(card, moves, BOARD_STAGES, column.stages) : moveOptions(card, moves)
     if (options.length === 0) {
-      setRefused(target ? noMoveReason(card, target) : t('noMoves'))
+      setRefused(column ? noMoveReason(card, forwardStages(card, column)[0] ?? column.id) : t('noMoves'))
       return
     }
     setRefused(null)
     setMoving({ card, options })
   }
 
+  const nameOf = (id: unknown) => byId.get(id as Stage)?.name ?? ''
+  const announcements: Announcements = {
+    onDragStart: ({ active }) => dnd()('start', { title: (active.data.current?.card as BoardCard | undefined)?.title ?? '' }),
+    onDragOver: ({ over }) => (over ? dnd()('over', { stage: nameOf(over.id) }) : dnd()('outside')),
+    onDragEnd: ({ over }) => (over ? dnd()('end', { stage: nameOf(over.id) }) : dnd()('endNone')),
+    onDragCancel: () => dnd()('cancel'),
+  }
+
   const onDragStart = (e: DragStartEvent) => setDragging((e.active.data.current?.card as BoardCard) ?? null)
   const onDragEnd = (e: DragEndEvent) => {
     setDragging(null)
     const card = e.active.data.current?.card as BoardCard | undefined
-    const target = e.over?.id as Stage | undefined
-    if (!card || !target || target === card.stage) return
-    if (isForward(order, card.stage, target)) openMove(card, target)
+    const column = e.over ? byId.get(e.over.id as Stage) : undefined
+    if (!card || !column || column.stages.includes(card.stage)) return
+    if (forwardStages(card, column).length > 0) openMove(card, column)
     else setRefused(t('onlyForward'))
   }
 
@@ -226,18 +256,24 @@ function Board({ columns, moves }: { columns: { stage: Stage; cards: BoardCard[]
         onDragEnd={onDragEnd}
         onDragCancel={() => setDragging(null)}
         accessibility={{
-          announcements: ANNOUNCEMENTS,
+          announcements,
           screenReaderInstructions: {
             draggable: t('dnd.instructions'),
           },
         }}
       >
+        {/* Reparten el ancho; solo hay scroll si de verdad no caben (12rem por columna). */}
         <div className="-mx-4 overflow-x-auto overflow-y-hidden px-4 pb-2 sm:mx-0 sm:px-0">
-          <div className="flex min-w-max gap-3 lg:grid lg:min-w-0 lg:grid-cols-5">
-            {columns.map((column) => (
-              <Column key={column.stage} stage={column.stage} total={column.total} empty={column.cards.length === 0} dropHint={dropHint(column.stage)}>
+          <div className="grid gap-3" style={gridColumns(view.length)}>
+            {view.map((column) => (
+              <Column key={column.id} column={column} dropHint={dropHint(column)}>
                 {column.cards.map((card) => (
-                  <DraggableCard key={card.job_id} card={card} onMove={() => openMove(card)} />
+                  <DraggableCard
+                    key={card.job_id}
+                    card={card}
+                    showStage={column.stages.length > 1}
+                    onMove={() => openMove(card)}
+                  />
                 ))}
               </Column>
             ))}
@@ -259,6 +295,10 @@ function Board({ columns, moves }: { columns: { stage: Stage; cards: BoardCard[]
       />
     </>
   )
+}
+
+function gridColumns(count: number) {
+  return { gridTemplateColumns: `repeat(${count}, minmax(12rem, 1fr))` }
 }
 
 // --- Próximos y calendario ------------------------------------------------------------------
@@ -319,10 +359,11 @@ function CalendarHelp() {
 }
 
 function BoardSkeleton() {
+  const count = useBoardLayout().length
   return (
-    <div className="flex gap-3 lg:grid lg:grid-cols-5">
-      {Array.from({ length: 5 }, (_, i) => (
-        <Skeleton key={i} className="h-64 w-[17rem] shrink-0 rounded-xl lg:w-auto" />
+    <div className="grid gap-3" style={gridColumns(count)}>
+      {Array.from({ length: count }, (_, i) => (
+        <Skeleton key={i} className="h-64 rounded-xl" />
       ))}
     </div>
   )
@@ -335,6 +376,8 @@ export function ProcessesPage() {
   const followups = board.data?.columns.flatMap((c) => c.cards).filter((c) => c.followup_due).length ?? 0
   const empty = board.data?.columns.every((c) => c.cards.length === 0)
   const thanks = useFollowups().data?.thanks_due?.length ?? 0
+  const layout = useBoardLayout()
+  const [editColumns, setEditColumns] = useState(false)
 
   return (
     <div className="animate-in fade-in duration-300">
@@ -376,8 +419,17 @@ export function ProcessesPage() {
           />
         </EmptyState>
       ) : (
-        <Board columns={board.data.columns} moves={board.data.moves} />
+        <>
+          <div className="mb-3 flex justify-end">
+            <Button variant="ghost" size="sm" onClick={() => setEditColumns(true)}>
+              <SlidersHorizontalIcon />
+              {t('columns.open')}
+            </Button>
+          </div>
+          <Board columns={board.data.columns} moves={board.data.moves} />
+        </>
       )}
+      <BoardColumnsDialog open={editColumns} layout={layout} onOpenChange={setEditColumns} />
 
       <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <section className="rounded-xl border bg-card p-5 sm:p-6" aria-label={t('next7')}>

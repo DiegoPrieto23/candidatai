@@ -74,9 +74,9 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 
 | Feature | Where | Screenshot |
 |---|---|---|
-| **Board** (in Processes): a kanban that only moves through recorded events (mouse, keyboard or touch) and only to the right, received offers side by side and follow-up reminders | `/procesos` | <!-- media:provisional --> [Processes](img/en/processes.webp) |
+| **Board** (in Processes): a kanban that only moves through recorded events (mouse, keyboard or touch) and only to the right, with 3 to 5 columns of your choice (stages grouped and renamed), received offers side by side and follow-up reminders | `/procesos` | <!-- media:provisional --> [Processes](img/en/processes.webp) |
 | **Process page**: milestones with date and time (edit, cancel or, if added by mistake, delete them), contacts and referrals, drafts and **What happened?**, which once in process records another interview, a test or the offer, and only lets you accept once there's an offer | `/jobs/:id` | <!-- media:provisional --> [Process](img/en/job-interview.webp) |
-| **Calendar**: interviews, tests and deadlines, with an `.ics` per milestone and a feed for Google Calendar | `/calendario` | <!-- media:provisional --> [Calendar](img/en/calendar.webp) |
+| **Calendar**: interviews, tests and deadlines, added from any day, with an `.ics` per milestone and a feed with alarms for your calendar, plus browser reminders while the app is open (no emails) | `/calendario` | <!-- media:provisional --> [Calendar](img/en/calendar.webp) |
 | **Company replies**: the app reads your email read-only and keeps only messages from companies you applied to. When you accept or ignore one, a notice says which job it was logged on; **Ignore** can be undone from it. With the keyboard: `J`/`K` to move, `A` accept, `I` ignore | `/respuestas` | <!-- media:provisional --> [Replies](img/en/replies.webp) |
 | **Classify replies**: your agent proposes interview (with its date), test, offer, rejection or nothing; nothing changes stage until you accept | `review-replies` | |
 | **Follow-ups and thank-you notes** as drafts (at most 2 follow-ups per application) | `draft-follow-up` | |

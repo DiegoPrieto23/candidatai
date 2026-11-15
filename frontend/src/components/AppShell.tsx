@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils'
 import { PageErrorBoundary } from '@/components/PageErrorBoundary'
 import { AgentTaskNotices } from '@/components/AgentTaskNotices'
 import { HelpPanel } from '@/components/HelpPanel'
+import { BrowserRemindersWatcher } from '@/components/BrowserReminders'
 import { KeyringNotice } from '@/components/KeyringNotice'
 import { ReadyNotices } from '@/components/ReadyNotices'
 import { SearchRunNotice } from '@/components/SearchRunNotice'
@@ -138,6 +139,7 @@ export function AppShell() {
   useScrollToTop(pathname)
   return (
     <div className="flex min-h-[100dvh]">
+      <BrowserRemindersWatcher />
       <SkipLink />
       <Sidebar />
       <div className="min-w-0 flex-1">

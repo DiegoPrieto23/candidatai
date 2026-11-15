@@ -722,18 +722,21 @@ export function useBoard() {
   return useQuery({ queryKey: keys.board, queryFn: () => unwrap(api.GET('/board')) })
 }
 
-export function useFollowups() {
+export function useFollowups(enabled = true) {
   return useQuery({
     queryKey: keys.followups,
+    enabled,
     queryFn: () => unwrap(api.GET('/followups')),
     refetchInterval: 5 * 60_000,
   })
 }
 
-export function useUpcoming(days = 7) {
+export function useUpcoming(days = 7, options: { enabled?: boolean; poll?: number } = {}) {
   return useQuery({
     queryKey: keys.upcoming(days),
     queryFn: () => unwrap(api.GET('/upcoming', { params: { query: { days } } })),
+    enabled: options.enabled ?? true,
+    refetchInterval: options.poll,
   })
 }
 

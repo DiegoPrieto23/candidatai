@@ -74,9 +74,9 @@ FEATURES.md dejan de coincidir fila a fila. -->
 
 | Funcionalidad | Dónde | Captura |
 |---|---|---|
-| **Tablero** (en Procesos): un kanban que solo se mueve con eventos registrados (ratón, teclado o táctil) y solo hacia la derecha, las ofertas recibidas lado a lado y los avisos de seguimiento | `/procesos` | <!-- media:provisional --> [Procesos](img/es/processes.webp) |
+| **Tablero** (en Procesos): un kanban que solo se mueve con eventos registrados (ratón, teclado o táctil) y solo hacia la derecha, con 3 a 5 columnas a tu gusto (etapas juntas y con nombre propio), las ofertas recibidas lado a lado y los avisos de seguimiento | `/procesos` | <!-- media:provisional --> [Procesos](img/es/processes.webp) |
 | **Ficha del proceso**: hitos con fecha y hora (se editan, se cancelan o, si los anotaste por error, se borran), contactos y referencias, borradores y «¿Qué ha pasado?», que ya en proceso registra otra entrevista, una prueba o la oferta, y solo deja aceptar cuando hay una oferta | `/jobs/:id` | <!-- media:provisional --> [Proceso](img/es/job-interview.webp) |
-| **Calendario**: entrevistas, pruebas y plazos, con un `.ics` por hito y un feed para Google Calendar | `/calendario` | <!-- media:provisional --> [Calendario](img/es/calendar.webp) |
+| **Calendario**: entrevistas, pruebas y plazos, con alta desde cualquier día, un `.ics` por hito y un feed con alarmas para tu calendario, y avisos del navegador con la app abierta (sin correos) | `/calendario` | <!-- media:provisional --> [Calendario](img/es/calendar.webp) |
 | **Respuestas de las empresas**: la app lee tu correo en solo lectura y guarda solo los de las empresas a las que te has presentado. Al aceptar o ignorar, un aviso dice en qué oferta ha quedado; «Ignorar» se deshace desde él. Con el teclado: `J`/`K` para moverte, `A` aceptar, `I` ignorar | `/respuestas` | <!-- media:provisional --> [Respuestas](img/es/replies.webp) |
 | **Clasificar las respuestas**: tu agente propone entrevista (con su fecha), prueba, oferta, rechazo o nada; nada cambia de etapa hasta que aceptas | `review-replies` | |
 | **Seguimientos y agradecimientos** como borradores (como mucho 2 seguimientos por candidatura) | `draft-follow-up` | |
