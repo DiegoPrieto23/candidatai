@@ -4,8 +4,10 @@
  * cargado en ninguna web. El valor de la última línea es lo que recibe el service worker.
  *
  * Orden: el texto seleccionado (si lo hay, se manda aparte y la app lo prefiere), el extractor del
- * sitio (LinkedIn, InfoJobs, Indeed, Tecnoempleo), el JSON-LD `JobPosting` de la página y, como
- * último recurso, `main`. Los selectores de los portales cambian: cada campo prueba varios.
+ * sitio (ver `SITES`), los datos estructurados `JobPosting` de la página (JSON-LD o microdatos) y,
+ * como último recurso, `main`. Los selectores de los portales cambian: cada campo prueba varios.
+ * Muchas webs de empleo de empresa (Lever, Ashby, Teamtailor, Recruitee, Personio, SmartRecruiters,
+ * Domestika, Welcome to the Jungle…) no necesitan extractor propio: traen `JobPosting`.
  *
  * JavaScript plano y sin dependencias. `var` (no `const`) para poder inyectarlo varias veces en la
  * misma página.
@@ -103,6 +105,69 @@ var jhExtract = (function () {
       company: ['[itemprop="hiringOrganization"] [itemprop="name"]', '[itemprop="hiringOrganization"]'],
       location: ['[itemprop="jobLocation"] [itemprop="addressLocality"]', '[itemprop="jobLocation"]'],
       description: ['[itemprop="description"]'],
+    },
+    {
+      name: 'glassdoor',
+      host: /(^|\.)glassdoor\.[a-z.]+$/,
+      // Clases con sufijo generado (`JobDetails_jobDescription__uW_fK`): se busca por el prefijo.
+      // Vale también en la búsqueda con la oferta abierta a la derecha.
+      title: ['h1[id^="jd-job-title"]', '[class*="JobDetails_employerAndJobTitle__"] h1'],
+      company: [
+        '[class*="EmployerProfile_employerNameHeading__"] h4',
+        '[class*="EmployerProfile_employerNameHeading__"]',
+        '[data-test="employer-name"]',
+      ],
+      location: ['[class*="JobDetails_locationAndPay__"] [class*="JobDetails_badgeStyle__"]', '[data-test="location"]'],
+      description: ['[class*="JobDetails_jobDescription__"]', '[data-test="jobDescriptionContent"]'],
+    },
+    {
+      name: 'manfred',
+      host: /(^|\.)getmanfred\.com$/,
+      // El JSON-LD trae solo el resumen: la oferta entera (requisitos, horario, equipo…) está en
+      // la página. Empresa y ubicación, del JSON-LD.
+      title: ['#hero h1', 'main h1'],
+      company: [],
+      location: [],
+      description: ['#pageTop'],
+    },
+    {
+      name: 'ticjob',
+      host: /(^|\.)ticjob\.es$/,
+      // Su JSON-LD lleva saltos de línea sin escapar: lo lee `parseJsonLd`, que los tolera.
+      title: ['#job-title', 'h1'],
+      company: [],
+      location: [],
+      description: ['.job-offer.job-offer-content', '#joboffer-content'],
+    },
+    {
+      name: 'greenhouse',
+      host: /(^|\.)greenhouse\.io$/,
+      // Sin JSON-LD. La empresa sale del título de la pestaña: «Job Application for X at Acme».
+      title: ['.job__title h1', '.app-title', 'h1'],
+      company: ['.company-name'],
+      location: ['.job__location', '.location'],
+      card: greenhouseCompany,
+      description: ['.job__description', '#content'],
+    },
+    {
+      name: 'workday',
+      host: /(^|\.)(myworkdayjobs|myworkdaysite)\.com$/,
+      // Una aplicación de una sola página: al pasar de una oferta a otra, el JSON-LD puede seguir
+      // siendo el de la primera. Los `data-automation-id` sí cambian con la oferta.
+      title: ['[data-automation-id="jobPostingHeader"]'],
+      company: [],
+      location: ['[data-automation-id="locations"] dd', '[data-automation-id="locations"]'],
+      description: ['[data-automation-id="jobPostingDescription"]'],
+    },
+    {
+      name: 'workable',
+      host: /(^|\.)workable\.com$/,
+      title: ['[data-ui="job-title"]'],
+      company: [],
+      location: ['[data-ui="job-location"]'],
+      // La descripción, los requisitos y los beneficios van en bloques separados: se mandan juntos.
+      description: ['[data-ui="job-description"]'],
+      more: ['[data-ui="job-requirements"]', '[data-ui="job-benefits"]'],
     },
   ]
 
@@ -233,7 +298,13 @@ var jhExtract = (function () {
     return title.slice(0, -suffix.length).trim()
   }
 
-  // --- JSON-LD ---------------------------------------------------------------------------------
+  /** Greenhouse: «Job Application for Data Engineer at Acme» → la empresa, «Acme». */
+  function greenhouseCompany(doc) {
+    var match = /\bat\s+(.+)$/.exec(oneLine(doc.title))
+    return match ? { company: match[1].trim(), title: '', location: '' } : null
+  }
+
+  // --- Datos estructurados (JSON-LD y microdatos) ----------------------------------------------
 
   function isPosting(node) {
     var type = node && node['@type']
@@ -276,6 +347,50 @@ var jhExtract = (function () {
     return parts.join(' / ')
   }
 
+  /**
+   * `JSON.parse`; si falla, sin caracteres de control: hay portales (Ticjob) que meten saltos de
+   * línea sin escapar dentro de las cadenas. Fuera de ellas, un salto es un espacio igual.
+   */
+  function parseJsonLd(text) {
+    try {
+      return JSON.parse(text)
+    } catch {
+      return JSON.parse(text.replace(/[\u0000-\u001f]+/g, ' '))
+    }
+  }
+
+  /** «Lead (H&iacute;brido)» → «Lead (Híbrido)»: hay JSON-LD con entidades HTML en el texto. */
+  function decodeEntities(value) {
+    var text = String(value || '')
+    if (text.indexOf('&') < 0) return text
+    var parsed = new DOMParser().parseFromString('<p>' + text.replace(/</g, '&lt;') + '</p>', 'text/html')
+    return parsed.body.textContent
+  }
+
+  function fold(value) {
+    return oneLine(value)
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+  }
+
+  /**
+   * Si el puesto de los datos estructurados es el de la página. En las webs de una sola página
+   * (Workday, Ashby…) el JSON-LD puede seguir siendo el de la primera oferta que abriste: si su
+   * puesto no sale ni en el título de la pestaña ni en un `h1`, no se usa.
+   */
+  function matchesPage(doc, title) {
+    var wanted = fold(title)
+    if (!wanted) return true
+    var seen = [doc.title, meta(doc, 'og:title')]
+    var headings = doc.querySelectorAll('h1')
+    for (var i = 0; i < headings.length; i++) seen.push(textOf(headings[i]))
+    for (i = 0; i < seen.length; i++) {
+      if (fold(seen[i]).indexOf(wanted) >= 0) return true
+    }
+    return false
+  }
+
   function htmlToText(doc, html) {
     var parsed = new DOMParser().parseFromString(String(html), 'text/html')
     var out = []
@@ -288,22 +403,62 @@ var jhExtract = (function () {
     for (var i = 0; i < scripts.length; i++) {
       var data
       try {
-        data = JSON.parse(scripts[i].textContent || '')
+        data = parseJsonLd(scripts[i].textContent || '')
       } catch {
         continue
       }
       var posting = findPosting(data, 0)
       if (!posting) continue
       var description = String(posting.description || '')
-      return {
-        title: oneLine(posting.title),
-        company: oneLine(name(posting.hiringOrganization)),
-        location: oneLine(postingLocation(posting)),
+      var found = {
+        title: oneLine(decodeEntities(posting.title)),
+        company: oneLine(decodeEntities(name(posting.hiringOrganization))),
+        location: oneLine(decodeEntities(postingLocation(posting))),
         text: description ? htmlToText(doc, description) : '',
         html: description.slice(0, MAX_HTML),
       }
+      return matchesPage(doc, found.title) ? found : null
     }
     return null
+  }
+
+  /** Microdatos de schema.org (`itemtype=".../JobPosting"`): JobFluent, SmartRecruiters… */
+  function fromMicrodata(doc) {
+    var posting = doc.querySelector('[itemtype*="schema.org/JobPosting"]')
+    if (!posting) return null
+    function prop(root, names) {
+      for (var i = 0; i < names.length; i++) {
+        var el = root.querySelector('[itemprop="' + names[i] + '"]')
+        if (el) return el.getAttribute('content') || textOf(el)
+      }
+      return ''
+    }
+    var org = posting.querySelector('[itemprop="hiringOrganization"]')
+    var place = posting.querySelector('[itemprop="jobLocation"]')
+    // La oferta puede ir en varios bloques (SmartRecruiters: descripción, funciones, requisitos).
+    var blocks = posting.querySelectorAll(
+      '[itemprop="description"], [itemprop="responsibilities"], [itemprop="qualifications"], [itemprop="skills"]',
+    )
+    var texts = []
+    var html = ''
+    for (var i = 0; i < blocks.length; i++) {
+      var inside = blocks[i].parentElement && blocks[i].parentElement.closest('[itemprop="description"]')
+      if (inside && posting.contains(inside)) continue // ya va dentro de otro bloque
+      var text = textOf(blocks[i])
+      if (!text) continue
+      texts.push(text)
+      html += blocks[i].outerHTML
+    }
+    var locality = place ? prop(place, ['addressLocality']) : ''
+    var region = place ? prop(place, ['addressRegion']) : ''
+    var found = {
+      title: oneLine(prop(posting, ['title'])),
+      company: org ? oneLine(org.getAttribute('content') || prop(org, ['name']) || textOf(org)) : '',
+      location: oneLine([locality, region].filter(Boolean).join(', ')),
+      text: clean(texts.join('\n\n')),
+      html: html ? html.slice(0, MAX_HTML) : null,
+    }
+    return found.title || found.text ? found : null
   }
 
   // --- Página ----------------------------------------------------------------------------------
@@ -365,12 +520,24 @@ var jhExtract = (function () {
       if (description) {
         result.text = textWithoutButtons(description)
         result.html = description.outerHTML.slice(0, MAX_HTML)
+        for (var m = 0; m < (site.more || []).length; m++) {
+          var extra = first(doc, [site.more[m]])
+          if (!extra) continue
+          result.text = clean(result.text + '\n\n' + textWithoutButtons(extra))
+          result.html = (result.html + extra.outerHTML).slice(0, MAX_HTML)
+        }
       }
     }
 
-    var ld = fromJsonLd(doc)
-    if (ld) {
-      if (!result.site) result.site = 'jsonld'
+    // JSON-LD o, si no hay, microdatos: completan lo que el extractor del sitio no encontró.
+    var structured = [
+      ['jsonld', fromJsonLd],
+      ['microdata', fromMicrodata],
+    ]
+    for (var k = 0; k < structured.length; k++) {
+      var ld = structured[k][1](doc)
+      if (!ld) continue
+      if (!result.site) result.site = structured[k][0]
       result.title = result.title || ld.title
       result.company = result.company || ld.company
       result.location = result.location || ld.location
@@ -378,6 +545,7 @@ var jhExtract = (function () {
         result.text = ld.text
         result.html = ld.html
       }
+      break
     }
 
     // Sin empresa no se adivina: el sitio (`og:site_name`) sería el portal, no la empresa.

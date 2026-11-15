@@ -9,6 +9,7 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.routing import APIRoute
 from starlette.middleware.gzip import DEFAULT_EXCLUDED_CONTENT_TYPES, GZipMiddleware
 
+from app.api.cross_site import CrossSiteGuard
 from app.api.deps import UI_ORIGIN
 from app.api.errors import ERROR_RESPONSES, install_error_handlers
 from app.api.routes import (
@@ -110,6 +111,8 @@ def create_app() -> FastAPI:
     )
     # Al final: la UI compilada (si está) no puede tapar ninguna ruta de la API.
     install_ui(app, get_settings().ui_dir)
+    # Ninguna otra web abierta en el navegador puede pedir un cambio (CSRF), en ninguna ruta.
+    app.add_middleware(CrossSiteGuard)
     # Contra DNS rebinding también en las lecturas: una web que apunte su dominio a 127.0.0.1 llega
     # con su propio `Host` y se rechaza. Se añade el último para ser el middleware más externo y
     # cubrir también la UI. `testserver` es el host del `TestClient` de los tests.

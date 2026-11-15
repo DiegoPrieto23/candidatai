@@ -8,7 +8,10 @@ viendo a tu CandidatAI local con un clic. Detalle y límites en `docs/FUENTES_OF
   no lee cookies, no recorre páginas ni lee nada en segundo plano.
 - Permisos: `activeTab`, `scripting` y `storage`. Solo puede hablar con `http://127.0.0.1:8000`.
 - Lee la página que ya tienes delante: el texto que hayas seleccionado o, si no hay selección, la
-  oferta (extractores para LinkedIn, InfoJobs, Indeed y Tecnoempleo; JSON-LD `JobPosting`; `main`).
+  oferta: extractores para LinkedIn, InfoJobs, Indeed, Tecnoempleo, Glassdoor, Manfred, Ticjob,
+  Greenhouse, Workday y Workable; los datos `JobPosting` de la página (JSON-LD o microdatos), que
+  cubren JobFluent, Domestika, Welcome to the Jungle, Lever, Ashby, SmartRecruiters, Teamtailor,
+  Recruitee, Personio y muchas webs de empleo de empresa; y, si no hay nada, `main`.
 - Si la oferta ya estaba como resumen de una alerta, la completa; si ya estaba completa, te lo
   dice; si no, la da de alta.
 - No se publica en ninguna tienda: se carga como extensión sin empaquetar.
@@ -83,6 +86,7 @@ intente desde tu navegador.
 | La app dice que no encuentra la extensión | Recárgala (⟳) en `chrome://extensions`: las versiones anteriores a la 0.2.0 no saben hablar con la app. |
 | «La app no acepta esta extensión» | El id cargado no es el de `CAI_CAPTURE_EXTENSION_ID`: revisa `.env` o que `manifest.json` conserve su `key`. |
 | «No se puede leer esta página» | Las páginas del navegador y de las tiendas de extensiones no se dejan leer. |
+| Manda otra cosa en la web de una empresa | Si la oferta va dentro de un recuadro de otra web (un formulario de Greenhouse o Lever incrustado), ábrela en su propia pestaña («Ver oferta», «Apply») y vuelve a pulsar. |
 | «No se encontró la descripción» o «la empresa» | Selecciona el texto de la oferta, con la empresa, y vuelve a pulsar. En LinkedIn, la sección «Acerca del empleo» se carga al llegar a ella: baja hasta verla (no hace falta pulsar «… más») y vuelve a pulsar. |
 
 ## Sobre LinkedIn
