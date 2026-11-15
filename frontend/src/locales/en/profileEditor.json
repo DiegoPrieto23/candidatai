@@ -18,7 +18,11 @@
       "uploadAnother": "Upload another CV",
       "uploading": "Uploading…",
       "fileLabel": "Your CV",
-      "uploaded": "CV uploaded: {{name}}"
+      "uploaded": "CV uploaded: {{name}}",
+      "dropOr": "Drag your CV here or upload it from your computer",
+      "dropHere": "Drop it to upload",
+      "formats": "PDF or Word; .txt or .md also work",
+      "wrongType": "That format isn't supported. Upload a PDF, a Word file (.docx), a .txt or a .md."
     },
     "byHand": {
       "title": "Start by hand",

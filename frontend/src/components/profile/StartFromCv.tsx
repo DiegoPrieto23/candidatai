@@ -1,12 +1,16 @@
 /** «Mi perfil» sin perfil: subir el CV y que tu agente lo rellene, sin escribir nada a mano (sin
  * agente, «Empezar a mano», en `StartByHand`). */
-import { useRef, useState, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { CheckCircleIcon, UploadSimpleIcon, UserCircleIcon } from '@phosphor-icons/react'
+import { CheckCircleIcon, FileArrowUpIcon, UploadSimpleIcon, UserCircleIcon } from '@phosphor-icons/react'
 import { useSourceDocuments, useUploadSourceDocument } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
+import { FileDropZone } from '@/components/FileDropZone'
 import { Button } from '@/components/ui/button'
 import { errorMessage } from '@/lib/errors'
+import { cn } from '@/lib/utils'
+
+const CV_FORMATS = '.pdf,.docx,.txt,.md'
 
 function Step({ n, children }: { n: number; children: ReactNode }) {
   return (
@@ -20,50 +24,67 @@ function Step({ n, children }: { n: number; children: ReactNode }) {
 }
 
 /**
- * Subir el CV (a tus documentos, `cv/`) y, debajo, el último subido. Lo usan «Mi perfil» sin perfil
- * e Inicio («Primeros pasos»).
+ * Subir el CV (a tus documentos, `cv/`) en una caja donde arrastrarlo o hacer clic; con uno ya
+ * subido, la caja se queda en una línea con su nombre. Lo usan «Mi perfil» (sin perfil y en
+ * «Importar información desde un CV») e Inicio («Primeros pasos»).
  */
 export function UploadCv() {
   const { t } = useTranslation('profileEditor', { keyPrefix: 'noProfile.start' })
   const cvs = useSourceDocuments('cv')
   const upload = useUploadSourceDocument('cv')
-  const input = useRef<HTMLInputElement>(null)
   const [error, setError] = useState<string | null>(null)
   const latest = cvs.data?.[0]
+  const label = upload.isPending ? t('uploading') : latest ? t('uploadAnother') : t('uploadButton')
   return (
     <div className="space-y-2">
-      <input
-        ref={input}
-        type="file"
-        accept=".pdf,.docx,.txt,.md"
-        className="sr-only"
-        aria-label={t('fileLabel')}
-        onChange={(e) => {
-          const file = e.target.files?.[0]
-          e.target.value = ''
-          if (!file) return
+      <FileDropZone
+        accept={CV_FORMATS}
+        label={t('fileLabel')}
+        disabled={upload.isPending}
+        onWrongType={() => setError(t('wrongType'))}
+        onFile={(file) => {
           setError(null)
           upload.mutate(file, { onError: (err) => setError(errorMessage(err)) })
         }}
-      />
-      <div className="flex flex-wrap items-center gap-3">
-        <Button
-          type="button"
-          size="sm"
-          variant={latest ? 'outline' : 'default'}
-          disabled={upload.isPending}
-          onClick={() => input.current?.click()}
-        >
-          <UploadSimpleIcon />
-          {upload.isPending ? t('uploading') : latest ? t('uploadAnother') : t('uploadButton')}
-        </Button>
-        {latest && (
-          <span role="status" className="flex items-center gap-1.5 text-sm text-emerald-700 dark:text-emerald-400">
-            <CheckCircleIcon className="size-4" weight="duotone" aria-hidden />
-            {t('uploaded', { name: latest.name })}
-          </span>
-        )}
-      </div>
+        className={latest ? 'px-4 py-3' : 'px-6 py-8'}
+      >
+        {(dragging) => {
+          // Sin `onClick`: su clic llega a la caja, que abre el selector.
+          const button = (
+            <Button type="button" size="sm" variant={latest ? 'outline' : 'default'} disabled={upload.isPending}>
+              <UploadSimpleIcon />
+              {label}
+            </Button>
+          )
+          if (latest)
+            // Ya hay CV: la caja se encoge a una línea, pero se puede soltar otro encima.
+            return (
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                {dragging ? (
+                  <span className="text-sm font-medium text-primary">{t('dropHere')}</span>
+                ) : (
+                  <span role="status" className="flex min-w-0 items-center gap-1.5 text-sm text-emerald-700 dark:text-emerald-400">
+                    <CheckCircleIcon className="size-4 shrink-0" weight="duotone" aria-hidden />
+                    <span className="truncate">{t('uploaded', { name: latest.name })}</span>
+                  </span>
+                )}
+                {button}
+              </div>
+            )
+          return (
+            <div className="flex flex-col items-center gap-2 text-center">
+              <FileArrowUpIcon
+                className={cn('size-8 text-primary transition-transform', dragging && '-translate-y-0.5')}
+                weight="duotone"
+                aria-hidden
+              />
+              <p className="font-medium">{dragging ? t('dropHere') : t('dropOr')}</p>
+              <p className="text-xs text-muted-foreground">{t('formats')}</p>
+              <div className="mt-1">{button}</div>
+            </div>
+          )
+        }}
+      </FileDropZone>
       {error && (
         <p role="alert" className="text-sm text-destructive">
           {error}

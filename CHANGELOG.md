@@ -168,6 +168,10 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   vez de 23).
 
 ### Cambiado
+- **Tu CV se sube arrastrándolo:** en **Mi perfil** («Empieza por tu CV» e «Importar información
+  desde un CV») y en los primeros pasos de **Inicio**, una caja donde soltar el PDF o el Word, o
+  hacer clic para elegirlo. Si el formato no vale, lo dice sin subirlo. Con el CV ya subido, la caja
+  se queda en una línea con su nombre, y puedes soltar otro encima.
 - **«Embudo» pasa a llamarse «Resultados»** y responde a qué te funciona. Arriba, frases sacadas de
   tus datos («Te responden más por referencia: 40 % frente a 12 % en el resto», cuánto tardan las
   empresas, por dónde responden antes y tu mejor fuente), que salen cuando hay candidaturas
