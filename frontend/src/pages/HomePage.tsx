@@ -8,6 +8,7 @@ import { AgentButton } from '@/components/AgentButton'
 import { FirstSteps } from '@/components/FirstSteps'
 import { FunnelFlow } from '@/components/FunnelFlow'
 import { GetAnAgent } from '@/components/GetAnAgent'
+import { KeyringNotice } from '@/components/KeyringNotice'
 import { ScoreBadge } from '@/components/MatchDetails'
 import { ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
@@ -360,6 +361,8 @@ export function HomePage() {
       {launcher.data?.no_agent_installed && <GetAnAgent />}
       {/* Con la app recién instalada: perfil y dónde buscar. Se va sola con los dos hechos. */}
       <FirstSteps />
+      {/* Contraseñas en un fichero sin cifrar: se ofrece llevarlas al llavero, sin prisa. */}
+      <KeyringNotice />
       {/* Lo más inmediato, arriba: lo pendiente a la izquierda y la agenda a la derecha. */}
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <Today />

@@ -34,9 +34,12 @@ function useItemLabel() {
 }
 
 /**
- * Contraseñas guardadas en claro en un fichero (las de antes de la fase 41.5): se ofrece moverlas al
- * llavero del sistema. Solo se mueven al pulsar «Mover al llavero»; con «Ahora no» se quedan como
- * están y cada buzón lo sigue marcando.
+ * Contraseñas guardadas en claro en un fichero (las de antes de guardarlas en el llavero): se ofrece
+ * moverlas al llavero del sistema. Solo se mueven al pulsar «Mover al llavero»; con «Ahora no» se
+ * quedan como están y cada buzón lo sigue marcando.
+ *
+ * Una banda en Inicio, no un aviso flotante: no corre prisa, y flotando tapaba la página y el
+ * asistente de la esquina en todas las pantallas.
  */
 export function KeyringNotice() {
   const { t } = useTranslation('mailboxes', { keyPrefix: 'keyringNotice' })
@@ -51,40 +54,42 @@ export function KeyringNotice() {
   const failed = move.error ? errorMessage(move.error) : move.data && move.data.failed.length > 0 ? t('failed') : null
 
   return (
-    <div
-      role="status"
-      className="pointer-events-auto flex w-80 max-w-[calc(100vw-2rem)] items-start gap-3 rounded-lg border bg-card p-3 text-sm shadow-lg animate-in fade-in slide-in-from-bottom-1 duration-200"
+    <section
+      aria-label={t('title')}
+      className="flex items-start gap-3 rounded-xl border bg-card px-4 py-3 text-sm animate-in fade-in duration-200"
     >
-      <LockKeyIcon className="mt-0.5 size-4 shrink-0 text-primary" weight="duotone" aria-hidden />
+      <LockKeyIcon className="mt-0.5 size-5 shrink-0 text-primary" weight="duotone" aria-hidden />
       <div className="min-w-0 flex-1">
         <p className="font-medium">{t('title')}</p>
-        <p className="mt-0.5 text-muted-foreground">{t('body', { count: secrets.length })}</p>
-        <ul className="mt-1.5 list-disc pl-4 text-xs text-muted-foreground">
-          {secrets.map((secret) => (
-            <li key={secret.name}>{label(secret)}</li>
-          ))}
-        </ul>
+        <p className="mt-0.5 text-pretty text-muted-foreground">{t('body', { count: secrets.length })}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{secrets.map(label).join(' · ')}</p>
         {failed && (
           <p role="alert" className="mt-1.5 text-xs text-destructive">
             {failed}
           </p>
         )}
-        <div className="mt-2.5 flex flex-wrap gap-2">
-          <Button size="sm" disabled={move.isPending} onClick={() => move.mutate(secrets.map((s) => s.name))}>
-            {move.isPending ? t('moving') : t('move')}
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => {
-              postpone(signature)
-              setLater(signature)
-            }}
-          >
-            {t('later')}
-          </Button>
-        </div>
       </div>
-    </div>
+      {/* Sin relleno: en Inicio, la única acción rellena es la del titular. */}
+      <div className="flex shrink-0 flex-wrap items-center gap-2">
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={move.isPending}
+          onClick={() => move.mutate(secrets.map((s) => s.name))}
+        >
+          {move.isPending ? t('moving') : t('move')}
+        </Button>
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => {
+            postpone(signature)
+            setLater(signature)
+          }}
+        >
+          {t('later')}
+        </Button>
+      </div>
+    </section>
   )
 }

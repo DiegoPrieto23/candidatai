@@ -4,6 +4,7 @@ import { Link } from 'react-router'
 import { ArrowsClockwiseIcon, EnvelopeSimpleIcon, PlusIcon, XIcon } from '@phosphor-icons/react'
 import type { EmailPollResult } from '@/api/client'
 import { useMailSources, usePollAlerts } from '@/api/queries'
+import { KeyringNotice } from '@/components/KeyringNotice'
 import { MailboxDialog, MailboxesPanel, type MailboxDialogState } from '@/components/Mailboxes'
 import { EmptyState } from '@/components/States'
 import { Button } from '@/components/ui/button'
@@ -47,6 +48,10 @@ export function EmailAlertsPage() {
   return (
     <div className="w-full max-w-3xl">
       <h3 className="sr-only">{t('email.title')}</h3>
+      {/* Aquí también: es donde se configuran las contraseñas de los buzones. */}
+      <div className="mb-6 empty:hidden">
+        <KeyringNotice />
+      </div>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="max-w-prose text-sm leading-relaxed text-muted-foreground">{t('email.intro')}</p>
         <div className="flex shrink-0 flex-wrap gap-2">

@@ -413,9 +413,10 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 - **Contraseñas cifradas en el llavero del sistema:** las de tus buzones de correo y las claves de
   Adzuna e InfoJobs se guardan en el Administrador de credenciales de Windows, el Llavero de macOS o
   el llavero de tu escritorio en Linux, y ya no en un fichero de texto. Si tenías alguna guardada
-  así, un aviso te ofrece **Mover al llavero** (o **Ahora no**), y cada buzón dice dónde está su
-  contraseña. Sin llavero (Linux sin sesión gráfica) se siguen guardando en el fichero, avisado; en
-  Docker van como secreto o variable del contenedor. `cai doctor` avisa de las que siguen en claro.
+  así, una banda arriba de **Inicio** y de **Alertas por correo** te ofrece **Mover al llavero** (o
+  **Ahora no**), y cada buzón dice dónde está su contraseña. Sin llavero (Linux sin sesión
+  gráfica) se siguen guardando en el fichero, avisado; en Docker van como secreto o variable del
+  contenedor. `cai doctor` avisa de las que siguen en claro.
   Al copiar tus datos a otro equipo, vuelve a escribirlas en **Editar**.
 - **pypdf** sube a la 6.21.4, que corrige 7 vulnerabilidades conocidas.
 - **Las ofertas con texto dirigido a una IA nunca salen como encaje fuerte:** tu agente avisa
