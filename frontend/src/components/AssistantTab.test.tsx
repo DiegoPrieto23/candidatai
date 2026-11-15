@@ -16,7 +16,7 @@ function launcher(background = true, noAgent = false) {
     actions: [
       {
         id: 'assistant',
-        label: 'Pídeselo a tu agente',
+        label: 'Asistente',
         needs_job: false,
         prompt: null,
         background: true,
@@ -59,13 +59,34 @@ async function openAssistant(extra: Record<string, unknown>) {
   })
   renderApp('/bandeja')
   await screen.findByText('Tu bandeja está vacía')
-  await userEvent.click(screen.getByRole('button', { name: 'Ayuda' }))
-  const panel = screen.getByRole('dialog', { name: 'Ayuda' })
-  await userEvent.click(within(panel).getByRole('tab', { name: 'Pídeselo a tu agente' }))
+  // El botón con rótulo de la esquina abre el panel directamente en la pestaña del agente.
+  await userEvent.click(screen.getByRole('button', { name: 'Asistente' }))
+  const panel = screen.getByRole('dialog', { name: 'Tu asistente' })
+  expect(within(panel).getByRole('tab', { name: 'Asistente' })).toHaveAttribute('aria-selected', 'true')
   return { calls, panel }
 }
 
-describe('Pídeselo a tu agente', () => {
+describe('Asistente', () => {
+  it('la primera vez propone ejemplos que se escriben en la caja sin enviarse', async () => {
+    const { calls, panel } = await openAssistant({})
+    const examples = await within(panel).findByRole('region', { name: 'Ejemplos de peticiones' })
+    await userEvent.click(within(examples).getByRole('button', { name: '¿Qué empresas no me han contestado?' }))
+    const field = within(panel).getByRole('textbox', { name: 'Qué quieres pedirle a tu agente' })
+    expect(field).toHaveValue('¿Qué empresas no me han contestado?')
+    expect(field).toHaveFocus()
+    expect(calls.some((call) => call.method === 'POST')).toBe(false)
+  })
+
+  it('el botón del agente y el «?» cambian de pestaña y, pulsados otra vez, cierran', async () => {
+    await openAssistant({})
+    const help = screen.getByRole('button', { name: 'Ayuda' })
+    await userEvent.click(help)
+    expect(screen.getByRole('dialog', { name: 'Ayuda' })).toBeInTheDocument()
+    expect(help).toHaveAttribute('aria-expanded', 'true')
+    await userEvent.click(help)
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
   it('envía el texto ahora, en segundo plano, y vacía la caja', async () => {
     const { calls, panel } = await openAssistant({ 'POST /agent/assistant': request({ status: 'queued', answer: null, links: [] }) })
     const field = within(panel).getByRole('textbox', { name: 'Qué quieres pedirle a tu agente' })

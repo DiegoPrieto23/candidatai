@@ -32,7 +32,7 @@ requests_app = typer.Typer(
     no_args_is_help=True,
 )
 assistant_app = typer.Typer(
-    help="«Pídeselo a tu agente»: lo que escribiste en la ayuda del portal.",
+    help="«Asistente»: lo que escribiste en la ayuda del portal.",
     no_args_is_help=True,
 )
 profile_app = typer.Typer(help="Perfil del candidato.", no_args_is_help=True)

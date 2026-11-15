@@ -31,5 +31,5 @@
   "translate-summary": "Translates the Spanish summary of your profile into English, adding nothing. The suggestion appears next to the field so you can use, edit or discard it before saving.",
   "propose-stories": "Suggests interview stories (situation, task, action, result) from your experience and achievements. Adds them to your profile only with your confirmation.",
   "import-cv-template": "Turns this uploaded CV into a template with the same design for your next CVs. Lets you compare the result before saving it.",
-  "assistant": "Handles what you wrote in “Ask your agent”, in the portal help, and leaves the answer in that panel."
+  "assistant": "Handles what you wrote in the portal “Assistant”, and leaves the answer in that panel."
 }

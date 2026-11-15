@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { ArrowRightIcon, CaretDownIcon, MagnifyingGlassIcon, QuestionIcon, XIcon } from '@phosphor-icons/react'
+import { ArrowRightIcon, CaretDownIcon, MagnifyingGlassIcon, QuestionIcon, SparkleIcon, XIcon } from '@phosphor-icons/react'
 import { AssistantTab } from '@/components/AssistantTab'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -114,9 +114,12 @@ function GuideBody({ section }: { section: GuideSection }) {
   )
 }
 
-function Panel({ onClose }: { onClose: () => void }) {
+type Tab = 'help' | 'assistant'
+// La pestaña del agente, la primera: es lo que abre el botón principal de la esquina.
+const TABS: Tab[] = ['assistant', 'help']
+
+function Panel({ tab, setTab, onClose }: { tab: Tab; setTab: (tab: Tab) => void; onClose: () => void }) {
   const { t, i18n } = useTranslation('help')
-  const [tab, setTab] = useState<'help' | 'assistant'>('help')
   const [query, setQuery] = useState('')
   const [expanded, setExpanded] = useState<string | null>(null)
   const [guide, setGuide] = useState<GuideSection[] | null>(null)
@@ -164,21 +167,25 @@ function Panel({ onClose }: { onClose: () => void }) {
     </Entry>
   )
 
+  const title = tab === 'assistant' ? t('assistantTitle') : t('title')
+  const TitleIcon = tab === 'assistant' ? SparkleIcon : QuestionIcon
+
   return (
     <section
       role="dialog"
-      aria-label={t('title')}
+      aria-label={title}
       data-help-panel
       className="pointer-events-auto flex max-h-[min(34rem,calc(100dvh-6rem))] w-96 max-w-[calc(100vw-2rem)] flex-col rounded-xl border bg-card text-card-foreground shadow-lg animate-in fade-in slide-in-from-bottom-1 duration-200"
     >
       <header className="flex items-center gap-2 border-b px-4 py-2.5">
-        <h2 className="flex-1 text-sm font-semibold">{t('title')}</h2>
+        <TitleIcon className="size-4 text-primary" weight={tab === 'assistant' ? 'fill' : 'bold'} aria-hidden />
+        <h2 className="flex-1 text-sm font-semibold">{title}</h2>
         <Button variant="ghost" size="icon" className="size-7" aria-label={t('close')} onClick={onClose}>
           <XIcon weight="bold" aria-hidden />
         </Button>
       </header>
       <div role="tablist" aria-label={t('tabs.label')} className="flex gap-1 border-b px-3 pt-1.5">
-        {(['help', 'assistant'] as const).map((name) => (
+        {TABS.map((name) => (
           <button
             key={name}
             type="button"
@@ -280,38 +287,59 @@ function Panel({ onClose }: { onClose: () => void }) {
       </>
       )}
       </div>
-      <footer className="border-t px-4 py-2 text-xs text-muted-foreground">
-        <SafeTrans t={t} i18nKey="shortcut" components={{ kbd: <Kbd>{null}</Kbd> }} />
-      </footer>
+      {/* El atajo `?` abre la ayuda: en la pestaña del agente no viene a cuento. */}
+      {tab === 'help' && (
+        <footer className="border-t px-4 py-2 text-xs text-muted-foreground">
+          <SafeTrans t={t} i18nKey="shortcut" components={{ kbd: <Kbd>{null}</Kbd> }} />
+        </footer>
+      )}
     </section>
   )
 }
 
 /**
- * Ayuda del portal: un botón fijo abajo a la derecha, bajo los avisos flotantes, que abre un
- * buscador sobre las preguntas frecuentes y la guía de uso (sin red y sin agente) y, en otra
- * pestaña, «Pídeselo a tu agente» (`AssistantTab`). `?` la abre y
- * `Esc` la cierra, devolviendo el foco al botón.
+ * Abajo a la derecha, bajo los avisos flotantes, dos botones que abren el mismo panel: uno con
+ * rótulo, «Asistente» (`AssistantTab`), para que se vea que ahí hay un asistente; y el
+ * `?`, el buscador sobre las preguntas frecuentes y la guía de uso (sin red y sin agente). La tecla
+ * `?` abre la ayuda y `Esc` cierra el panel, devolviendo el foco al botón que lo abrió.
  */
 export function HelpPanel() {
   const { t } = useTranslation('help')
   const [open, setOpen] = useState(false)
-  const button = useRef<HTMLButtonElement>(null)
+  const [tab, setTab] = useState<Tab>('help')
+  const helpButton = useRef<HTMLButtonElement>(null)
+  const assistantButton = useRef<HTMLButtonElement>(null)
+  const opener = useRef<HTMLButtonElement | null>(null)
   const wrapper = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== '?' || e.ctrlKey || e.metaKey || e.altKey || isTyping(e.target) || overlayOpen()) return
       e.preventDefault()
+      opener.current = helpButton.current
+      setTab('help')
       setOpen(true)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
+  const button = () => opener.current ?? helpButton.current
+
   const close = () => {
     setOpen(false)
-    button.current?.focus()
+    button()?.focus()
+  }
+
+  /** Cada botón abre su pestaña; si ya está a la vista, cierra el panel. */
+  const toggle = (which: Tab) => {
+    opener.current = which === 'assistant' ? assistantButton.current : helpButton.current
+    if (open && tab === which) {
+      setOpen(false)
+      return
+    }
+    setTab(which)
+    setOpen(true)
   }
 
   // Esc la cierra desde cualquier sitio de la página (el panel no es modal). El foco vuelve al
@@ -323,7 +351,7 @@ export function HelpPanel() {
       if (e.key !== 'Escape' || overlayOpen()) return
       const inside = wrapper.current?.contains(document.activeElement) ?? false
       setOpen(false)
-      if (inside) button.current?.focus()
+      if (inside) button()?.focus()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -331,21 +359,34 @@ export function HelpPanel() {
 
   return (
     <div ref={wrapper} className="flex flex-col items-end gap-2">
-      {open && <Panel onClose={close} />}
-      <Hint text={t('buttonHint')} side="left">
-        <Button
-          ref={button}
-          variant="outline"
-          size="icon"
-          aria-label={t('button')}
-          aria-expanded={open}
-          aria-keyshortcuts="?"
-          onClick={() => setOpen((now) => !now)}
-          className="pointer-events-auto size-10 rounded-full bg-card shadow-md"
-        >
-          <QuestionIcon className="size-5" weight="bold" aria-hidden />
-        </Button>
-      </Hint>
+      {open && <Panel tab={tab} setTab={setTab} onClose={close} />}
+      <div className="flex items-center gap-2">
+        <Hint text={t('launcherHint')} side="top">
+          <Button
+            ref={assistantButton}
+            aria-expanded={open && tab === 'assistant'}
+            onClick={() => toggle('assistant')}
+            className="pointer-events-auto h-10 gap-2 rounded-full pr-4 pl-3.5 shadow-md active:translate-y-px"
+          >
+            <SparkleIcon className="size-5" weight="fill" aria-hidden />
+            {t('launcher')}
+          </Button>
+        </Hint>
+        <Hint text={t('buttonHint')} side="top">
+          <Button
+            ref={helpButton}
+            variant="outline"
+            size="icon"
+            aria-label={t('button')}
+            aria-expanded={open && tab === 'help'}
+            aria-keyshortcuts="?"
+            onClick={() => toggle('help')}
+            className="pointer-events-auto size-10 rounded-full bg-card shadow-md"
+          >
+            <QuestionIcon className="size-5" weight="bold" aria-hidden />
+          </Button>
+        </Hint>
+      </div>
     </div>
   )
 }

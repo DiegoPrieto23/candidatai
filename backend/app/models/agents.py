@@ -91,7 +91,7 @@ class AgentRequest(Base):
 
 
 class AssistantRequest(Base):
-    """Lo que el usuario escribe en «Pídeselo a tu agente», en la ayuda del portal.
+    """Lo que el usuario escribe en «Asistente», en la ayuda del portal.
 
     El texto se queda aquí: la orden del agente solo lleva el `id`, y el skill `assistant` lo lee
     con `get_assistant_request`. `run_id`: la ejecución en segundo plano (`mode = background`);

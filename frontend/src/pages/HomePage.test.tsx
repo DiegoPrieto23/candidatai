@@ -127,7 +127,9 @@ describe('Primeros pasos (app recién instalada)', () => {
       await screen.findByRole('heading', { level: 1, name: 'Te quedan 2 primeros pasos para empezar.' }),
     ).toBeInTheDocument()
     await screen.findByRole('region', { name: 'Primeros pasos' })
-    const filled = screen.getAllByRole('button').filter((b) => b.getAttribute('data-variant') === 'default')
+    // En la página: el botón del agente de la esquina es del marco y está en todas.
+    const page = within(screen.getByRole('main'))
+    const filled = page.getAllByRole('button').filter((b) => b.getAttribute('data-variant') === 'default')
     expect(filled.map((b) => b.textContent)).toEqual(['Subir mi CV'])
     // Sin portales, buscar no podría hacer nada: el botón lleva a elegirlos y lo dice.
     const go = screen.getByRole('link', { name: 'Ir a buscar ofertas' })

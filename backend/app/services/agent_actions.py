@@ -88,7 +88,7 @@ class Action:
     upload: bool = False
     # «Buscar ofertas»: admite elegir plataformas y una búsqueda puntual (`SearchScope`).
     search_scope: bool = False
-    # «Pídeselo a tu agente»: la orden lleva el id de una petición (`{assistant_id}`); su texto se
+    # «Asistente»: la orden lleva el id de una petición (`{assistant_id}`); su texto se
     # queda en la base de datos y lo lee el skill.
     assistant: bool = False
     # Sigue existiendo (ejecuciones antiguas, preferencias guardadas), pero la UI no la ofrece: ni
@@ -453,13 +453,13 @@ ACTIONS: dict[ActionId, Action] = {
         wrong_stage="Solo con un proceso abierto.",
         needs_offer=True,
     ),
-    # «Pídeselo a tu agente», en la ayuda del portal. Lo que escribe el usuario no va en la orden.
+    # «Asistente», en la ayuda del portal. Lo que escribe el usuario no va en la orden.
     # En segundo plano lee datos ya estructurados y solo escribe lo que ya escribe alguna otra
     # acción en segundo plano (`ASSISTANT_WRITES`). No lee texto crudo de ofertas ni de correos
     # (`get_job`, `get_reply`, `check_job_open`): es una sesión que escribe y que nadie mira. Sin
     # roles: lo que los necesita (un CV, una carta) se hace con su botón.
     "assistant": Action(
-        "Pídeselo a tu agente",
+        "Asistente",
         "Usa el skill assistant de CandidatAI para la petición {assistant_id}.",
         assistant=True,
         background=(

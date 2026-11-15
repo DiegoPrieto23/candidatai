@@ -60,7 +60,7 @@ def test_help_in_english_searches_the_english_guide(page: Page, demo_app: AppSer
 
 
 def test_ask_your_agent_and_read_the_answer(page: Page, fresh_demo_app: AppServer) -> None:
-    """«Pídeselo a tu agente»: la petición queda para la próxima sesión, el agente (simulado, con
+    """«Asistente»: la petición queda para la próxima sesión, el agente (simulado, con
     los mismos comandos `cai … --json`) la lee y contesta, y el panel enseña la respuesta con un
     enlace a la oferta. Aquí no hay agente instalado: se simula que hay uno sin segundo plano."""
     server = fresh_demo_app
@@ -75,9 +75,10 @@ def test_ask_your_agent_and_read_the_answer(page: Page, fresh_demo_app: AppServe
 
     page.route(re.compile(r"/agent$"), with_agent)
     page.goto(f"{server.url}/bandeja")
-    page.get_by_role("button", name=t("help.button"), exact=True).click()
-    panel = page.get_by_role("dialog", name=t("help.title"))
-    panel.get_by_role("tab", name=t("help.tabs.assistant")).click()
+    # El botón con rótulo de la esquina abre el panel ya en la pestaña del agente.
+    page.get_by_role("button", name=t("help.launcher"), exact=True).click()
+    panel = page.locator("[data-help-panel]")
+    expect(panel).to_have_accessible_name(t("help.assistantTitle"))
     field = panel.get_by_role("textbox", name=t("help.assistant.label"))
     expect(field).to_be_focused()
     expect(panel.get_by_role("button", name=t("help.assistant.sendNow"))).to_be_disabled()

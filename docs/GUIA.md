@@ -338,8 +338,10 @@ también se abre con la tecla `?` y se cierra con `Esc`) busca en las
 [preguntas frecuentes](PREGUNTAS.md) y en esta guía, y cada respuesta lleva a la pantalla donde se
 hace. Funciona sin conexión y sin agente.
 
-En el mismo panel, la pestaña **Pídeselo a tu agente** es una caja de texto para pedirle algo con
-tus palabras («¿qué tengo pendiente esta semana?», «valora la oferta de Acme»). La app no llama a
+Al lado, el botón **Asistente** (el del destello, también en todas las páginas) abre el
+mismo panel en su otra pestaña: una caja de texto para pedirle algo a tu agente con tus palabras
+(«¿qué tengo pendiente esta semana?», «valora la oferta de Acme»). La primera vez propone unos
+ejemplos; al pulsar uno se escribe en la caja, y lo envías tú. La app no llama a
 ningún modelo: le pasa la petición al agente que ya usas.
 
 - **Enviar ahora** la lanza en segundo plano. El panel enseña el progreso y la respuesta, con

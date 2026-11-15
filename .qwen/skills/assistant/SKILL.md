@@ -1,6 +1,6 @@
 ---
 name: assistant
-description: Atiende lo que el usuario ha escrito en «Pídeselo a tu agente», la caja de la ayuda del portal de CandidatAI. Lee su petición, la resuelve con los datos de la app y deja la respuesta en el panel, con enlaces a lo que ha cambiado o a la pantalla donde se hace. Úsalo cuando la orden traiga una petición del asistente.
+description: Atiende lo que el usuario ha escrito en el «Asistente» del portal de CandidatAI (el botón de abajo a la derecha). Lee su petición, la resuelve con los datos de la app y deja la respuesta en el panel, con enlaces a lo que ha cambiado o a la pantalla donde se hace. Úsalo cuando la orden traiga una petición del asistente.
 ---
 
 <!-- GENERADO por scripts/sync_agents.py desde .agents/skills/assistant/SKILL.md. No editar a mano: edita la fuente y regenera. -->

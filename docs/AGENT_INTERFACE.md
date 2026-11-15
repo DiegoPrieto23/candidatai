@@ -114,7 +114,7 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `record_source_run` | `cai sources record-run ID --file F --json` | 09b | `source_id` + `SourceRunSummary`: `found, created, existing=0, incidents[{code, message}], started_at?, finished_at?`; por CLI, `F` = el resumen | `ok`, `run_id`. Actor `agent`; avanza `last_run_at`. Plataforma desactivada: `not_allowed` | — |
 | `list_agent_requests` | `cai requests list [--status S] [--limit N] --json` | 19 | `status="pending"` (`pending`, `done`, `cancelled` o `null` para todos), `limit=50` | `requests` (`id`, `action`, `label`, `job_id`, `milestone_id`, `prompt`, `status`, `summary`, `agent_name`, fechas; los pendientes, el más antiguo primero) y `pending` | — |
 | `complete_agent_request` | `cai requests complete ID --summary S --json` | 19 | `request_id`, `summary` (1-2000) | `ok`, `request_id`, `message`. Ya cerrado: `not_allowed` | — |
-| `get_assistant_request` | `cai assistant show ID --json` | 42.2 | `request_id` | `request_id`, `text` (lo que escribió el usuario en «Pídeselo a tu agente», ≤ 2000), `mode` (`background` o `session`), `open` (`false`: cancelada o ya contestada) y `created_at` | — |
+| `get_assistant_request` | `cai assistant show ID --json` | 42.2 | `request_id` | `request_id`, `text` (lo que escribió el usuario en «Asistente», ≤ 2000), `mode` (`background` o `session`), `open` (`false`: cancelada o ya contestada) y `created_at` | — |
 | `save_profile_suggestion` | `cai profile suggest --field summary.en --file F --json` | 41.2 | `field` (`summary.en`), `text` (1-4000) | `ok`, `suggestion_id`, `message`. No escribe en el perfil: el usuario la usa o la descarta en «Mi perfil». Sin perfil: `not_found`; sin resumen en español: `invalid_request` | — |
 | `save_assistant_answer` | `cai assistant answer ID --file F --json` | 42.2 | `request_id`, `answer` (1-4000), `links=[]` (≤ 8; cada uno, `job_id` o `screen`, nunca una URL) | `ok`, `request_id`, `message`. Una respuesta por petición; cerrada: `not_allowed`; `job_id` que no existe: `not_found` | — |
 | `finish_task` | `cai agents finish-task --action A --outcome O --json` | 39g | `action` (el skill), `outcome`: `done` o `stopped` | `closed`, `message`. Cierra el aviso de lo lanzado desde un botón cuando lo pendiente no se acaba del todo o has parado antes de guardar. Sin aviso abierto, `closed: false` y no es un error | — |
@@ -629,9 +629,9 @@ lanza a sí mismo.
   (`list_agent_requests` → sigue el `prompt` → `complete_agent_request`). Un encargo que no se hizo
   no se cierra.
 
-### Pídeselo a tu agente (fase 42.2)
+### Asistente (fase 42.2)
 
-La pestaña «Pídeselo a tu agente» del panel de ayuda (`POST /agent/assistant`, solo la UI) guarda
+El «Asistente» del portal (el botón del destello, abajo a la derecha) (`POST /agent/assistant`, solo la UI) guarda
 lo que escribe el usuario en `assistant_requests` y se lo pasa al agente con la acción `assistant`:
 
 - **La orden es fija** («Usa el skill assistant de CandidatAI para la petición N») y solo lleva el

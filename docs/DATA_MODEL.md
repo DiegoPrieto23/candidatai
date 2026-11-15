@@ -824,7 +824,7 @@ junto al campo en «Mi perfil» y el perfil solo cambia con «Guardar».
 | created_at / resolved_at | datetime | |
 
 ### `assistant_requests`
-Lo que escribes en «Pídeselo a tu agente», en la ayuda del portal (fase 42.2, migración 0037), y
+Lo que escribes en «Asistente», en la ayuda del portal (fase 42.2, migración 0037), y
 la respuesta de tu agente. Es también el historial del panel.
 
 | Columna | Tipo | Notas |

@@ -1356,7 +1356,7 @@ export function useOpenAgentRun() {
   })
 }
 
-/** «Pídeselo a tu agente»: las últimas peticiones. Mientras alguna trabaja, se refresca seguido;
+/** «Asistente»: las últimas peticiones. Mientras alguna trabaja, se refresca seguido;
  * las que esperan a tu próxima sesión las cierra el agente desde fuera. */
 export function useAssistantRequests() {
   return useQuery({

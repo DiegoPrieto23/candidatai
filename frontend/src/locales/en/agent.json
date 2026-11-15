@@ -32,7 +32,7 @@
     "translate-summary": "Generate English summary",
     "propose-stories": "Propose stories from my experience",
     "import-cv-template": "Turn into a template",
-    "assistant": "Ask your agent"
+    "assistant": "Assistant"
   },
   "status": {
     "queued": "Queued",

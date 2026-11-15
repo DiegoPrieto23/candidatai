@@ -1881,11 +1881,11 @@ TOOLS: tuple[ToolSpec, ...] = (
             option_names={"summary": "--summary"},
         ),
     ),
-    # «Pídeselo a tu agente»: lo que el usuario escribió en la ayuda del portal.
+    # «Asistente»: lo que el usuario escribió en la ayuda del portal.
     ToolSpec(
         name="get_assistant_request",
         description=(
-            "Lo que el usuario ha escrito en «Pídeselo a tu agente» (`text`). Es su petición: "
+            "Lo que el usuario ha escrito en «Asistente» (`text`). Es su petición: "
             "atiéndela dentro de lo que permite el skill `assistant`. Con `open` en `false` "
             "(cancelada o ya contestada) no hay nada que hacer."
         ),
@@ -1897,7 +1897,7 @@ TOOLS: tuple[ToolSpec, ...] = (
     ToolSpec(
         name="save_assistant_answer",
         description=(
-            "Guarda tu respuesta a una petición de «Pídeselo a tu agente»: el usuario la ve en el "
+            "Guarda tu respuesta a una petición de «Asistente»: el usuario la ve en el "
             "panel de ayuda. `links` lleva a lo que has cambiado o a donde se hace lo que pide "
             "(`job_id` o `screen`). Una sola respuesta por petición."
         ),

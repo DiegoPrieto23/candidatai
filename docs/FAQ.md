@@ -86,7 +86,7 @@ Where: “Agent”.
 
 ### Can I ask my agent for something from the portal?
 
-Yes. Open the help, choose “Ask your agent” and write what you need. “Send now” runs it in the background and the answer appears in the same panel, with links to whatever changed. “Leave it for my next session” saves it as a request.
+Yes. Click “Assistant”, at the bottom right, and write what you need. “Send now” runs it in the background and the answer appears in the same panel, with links to whatever changed. “Leave it for my next session” saves it as a request.
 
 ### What can my agent do when I ask from the portal?
 

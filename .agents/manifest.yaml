@@ -200,7 +200,7 @@ targets:
       handle-requests:                   # fase 19: la cola de encargos que deja la UI
         argument-hint: "[nada para todos, o números de encargo]"
         allowed-tools: ["mcp:list_agent_requests"]
-      assistant:                         # «Pídeselo a tu agente», en la ayuda del portal
+      assistant:                         # «Asistente», en la ayuda del portal
         argument-hint: "[id de la petición]"
         allowed-tools: ["mcp:get_assistant_request", "mcp:save_assistant_answer", "mcp:ask_user", "mcp:wait_user_action", "mcp:get_status", "mcp:list_jobs", "mcp:get_extraction", "mcp:get_match", "mcp:get_timeline", "mcp:get_profile", "mcp:get_context", "mcp:list_upcoming", "mcp:list_followups_due", "mcp:get_funnel_stats", "mcp:get_skill_gaps", "mcp:get_interviews", "mcp:save_fit_assessment", "mcp:save_cover_letter_brief"]
       import-cv-template:

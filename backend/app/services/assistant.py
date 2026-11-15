@@ -1,4 +1,4 @@
-"""«Pídeselo a tu agente»: la caja de texto de la ayuda del portal.
+"""«Asistente»: la caja de texto de la ayuda del portal.
 
 La app no llama a ningún modelo: lo que escribes se lo pasa a tu agente, como los demás botones.
 

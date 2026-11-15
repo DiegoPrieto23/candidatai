@@ -86,7 +86,7 @@ Dónde: «Agente».
 
 ### ¿Puedo pedirle algo a mi agente desde el portal?
 
-Sí. Abre la ayuda, elige «Pídeselo a tu agente» y escribe lo que necesitas. «Enviar ahora» lo lanza en segundo plano y la respuesta aparece en el mismo panel, con enlaces a lo que haya cambiado. «Dejar para mi próxima sesión» lo guarda como encargo.
+Sí. Pulsa «Asistente», abajo a la derecha, y escribe lo que necesitas. «Enviar ahora» lo lanza en segundo plano y la respuesta aparece en el mismo panel, con enlaces a lo que haya cambiado. «Dejar para mi próxima sesión» lo guarda como encargo.
 
 ### ¿Qué puede hacer mi agente cuando se lo pido desde el portal?
 

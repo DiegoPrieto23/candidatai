@@ -178,7 +178,7 @@ def start(
     """Deja en cola una ejecución en segundo plano. Si ya hay una igual en cola o en curso,
     devuelve esa en vez de duplicarla. `agent`, `model` y `preset`: la elección puntual (si no, las
     preferencias de `agent_prefs`). `min_score`: el umbral de `assess-fit` solo esta vez.
-    `assistant_id`: la petición de «Pídeselo a tu agente»; cada una es una ejecución distinta."""
+    `assistant_id`: la petición de «Asistente»; cada una es una ejecución distinta."""
     spec = ACTIONS[action]
     if not spec.background:
         raise LaunchError(

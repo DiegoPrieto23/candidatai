@@ -343,8 +343,10 @@ opens with the `?` key and closes with `Esc`) searches the [frequent questions](
 guide, and each answer takes you to the screen where it is done. It works offline and without an
 agent.
 
-In the same panel, the **Ask your agent** tab is a text box for asking in your own words (“what do
-I have pending this week?”, “assess the Acme job”). The app calls no model: it hands the request to
+Next to it, the **Assistant** button (the one with the sparkle, also on every page) opens the
+same panel on its other tab: a text box for asking your agent in your own words (“what do I have
+pending this week?”, “assess the Acme job”). The first time it suggests a few examples; clicking one
+writes it in the box, and you send it. The app calls no model: it hands the request to
 the agent you already use.
 
 - **Send now** runs it in the background. The panel shows the progress and the answer, with links
