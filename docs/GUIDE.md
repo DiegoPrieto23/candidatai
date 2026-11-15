@@ -135,7 +135,8 @@ The app is at `http://127.0.0.1:8000`, on your computer only. Your data goes in 
 `candidatai-data` volume, which survives stopping, updating or removing the container. If there's
 a `.env` in the folder, the container reads it (job board keys, IMAP…): with IMAP set up, its
 worker reads your email alerts just like the native install, but stores them in the volume. When
-you add a mailbox from the UI, the app can't write your `.env`: it tells you which line to add,
+you add a mailbox from the UI, the container has no keychain: its password goes in as a Docker
+secret or an environment variable ([`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md#docker), Spanish),
 then you recreate the container (`docker compose up -d`).
 
 - **Stop and start:** `docker compose stop` and `docker compose start`.
@@ -158,6 +159,7 @@ then you recreate the container (`docker compose up -d`).
 | **In the background** | No: the agent isn't in the container |
 | Assisted application | The job opens in your browser, you send it and click **Mark as sent** |
 | Semantic similarity in the score | No (the image doesn't ship torch); the score works the same |
+| Mailbox passwords | The container has no keychain: they go in as a Docker secret or an environment variable ([`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md#docker), Spanish) |
 
 **Your agent, from outside.** The agent runs on your computer, in the repository folder (it reads
 the skills and `AGENTS.md` from there), and talks to the app in the container:
@@ -288,7 +290,8 @@ folder) tells you which folder you're using. With the installer:
 
 To back it up, **close CandidatAI** (the database has to be idle) and copy that whole folder
 wherever you like: a zip, another disk or your cloud. To restore it, with the app closed, put the
-copy back in place. Keep the app's `.env` too if it holds your keys.
+copy back in place. Keep the app's `.env` too if it holds your keys. Passwords in the system
+keychain aren't in the copy: on another computer, type them again in each mailbox's **Edit**.
 
 ## 5. Connect your agent
 
@@ -380,7 +383,7 @@ A typical day:
 | **Company career sites** (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee) | In **Search jobs**, the **Where to search → Company career sites** section or `cai sources add --kind greenhouse --name "Acme" --slug acme`. `cai sources discover --file companies.txt` finds the board of each company in a list. How to find the slug: [`FUENTES_OFERTAS.md`](FUENTES_OFERTAS.md#cómo-encontrar-el-slug) (Spanish) |
 | **InfoJobs and Adzuna** | Their keys in `.env` (`CAI_INFOJOBS_CLIENT_ID`/`_SECRET`, `CAI_ADZUNA_APP_ID`/`_KEY`) and a search with `cai sources add` |
 | **Manfred and freehire.me** | No keys: a search on the same page or with `cai sources add --kind manfred --name Manfred --query "data engineer"` (for freehire, also `--country` and `--remote-only`) |
-| **Email alerts** | Create job alerts on LinkedIn, InfoJobs, Indeed… and have them land in a label of your mailbox. In **Where to search → Email alerts → Add mailbox**, connect one or more mailboxes (Gmail, Outlook, Yahoo, iCloud or other IMAP, always read-only) or a folder of `.eml` files; the wizard explains each provider and tests the connection before saving. The password is stored in your `.env` and never comes out again. Step by step in [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md) (Spanish). What comes in shows up in the **Job inbox**; the ones that only bring a title and a link wait in its **To complete** tab |
+| **Email alerts** | Create job alerts on LinkedIn, InfoJobs, Indeed… and have them land in a label of your mailbox. In **Where to search → Email alerts → Add mailbox**, connect one or more mailboxes (Gmail, Outlook, Yahoo, iCloud or other IMAP, always read-only) or a folder of `.eml` files; the wizard explains each provider and tests the connection before saving. The password is stored encrypted in the system keychain (Credential Manager on Windows, Keychain on macOS) and never comes out again. Step by step in [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md) (Spanish). What comes in shows up in the **Job inbox**; the ones that only bring a title and a link wait in its **To complete** tab |
 | **"Send to CandidatAI" button** | In **Where to search → Browser button**: the app guides you through loading `extension/` in Chrome, Edge or Brave and connects it in one click. Instructions: [`extension/README.md`](../extension/README.md) (Spanish) |
 | **Your agent with your browser** | In **Where to search → Job boards**, **Set up with my agent** (`search-jobs configurar`) picks job boards and searches; or add them yourself: on InfoJobs, Tecnoempleo, Indeed and LinkedIn the searches come from the roles and locations in your profile, and each job board is edited with its pencil; `search-jobs` browses them. LinkedIn stays off until you turn it on. When you press **Search now**, a notice says “Searching…” on every page and changes when your agent finishes. On each job board, **problems** are what stopped it being read (a captcha, a login, a changed page) and **notes** are what your agent wrote down without anything failing, like the searches it didn't get to |
 | **LinkedIn's public search** | The **Public search without signing in** switch on the LinkedIn card in **Where to search → Job boards**. Off by default: it goes against LinkedIn's terms and may get your IP blocked for a while |
@@ -543,7 +546,9 @@ one” puts your preferences back as they were.
   `CAI_BROWSER_CHANNEL` (`chrome` or `msedge` for assisted
   applications), `CAI_EMBEDDINGS=off`, `UV_PATH` (uv outside the PATH), `CAI_LANG` (`es` or
   `en`: language of the `cai start` messages in the terminal; without it, your system's). Nothing
-  is required.
+  is required. Passwords and keys (`CAI_IMAP_PASSWORD`, `CAI_ADZUNA_APP_KEY`,
+  `CAI_INFOJOBS_CLIENT_SECRET`) are better kept in the system keychain: if you put them in `.env`,
+  the app offers to move them there.
 - **`config/policies.yaml`:** score threshold, score weights, daily ingestion time, email polling,
   limits for browser search and for LinkedIn's public search, "job closed" phrases… After changing
   the score, `cai match rescore` recalculates and `cai eval matching` measures the effect.

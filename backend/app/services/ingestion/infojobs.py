@@ -11,6 +11,7 @@ from typing import Any
 
 import httpx
 
+from app.core import secrets
 from app.core.config import get_settings
 from app.schemas.sources import InfoJobsConfig, SourceConfig
 from app.services.ingestion.base import (
@@ -37,12 +38,13 @@ MAX_PAGES = 4
 
 def _auth() -> tuple[str, str]:
     settings = get_settings()
-    if not settings.infojobs_client_id or not settings.infojobs_client_secret:
+    client_secret = secrets.get(secrets.INFOJOBS_CLIENT_SECRET)
+    if not settings.infojobs_client_id or not client_secret:
         raise MissingKeysError(
-            "InfoJobs necesita CAI_INFOJOBS_CLIENT_ID y CAI_INFOJOBS_CLIENT_SECRET en `.env` "
-            "(se registran en developer.infojobs.net)."
+            "InfoJobs necesita CAI_INFOJOBS_CLIENT_ID en `.env` y CAI_INFOJOBS_CLIENT_SECRET en "
+            "`.env` o en el llavero del sistema (se registran en developer.infojobs.net)."
         )
-    return settings.infojobs_client_id, settings.infojobs_client_secret
+    return settings.infojobs_client_id, client_secret
 
 
 def _value(field: Any) -> str | None:

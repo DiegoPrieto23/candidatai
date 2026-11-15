@@ -24,15 +24,23 @@
     "remove": "Remove",
     "confirmRemove": "Remove? Yes",
     "cancelRemove": "No",
-    "fromEnvHint": "This is the account set up at install time: its server and user are changed in the .env file (CAI_IMAP_*).",
+    "fromEnvHint": "This is the account set up at install time: its server and user are changed in the installation settings, as the email guide explains.",
     "writePassword": "Enter the password",
     "serverSaid": "The server replied: {{message}}",
-    "secretRef": "The password is stored in the {{ref}} variable."
+    "secretRef": "Password reference: {{ref}}",
+    "storage": {
+      "keyring": "Password in the system keychain",
+      "file": "Password saved in a file on your computer, unencrypted.",
+      "fileNoKeyring": "Password saved in a file on your computer: this computer has no system keychain.",
+      "environment": "Password set up outside the app",
+      "move": "Move to keychain",
+      "moving": "Moving…"
+    }
   },
   "dialog": {
     "addTitle": "Add mailbox",
     "editTitle": "Edit “{{name}}”",
-    "description": "The app only reads and sends nothing: your emails stay exactly as they are. The password stays on your computer.",
+    "description": "The app only reads: your emails stay as they are. The password is stored encrypted in the system keychain.",
     "provider": "Provider",
     "guide": "Full guide",
     "officialLinks": "Official help",
@@ -43,8 +51,11 @@
     "cancel": "Cancel",
     "testOk": "Connection works",
     "testFailed": "Couldn't connect",
-    "envLine": "In Docker the app can't store the password: add the line `{{line}}` with it to your .env and recreate the container.",
-    "advanced": "Server and encryption"
+    "envLine": "In Docker, the password is set up in the container, as a secret or an environment variable: the email guide explains how.",
+    "advanced": "Server and encryption",
+    "descriptionFile": "The app only reads: your emails stay as they are. The password is stored in a file on your computer.",
+    "descriptionDocker": "The app only reads: your emails stay as they are. The password is set up in the container.",
+    "envLineName": "Name it must have: {{line}}"
   },
   "fields": {
     "label": "Name",
@@ -127,5 +138,20 @@
     "inbox_error": "That folder no longer exists: create it again with «Edit» or remove the mailbox.",
     "time_budget": "There wasn't time in this round: it will be read in the next one.",
     "imap_error": "The server replied with an error. Try again later."
+  },
+  "keyringNotice": {
+    "title": "Keep your passwords in the system keychain",
+    "body_one": "One password is in a file on your computer, unencrypted. In the keychain it is encrypted and protected by your session.",
+    "body_other": "{{count}} passwords are in a file on your computer, unencrypted. In the keychain they are encrypted and protected by your session.",
+    "item": {
+      "mailbox": "Mailbox “{{name}}”",
+      "mailboxInstall": "Mailbox set up at install time",
+      "adzuna": "Adzuna key",
+      "infojobs": "InfoJobs key"
+    },
+    "move": "Move to keychain",
+    "moving": "Moving…",
+    "later": "Not now",
+    "failed": "Not all of them could be moved: try again or check the system keychain."
   }
 }

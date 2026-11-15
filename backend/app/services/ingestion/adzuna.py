@@ -10,6 +10,7 @@ from typing import Any
 
 import httpx
 
+from app.core import secrets
 from app.core.config import get_settings
 from app.schemas.sources import AdzunaConfig, SourceConfig
 from app.services.ingestion.base import (
@@ -34,12 +35,13 @@ MAX_PAGES = 4
 
 def _keys() -> dict[str, str]:
     settings = get_settings()
-    if not settings.adzuna_app_id or not settings.adzuna_app_key:
+    app_key = secrets.get(secrets.ADZUNA_APP_KEY)
+    if not settings.adzuna_app_id or not app_key:
         raise MissingKeysError(
-            "Adzuna necesita CAI_ADZUNA_APP_ID y CAI_ADZUNA_APP_KEY en `.env` "
-            "(se registran en developer.adzuna.com)."
+            "Adzuna necesita CAI_ADZUNA_APP_ID en `.env` y CAI_ADZUNA_APP_KEY en `.env` o en el "
+            "llavero del sistema (se registran en developer.adzuna.com)."
         )
-    return {"app_id": settings.adzuna_app_id, "app_key": settings.adzuna_app_key}
+    return {"app_id": settings.adzuna_app_id, "app_key": app_key}
 
 
 def _name(field: Any) -> str | None:

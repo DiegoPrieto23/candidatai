@@ -129,9 +129,10 @@ docker compose up -d --build        # la primera vez tarda unos minutos (constru
 La app queda en `http://127.0.0.1:8000`, solo en tu equipo. Tus datos van en el volumen
 `candidatai-data`, que sobrevive a parar, actualizar o borrar el contenedor. Si hay un `.env` en
 la carpeta, el contenedor lo lee (claves de portales, IMAP…): con IMAP configurado, su worker lee
-tus alertas por correo igual que el de la instalación nativa, pero las guarda en el volumen. Al
-añadir un buzón desde la UI, la app no puede escribir tu `.env`: te dice qué línea añadir y
-luego recreas el contenedor (`docker compose up -d`).
+tus alertas por correo igual que el de la instalación nativa, pero las guarda en el volumen. El
+contenedor no tiene llavero: la contraseña de un buzón añadido desde la UI va como secreto de
+Docker o variable de entorno ([`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md#docker)) y luego
+recreas el contenedor (`docker compose up -d`).
 
 - **Parar y arrancar:** `docker compose stop` y `docker compose start`.
 - **Actualizar:** `git pull` y `docker compose up -d --build`.
@@ -153,6 +154,7 @@ luego recreas el contenedor (`docker compose up -d`).
 | «En segundo plano» | No: el agente no está en el contenedor |
 | Candidatura asistida | La oferta se abre en tu navegador, la envías tú y pulsas «Marcar como enviada» |
 | Similitud semántica del score | No (la imagen no trae torch); el score funciona igual |
+| Contraseñas de los buzones | No hay llavero en el contenedor: van como secreto de Docker o variable de entorno ([`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md#docker)) |
 
 **Tu agente, desde fuera.** El agente se ejecuta en tu equipo, en la carpeta del repositorio (lee
 de ahí los skills y `AGENTS.md`), y habla con la app del contenedor:
@@ -276,7 +278,9 @@ app) dice qué carpeta usas. Con el instalador:
 
 Para hacer una copia de seguridad, **cierra CandidatAI** (la base de datos tiene que estar quieta) y
 copia esa carpeta entera donde quieras: un zip, otro disco o tu nube. Para restaurarla, con la app
-cerrada, pon la copia en su sitio. Guarda también el `.env` de la app si tiene claves tuyas.
+cerrada, pon la copia en su sitio. Guarda también el `.env` de la app si tiene claves tuyas. Las
+contraseñas del llavero del sistema no van en la copia: en otro equipo, vuelve a escribirlas en
+«Editar» de cada buzón.
 
 En «Mi perfil», cada logro y cada historia tienen **«Mejorar con mi agente»**: tu agente propone
 una versión más clara, te pregunta los números que falten (nunca los inventa) y solo escribe con tu
@@ -375,7 +379,7 @@ Un día normal:
 | **Empresas con portal propio** (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee) | En «Buscar ofertas», sección «Dónde buscar → Empresas con portal propio» o `cai sources add --kind greenhouse --name "Acme" --slug acme`. `cai sources discover --file empresas.txt` busca el tablero de cada empresa de una lista. Cómo encontrar el slug, en [`FUENTES_OFERTAS.md`](FUENTES_OFERTAS.md#cómo-encontrar-el-slug) |
 | **InfoJobs y Adzuna** | Sus claves en `.env` (`CAI_INFOJOBS_CLIENT_ID`/`_SECRET`, `CAI_ADZUNA_APP_ID`/`_KEY`) y una búsqueda con `cai sources add` |
 | **Manfred y freehire.me** | Sin claves: una búsqueda en la misma página o con `cai sources add --kind manfred --name Manfred --query "data engineer"` (en freehire, también `--country` y `--remote-only`) |
-| **Alertas por correo** | Crea alertas en LinkedIn, InfoJobs, Indeed… y que lleguen a una etiqueta de tu correo. En «Dónde buscar → Alertas por correo → Añadir buzón» conecta uno o varios buzones (Gmail, Outlook, Yahoo, iCloud u otro IMAP, siempre en solo lectura) o una carpeta de `.eml`; el asistente explica cada proveedor y prueba la conexión antes de guardar. La contraseña se guarda en tu `.env` y no vuelve a salir. Paso a paso en [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md). Lo que llega aparece en la **Bandeja de ofertas**; las que solo traen título y enlace esperan en su pestaña «Por completar» |
+| **Alertas por correo** | Crea alertas en LinkedIn, InfoJobs, Indeed… y que lleguen a una etiqueta de tu correo. En «Dónde buscar → Alertas por correo → Añadir buzón» conecta uno o varios buzones (Gmail, Outlook, Yahoo, iCloud u otro IMAP, siempre en solo lectura) o una carpeta de `.eml`; el asistente explica cada proveedor y prueba la conexión antes de guardar. La contraseña se guarda cifrada en el llavero del sistema (Administrador de credenciales en Windows, Llavero en macOS) y no vuelve a salir. Paso a paso en [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md). Lo que llega aparece en la **Bandeja de ofertas**; las que solo traen título y enlace esperan en su pestaña «Por completar» |
 | **Botón «Enviar a CandidatAI»** | En **Dónde buscar → Botón del navegador**: la app te guía para cargar `extension/` en Chrome, Edge o Brave y la conecta con un clic. Instrucciones: [`extension/README.md`](../extension/README.md) |
 | **Tu agente con tu navegador** | En «Dónde buscar → Portales de empleo», «Configurar con mi agente» (`search-jobs configurar`) elige portales y búsquedas; o añádelos tú: en InfoJobs, Tecnoempleo, Indeed y LinkedIn las búsquedas salen solas de los puestos y las ubicaciones de tu perfil, y cada portal se edita con su lápiz; `search-jobs` los recorre. LinkedIn queda desactivado hasta que lo actives tú. Al pulsar «Buscar ahora», un aviso dice «Buscando…» en todas las páginas y cambia cuando tu agente termina. En cada portal, los **problemas** son lo que impidió leerlo (captcha, inicio de sesión, página cambiada) y las **notas**, lo que tu agente apuntó sin que fallara nada, como las búsquedas que dejó sin recorrer |
 | **Búsqueda pública de LinkedIn** | Interruptor «Búsqueda pública sin sesión» en la tarjeta de LinkedIn de «Dónde buscar → Portales de empleo». Apagado por defecto: va contra las condiciones de LinkedIn y puede bloquear tu IP un tiempo |
@@ -536,7 +540,9 @@ clasificar respuestas, y tu agente más capaz para el CV. Rellénalos una vez y 
   `CAI_IMAP_FOLDER`, `CAI_IMAP_REPLIES_FOLDER`), `CAI_BROWSER_CHANNEL` (`chrome` o `msedge` para la
   candidatura asistida), `CAI_EMBEDDINGS=off`, `UV_PATH` (uv fuera del PATH), `CAI_LANG` (`es` o
   `en`: idioma de los mensajes de `cai start` en la terminal; sin ella, el del sistema). Nada es
-  obligatorio.
+  obligatorio. Las contraseñas y claves (`CAI_IMAP_PASSWORD`, `CAI_ADZUNA_APP_KEY`,
+  `CAI_INFOJOBS_CLIENT_SECRET`) mejor en el llavero del sistema: si las pones en `.env`, la app
+  ofrece moverlas allí.
 - **`config/policies.yaml`:** umbral de score, pesos del score, hora de la ingesta diaria,
   frecuencia del correo, límites de la búsqueda con navegador y de la búsqueda pública de
   LinkedIn, frases de oferta cerrada… Tras cambiar el score, `cai match rescore` recalcula y

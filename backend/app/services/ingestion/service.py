@@ -17,6 +17,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
+from app.core import secrets
 from app.core.config import get_settings
 from app.core.policies import get_policies
 from app.models import Company, Job, Source, SourceRun
@@ -136,9 +137,9 @@ class NotAConnectorError(ValueError):
 def keys_missing(kind: str) -> bool:
     settings = get_settings()
     if kind == "infojobs":
-        return not (settings.infojobs_client_id and settings.infojobs_client_secret)
+        return not (settings.infojobs_client_id and secrets.get(secrets.INFOJOBS_CLIENT_SECRET))
     if kind == "adzuna":
-        return not (settings.adzuna_app_id and settings.adzuna_app_key)
+        return not (settings.adzuna_app_id and secrets.get(secrets.ADZUNA_APP_KEY))
     return False
 
 

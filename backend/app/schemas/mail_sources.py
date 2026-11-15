@@ -9,6 +9,7 @@ from pydantic import AfterValidator, BaseModel, ConfigDict, Field, SecretStr, mo
 
 MailKind = Literal["imap", "folder"]
 MailSecurity = Literal["ssl", "starttls"]
+PasswordStorage = Literal["keyring", "file", "environment"]
 
 # Un nombre de servidor: etiquetas DNS, o una IP. Sin esquema, puerto, ruta ni usuario.
 _HOSTNAME = re.compile(r"^(?=.{1,253}$)([A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.?)+$")
@@ -128,7 +129,7 @@ class MailError(BaseModel):
 
 
 class MailSourceView(BaseModel):
-    """Un buzón tal como se enseña. Nunca la contraseña: solo si está puesta y en qué variable."""
+    """Un buzón tal como se enseña. Nunca la contraseña: solo si está puesta y dónde."""
 
     id: int
     label: str
@@ -144,7 +145,14 @@ class MailSourceView(BaseModel):
     allow_private: bool
     from_env: bool = Field(description="La cuenta `CAI_IMAP_*` de `.env`: se cambia ahí.")
     has_password: bool
-    secret_ref: str | None = Field(description="Variable de `.env` con la contraseña (su nombre).")
+    password_storage: PasswordStorage | None = Field(
+        default=None,
+        description="Dónde está la contraseña: el llavero del sistema, un fichero (`.env`, en "
+        "claro) o el entorno (Docker). `None` si falta.",
+    )
+    secret_ref: str | None = Field(
+        description="Nombre de la contraseña en el llavero (o de su variable de entorno)."
+    )
     path: str | None = Field(description="Carpeta de los `.eml` (solo `folder`).")
     last_polled_at: datetime | None
     last_error: MailError | None
@@ -154,8 +162,9 @@ class MailSourceList(BaseModel):
     sources: list[MailSourceView]
     demo: bool = Field(description="En una demo no se lee ningún buzón IMAP.")
     can_store_passwords: bool = Field(
-        description="Si la app puede escribir las contraseñas en `.env` (en Docker, no)."
+        description="Si la app puede guardar las contraseñas (en Docker, no)."
     )
+    keyring: bool = Field(default=False, description="Si hay llavero del sistema donde guardarlas.")
 
 
 class MailTestResult(BaseModel):
@@ -167,5 +176,5 @@ class MailTestResult(BaseModel):
 class MailSaveResult(BaseModel):
     source: MailSourceView
     message: str
-    # En Docker la contraseña no se puede guardar: qué línea añadir a `.env` (sin el valor).
+    # En Docker la contraseña no se puede guardar: qué variable o secreto añadir (sin el valor).
     env_line: str | None = None

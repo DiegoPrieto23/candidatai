@@ -505,7 +505,8 @@ Ficheros en `data/` (gitignored), fuera de la BD:
 ### `mail_sources` (migración 0027)
 
 Buzones de los que se leen las alertas y, si se pide, las respuestas de las empresas. **Nunca la
-contraseña**: vive en `.env`, en la variable que nombra `secret_ref`.
+contraseña**: vive en el llavero del sistema (fase 41.5; donde no lo hay, en `.env` o en el
+entorno), con el nombre que guarda `secret_ref`.
 
 | Columna | Tipo | Notas |
 |---|---|---|
@@ -519,7 +520,7 @@ contraseña**: vive en `.env`, en la variable que nombra `secret_ref`.
 | replies_folder | str | Carpeta IMAP de las respuestas (`INBOX`) |
 | enabled | bool | |
 | read_replies | bool | Si se leen de aquí las respuestas de las empresas. Se activa a propósito, también en la «Principal» |
-| secret_ref | str? | Nombre de la variable de `.env` con la contraseña (`CAI_IMAP_<ALIAS>_PASSWORD`) |
+| secret_ref | str? | Nombre de la contraseña en el llavero, o de su variable de entorno (`CAI_IMAP_<ALIAS>_PASSWORD`) |
 | from_env | bool | La cuenta `CAI_IMAP_*` de `.env`: servidor, usuario y carpetas salen de ahí |
 | allow_private | bool | «Servidor en mi equipo o mi red» (un servidor propio) |
 | last_polled_at | datetime? | Última lectura |

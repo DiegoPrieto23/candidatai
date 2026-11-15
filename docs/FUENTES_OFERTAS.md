@@ -136,10 +136,14 @@ found ─► pending_detail ─(detail_captured)─► pending_extraction ─►
   cuenta de siempre de `.env` (`CAI_IMAP_HOST`, `CAI_IMAP_PORT` (993), `CAI_IMAP_USER`,
   `CAI_IMAP_PASSWORD`, `CAI_IMAP_FOLDER`) aparece sola como «Principal» y se sigue cambiando en
   `.env`.
-  - **Contraseñas solo en `.env`**, una variable por buzón (`CAI_IMAP_<ALIAS>_PASSWORD`), que
-    escribe la app de forma atómica cuando la escribes en la UI. La tabla guarda el nombre de la
-    variable, nunca el valor, y la contraseña no vuelve por la API ni por MCP (solo
-    `has_password`). En Docker la app no puede guardarla: te dice qué línea añadir a tu `.env`.
+  - **Contraseñas en el llavero del sistema** (fase 41.5, con `keyring`): una por buzón, con el
+    nombre `CAI_IMAP_<ALIAS>_PASSWORD`. La tabla guarda ese nombre, nunca el valor, y la
+    contraseña no vuelve por la API ni por MCP (solo `has_password` y `password_storage`). Donde
+    no hay llavero, en `.env`, marcada como «guardada en un fichero»; las que ya estaban en `.env`
+    se mueven al llavero con confirmación en la UI. En Docker, como secreto (`/run/secrets/`) o
+    variable de entorno del contenedor (ver `CONFIGURAR_CORREO.md`). Las claves de Adzuna e
+    InfoJobs (`CAI_ADZUNA_APP_KEY`, `CAI_INFOJOBS_CLIENT_SECRET`) se leen igual: entorno, llavero
+    y, por último, `.env`.
   - Se leen uno detrás de otro, con un tope de 5 minutos por pasada: el fallo de uno no frena a
     los demás y queda en su `last_error`. El mismo aviso recibido en dos buzones cuenta una vez
     (por `Message-ID`).

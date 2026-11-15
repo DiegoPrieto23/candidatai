@@ -146,6 +146,9 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   vez de 23).
 
 ### Cambiado
+- **Buzones con mensajes que dicen qué hacer:** al editar o quitar la cuenta configurada al instalar, o
+  al añadir un buzón en Docker, la app explica con palabras dónde se cambia y deja los nombres técnicos
+  en «Detalles técnicos».
 - **Ubicaciones más claras:** en **Configuración de tu búsqueda → Dónde y cómo**, cada ubicación lleva
   un selector: «Cualquier modalidad», «Solo híbrido o remoto» o «Descartar». Sustituye a los tres
   campos de antes («Ubicaciones preferidas», «Solo si no es presencial» y «Excluidas»); tus
@@ -380,6 +383,13 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   oferta».
 
 ### Seguridad
+- **Contraseñas cifradas en el llavero del sistema:** las de tus buzones de correo y las claves de
+  Adzuna e InfoJobs se guardan en el Administrador de credenciales de Windows, el Llavero de macOS o
+  el llavero de tu escritorio en Linux, y ya no en un fichero de texto. Si tenías alguna guardada
+  así, un aviso te ofrece **Mover al llavero** (o **Ahora no**), y cada buzón dice dónde está su
+  contraseña. Sin llavero (Linux sin sesión gráfica) se siguen guardando en el fichero, avisado; en
+  Docker van como secreto o variable del contenedor. `cai doctor` avisa de las que siguen en claro.
+  Al copiar tus datos a otro equipo, vuelve a escribirlas en **Editar**.
 - **pypdf** sube a la 6.21.4, que corrige 7 vulnerabilidades conocidas.
 - **Las ofertas con texto dirigido a una IA nunca salen como encaje fuerte:** tu agente avisa
   siempre de ellas al valorarlas y en el resumen del día, y la app rechaza una valoración «fuerte»

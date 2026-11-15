@@ -279,8 +279,8 @@
     },
     "mailSafe": {
       "q": "Is it safe to connect my email?",
-      "a": "The app opens only the folder or label you choose, and only to read. Use an app password, different from your own, which you can revoke whenever you like; it stays on your computer and your agent never sees it.",
-      "keywords": "safe password email gmail read permissions revoke"
+      "a": "The app opens only the folder or label you choose, and only to read. Use an app password, different from your own, which you can revoke whenever you like; it is stored encrypted in the system keychain and your agent never sees it.",
+      "keywords": "safe password email gmail read permissions revoke keychain encrypted"
     },
     "linkedin": {
       "q": "And LinkedIn?",

@@ -1514,6 +1514,8 @@ def _render_mail_sources(result: Any) -> None:
             where = f"{box.user} en {box.host}:{box.port}, carpeta «{box.folder}»"
             if not box.has_password:
                 where += f" (falta la contraseña: {box.secret_ref})"
+            elif box.password_storage == "file":
+                where += " (contraseña en claro en .env: muévela al llavero desde la UI)"
         origin = " (de .env)" if box.from_env else ""
         typer.echo(f"[{box.id}] {box.label}{origin}: {where}; {state}")
         if box.last_error:

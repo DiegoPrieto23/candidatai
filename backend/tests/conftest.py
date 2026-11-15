@@ -3,13 +3,16 @@ import re
 from collections.abc import Callable, Iterator
 from pathlib import Path
 
+import keyring
 import pytest
 from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 
+from app.core import secrets
 from app.core.config import get_settings
 from app.core.db import get_engine, make_engine
 from app.models import Base, Company, Job, Source
+from tests.fake_keyring import MemoryKeyring
 
 E2E_DIR = Path(__file__).resolve().parent / "e2e"
 # `e2e` (o `e2e_install`) como marcador pedido, no negado (`-m "not e2e"` no las quiere).
@@ -52,6 +55,14 @@ def isolated_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Pa
     for name in [n for n in os.environ if n.startswith("CAI_IMAP_") and n.endswith("_PASSWORD")]:
         if name != "CAI_IMAP_PASSWORD":
             monkeypatch.delenv(name)
+    # Fase 41.5: las contraseñas, en el `.env` del test salvo en los que piden el llavero (falso,
+    # en memoria: `keyring_store`). El llavero real del equipo no se toca nunca.
+    monkeypatch.setenv("CAI_SECRET_STORE", "file")
+    monkeypatch.delenv("CAI_SECRETS_DIR", raising=False)
+    for name in ("CAI_ADZUNA_APP_KEY", "CAI_INFOJOBS_CLIENT_SECRET"):
+        monkeypatch.delenv(name, raising=False)
+    keyring.set_keyring(MemoryKeyring())
+    secrets.reset()
     # Sin modelo de embeddings en los tests: nada de descargas; los que lo necesitan usan uno falso.
     monkeypatch.setenv("CAI_EMBEDDINGS", "off")
     # Mensajes de `cai start` en español, sea cual sea el idioma del equipo que pasa los tests.
@@ -64,6 +75,17 @@ def isolated_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Pa
     yield data_dir
     get_engine.cache_clear()
     get_settings.cache_clear()
+    secrets.reset()
+
+
+@pytest.fixture
+def keyring_store(monkeypatch: pytest.MonkeyPatch) -> MemoryKeyring:
+    """El llavero del sistema, falso y en memoria, como sitio donde se guardan los secretos."""
+    store = MemoryKeyring()
+    keyring.set_keyring(store)
+    monkeypatch.setenv("CAI_SECRET_STORE", "auto")
+    secrets.reset()
+    return store
 
 
 @pytest.fixture(autouse=True)

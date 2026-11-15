@@ -27,6 +27,7 @@ dependencies = [
     "numpy>=2.5.3",
     "apscheduler>=3.11,<4",
     "tzdata>=2026.4",
+    "keyring>=25.7.0",
 ]
 
 [project.optional-dependencies]

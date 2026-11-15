@@ -3419,6 +3419,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/secrets/plaintext": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Plaintext Secrets
+         * @description Las contraseñas y claves que siguen guardadas en un fichero (sus nombres, no sus valores).
+         */
+        get: operations["list_plaintext_secrets"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/secrets/move-to-keyring": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Move Secrets To Keyring
+         * @description Mueve esas contraseñas al llavero del sistema y las quita del fichero.
+         */
+        post: operations["move_secrets_to_keyring"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -6583,9 +6623,15 @@ export interface components {
             demo: boolean;
             /**
              * Can Store Passwords
-             * @description Si la app puede escribir las contraseñas en `.env` (en Docker, no).
+             * @description Si la app puede guardar las contraseñas (en Docker, no).
              */
             can_store_passwords: boolean;
+            /**
+             * Keyring
+             * @description Si hay llavero del sistema donde guardarlas.
+             * @default false
+             */
+            keyring: boolean;
         };
         /**
          * MailSourcePatch
@@ -6617,7 +6663,7 @@ export interface components {
         };
         /**
          * MailSourceView
-         * @description Un buzón tal como se enseña. Nunca la contraseña: solo si está puesta y en qué variable.
+         * @description Un buzón tal como se enseña. Nunca la contraseña: solo si está puesta y dónde.
          */
         MailSourceView: {
             /** Id */
@@ -6658,8 +6704,13 @@ export interface components {
             /** Has Password */
             has_password: boolean;
             /**
+             * Password Storage
+             * @description Dónde está la contraseña: el llavero del sistema, un fichero (`.env`, en claro) o el entorno (Docker). `None` si falta.
+             */
+            password_storage?: ("keyring" | "file" | "environment") | null;
+            /**
              * Secret Ref
-             * @description Variable de `.env` con la contraseña (su nombre).
+             * @description Nombre de la contraseña en el llavero (o de su variable de entorno).
              */
             secret_ref: string | null;
             /**
@@ -7015,6 +7066,20 @@ export interface components {
             /** Preset */
             preset?: string | null;
         };
+        /** MoveSecretsInput */
+        MoveSecretsInput: {
+            /** Names */
+            names: string[];
+        };
+        /** MoveSecretsResult */
+        MoveSecretsResult: {
+            /** Moved */
+            moved: string[];
+            /** Failed */
+            failed: string[];
+            /** Message */
+            message: string;
+        };
         /**
          * NetworkPerson
          * @description Una persona de tu red en la empresa de la oferta (vista de la UI).
@@ -7274,6 +7339,37 @@ export interface components {
              */
             has_original: boolean;
             crop?: components["schemas"]["PhotoCrop"] | null;
+        };
+        /** PlaintextSecret */
+        PlaintextSecret: {
+            /**
+             * Name
+             * @description Nombre del secreto (la referencia, nunca el valor).
+             */
+            name: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "mailbox" | "adzuna" | "infojobs";
+            /**
+             * Label
+             * @description El nombre del buzón, si es de uno.
+             */
+            label?: string | null;
+        };
+        /** PlaintextSecrets */
+        PlaintextSecrets: {
+            /**
+             * Secrets
+             * @description Los que están guardados en un fichero.
+             */
+            secrets: components["schemas"]["PlaintextSecret"][];
+            /**
+             * Keyring
+             * @description Si hay llavero del sistema adonde moverlos.
+             */
+            keyring: boolean;
         };
         /** Preferences */
         Preferences: {
@@ -26657,6 +26753,194 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OkResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_plaintext_secrets: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlaintextSecrets"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    move_secrets_to_keyring: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MoveSecretsInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MoveSecretsResult"];
                 };
             };
             /** @description Unauthorized */

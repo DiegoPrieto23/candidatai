@@ -6,12 +6,13 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
 import type { ParseKeys } from 'i18next'
 import { Trans, useTranslation } from 'react-i18next'
-import { ArrowSquareOutIcon, CaretDownIcon, CheckCircleIcon, EnvelopeSimpleIcon, FolderIcon, WarningIcon } from '@phosphor-icons/react'
+import { ArrowSquareOutIcon, CaretDownIcon, CheckCircleIcon, EnvelopeSimpleIcon, FolderIcon, LockKeyIcon, WarningIcon } from '@phosphor-icons/react'
 import type { MailSourceInput, MailSourceView, MailTestResult } from '@/api/client'
 import {
   useCreateMailSource,
   useDeleteMailSource,
   useMailSources,
+  useMoveSecretsToKeyring,
   useTestMailSource,
   useTestNewMailSource,
   useUpdateMailSource,
@@ -132,7 +133,40 @@ function TestOutcome({ result }: { result: MailTestResult }) {
 
 // --- Panel ---------------------------------------------------------------------------------------
 
-function MailboxRow({ source, onEdit }: { source: MailSourceView; onEdit: () => void }) {
+/** Dónde está la contraseña: en el llavero, en un fichero (con el botón para moverla) o fuera de la app. */
+function PasswordStorage({ source, keyring }: { source: MailSourceView; keyring: boolean }) {
+  const { t } = useTranslation('mailboxes')
+  const move = useMoveSecretsToKeyring()
+  const storage = source.password_storage
+  if (!storage || !source.secret_ref) return null
+  if (storage !== 'file') {
+    return (
+      <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        {storage === 'keyring' && <LockKeyIcon className="size-3.5 shrink-0" weight="duotone" aria-hidden />}
+        {t(`row.storage.${storage}`)}
+      </p>
+    )
+  }
+  const ref = source.secret_ref
+  return (
+    <div className="flex flex-wrap items-center gap-2 rounded-md border border-warning-border bg-warning px-2.5 py-1.5 text-xs text-warning-foreground">
+      <WarningIcon className="size-3.5 shrink-0" weight="fill" />
+      <span className="flex-1">{t(keyring ? 'row.storage.file' : 'row.storage.fileNoKeyring')}</span>
+      {keyring && (
+        <Button size="xs" disabled={move.isPending} onClick={() => move.mutate([ref])}>
+          {move.isPending ? t('row.storage.moving') : t('row.storage.move')}
+        </Button>
+      )}
+      {(move.error || (move.data && move.data.failed.length > 0)) && (
+        <p role="alert" className="basis-full">
+          {move.error ? errorMessage(move.error) : t('keyringNotice.failed')}
+        </p>
+      )}
+    </div>
+  )
+}
+
+function MailboxRow({ source, keyring, onEdit }: { source: MailSourceView; keyring: boolean; onEdit: () => void }) {
   const { t } = useTranslation('mailboxes')
   const update = useUpdateMailSource()
   const remove = useDeleteMailSource()
@@ -183,6 +217,7 @@ function MailboxRow({ source, onEdit }: { source: MailSourceView; onEdit: () => 
           </Button>
         </div>
       )}
+      <PasswordStorage source={source} keyring={keyring} />
       {error && (
         <div className="rounded-md bg-destructive/5 px-2.5 py-1.5 text-xs">
           <p className="font-medium">{t('row.lastError')}</p>
@@ -265,7 +300,7 @@ export function MailboxesPanel({ onEdit, defaultOpen = false }: { onEdit: (sourc
         {query.data?.demo && <p className="px-4 pt-3 text-xs text-muted-foreground">{t('panel.demo')}</p>}
         <ul className="divide-y">
           {sources.map((source) => (
-            <MailboxRow key={source.id} source={source} onEdit={() => onEdit(source)} />
+            <MailboxRow key={source.id} source={source} keyring={query.data?.keyring ?? false} onEdit={() => onEdit(source)} />
           ))}
         </ul>
       </CollapsibleContent>
@@ -532,6 +567,7 @@ function MailboxForm({
   const create = useCreateMailSource()
   const update = useUpdateMailSource()
   const test = useTestNewMailSource()
+  const list = useMailSources().data
   const [provider, setProvider] = useState<ProviderId>(editing ? (editing.kind === 'folder' ? 'folder' : 'imap') : initialProvider)
   const [form, setForm] = useState<Form>(() => initialForm(provider, editing))
   const [envLine, setEnvLine] = useState<string | null>(null)
@@ -633,14 +669,23 @@ function MailboxForm({
     <form onSubmit={submit} className="grid gap-4">
       <DialogHeader>
         <DialogTitle>{editing ? t('dialog.editTitle', { name: editing.label }) : t('dialog.addTitle')}</DialogTitle>
-        <DialogDescription>{t('dialog.description')}</DialogDescription>
+        <DialogDescription>
+          {list && !list.can_store_passwords
+            ? t('dialog.descriptionDocker')
+            : list && !list.keyring
+              ? t('dialog.descriptionFile')
+              : t('dialog.description')}
+        </DialogDescription>
       </DialogHeader>
       {body}
       {test.data && <TestOutcome result={test.data} />}
       {envLine && (
-        <p role="status" className="rounded-lg border border-warning-border bg-warning p-3 text-sm text-warning-foreground">
-          <InlineCode text={t('dialog.envLine', { line: envLine })} />
-        </p>
+        <div role="status" className="grid gap-1.5 rounded-lg border border-warning-border bg-warning p-3 text-sm text-warning-foreground">
+          <p>{t('dialog.envLine')}</p>
+          <Reveal label={t('technicalDetails', { ns: 'common' })} className="text-xs">
+            <InlineCode text={t('dialog.envLineName', { line: `\`${envLine.replace(/=.*$/, '')}\`` })} />
+          </Reveal>
+        </div>
       )}
       {error && (
         <p role="alert" className="text-sm text-destructive">

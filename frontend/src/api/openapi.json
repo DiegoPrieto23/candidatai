@@ -21375,6 +21375,220 @@
           }
         }
       }
+    },
+    "/secrets/plaintext": {
+      "get": {
+        "tags": [
+          "secrets"
+        ],
+        "summary": "List Plaintext Secrets",
+        "description": "Las contraseñas y claves que siguen guardadas en un fichero (sus nombres, no sus valores).",
+        "operationId": "list_plaintext_secrets",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaintextSecrets"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/secrets/move-to-keyring": {
+      "post": {
+        "tags": [
+          "secrets"
+        ],
+        "summary": "Move Secrets To Keyring",
+        "description": "Mueve esas contraseñas al llavero del sistema y las quita del fichero.",
+        "operationId": "move_secrets_to_keyring",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MoveSecretsInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MoveSecretsResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -30892,7 +31106,13 @@
           "can_store_passwords": {
             "type": "boolean",
             "title": "Can Store Passwords",
-            "description": "Si la app puede escribir las contraseñas en `.env` (en Docker, no)."
+            "description": "Si la app puede guardar las contraseñas (en Docker, no)."
+          },
+          "keyring": {
+            "type": "boolean",
+            "title": "Keyring",
+            "description": "Si hay llavero del sistema donde guardarlas.",
+            "default": false
           }
         },
         "type": "object",
@@ -31139,6 +31359,23 @@
             "type": "boolean",
             "title": "Has Password"
           },
+          "password_storage": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "keyring",
+                  "file",
+                  "environment"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Password Storage",
+            "description": "Dónde está la contraseña: el llavero del sistema, un fichero (`.env`, en claro) o el entorno (Docker). `None` si falta."
+          },
           "secret_ref": {
             "anyOf": [
               {
@@ -31149,7 +31386,7 @@
               }
             ],
             "title": "Secret Ref",
-            "description": "Variable de `.env` con la contraseña (su nombre)."
+            "description": "Nombre de la contraseña en el llavero (o de su variable de entorno)."
           },
           "path": {
             "anyOf": [
@@ -31208,7 +31445,7 @@
           "last_error"
         ],
         "title": "MailSourceView",
-        "description": "Un buzón tal como se enseña. Nunca la contraseña: solo si está puesta y en qué variable."
+        "description": "Un buzón tal como se enseña. Nunca la contraseña: solo si está puesta y dónde."
       },
       "MailTestResult": {
         "properties": {
@@ -32266,6 +32503,53 @@
         "title": "ModelPref",
         "description": "El modelo (por su nombre) o el preset de un agente. Los dos vacíos: el que use el agente."
       },
+      "MoveSecretsInput": {
+        "properties": {
+          "names": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Names"
+          }
+        },
+        "type": "object",
+        "required": [
+          "names"
+        ],
+        "title": "MoveSecretsInput"
+      },
+      "MoveSecretsResult": {
+        "properties": {
+          "moved": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Moved"
+          },
+          "failed": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Failed"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "moved",
+          "failed",
+          "message"
+        ],
+        "title": "MoveSecretsResult"
+      },
       "NetworkPerson": {
         "properties": {
           "id": {
@@ -33058,6 +33342,65 @@
           "exists"
         ],
         "title": "PhotoInfo"
+      },
+      "PlaintextSecret": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Nombre del secreto (la referencia, nunca el valor)."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "mailbox",
+              "adzuna",
+              "infojobs"
+            ],
+            "title": "Kind"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label",
+            "description": "El nombre del buzón, si es de uno."
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "kind"
+        ],
+        "title": "PlaintextSecret"
+      },
+      "PlaintextSecrets": {
+        "properties": {
+          "secrets": {
+            "items": {
+              "$ref": "#/components/schemas/PlaintextSecret"
+            },
+            "type": "array",
+            "title": "Secrets",
+            "description": "Los que están guardados en un fichero."
+          },
+          "keyring": {
+            "type": "boolean",
+            "title": "Keyring",
+            "description": "Si hay llavero del sistema adonde moverlos."
+          }
+        },
+        "type": "object",
+        "required": [
+          "secrets",
+          "keyring"
+        ],
+        "title": "PlaintextSecrets"
       },
       "Preferences": {
         "properties": {

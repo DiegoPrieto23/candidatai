@@ -248,7 +248,7 @@ En una carpeta de tu equipo; la guía de uso indica cuál según tu sistema. Par
 
 ### ¿Es seguro conectar mi correo?
 
-La app abre solo la carpeta o etiqueta que elijas y solo para leer. Usa una contraseña de aplicación, distinta de la tuya, que puedes revocar cuando quieras; se queda en tu equipo y tu agente nunca la ve.
+La app abre solo la carpeta o etiqueta que elijas y solo para leer. Usa una contraseña de aplicación, distinta de la tuya, que puedes revocar cuando quieras; se guarda cifrada en el llavero del sistema y tu agente nunca la ve.
 
 Dónde: «Alertas por correo».
 

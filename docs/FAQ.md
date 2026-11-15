@@ -248,7 +248,7 @@ In a folder on your computer; the user guide says which one for your system. To 
 
 ### Is it safe to connect my email?
 
-The app opens only the folder or label you choose, and only to read. Use an app password, different from your own, which you can revoke whenever you like; it stays on your computer and your agent never sees it.
+The app opens only the folder or label you choose, and only to read. Use an app password, different from your own, which you can revoke whenever you like; it is stored encrypted in the system keychain and your agent never sees it.
 
 Where: “Email alerts”.
 

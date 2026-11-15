@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { ApiError, api, unwrap, type CvEditInput, type CvRenderOptions, type ReferralStatus, type Schemas, type Stage } from './client'
 import type { operations } from './schema'
 
@@ -25,6 +25,7 @@ export const keys = {
   alerts: ['alerts'] as const,
   // Fase 27.4: buzones de las alertas. Leer el correo cambia su estado (último error).
   mailSources: ['mailSources'] as const,
+  plaintextSecrets: ['plaintextSecrets'] as const,
   board: ['board'] as const,
   followups: ['followups'] as const,
   upcoming: (days: number) => ['upcoming', days] as const,
@@ -1953,11 +1954,34 @@ export function useMailSources() {
   })
 }
 
+/** Guardar una contraseña también la saca del fichero si estaba en él: los dos avisos al día. */
+function invalidateMailboxes(client: QueryClient) {
+  void client.invalidateQueries({ queryKey: keys.mailSources })
+  void client.invalidateQueries({ queryKey: keys.plaintextSecrets })
+}
+
+/** Las contraseñas y claves que siguen en un fichero, en claro (fase 41.5): sus nombres, nunca sus valores. */
+export function usePlaintextSecrets() {
+  return useQuery({
+    queryKey: keys.plaintextSecrets,
+    queryFn: () => unwrap(api.GET('/secrets/plaintext')),
+  })
+}
+
+/** Las mueve al llavero del sistema: solo al pulsarlo quien usa la app. */
+export function useMoveSecretsToKeyring() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (names: string[]) => unwrap(api.POST('/secrets/move-to-keyring', { body: { names } })),
+    onSuccess: () => invalidateMailboxes(client),
+  })
+}
+
 export function useCreateMailSource() {
   const client = useQueryClient()
   return useMutation({
     mutationFn: (body: Schemas['MailSourceInput']) => unwrap(api.POST('/mail-sources', { body })),
-    onSuccess: () => client.invalidateQueries({ queryKey: keys.mailSources }),
+    onSuccess: () => invalidateMailboxes(client),
   })
 }
 
@@ -1966,7 +1990,7 @@ export function useUpdateMailSource() {
   return useMutation({
     mutationFn: ({ sourceId, ...body }: { sourceId: number } & Schemas['MailSourcePatch']) =>
       unwrap(api.PATCH('/mail-sources/{source_id}', { params: { path: { source_id: sourceId } }, body })),
-    onSuccess: () => client.invalidateQueries({ queryKey: keys.mailSources }),
+    onSuccess: () => invalidateMailboxes(client),
   })
 }
 
@@ -1975,7 +1999,7 @@ export function useDeleteMailSource() {
   return useMutation({
     mutationFn: (sourceId: number) =>
       unwrap(api.DELETE('/mail-sources/{source_id}', { params: { path: { source_id: sourceId } }, body: {} })),
-    onSuccess: () => client.invalidateQueries({ queryKey: keys.mailSources }),
+    onSuccess: () => invalidateMailboxes(client),
   })
 }
 

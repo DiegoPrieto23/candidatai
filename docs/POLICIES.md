@@ -262,8 +262,13 @@ Una oferta puede encajar en el papel y aun así no merecer la pena. El código m
    el agente propone qué significan y nada cambia de etapa hasta que lo aceptas en la UI.
 6. **Cuentas y credenciales**: las creas e introduces tú. El perfil de navegador persistente
    vive en `data/browser-profile/` y nadie más lo lee. Las contraseñas de los buzones de correo
-   (fase 27.4) viven solo en `.env`: la UI las escribe ahí y no vuelven nunca por la API
-   ni por la interfaz para agentes, que solo ve si están puestas.
+   y las claves de los portales se guardan cifradas en el llavero del sistema operativo
+   (Administrador de credenciales, Llavero de macOS o Secret Service); la base de datos y `.env`
+   solo guardan su nombre. La app no guarda contraseñas en claro donde hay llavero: las que
+   estaban en `.env` se mueven a él con confirmación en la UI. Sin llavero (Docker, Linux sin
+   sesión gráfica), un secreto o una variable del contenedor, o `.env` marcada en la UI como
+   «guardada en un fichero». Ninguna vuelve por la API, por la interfaz para agentes ni por los
+   logs: solo se ve si está puesta y dónde.
 
 ## 6. Contenido no confiable
 

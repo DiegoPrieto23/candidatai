@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Literal
 
 from pydantic import BaseModel
 
+from app.core import secrets
 from app.core.config import (
     LEGACY_DB_FILENAME,
     LEGACY_ENV_PREFIX,
@@ -309,8 +310,8 @@ def check_connectors(settings: Settings) -> CheckResult:
 
     name = "Conectores de ofertas"
     pairs = {
-        "InfoJobs": (settings.infojobs_client_id, settings.infojobs_client_secret),
-        "Adzuna": (settings.adzuna_app_id, settings.adzuna_app_key),
+        "InfoJobs": (settings.infojobs_client_id, secrets.get(secrets.INFOJOBS_CLIENT_SECRET)),
+        "Adzuna": (settings.adzuna_app_id, secrets.get(secrets.ADZUNA_APP_KEY)),
     }
     configured = [label for label, keys in pairs.items() if all(keys)]
     half = [label for label, keys in pairs.items() if any(keys) and not all(keys)]
@@ -343,7 +344,7 @@ def check_email_alerts(
     minutes = get_policies().email_alerts.poll_minutes
     local = has_local_mail(settings.inbox_dir)
     if not settings.imap_configured:
-        partial = settings.imap_host or settings.imap_user or settings.imap_password
+        partial = settings.imap_host or settings.imap_user or secrets.get(secrets.IMAP_PASSWORD)
         if partial and settings.demo_mode:
             return CheckResult(
                 name=name,
@@ -390,7 +391,7 @@ def check_email_replies(
 
     name = "Respuestas por correo"
     if not settings.imap_configured:
-        partial = settings.imap_host or settings.imap_user or settings.imap_password
+        partial = settings.imap_host or settings.imap_user or secrets.get(secrets.IMAP_PASSWORD)
         if partial and settings.demo_mode:
             return CheckResult(
                 name=name,
@@ -460,6 +461,48 @@ def check_mail_sources(imap_factory: "ImapFactory | None" = None) -> CheckResult
         )
     labels = ", ".join(label for label, _ in results)
     return CheckResult(name=name, status=CheckStatus.OK, detail=f"en solo lectura: {labels}")
+
+
+def check_secrets(settings: Settings) -> CheckResult:
+    """Contraseñas y claves (fase 41.5): avisa de las que siguen en claro en `.env`."""
+    from sqlalchemy.exc import SQLAlchemyError
+
+    from app.core.db import session_scope
+    from app.services import secret_storage
+
+    name = "Contraseñas"
+    if settings.in_docker:
+        return CheckResult(
+            name=name,
+            status=CheckStatus.OK,
+            detail="en Docker se leen de las variables o los secretos del contenedor",
+        )
+    try:
+        with session_scope() as session:
+            plain = [s.name for s in secret_storage.list_plaintext(session).secrets]
+    except SQLAlchemyError:
+        plain = secrets.in_file(list(secrets.SETTINGS_SECRETS))
+    if plain and secrets.keyring_available():
+        return CheckResult(
+            name=name,
+            status=CheckStatus.WARN,
+            detail=f"{len(plain)} en claro en `.env` ({', '.join(plain)}): muévelas al llavero "
+            "del sistema con el aviso de la app o desde Buzones",
+        )
+    if plain:
+        return CheckResult(
+            name=name,
+            status=CheckStatus.WARN,
+            detail=f"{len(plain)} en claro en `.env` ({', '.join(plain)}) y este equipo no tiene "
+            "llavero del sistema: protege ese fichero o pásalas como variables de entorno",
+        )
+    if secrets.keyring_available():
+        return CheckResult(name=name, status=CheckStatus.OK, detail="en el llavero del sistema")
+    return CheckResult(
+        name=name,
+        status=CheckStatus.OK,
+        detail="ninguna en claro; sin llavero del sistema, las nuevas irían a `.env`",
+    )
 
 
 def check_capture(settings: Settings) -> CheckResult:
@@ -692,6 +735,7 @@ def run_doctor(settings: Settings) -> DoctorReport:
             check_email_alerts(settings),
             check_email_replies(settings),
             check_mail_sources(),
+            check_secrets(settings),
             check_capture(settings),
             *agents,
             *check_docker(settings),
