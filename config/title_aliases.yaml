@@ -1,20 +1,29 @@
-# Puestos escritos de otra forma (sobre todo en español) → su nombre en inglés, para comparar los
-# títulos de las ofertas con `preferences.roles` del perfil (prefiltro y score). Se compara sin
-# tildes, mayúsculas ni signos y por palabras completas: «Ingeniero/a de Datos» se lee como
-# «ingeniero a de datos». Amplíalo si ves títulos que no casan con tus puestos.
+# Equivalencias de puestos entre idiomas. Cada entrada es el puesto en inglés y, debajo, otras
+# formas de escribirlo (sobre todo en español). Se usan en los dos sentidos: un título de oferta
+# y un puesto o una palabra de tu búsqueda se comparan en inglés, así que «Ingeniero de datos»
+# casa con «Data Engineer» y al revés. Valen para el filtro previo, los filtros duros, el encaje
+# por título y los títulos de `broaden-search`.
+#
+# Se compara sin tildes, mayúsculas ni signos y por frases completas: «Ingeniero/a de Datos» se
+# lee como «ingeniero a de datos», y una palabra suelta como «datos» no traduce nada. Amplíalo
+# si ves títulos que no casan con tus puestos.
+
+# Datos
 data engineer:
   - ingeniero de datos
   - ingeniera de datos
   - ingeniero a de datos
-  - ingenieros de datos
   - ingeniero del dato
   - ingeniera del dato
   - ingeniero a del dato
+  - ingenieros de datos
 big data engineer:
   - ingeniero big data
   - ingeniera big data
+  - ingeniero a big data
   - ingeniero de big data
   - ingeniera de big data
+  - ingeniero a de big data
 analytics engineer:
   - ingeniero de analitica
   - ingeniera de analitica
@@ -25,21 +34,360 @@ data analyst:
 bi analyst:
   - analista bi
   - analista de business intelligence
+  - analista de inteligencia de negocio
 bi developer:
   - desarrollador bi
   - desarrolladora bi
   - desarrollador a bi
+  - desarrollador ora bi
+  - desarrollador de business intelligence
+  - desarrolladora de business intelligence
+  - desarrollador a de business intelligence
+  - desarrollador ora de business intelligence
 data scientist:
   - cientifico de datos
   - cientifica de datos
   - cientifico a de datos
+  - cientifico del dato
+  - cientifica del dato
+  - cientifico a del dato
 data architect:
   - arquitecto de datos
   - arquitecta de datos
   - arquitecto a de datos
+  - arquitecto del dato
+  - arquitecta del dato
+  - arquitecto a del dato
 machine learning engineer:
   - ingeniero de machine learning
   - ingeniera de machine learning
+  - ingeniero a de machine learning
+  - ingeniero de aprendizaje automatico
+  - ingeniera de aprendizaje automatico
+  - ingeniero a de aprendizaje automatico
+data manager:
+  - responsable de datos
+  - jefe de datos
+  - jefa de datos
+  - jefe a de datos
+database administrator:
+  - administrador de bases de datos
+  - administradora de bases de datos
+  - administrador a de bases de datos
+  - administrador ora de bases de datos
+  - administrador de base de datos
+  - administradora de base de datos
+  - administrador a de base de datos
+  - administrador ora de base de datos
+
+# Desarrollo
 software engineer:
   - ingeniero de software
   - ingeniera de software
+  - ingeniero a de software
+software developer:
+  - desarrollador de software
+  - desarrolladora de software
+  - desarrollador a de software
+  - desarrollador ora de software
+developer:
+  - programador
+  - programadora
+  - programador a
+  - programador ora
+  - desarrollador de aplicaciones
+  - desarrolladora de aplicaciones
+  - desarrollador a de aplicaciones
+  - desarrollador ora de aplicaciones
+backend developer:
+  - desarrollador backend
+  - desarrolladora backend
+  - desarrollador a backend
+  - desarrollador ora backend
+  - desarrollador back end
+  - desarrolladora back end
+  - desarrollador a back end
+  - desarrollador ora back end
+  - programador backend
+  - programadora backend
+  - programador a backend
+  - programador ora backend
+frontend developer:
+  - desarrollador frontend
+  - desarrolladora frontend
+  - desarrollador a frontend
+  - desarrollador ora frontend
+  - desarrollador front end
+  - desarrolladora front end
+  - desarrollador a front end
+  - desarrollador ora front end
+  - programador frontend
+  - programadora frontend
+  - programador a frontend
+  - programador ora frontend
+full stack developer:
+  - desarrollador full stack
+  - desarrolladora full stack
+  - desarrollador a full stack
+  - desarrollador ora full stack
+  - desarrollador fullstack
+  - desarrolladora fullstack
+  - desarrollador a fullstack
+  - desarrollador ora fullstack
+mobile developer:
+  - desarrollador movil
+  - desarrolladora movil
+  - desarrollador a movil
+  - desarrollador ora movil
+  - desarrollador de aplicaciones moviles
+  - desarrolladora de aplicaciones moviles
+  - desarrollador a de aplicaciones moviles
+  - desarrollador ora de aplicaciones moviles
+web developer:
+  - desarrollador web
+  - desarrolladora web
+  - desarrollador a web
+  - desarrollador ora web
+  - programador web
+  - programadora web
+  - programador a web
+  - programador ora web
+devops engineer:
+  - ingeniero devops
+  - ingeniera devops
+  - ingeniero a devops
+cloud engineer:
+  - ingeniero cloud
+  - ingeniera cloud
+  - ingeniero a cloud
+  - ingeniero de cloud
+  - ingeniera de cloud
+  - ingeniero a de cloud
+  - ingeniero en la nube
+  - ingeniera en la nube
+  - ingeniero a en la nube
+qa engineer:
+  - ingeniero qa
+  - ingeniera qa
+  - ingeniero a qa
+  - ingeniero de qa
+  - ingeniera de qa
+  - ingeniero a de qa
+  - ingeniero de pruebas
+  - ingeniera de pruebas
+  - ingeniero a de pruebas
+qa analyst:
+  - analista qa
+  - analista de pruebas
+  - analista de calidad del software
+systems engineer:
+  - ingeniero de sistemas
+  - ingeniera de sistemas
+  - ingeniero a de sistemas
+systems administrator:
+  - administrador de sistemas
+  - administradora de sistemas
+  - administrador a de sistemas
+  - administrador ora de sistemas
+software architect:
+  - arquitecto de software
+  - arquitecta de software
+  - arquitecto a de software
+solutions architect:
+  - arquitecto de soluciones
+  - arquitecta de soluciones
+  - arquitecto a de soluciones
+security engineer:
+  - ingeniero de seguridad
+  - ingeniera de seguridad
+  - ingeniero a de seguridad
+  - ingeniero de ciberseguridad
+  - ingeniera de ciberseguridad
+  - ingeniero a de ciberseguridad
+security analyst:
+  - analista de seguridad
+  - analista de ciberseguridad
+tech lead:
+  - lider tecnico
+  - lider tecnica
+  - lider tecnico a
+  - responsable tecnico
+  - responsable tecnica
+  - responsable tecnico a
+
+# Producto y proyectos
+product manager:
+  - responsable de producto
+  - gestor de producto
+  - gestora de producto
+  - gestor a de producto
+  - gestor ora de producto
+  - jefe de producto
+  - jefa de producto
+  - jefe a de producto
+product owner:
+  - propietario de producto
+  - propietaria de producto
+  - propietario a de producto
+  - propietario del producto
+  - propietaria del producto
+  - propietario a del producto
+product designer:
+  - disenador de producto
+  - disenadora de producto
+  - disenador a de producto
+  - disenador ora de producto
+ux designer:
+  - disenador ux
+  - disenadora ux
+  - disenador a ux
+  - disenador ora ux
+ui designer:
+  - disenador ui
+  - disenadora ui
+  - disenador a ui
+  - disenador ora ui
+ux ui designer:
+  - disenador ux ui
+  - disenadora ux ui
+  - disenador a ux ui
+  - disenador ora ux ui
+ux researcher:
+  - investigador ux
+  - investigadora ux
+  - investigador a ux
+  - investigador ora ux
+  - investigador de experiencia de usuario
+  - investigadora de experiencia de usuario
+  - investigador a de experiencia de usuario
+  - investigador ora de experiencia de usuario
+project manager:
+  - jefe de proyecto
+  - jefa de proyecto
+  - jefe a de proyecto
+  - jefe de proyectos
+  - jefa de proyectos
+  - jefe a de proyectos
+  - gestor de proyectos
+  - gestora de proyectos
+  - gestor a de proyectos
+  - gestor ora de proyectos
+  - gestor de proyecto
+  - gestora de proyecto
+  - gestor a de proyecto
+  - gestor ora de proyecto
+  - responsable de proyecto
+  - responsable de proyectos
+  - director de proyecto
+  - directora de proyecto
+  - director a de proyecto
+  - director ora de proyecto
+  - director de proyectos
+  - directora de proyectos
+  - director a de proyectos
+  - director ora de proyectos
+business analyst:
+  - analista de negocio
+functional analyst:
+  - analista funcional
+
+# Negocio
+business developer:
+  - desarrollador de negocio
+  - desarrolladora de negocio
+  - desarrollador a de negocio
+  - desarrollador ora de negocio
+business development manager:
+  - responsable de desarrollo de negocio
+  - gestor de desarrollo de negocio
+  - gestora de desarrollo de negocio
+  - gestor a de desarrollo de negocio
+  - gestor ora de desarrollo de negocio
+account manager:
+  - gestor de cuentas
+  - gestora de cuentas
+  - gestor a de cuentas
+  - gestor ora de cuentas
+  - responsable de cuentas
+key account manager:
+  - gestor de grandes cuentas
+  - gestora de grandes cuentas
+  - gestor a de grandes cuentas
+  - gestor ora de grandes cuentas
+  - responsable de grandes cuentas
+account executive:
+  - ejecutivo de cuentas
+  - ejecutiva de cuentas
+  - ejecutivo a de cuentas
+sales executive:
+  - ejecutivo comercial
+  - ejecutiva comercial
+  - ejecutivo a comercial
+  - ejecutivo de ventas
+  - ejecutiva de ventas
+  - ejecutivo a de ventas
+sales representative:
+  - representante de ventas
+  - representante comercial
+sales manager:
+  - responsable de ventas
+  - jefe de ventas
+  - jefa de ventas
+  - jefe a de ventas
+  - responsable comercial
+sales director:
+  - director comercial
+  - directora comercial
+  - director a comercial
+  - director ora comercial
+  - director de ventas
+  - directora de ventas
+  - director a de ventas
+  - director ora de ventas
+marketing manager:
+  - responsable de marketing
+  - jefe de marketing
+  - jefa de marketing
+  - jefe a de marketing
+marketing director:
+  - director de marketing
+  - directora de marketing
+  - director a de marketing
+  - director ora de marketing
+digital marketing specialist:
+  - especialista en marketing digital
+  - tecnico de marketing digital
+  - tecnica de marketing digital
+  - tecnico a de marketing digital
+financial analyst:
+  - analista financiero
+  - analista financiera
+  - analista financiero a
+financial controller:
+  - controller financiero
+  - controller financiera
+  - controller financiero a
+customer success manager:
+  - responsable de exito del cliente
+  - gestor de exito del cliente
+  - gestora de exito del cliente
+  - gestor a de exito del cliente
+  - gestor ora de exito del cliente
+operations manager:
+  - responsable de operaciones
+  - jefe de operaciones
+  - jefa de operaciones
+  - jefe a de operaciones
+operations director:
+  - director de operaciones
+  - directora de operaciones
+  - director a de operaciones
+  - director ora de operaciones
+recruiter:
+  - reclutador
+  - reclutadora
+  - reclutador a
+  - reclutador ora
+  - tecnico de seleccion
+  - tecnica de seleccion
+  - tecnico a de seleccion

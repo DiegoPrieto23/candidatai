@@ -496,7 +496,7 @@
      "rate": 0.2879
     },
     "key": "none",
-    "label": "Sin señales",
+    "label": "Nada que revisar",
     "low_data": false,
     "replied": 46,
     "reply_rate": {
@@ -1279,7 +1279,7 @@
      "rate": 0.24
     },
     "key": "none",
-    "label": "Sin señales",
+    "label": "Nada que revisar",
     "low_data": false,
     "replied": 18,
     "reply_rate": {

@@ -9,10 +9,10 @@ repositorio.
 |---|---|---|
 | `policies.yaml` | Deduplicación, filtros duros, pesos y umbral del score, CV, carta, conectores, alertas, búsqueda con navegador, seguimientos, calendario y candidatura asistida (`docs/POLICIES.md`) | Tú, a mano. Los pesos y el umbral se ajustan con `cai eval matching` |
 | `skill_aliases.yaml` | Sinónimos de skills → nombre canónico, para que «PySpark» cuente como «Apache Spark» en el matching y en las comprobaciones del CV | Tú, a mano, o la página **Skills** con «Es lo mismo que…» (fase 14) |
-| `title_aliases.yaml` | Puestos escritos de otra forma (sobre todo en español) → su nombre en inglés, para comparar títulos con `preferences.roles` | Tú, a mano |
+| `title_aliases.yaml` | Equivalencias de puestos entre idiomas (de datos, desarrollo, producto y negocio): cada puesto en inglés con sus formas en español. Los títulos de las ofertas, tus puestos buscados y las palabras de descarte se comparan en inglés, así que «Ingeniero de datos» casa con «Data Engineer» y al revés | Tú, a mano |
 | `countries.yaml` | País de una oferta a partir de su ubicación (reglas de plantilla y política de foto) | Tú, a mano |
 | `injection_patterns.yaml` | Frases de posible inyección de instrucciones en ofertas | Tú, a mano |
-| `doubtful_patterns.yaml` | Agencias, nombres que ocultan la empresa y frases de cribado con IA para las señales de oferta dudosa (fase 25.3). No cambian el score; tras editarlo, `cai jobs signals --recompute` | Tú, a mano |
+| `doubtful_patterns.yaml` | Agencias, nombres que ocultan la empresa y frases de cribado con IA para los puntos a revisar de cada oferta (fase 25.3). No cambian el score; tras editarlo, `cai jobs signals --recompute` | Tú, a mano |
 
 ## `skill_aliases.yaml`
 

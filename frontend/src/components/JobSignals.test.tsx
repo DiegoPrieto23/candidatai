@@ -159,7 +159,7 @@ describe('Señales de la oferta', () => {
     it('la ficha las explica sin aviso y dice que no cuentan en el score', async () => {
       mockApi({ 'GET /status': status(), 'GET /jobs/1': jobView({ stage: 'pending_triage', signals: DOUBTFUL }) })
       renderApp('/jobs/1')
-      const note = await screen.findByRole('region', { name: 'Señales de oferta dudosa' })
+      const note = await screen.findByRole('region', { name: 'Puntos a revisar' })
       expect(within(note).getByText(/La publica una agencia o consultora de selección para Acme Datos/)).toBeInTheDocument()
       expect(within(note).getByText(/el máximo supera al mínimo en un 100 %/)).toBeInTheDocument()
       expect(within(note).getByText(/122 días/)).toBeInTheDocument()
@@ -172,7 +172,7 @@ describe('Señales de la oferta', () => {
       mockApi({ 'GET /status': status(), 'GET /jobs/1': jobView({ stage: 'pending_triage', signals: REPOSTED }) })
       renderApp('/jobs/1')
       await screen.findByText(/Republicada ×3\./)
-      expect(screen.queryByRole('region', { name: 'Señales de oferta dudosa' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('region', { name: 'Puntos a revisar' })).not.toBeInTheDocument()
     })
   })
 })

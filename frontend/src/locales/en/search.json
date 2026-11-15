@@ -87,7 +87,10 @@
       "go": "Go to “My profile”"
     },
     "introHint": "Saved in your profile. Each block is saved on its own.",
-    "introHintLabel": "Where it is saved"
+    "introHintLabel": "Where it is saved",
+    "rule": "Each filter applies only when the job states that detail.",
+    "ruleHint": "For example, a job that doesn't state the contract type passes the contract filter, and one with no published salary passes the minimum salary one.",
+    "ruleHintLabel": "Jobs without that detail"
   },
   "searching": "Searching…"
 }

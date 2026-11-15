@@ -295,3 +295,10 @@ def test_gender_tags_do_not_match_roles() -> None:
     profile = demo_profile(roles=["D", "Data Engineer"])
     fit = scorer.preferences_fit("Data Engineer (m/f/d)", demo_extraction(), profile, 60)
     assert fit.role_match == "Data Engineer"
+
+
+def test_wanted_role_written_in_spanish_matches_an_english_title() -> None:
+    profile = demo_profile(roles=["Ingeniero de datos"])
+    ext = demo_extraction(title_normalized="Data Engineer")
+    fit = scorer.preferences_fit("Senior Data Engineer", ext, profile, 60)
+    assert fit.role_match == "Ingeniero de datos" and fit.role == 1.0

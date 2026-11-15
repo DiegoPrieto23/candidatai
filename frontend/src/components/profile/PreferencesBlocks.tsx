@@ -6,14 +6,15 @@
  */
 import { useEffect, useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { LockIcon } from '@phosphor-icons/react'
+import { LockIcon, XIcon } from '@phosphor-icons/react'
 import { ApiError } from '@/api/client'
+import { Hint } from '@/components/Hint'
 import { useSalaryFloor, useSaveSalaryFloor, useTemplates } from '@/api/queries'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { errorMessage } from '@/lib/errors'
-import { Block, BlockActions, CheckField, ChoicesField, FieldError, SelectField, TagsField, TextField } from './fields'
+import { Block, BlockActions, CheckField, ChoicesField, CodeTagsField, FieldError, SelectField, TagsField, TextField } from './fields'
 import { useBlockEditor, useProfileState } from './editor'
 import {
   CONTRACT_TYPES,
@@ -264,28 +265,121 @@ export function SearchWhereBlock() {
         options={REMOTE_MODES.map((m) => ({ value: m, label: t(`remote.${m}`) }))}
         onChange={(v) => set({ remote_modes: v })}
       />
-      {/* Dos columnas como mucho: con tres, el campo y «Añadir» no caben. */}
-      <div className="grid gap-4 lg:grid-cols-2">
-        {(['preferred', 'allowed', 'excluded'] as const).map((kind) => (
-          <TagsField
-            key={kind}
-            label={t(`fields.locations.${kind}`)}
-            hint={t(`fields.locations.${kind}Hint`)}
-            value={locations[kind]}
-            error={err(`locations.${kind}`)}
-            onChange={(v) => set({ locations: { ...locations, [kind]: v } })}
-          />
-        ))}
-      </div>
-      <TagsField
+      <LocationsField
+        value={locations}
+        error={err('locations')}
+        onChange={(v) => set({ locations: v })}
+      />
+      <CodeTagsField
+        kind="language"
         label={t('fields.workLanguages')}
-        hint={t('fields.workLanguagesHint')}
         value={d.languages_for_work}
         error={err('languages_for_work')}
-        onChange={(v) => set({ languages_for_work: v.map((x) => x.toLowerCase()) })}
+        onChange={(v) => set({ languages_for_work: v })}
       />
       <BlockActions block={block} />
     </Block>
+  )
+}
+
+const LOCATION_KINDS = ['preferred', 'allowed', 'excluded'] as const
+type LocationKind = (typeof LOCATION_KINDS)[number]
+type Locations = NonNullable<Preferences['locations']>
+
+/**
+ * Ubicaciones con un selector por fila (fase 41.4): «Cualquier modalidad» (`preferred`), «Solo
+ * híbrido o remoto» (`allowed`) o «Descartar» (`excluded`). Se guardan las mismas tres listas de
+ * siempre. Las filas no cambian de sitio al cambiar el selector: el orden se recuerda aquí (al
+ * recargar, vuelven al orden de las listas). La clave es el sitio, así el selector no pierde el foco.
+ */
+function LocationsField({ value, error, onChange }: { value: Locations; error?: string; onChange: (v: Locations) => void }) {
+  const { t } = useTranslation('profileEditor')
+  const id = useId()
+  const [text, setText] = useState('')
+  const [order, setOrder] = useState<string[]>([])
+  // Un sitio, una fila (si un perfil antiguo lo tiene en dos listas, manda la primera).
+  const rows = LOCATION_KINDS.flatMap((kind) => (value[kind] ?? []).map((place) => ({ kind, place }))).filter(
+    (row, i, all) => all.findIndex((r) => r.place.toLowerCase() === row.place.toLowerCase()) === i,
+  )
+  const rank = (place: string) => {
+    const i = order.indexOf(place.toLowerCase())
+    return i === -1 ? Number.MAX_SAFE_INTEGER : i
+  }
+  // `sort` es estable: las que aún no tienen sitio en `order` quedan en el orden de las listas.
+  const sorted = [...rows].sort((a, b) => rank(a.place) - rank(b.place))
+  const remember = (places: string[]) => setOrder((current) => [...current, ...places.map((p) => p.toLowerCase()).filter((p) => !current.includes(p))])
+  const without = (place: string): Locations =>
+    Object.fromEntries(
+      Object.entries(value).map(([k, v]) => [k, LOCATION_KINDS.includes(k as LocationKind) && Array.isArray(v) ? v.filter((p) => p.toLowerCase() !== place.toLowerCase()) : v]),
+    )
+  const move = (place: string, kind: LocationKind) => {
+    remember(sorted.map((r) => r.place))
+    const rest = without(place)
+    onChange({ ...rest, [kind]: [...(rest[kind] ?? []), place] })
+  }
+  const add = () => {
+    const place = text.trim()
+    setText('')
+    if (!place || rows.some((r) => r.place.toLowerCase() === place.toLowerCase())) return
+    remember([...sorted.map((r) => r.place), place])
+    onChange({ ...value, preferred: [...(value.preferred ?? []), place] })
+  }
+  return (
+    <fieldset className="grid content-start gap-2" aria-describedby={error ? `${id}-error` : undefined}>
+      <legend className="mb-1 flex items-center gap-1 text-sm font-medium">
+        {t('fields.locations.label')} <Hint text={t('fields.locations.hint')} label={t('fields.locations.hintLabel')} />
+      </legend>
+      {sorted.length > 0 && (
+        <ul className="grid gap-2">
+          {sorted.map(({ kind, place }) => (
+            <li key={place.toLowerCase()} className="flex flex-wrap items-center gap-2">
+              <span className="min-w-0 flex-1 truncate text-sm">{place}</span>
+              <select
+                className="h-9 w-56 rounded-md border border-input bg-background px-3 text-sm"
+                aria-label={t('fields.locations.modeFor', { place })}
+                value={kind}
+                onChange={(e) => move(place, e.target.value as LocationKind)}
+              >
+                {LOCATION_KINDS.map((k) => (
+                  <option key={k} value={k}>
+                    {t(`fields.locations.${k}`)}
+                  </option>
+                ))}
+              </select>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="size-8"
+                aria-label={t('fields.removeTag', { item: place })}
+                onClick={() => onChange(without(place))}
+              >
+                <XIcon aria-hidden />
+              </Button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="flex gap-2">
+        <Input
+          className="min-w-0"
+          value={text}
+          aria-label={t('fields.locations.add')}
+          placeholder={t('fields.locations.add')}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              add()
+            }
+          }}
+        />
+        <Button type="button" variant="outline" size="sm" onClick={add} disabled={!text.trim()}>
+          {t('fields.add')}
+        </Button>
+      </div>
+      <FieldError id={`${id}-error`} error={error} />
+    </fieldset>
   )
 }
 
@@ -308,7 +402,9 @@ export const readContract = (p: ProfileData): Contract => {
   }
 }
 
-/** Tipo de contrato, jornada, tipo de empresa y ofertas dudosas. */
+type EmployerChoice = (typeof EMPLOYER_KINDS)[number] | 'employer_hidden'
+
+/** Tipo de contrato, jornada y tipo de empresa. */
 export function SearchContractBlock() {
   const { t } = useTranslation('profileEditor')
   const block = useBlockEditor('search-contract', readContract, writeSearch, { preview: true })
@@ -333,27 +429,26 @@ export function SearchContractBlock() {
           onChange={(v) => set({ employment_types: EMPLOYMENT_TYPES.filter((e) => v.includes(e)) })}
         />
       </div>
+      {/* «No dice qué empresa contrata» es una señal (`exclude_signals`), pero se marca con los
+          tipos de empresa: es de lo que trata. Las demás señales que haya se quedan como estaban. */}
       <ChoicesField
         vertical
         label={t('fields.employerKinds')}
         hint={t('fields.employerKindsHint')}
-        value={d.excluded_employer_kinds}
-        error={err('excluded_employer_kinds')}
-        options={EMPLOYER_KINDS.map((k) => ({ value: k, label: t(`fields.employer.${k}`) }))}
-        onChange={(v) => set({ excluded_employer_kinds: EMPLOYER_KINDS.filter((k) => v.includes(k)) })}
+        value={[...d.excluded_employer_kinds, ...(d.exclude_signals.includes('employer_hidden') ? (['employer_hidden'] as const) : [])]}
+        error={err('excluded_employer_kinds') ?? err('exclude_signals')}
+        options={[
+          ...EMPLOYER_KINDS.map((k) => ({ value: k as EmployerChoice, label: t(`fields.employer.${k}`) })),
+          { value: 'employer_hidden' as EmployerChoice, label: t('fields.employerHidden') },
+        ]}
+        onChange={(v) => {
+          const others = d.exclude_signals.filter((s) => s !== 'employer_hidden')
+          set({
+            excluded_employer_kinds: EMPLOYER_KINDS.filter((k) => v.includes(k)),
+            exclude_signals: v.includes('employer_hidden') ? [...others, 'employer_hidden'] : others,
+          })
+        }}
       />
-      <fieldset className="grid gap-1.5">
-        <legend className="mb-1 text-sm font-medium">{t('fields.doubtful')}</legend>
-        <CheckField
-          label={t('fields.employerHidden')}
-          checked={d.exclude_signals.includes('employer_hidden')}
-          onChange={(on) => {
-            // Solo esta señal: las demás que haya (o que vengan) se quedan como estaban.
-            const others = d.exclude_signals.filter((s) => s !== 'employer_hidden')
-            set({ exclude_signals: on ? [...others, 'employer_hidden'] : others })
-          }}
-        />
-      </fieldset>
       <BlockActions block={block} />
     </Block>
   )
@@ -402,9 +497,9 @@ export function CvPreferencesBlock() {
           checked={d.photo_policy.default}
           onChange={(v) => set({ photo_policy: { ...d.photo_policy, default: v } })}
         />
-        <TagsField
+        <CodeTagsField
+          kind="region"
           label={t('fields.photoNo')}
-          hint={t('fields.photoNoHint')}
           value={Object.entries(byCountry).filter(([, v]) => !v).map(([k]) => k)}
           error={[...block.errors].find(([k]) => k.startsWith('preferences.cv.photo_policy'))?.[1]}
           onChange={(v) =>
@@ -413,7 +508,7 @@ export function CvPreferencesBlock() {
                 ...d.photo_policy,
                 by_country: {
                   ...Object.fromEntries(Object.entries(byCountry).filter(([, on]) => on)),
-                  ...Object.fromEntries(v.map((c) => [c.toUpperCase(), false])),
+                  ...Object.fromEntries(v.map((c) => [c, false])),
                 },
               },
             })

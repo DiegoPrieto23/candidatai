@@ -30,6 +30,7 @@ import {
 import { SiteIcon } from '@/components/SiteIcon'
 import { EmptyState, ErrorState, InlineCode } from '@/components/States'
 import { Button } from '@/components/ui/button'
+import { CodeInput } from '@/components/CodeInput'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -337,7 +338,7 @@ function AddSourceForm({ onAdded }: { onAdded?: () => void }) {
             </Field>
             {form.kind === 'personio' && (
               <Field id="source-language" label={t('language')} error={errors.language} hint={t('languageHint')}>
-                <Input id="source-language" value={form.language} onChange={set('language')} maxLength={2} spellCheck={false} className="h-10 bg-background font-mono" />
+                <CodeInput id="source-language" kind="language" value={form.language} invalid={!!errors.language} onChange={(language) => update({ language })} />
               </Field>
             )}
             {form.kind === 'lever' && (
@@ -383,8 +384,8 @@ function AddSourceForm({ onAdded }: { onAdded?: () => void }) {
               </Field>
             )}
             {form.kind === 'freehire' && (
-              <Field id="source-country" label={t('country')} error={errors.country} hint={t('countryHint')}>
-                <Input id="source-country" value={form.country} onChange={set('country')} maxLength={2} spellCheck={false} className="h-10 bg-background font-mono" />
+              <Field id="source-country" label={t('country')} error={errors.country}>
+                <CodeInput id="source-country" kind="region" value={form.country.toUpperCase()} invalid={!!errors.country} onChange={(country) => update({ country })} />
                 <label className="flex items-center gap-2 text-sm">
                   <input
                     type="checkbox"

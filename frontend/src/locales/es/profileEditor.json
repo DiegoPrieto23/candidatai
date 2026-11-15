@@ -163,7 +163,7 @@
     },
     "searchContract": {
       "title": "Contrato y empresa",
-      "hint": "Si no marcas ninguna opción, se aceptan todas. Si la oferta no indica el contrato, la jornada o el tipo de empresa, no se descarta."
+      "hint": "Si no marcas ninguna opción, se aceptan todas."
     },
     "cv": {
       "title": "Preferencias de CV",
@@ -274,15 +274,16 @@
     "rolesHint": "Por prioridad. Lo que no se parezca se puntúa más bajo.",
     "seniority": "Niveles a los que te presentarías",
     "workLanguages": "Idiomas de trabajo",
-    "workLanguagesHint": "Códigos de dos letras: es, en…",
     "remoteModes": "Modalidad",
     "locations": {
-      "preferred": "Ubicaciones preferidas",
-      "preferredHint": "Aplican siempre.",
-      "allowed": "Solo si no es presencial",
-      "allowedHint": "Te valen si la oferta es híbrida o remota; si es presencial, se descarta.",
-      "excluded": "Excluidas",
-      "excludedHint": "Se descartan siempre. Sin preferidas ni «solo si no es presencial», vale cualquier otra."
+      "label": "Ubicaciones",
+      "hint": "Si aceptas el remoto, esas ofertas valen estés donde estés. Si solo añades ubicaciones para descartar, valen todas las demás.",
+      "hintLabel": "Cómo se aplican las ubicaciones",
+      "preferred": "Cualquier modalidad",
+      "allowed": "Solo híbrido o remoto",
+      "excluded": "Descartar",
+      "modeFor": "Qué aceptas en {{place}}",
+      "add": "Añadir ubicación"
     },
     "defaultTemplate": "Plantilla por defecto",
     "templateAuto": "La de la app",
@@ -290,7 +291,6 @@
     "maxPagesAuto": "El de cada plantilla",
     "photoDefault": "Poner foto en el CV",
     "photoNo": "Países sin foto",
-    "photoNoHint": "Códigos de dos letras en mayúsculas, como GB o US.",
     "cvInstructions": "Indicaciones para tus CVs",
     "instructionsHint": "Énfasis o estilo. Orientan la redacción, pero nunca son un hecho: un dato nuevo va en su sección.",
     "avoid": "Qué no debe decir nunca",
@@ -340,8 +340,11 @@
       "agency": "Excluir ETT y agencias de selección"
     },
     "employerKindsHint": "Lo indica tu agente al leer cada oferta.",
-    "doubtful": "Ofertas dudosas",
-    "employerHidden": "Descartar las que no dicen qué empresa contrata"
+    "employerHidden": "Excluir las que no dicen qué empresa contrata",
+    "addLanguage": "Escribe un idioma",
+    "addCountry": "Escribe un país",
+    "unknownLanguage": "«{{text}}» no es un idioma de la lista.",
+    "unknownCountry": "«{{text}}» no es un país de la lista."
   },
   "star": {
     "situation": {

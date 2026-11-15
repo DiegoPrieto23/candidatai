@@ -18,7 +18,7 @@ from pydantic import BaseModel
 from app.core.policies import HardFilterPolicy
 from app.schemas.llm_io import JobExtraction, Salary
 from app.schemas.profile import SALARY_FLOOR_KEY, CandidateProfile
-from app.services.normalize import fold
+from app.services.normalize import fold, phrase_in_title
 
 FilterName = Literal[
     "seniority",
@@ -298,9 +298,11 @@ def discard_keywords(profile_keywords: list[str], policy: HardFilterPolicy) -> l
 def _title_keywords(
     title: str, ext: JobExtraction, profile: CandidateProfile, policy: HardFilterPolicy
 ) -> str | None:
-    titles = f" {fold(title)} | {fold(ext.title_normalized)} "
+    # En cualquiera de los dos idiomas: «analista de datos» descarta también «Data Analyst».
     keywords = discard_keywords(profile.preferences.discard_title_keywords, policy)
-    hits = [k for k in keywords if f" {fold(k)} " in titles]
+    hits = [
+        k for k in keywords if phrase_in_title(k, title) or phrase_in_title(k, ext.title_normalized)
+    ]
     if hits:
         return f"El título contiene palabras de descarte: {', '.join(hits)}."
     return None

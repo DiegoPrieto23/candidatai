@@ -339,7 +339,7 @@ function calibration(overrides: Partial<Calibration> = {}): Calibration {
     by_signal: [
       group('employer_hidden', 'Empresa oculta o agencia', 6, 1, 0),
       group('fixed_term', 'Temporal', 3, 1, 1),
-      group('none', 'Sin señales', 16, 7, 3),
+      group('none', 'Nada que revisar', 16, 7, 3),
     ],
     ...overrides,
   }
@@ -384,7 +384,7 @@ describe('¿Acierta el encaje?', () => {
     expect(within(sources).getByRole('row', { name: /Alertas por correo/ })).toBeInTheDocument()
   })
 
-  it('agrupa por señal de oferta dudosa (fase 25.3)', async () => {
+  it('agrupa por puntos a revisar (fase 25.3)', async () => {
     mockApi({
       'GET /status': status(),
       'GET /stats/funnel': stats(),
@@ -394,10 +394,10 @@ describe('¿Acierta el encaje?', () => {
     renderApp('/embudo')
     await openMore()
     const panel = await screen.findByRole('region', { name: '¿Acierta el encaje?' })
-    await userEvent.click(await within(panel).findByRole('tab', { name: 'Señal' }))
-    const table = await within(panel).findByRole('table', { name: 'Calibración por señal' })
+    await userEvent.click(await within(panel).findByRole('tab', { name: 'Puntos a revisar' }))
+    const table = await within(panel).findByRole('table', { name: 'Calibración por puntos a revisar' })
     expect(within(table).getByRole('row', { name: /Empresa oculta o agencia/ })).toBeInTheDocument()
-    expect(within(within(table).getByRole('row', { name: /Sin señales/ })).getAllByRole('cell')[0]).toHaveTextContent('16')
+    expect(within(within(table).getByRole('row', { name: /Nada que revisar/ })).getAllByRole('cell')[0]).toHaveTextContent('16')
     expect(within(panel).getByText(/¿Responden peor\?/)).toBeInTheDocument()
   })
 

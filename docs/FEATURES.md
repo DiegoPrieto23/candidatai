@@ -33,7 +33,7 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 | **Find your companies' job boards** from a list of names | `cai sources discover` | |
 | **Read and assess the new jobs in one step** ("Assess new jobs"): extracts each one into structured data with an isolated subagent that only sees that job, then assesses it against your profile; text aimed at an AI is flagged, never obeyed | `process-jobs` | |
 | **Still open? and reposts**: the app checks whether a job is still published (never closes it by itself) and marks "Reposted ×N" | `/jobs/:id` | |
-| **Dubious jobs in sight**: very wide salary range, hidden company or agency, temporary contract, old posting and AI screening, each explained; they don't change the fit | `/bandeja` | |
+| **Points to review on each job**: very wide salary range, hidden company or agency, temporary contract, old posting and AI screening, each explained; they don't change the fit | `/bandeja` | |
 
 ## 2. Review
 

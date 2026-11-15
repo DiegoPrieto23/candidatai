@@ -33,7 +33,7 @@ FEATURES.md dejan de coincidir fila a fila. -->
 | **Encontrar el tablero de empleo de tus empresas** a partir de una lista de nombres | `cai sources discover` | |
 | **Leer y valorar las ofertas nuevas en un solo paso** («Valorar las ofertas nuevas»): extrae cada una a datos estructurados con un subagente aislado que solo ve esa oferta y después la valora frente a tu perfil; el texto dirigido a una IA se marca y nunca se obedece | `process-jobs` | |
 | **¿Sigue abierta? y republicadas**: la app comprueba si una oferta sigue publicada (nunca la cierra sola) y marca «Republicada ×N» | `/jobs/:id` | |
-| **Ofertas dudosas a la vista**: rango salarial muy amplio, empresa oculta o agencia, contrato temporal, publicada hace meses y cribado con IA, cada una explicada; no cambian el encaje | `/bandeja` | |
+| **Puntos a revisar en cada oferta**: rango salarial muy amplio, empresa oculta o agencia, contrato temporal, publicada hace meses y cribado con IA, cada una explicada; no cambian el encaje | `/bandeja` | |
 
 ## 2. Revisar
 

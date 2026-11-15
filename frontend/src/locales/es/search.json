@@ -87,7 +87,10 @@
       "go": "Ir a «Mi perfil»"
     },
     "introHint": "Se guarda en tu perfil. Cada bloque se guarda por separado.",
-    "introHintLabel": "Dónde se guarda"
+    "introHintLabel": "Dónde se guarda",
+    "rule": "Cada filtro se aplica solo cuando la oferta indica ese dato.",
+    "ruleHint": "Por ejemplo, una oferta que no dice el tipo de contrato pasa el filtro de contrato, y una sin sueldo publicado pasa el del sueldo mínimo.",
+    "ruleHintLabel": "Ofertas sin ese dato"
   },
   "searching": "Buscando…"
 }

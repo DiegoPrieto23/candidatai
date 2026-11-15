@@ -152,8 +152,8 @@
         "hint": "Días entre que entró la oferta y la enviaste."
       },
       "signal": {
-        "label": "Señal",
-        "hint": "Tasa de las enviadas con cada señal de oferta dudosa (las de ahora; una oferta cuenta en cada una que tenga) frente a las que no tienen ninguna. ¿Responden peor?"
+        "label": "Puntos a revisar",
+        "hint": "Tasa de las enviadas con cada punto a revisar (las de ahora; una oferta cuenta en cada una que tenga) frente a las que no tienen ninguna. ¿Responden peor?"
       }
     },
     "groups": {
@@ -193,7 +193,7 @@
         "fixed_term": "Temporal",
         "stale_repost": "Publicada hace meses",
         "ai_screening": "Cribado con IA",
-        "none": "Sin señales"
+        "none": "Nada que revisar"
       }
     }
   },

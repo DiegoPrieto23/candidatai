@@ -95,9 +95,10 @@ la inicial. `cai sources discover` lo prueba solo para una lista de
 empresas (abajo). Antes de guardar, «Probar» enseña cuántas ofertas tiene y cuántas pasan tus
 filtros.
 - **Filtro previo** antes de guardar (`ingestion/prefilter.py`): el título debe contener todas las
-  palabras de alguno de tus `preferences.roles` (también en español, con
-  `config/title_aliases.yaml`; o una `title_keywords` de la fuente) y ninguna palabra de descarte
-  (las de `preferences.discard_title_keywords` del perfil más las de `policies.yaml`); la ubicación, encajar con tus zonas o ser remota si aceptas remoto.
+  palabras de alguno de tus `preferences.roles` (o una `title_keywords` de la fuente) y ninguna
+  palabra de descarte (las de `preferences.discard_title_keywords` del perfil más las de
+  `policies.yaml`). Puestos y palabras se comparan también en inglés con
+  `config/title_aliases.yaml`, así que da igual el idioma en que los escribas; la ubicación, encajar con tus zonas o ser remota si aceptas remoto.
   Ante la duda deja pasar (sin ubicación, sin perfil). La 09b lo reutiliza para los resúmenes.
 - **Idempotente:** lo ya visto (por id en la fuente, URL o huella) no se vuelve a crear ni a
   descargar. Lo nuevo queda en `pending_extraction` con el evento `found`.

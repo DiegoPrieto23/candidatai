@@ -10,6 +10,13 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Puestos en cualquier idioma:** da igual si escribes tus puestos buscados o tus palabras de
+  descarte en español o en inglés: «Ingeniero de datos» encuentra ofertas de «Data Engineer» y al
+  revés, también en el encaje por título. La lista de equivalencias trae puestos de datos,
+  desarrollo, producto y negocio, y se puede ampliar en `config/title_aliases.yaml`.
+- **Idiomas y países por su nombre:** en «Idiomas de trabajo», «Países sin foto» y los campos de país
+  e idioma de las fuentes escribes «francés» o «Reino Unido», con autocompletado en el idioma de la
+  app, en vez de códigos de dos letras.
 - **Elige tu navegador antes de instalar «Enviar a CandidatAI»:** en **Dónde buscar → Botón del
   navegador** eliges Chrome, Edge o Brave (se propone el que usas) y los pasos se adaptan a él. Con
   Firefox o Safari, o con la app abierta en otro navegador, el aviso sale al principio.
@@ -139,6 +146,17 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   vez de 23).
 
 ### Cambiado
+- **Ubicaciones más claras:** en **Configuración de tu búsqueda → Dónde y cómo**, cada ubicación lleva
+  un selector: «Cualquier modalidad», «Solo híbrido o remoto» o «Descartar». Sustituye a los tres
+  campos de antes («Ubicaciones preferidas», «Solo si no es presencial» y «Excluidas»); tus
+  ubicaciones guardadas siguen igual.
+- **«Puntos a revisar»** sustituye a «Señales de oferta dudosa» en la ficha, en Resultados y en la
+  CLI: rango salarial amplio, empresa oculta, temporal, publicada hace meses y cribado con IA son
+  cosas que conviene mirar, no un veredicto. «Excluir las que no dicen qué empresa contrata» pasa
+  a «Tipo de empresa».
+- **La regla de los datos que faltan, una sola vez:** la cabecera de la configuración de tu búsqueda
+  dice que cada filtro se aplica solo cuando la oferta indica ese dato, con un ejemplo en su ayuda.
+- **El encaje se vuelve a calcular** una vez al actualizar, por las equivalencias de puestos.
 - **«Buscar ofertas» es una sola página** con tres secciones y un índice fijo arriba: **Buscar**,
   **Configuración de tu búsqueda** (antes, la pestaña «Qué buscas») y **Dónde buscar**. Los enlaces de
   siempre llevan a su sección.

@@ -845,15 +845,16 @@ DAY_BUCKETS: tuple[tuple[str, str, float], ...] = (
     ("4_7", "4-7 días", 8),
     ("8_plus", "8 días o más", math.inf),
 )
-# Señales de oferta dudosa (fase 25.3). Una oferta cuenta en cada señal que tenga; «Sin señales»
-# son las que no tienen ninguna. Son las señales de ahora, no las que tenía al enviarla.
+# Señales de oferta dudosa (fase 25.3), «Puntos a revisar» en la UI. Una oferta cuenta en cada
+# señal que tenga; «Nada que revisar» son las que no tienen ninguna. Son las señales de ahora,
+# no las que tenía al enviarla.
 SIGNAL_LABELS: tuple[tuple[str, str], ...] = (
     ("salary_range_wide", "Rango salarial muy amplio"),
     ("employer_hidden", "Empresa oculta o agencia"),
     ("fixed_term", "Temporal"),
     ("stale_repost", "Publicada hace meses"),
     ("ai_screening", "Cribado con IA"),
-    ("none", "Sin señales"),
+    ("none", "Nada que revisar"),
 )
 # Grupos sin dato. Una plantilla del usuario con id «none» se sumaría a «Sin CV de la app».
 NO_PLATFORM = "none"
@@ -1025,7 +1026,7 @@ def _counts(session: Session, cal: FromClause, key: Any = None) -> list[Any]:
 
 
 def _by_signal(session: Session, cal: FromClause, min_cases: int) -> list[CalibrationGroup]:
-    """Un grupo por señal (una oferta puede estar en varios) y «Sin señales»."""
+    """Un grupo por señal (una oferta puede estar en varios) y «Nada que revisar»."""
     columns = [cal.c[f"signal_{code}"] for code, _ in SIGNAL_LABELS[:-1]]
     sums = [
         func.count().label("applied"),

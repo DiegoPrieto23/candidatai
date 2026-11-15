@@ -148,7 +148,7 @@ tres proyectos han llegado a lo mismo: `GEMINI.md` vacío o de paso, y Antigravi
 | Similitud semántica local (embeddings) | ✅ opcional | ❌ | ❌ |
 | Valoración razonada del agente | ✅ `assess-fit` | ✅ | ✅ informe A-H con veredicto |
 | Revisar ofertas rápido con el teclado | ✅ J/K, A, D, deshacer; descartar también desde la Bandeja | ❌ | 🟡 en la TUI |
-| Señales de oferta dudosa | 🟡 rango ancho, empresa oculta o agencia, temporal, antigua y cribado con IA, sin puntuar | ❌ | ✅ 18 señales (también tasas que paga el candidato, prácticas sin pagar o identidad del recruiter) |
+| Puntos a revisar (señales de oferta dudosa) | 🟡 rango ancho, empresa oculta o agencia, temporal, antigua y cribado con IA, sin puntuar | ❌ | ✅ 18 señales (también tasas que paga el candidato, prácticas sin pagar o identidad del recruiter) |
 | Autorización de trabajo / patrocinio de visado | ❌ | ❌ | ✅ (y, desde la `1.39.0`, comprueba si una empresa patrocina visados en el Reino Unido) |
 | Estrategia de nivel y arquetipo del puesto | 🟡 | ❌ | ✅ |
 | Calibración por región (p. ej. ingeniería en Europa) | ❌ | ❌ | ✅ `eu-swe` |

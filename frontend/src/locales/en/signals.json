@@ -35,7 +35,7 @@
       "ai_screening": "It says an AI or an automated test will screen you before you talk to anyone.",
       "ai_screening_phrase": "It says an AI or an automated test will screen you before you talk to anyone (\"{{phrase}}\")."
     },
-    "label": "Signs of a doubtful job",
+    "label": "Points to review",
     "title": "Before you spend time on it",
     "intro": "They're notes for you to decide: the fit and the job stay as they are. If you want them to discard, ask your agent (“discard jobs from undisclosed companies”)."
   }

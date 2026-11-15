@@ -123,3 +123,54 @@ def test_translate_title_uses_whole_words() -> None:
     assert translate_title("ingeniero de datos snowflake") == "data engineer snowflake"
     assert translate_title("ingeniero de big data") == "big data engineer"
     assert translate_title("ingeniero de datosx") == "ingeniero de datosx"
+
+
+# Equivalencias de puestos entre idiomas (config/title_aliases.yaml), en los dos sentidos.
+@pytest.mark.parametrize(
+    ("role", "title"),
+    [
+        ("Ingeniero de datos", "Senior Data Engineer"),
+        ("Data Engineer", "Ingeniera de datos"),
+        ("Responsable de producto", "Product Manager"),
+        ("Product Manager", "Jefa de producto"),
+        ("Desarrollador backend", "Backend Developer (Python)"),
+        ("Backend Developer", "Desarrollador/a Backend Java"),
+        ("Analista de negocio", "Business Analyst"),
+        ("Project Manager", "Jefe/a de proyectos IT"),
+    ],
+)
+def test_roles_match_in_either_language(role: str, title: str) -> None:
+    assert _prefilter(roles=[role]).check(title, "Vigo", None).passed
+
+
+@pytest.mark.parametrize(
+    ("role", "title"),
+    [
+        ("Data Engineer", "Analista de datos"),  # «datos» suelto no hace a todo «data engineer»
+        ("Ingeniero de datos", "Data Analyst"),
+        ("Product Manager", "Ingeniero de producto"),
+        ("Backend Developer", "Desarrollador de negocio"),
+        ("Data Analyst", "Analista de negocio"),
+    ],
+)
+def test_no_false_equivalences(role: str, title: str) -> None:
+    assert not _prefilter(roles=[role]).check(title, "Vigo", None).passed
+
+
+@pytest.mark.parametrize(
+    ("keyword", "title"),
+    [("analista de datos", "Data Analyst Junior"), ("data analyst", "Analista de Datos")],
+)
+def test_discard_keywords_in_either_language(keyword: str, title: str) -> None:
+    verdict = _prefilter(discard_title_keywords=[keyword]).check(title, "Vigo", None)
+    assert not verdict.passed and keyword in (verdict.reason or "")
+
+
+def test_discard_keyword_is_not_a_loose_word() -> None:
+    # «datos» no es un puesto: no se traduce ni descarta «Data Engineer».
+    assert _prefilter(discard_title_keywords=["datos"]).check("Data Engineer", "Vigo", None).passed
+
+
+def test_extra_keywords_in_the_other_language() -> None:
+    prefilter = _prefilter(["data engineer"], roles=["Office Manager"])
+    assert prefilter.check("Ingeniero de datos", "Vigo", None).passed

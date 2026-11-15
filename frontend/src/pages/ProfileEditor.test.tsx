@@ -442,7 +442,7 @@ describe('Mi perfil editable', () => {
     const role = screen.getByRole('region', { name: 'Puesto' })
     expect(within(role).getByText(/También descartan las de la configuración de la app: sales/)).toBeInTheDocument()
     const where = screen.getByRole('region', { name: 'Dónde y cómo' })
-    expect(within(where).getByRole('textbox', { name: 'Solo si no es presencial' })).toBeInTheDocument()
+    expect(within(where).getByRole('combobox', { name: 'Qué aceptas en Vigo' })).toHaveValue('preferred')
     const years = screen.getByRole('group', { name: 'Años de experiencia que pida la oferta' })
     expect(within(years).getByText(/Se admite 1 año de margen/)).toBeInTheDocument()
   })
@@ -451,9 +451,58 @@ describe('Mi perfil editable', () => {
     mockApi(BASE)
     renderApp('/buscar/ajustes')
     const block = await screen.findByRole('region', { name: 'Dónde y cómo' })
-    const input = within(block).getByRole('textbox', { name: 'Ubicaciones preferidas' })
-    const tags = within(block).getByRole('list', { name: 'Ubicaciones preferidas' })
+    const input = within(block).getByRole('combobox', { name: 'Idiomas de trabajo' })
+    const tags = within(block).getByRole('list', { name: 'Idiomas de trabajo' })
     expect(input.compareDocumentPosition(tags) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it('cada ubicación lleva su modalidad y se guarda en las tres listas de siempre', async () => {
+    const calls = mockApi({ ...BASE, 'PUT /profile/sections/preferences': saved('preferences', { dry_run: true, diff: '+ x' }) })
+    renderApp('/buscar/ajustes')
+    const block = await screen.findByRole('region', { name: 'Dónde y cómo' })
+    await userEvent.type(within(block).getByRole('textbox', { name: 'Añadir ubicación' }), 'Madrid{Enter}')
+    await userEvent.type(within(block).getByRole('textbox', { name: 'Añadir ubicación' }), 'Sevilla{Enter}')
+    await userEvent.selectOptions(within(block).getByRole('combobox', { name: 'Qué aceptas en Madrid' }), 'Solo híbrido o remoto')
+    // La fila no se vuelve a montar: el selector sigue con el foco.
+    expect(within(block).getByRole('combobox', { name: 'Qué aceptas en Madrid' })).toHaveFocus()
+    await userEvent.selectOptions(within(block).getByRole('combobox', { name: 'Qué aceptas en Sevilla' }), 'Descartar')
+    // Las filas no cambian de sitio al cambiar el selector.
+    const rows = within(within(block).getByRole('group', { name: /Ubicaciones/ }).querySelector('ul')!).getAllByRole('listitem')
+    expect(rows.map((r) => r.textContent?.split(/Cualquier|Solo|Descartar/)[0])).toEqual(['Vigo', 'Madrid', 'Sevilla'])
+    await userEvent.click(within(block).getByRole('button', { name: 'Guardar' }))
+    await waitFor(() => expect(calls.some((c) => c.method === 'PUT')).toBe(true))
+    const put = calls.find((c) => c.method === 'PUT')!
+    expect((put.body as { content: { locations: unknown } }).content.locations).toEqual({ preferred: ['Vigo'], allowed: ['Madrid'], excluded: ['Sevilla'] })
+  })
+
+  it('los idiomas se escriben por su nombre y se guardan como código', async () => {
+    const calls = mockApi({ ...BASE, 'PUT /profile/sections/preferences': saved('preferences', { dry_run: true, diff: '+ x' }) })
+    renderApp('/buscar/ajustes')
+    const block = await screen.findByRole('region', { name: 'Dónde y cómo' })
+    const tags = within(block).getByRole('list', { name: 'Idiomas de trabajo' })
+    expect(within(tags).getByText('español')).toBeInTheDocument()
+    const input = within(block).getByRole('combobox', { name: 'Idiomas de trabajo' })
+    await userEvent.type(input, 'klingon{Enter}')
+    expect(within(block).getByText('«klingon» no es un idioma de la lista.')).toBeInTheDocument()
+    await userEvent.clear(input)
+    await userEvent.type(input, 'Francés{Enter}')
+    expect(within(tags).getByText('francés')).toBeInTheDocument()
+    await userEvent.click(within(block).getByRole('button', { name: 'Guardar' }))
+    await waitFor(() => expect(calls.some((c) => c.method === 'PUT')).toBe(true))
+    const put = calls.find((c) => c.method === 'PUT')!
+    expect((put.body as { content: { languages_for_work: string[] } }).content.languages_for_work).toEqual(['es', 'en', 'fr'])
+  })
+
+  it('«no dice qué empresa contrata» se marca con los tipos de empresa', async () => {
+    const calls = mockApi({ ...BASE, 'PUT /profile/sections/preferences': saved('preferences', { dry_run: true, diff: '+ x' }) })
+    renderApp('/buscar/ajustes')
+    const block = await screen.findByRole('region', { name: 'Contrato y empresa' })
+    const kinds = within(block).getByRole('group', { name: 'Tipo de empresa' })
+    await userEvent.click(within(kinds).getByRole('checkbox', { name: 'Excluir las que no dicen qué empresa contrata' }))
+    await userEvent.click(within(block).getByRole('button', { name: 'Guardar' }))
+    await waitFor(() => expect(calls.some((c) => c.method === 'PUT')).toBe(true))
+    const put = calls.find((c) => c.method === 'PUT')!
+    expect((put.body as { content: { exclude_signals: string[] } }).content.exclude_signals).toEqual(['employer_hidden'])
   })
 
   it('los años mínimo y máximo se guardan como un rango', async () => {
@@ -535,7 +584,7 @@ describe('Mi perfil editable', () => {
 
     await userEvent.click(within(block).getByRole('checkbox', { name: 'Jornada completa' }))
     await userEvent.click(within(block).getByRole('checkbox', { name: /Excluir consultoras/ }))
-    await userEvent.click(within(block).getByRole('checkbox', { name: /Descartar las que no dicen qué empresa contrata/ }))
+    await userEvent.click(within(block).getByRole('checkbox', { name: /Excluir las que no dicen qué empresa contrata/ }))
     await userEvent.click(within(block).getByRole('button', { name: 'Guardar' }))
     await waitFor(() => expect(calls.filter((c) => c.method === 'PUT')).toHaveLength(1))
     const content = (calls.find((c) => c.method === 'PUT')!.body as { content: Record<string, unknown> }).content

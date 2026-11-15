@@ -652,7 +652,7 @@ Observaciones del código sobre la oferta que **no** son riesgo de inyección (m
 | `ai_screening` (25.3) | `origin` (`extraction`, `text`), `matched?` | Ídem: `mentions_ai_screening`, o una frase de `ai_screening` en el texto |
 | `stale_repost` (25.3) | `count`, `channel`, `first_seen`, `last_seen`, `span_days` | `services/reposts.py`, con todo el historial de `job_sightings` del grupo, sin ventana: `count ≥ doubtful.stale_repost_min_count` o `span_days ≥ doubtful.stale_repost_min_span_days` |
 
-Las cinco de la fase 25.3 son **señales de oferta dudosa**: no cambian el score ni los filtros
+Las cinco de la fase 25.3 son **señales de oferta dudosa** («Puntos a revisar» en la UI): no cambian el score ni los filtros
 duros, salvo `employer_hidden` y `fixed_term` si están en `preferences.exclude_signals` del perfil
 (filtro `signal`; `fixed_term`, desde la fase 27.5, en el filtro `contract`). `cai jobs signals --recompute` las recalcula todas. Sin migración: es la misma
 columna JSON. Las extracciones anteriores a la fase no traen los campos nuevos, así que solo

@@ -163,7 +163,7 @@
     },
     "searchContract": {
       "title": "Contract and employer",
-      "hint": "With no option ticked, all are accepted. If a job doesn't state the contract, working time or type of employer, it isn't discarded."
+      "hint": "With no option ticked, all are accepted."
     },
     "cv": {
       "title": "CV preferences",
@@ -274,15 +274,16 @@
     "rolesHint": "By priority. Anything unlike them gets a lower fit.",
     "seniority": "Levels you would apply for",
     "workLanguages": "Working languages",
-    "workLanguagesHint": "Two-letter codes: es, en…",
     "remoteModes": "Work mode",
     "locations": {
-      "preferred": "Preferred locations",
-      "preferredHint": "Always apply.",
-      "allowed": "Only if not on-site",
-      "allowedHint": "Fine if the job is hybrid or remote; if it's on-site, it's discarded.",
-      "excluded": "Excluded",
-      "excludedHint": "Always discarded. With no preferred or \"only if not on-site\" ones, anywhere else is fine."
+      "label": "Locations",
+      "hint": "If you accept remote work, remote jobs apply wherever you are. If you only add locations to exclude, all others apply.",
+      "hintLabel": "How locations apply",
+      "preferred": "Any work mode",
+      "allowed": "Hybrid or remote only",
+      "excluded": "Exclude",
+      "modeFor": "What you accept in {{place}}",
+      "add": "Add a location"
     },
     "defaultTemplate": "Default template",
     "templateAuto": "The app's",
@@ -290,7 +291,6 @@
     "maxPagesAuto": "Each template's own",
     "photoDefault": "Include a photo in the CV",
     "photoNo": "Countries without a photo",
-    "photoNoHint": "Two-letter codes in capitals, such as GB or US.",
     "cvInstructions": "Instructions for your CVs",
     "instructionsHint": "Emphasis or style. They guide the writing but are never a fact: new information goes in its own section.",
     "avoid": "What it must never say",
@@ -340,8 +340,11 @@
       "agency": "Exclude temp and recruitment agencies"
     },
     "employerKindsHint": "Your agent notes it when it reads each job.",
-    "doubtful": "Doubtful jobs",
-    "employerHidden": "Discard jobs that don't say which company is hiring"
+    "employerHidden": "Exclude jobs that don't say which company is hiring",
+    "addLanguage": "Type a language",
+    "addCountry": "Type a country",
+    "unknownLanguage": "“{{text}}” isn't a language on the list.",
+    "unknownCountry": "“{{text}}” isn't a country on the list."
   },
   "star": {
     "situation": {

@@ -59,7 +59,8 @@ export function SearchSettingsPage() {
   return (
     <div className="max-w-4xl">
       <p className="mt-1.5 mb-6 text-sm text-muted-foreground">
-        {t('intro')} <Hint text={t('introHint')} label={t('introHintLabel')} />
+        {t('intro')} <Hint text={t('introHint')} label={t('introHintLabel')} /> {t('rule')}{' '}
+        <Hint text={t('ruleHint')} label={t('ruleHintLabel')} />
       </p>
       <div className="grid gap-6">{body}</div>
     </div>

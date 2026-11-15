@@ -61,6 +61,12 @@ Las reglas con valores ajustables tienen su parámetro en `config/policies.yaml`
 
 - Seniority objetivo, años máximos exigidos, modalidad, ubicaciones preferidas y descartadas: en
   `preferences` del perfil. No hay nada fijo para perfiles junior.
+- Cada filtro se aplica solo cuando la oferta indica ese dato: una oferta sin tipo de contrato
+  pasa el filtro de contrato, y una sin sueldo publicado, el de sueldo mínimo. La configuración de
+  la búsqueda lo dice una vez, en su cabecera.
+- Ubicaciones: en la configuración, cada una lleva un selector, «Cualquier modalidad»
+  (`locations.preferred`), «Solo híbrido o remoto» (`locations.allowed`) o «Descartar»
+  (`locations.excluded`). Se guardan en esas tres listas.
 - Las ofertas fuera de zona solo pasan si son remotas o si la ubicación está permitida.
 - Prestigio de la empresa o salario alto **no** compensan un encaje técnico pobre.
 - Veredicto `strong` exige cubrir la mayoría de `must_have_skills` con nivel `F`/`C+`.
@@ -100,9 +106,9 @@ Combinación ponderada (`scoring.weights`) de cuatro componentes entre 0 y 1:
   `similarity_floor` y `similarity_ceiling`.
 - **Preferencias**: media de puesto (parecido con `preferences.roles`, según su orden; todas las
   palabras del puesto buscado deben estar en el título o en una de sus partes, sin contar la
-  seniority: «Sales Engineer (Data Platform)» no cuenta como «Data Engineer»; los puestos en
-  español se leen en inglés con `config/title_aliases.yaml`: «Ingeniero de datos» cuenta como
-  «Data Engineer»), modalidad
+  seniority: «Sales Engineer (Data Platform)» no cuenta como «Data Engineer»; los puestos se
+  comparan en inglés con `config/title_aliases.yaml`, tanto los de la oferta como los buscados:
+  «Ingeniero de datos» casa con «Data Engineer» y al revés), modalidad
   (según el orden de `remote_modes`) y zona (preferida 1, permitida 0,6, desconocida 0,5).
 
 Un componente que no se puede calcular (la oferta no lista skills de ese tipo o no hay modelo de
@@ -138,7 +144,7 @@ Los pesos del score no cambian con esto; solo qué nombres casan.
 - **«Republicada ×N» es una observación**, no un motivo de descarte ni un dato para el score: puede
   ser una vacante difícil de cubrir, un portal que renueva la publicación o una oferta fantasma.
 
-### Señales de oferta dudosa (fase 25.3)
+### Puntos a revisar: señales de oferta dudosa (fase 25.3)
 
 Una oferta puede encajar en el papel y aun así no merecer la pena. El código marca cinco señales en
 `jobs.signals`, con reglas fijas y configurables (`doubtful` en `config/policies.yaml` y

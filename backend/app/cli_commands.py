@@ -283,7 +283,7 @@ def _render_match(view: Any) -> None:
     for note in breakdown.notes:
         typer.secho(f"\nNota: {note}", fg="yellow")
     if view.signals:
-        typer.echo("\nSeñales de oferta dudosa (no cuentan en el score):")
+        typer.echo("\nPuntos a revisar (no cuentan en el score):")
         for signal in view.signals:
             typer.echo(f"  - {signal.code}: {signal.text}")
     if view.assessment:
@@ -970,13 +970,13 @@ def _render_context(view: Any) -> None:
 @jobs_app.command("signals")
 def jobs_signals(
     recompute: bool = typer.Option(
-        False, "--recompute", help="Recalcula las señales de oferta dudosa de todas las ofertas."
+        False, "--recompute", help="Recalcula los puntos a revisar de todas las ofertas."
     ),
     as_json: bool = JSON_OPTION,
 ) -> None:
-    """Señales de oferta dudosa (rango salarial amplio, empresa oculta, temporal, publicada hace
-    meses, cribado con IA). Se calculan solas al extraer; esto las recalcula todas, p. ej. tras
-    editar config/doubtful_patterns.yaml. No cambian el score."""
+    """Puntos a revisar de cada oferta (rango salarial amplio, empresa oculta, temporal,
+    publicada hace meses, cribado con IA). Se calculan solos al extraer; esto los recalcula todos,
+    p. ej. tras editar config/doubtful_patterns.yaml. No cambian el score."""
     from app.services import doubtful
 
     if not recompute:
@@ -2070,7 +2070,7 @@ def _render_calibration(result: Any) -> None:
         ("Referencia", result.by_referral),
         ("Días hasta el envío", result.by_days_to_apply),
         (
-            "Señal de oferta dudosa (las de ahora; una oferta puede estar en varias)",
+            "Puntos a revisar (los de ahora; una oferta puede estar en varios)",
             result.by_signal,
         ),
     )

@@ -152,8 +152,8 @@
         "hint": "Days between the job coming in and you sending it."
       },
       "signal": {
-        "label": "Signal",
-        "hint": "Rate of sent applications with each doubtful-job signal (current ones; a job counts in each it has) against those with none. Do they reply less?"
+        "label": "Points to review",
+        "hint": "Rate of sent applications with each point to review (current ones; a job counts in each it has) against those with none. Do they reply less?"
       }
     },
     "groups": {
@@ -193,7 +193,7 @@
         "fixed_term": "Fixed-term",
         "stale_repost": "Posted for months",
         "ai_screening": "AI screening",
-        "none": "No signals"
+        "none": "Nothing to review"
       }
     }
   },

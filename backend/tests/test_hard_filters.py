@@ -252,3 +252,10 @@ def test_title_keywords_also_checked_in_normalized_title() -> None:
     pol = policy(discard_title_keywords=["sales"])
     got = failures(demo_extraction(title_normalized="Sales Engineer"), pol=pol, title="Engineer")
     assert got["title_keyword"] == "El título contiene palabras de descarte: sales."
+
+
+def test_title_keywords_in_the_other_language() -> None:
+    # «analista de datos» descarta también «Data Analyst» (config/title_aliases.yaml).
+    pol = policy(discard_title_keywords=["analista de datos"])
+    got = failures(demo_extraction(title_normalized="Data Analyst"), pol=pol, title="Data Analyst")
+    assert got["title_keyword"] == "El título contiene palabras de descarte: analista de datos."
