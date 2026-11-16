@@ -173,6 +173,13 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   vez de 23).
 
 ### Cambiado
+- **«Buscar ofertas», número de ofertas en un solo sitio:** junto a «Buscar ahora», «Hasta N ofertas
+  por portal» cambia a la vez el límite de todos los portales elegidos y el de los que añadas
+  después. Si cada portal tiene el suyo, lo dice («varía») y elegir un número los iguala. El de un
+  portal suelto se sigue cambiando en «Dónde buscar».
+- **Sin nombres de agentes en «Buscar ofertas»:** fuera «Ten el navegador conectado a tu agente» y
+  su ayuda, que hablaba de un agente concreto (si al tuyo le falta el navegador, te lo dice al
+  empezar). La ventana para copiar la orden dice «pégala en tu agente», sin ejemplos.
 - **Arranque:** la página «Arrancando CandidatAI» dice «Se abrirá en unos segundos».
 - **Tu CV se sube arrastrándolo:** en **Mi perfil** («Empieza por tu CV» e «Importar información
   desde un CV») y en los primeros pasos de **Inicio**, una caja donde soltar el PDF o el Word, o
@@ -379,6 +386,9 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   leer cada oferta una a una.
 
 ### Corregido
+- **«Cambiar» en «Buscas: …» de «Buscar ofertas»** no hacía nada si ya habías entrado por
+  «Configuración de tu búsqueda» y habías vuelto arriba. Ahora siempre baja a tus puestos y deja el
+  cursor en la caja para escribir uno.
 - **Cerrar una candidatura con la fecha en que pasó:** si después habías anotado algo que no encaja
   con el cierre (un seguimiento, o cerrarla y reabrirla para probar), la app ya no da un error
   confuso. Te enseña qué es y te propone quitarlo, si lo anotaste por error, o anotar el cierre

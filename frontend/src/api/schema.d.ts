@@ -1021,6 +1021,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/sources/browse/max-offers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Set Browse Max Offers
+         * @description Cambia a la vez cuántas ofertas abre el agente en cada una de esas plataformas, y ese
+         *     número pasa a ser el de las nuevas. Solo desde la UI.
+         */
+        post: operations["set_browse_max_offers"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/sources/{source_id}/platform": {
         parameters: {
             query?: never;
@@ -6983,6 +7004,23 @@ export interface components {
             installing: boolean;
             /** Error */
             error: string | null;
+        };
+        /**
+         * MaxOffersBody
+         * @description «Hasta N ofertas por portal»: el mismo número para varias plataformas.
+         */
+        MaxOffersBody: {
+            /** Source Ids */
+            source_ids: number[];
+            /** Max Offers */
+            max_offers: number;
+        };
+        /** MaxOffersResult */
+        MaxOffersResult: {
+            /** Sources */
+            sources: components["schemas"]["SourceView"][];
+            /** Default Max Offers */
+            default_max_offers: number;
         };
         /** MessageDraftOut */
         MessageDraftOut: {
@@ -14468,6 +14506,102 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    set_browse_max_offers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MaxOffersBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MaxOffersResult"];
+                };
             };
             /** @description Unauthorized */
             401: {

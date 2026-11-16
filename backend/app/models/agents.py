@@ -140,7 +140,8 @@ class AgentPreference(Base):
     `tier` (`key` = `<nivel>:<acción>`: el agente y modelo de esa acción en un nivel de gasto) y
     `tier_undo` (`key` = acción: las preferencias por acción de antes de aplicar un nivel). Fase
     25.4: `setting` (`key="assess_min_score"`: el umbral de la valoración en segundo plano, el
-    número en `model`).
+    número en `model`), y también `extra_matching` y `browse_max_offers` (las ofertas por
+    portal de las plataformas nuevas, de «Buscar ofertas»).
     """
 
     __tablename__ = "agent_preferences"

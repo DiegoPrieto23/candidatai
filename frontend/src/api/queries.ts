@@ -577,6 +577,15 @@ export function useUpdateBrowseSettings() {
   })
 }
 
+/** «Hasta N ofertas por portal»: el mismo número para varias plataformas y para las nuevas. */
+export function useSetBrowseMaxOffers() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (body: Schemas['MaxOffersBody']) => unwrap(api.POST('/sources/browse/max-offers', { body })),
+    onSettled: () => client.invalidateQueries({ queryKey: keys.sources }),
+  })
+}
+
 /** Búsqueda pública de LinkedIn sin sesión (fase 22). Bajo `sources`: añadir búsquedas la cambia. */
 export function useLinkedInPublic() {
   return useQuery({

@@ -1,8 +1,10 @@
 import { Suspense, useEffect, useRef, useState, type MouseEvent, type RefObject } from 'react'
-import { Link, Outlet, useLocation } from 'react-router'
+import { Link, Outlet, useLocation, useNavigationType, type Location } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { BuildingsIcon, CompassIcon, EnvelopeSimpleIcon, PuzzlePieceIcon } from '@phosphor-icons/react'
 import { Hint } from '@/components/Hint'
+import { blockAnchor } from '@/components/profile/editor'
+import type { SectionFocus } from '@/lib/searchFocus'
 import { PageErrorBoundary } from '@/components/PageErrorBoundary'
 import { PageTabs } from '@/components/PageTabs'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -38,24 +40,47 @@ function anchorOf(section: Section): string {
   return SECTIONS.find((s) => s.id === section)!.anchor
 }
 
+const FOCUS: Record<SectionFocus, string> = {
+  // La caja de «Puestos que buscas», en el primer bloque de la configuración.
+  roles: `#${blockAnchor('search-role')} input`,
+}
+
+function focusOf(state: unknown): string | null {
+  const focus = (state as { focus?: unknown } | null)?.focus
+  return typeof focus === 'string' && focus in FOCUS ? FOCUS[focus as SectionFocus] : null
+}
+
 /**
  * Lleva la sección de la URL arriba del todo. Lo de encima carga después (portales, perfil) y la
  * empujaría hacia abajo: mientras crece, se vuelve a alinear, hasta que tú mueves la página o pasan
- * unos segundos.
+ * unos segundos. Va por la clave de la navegación, no por la ruta: un enlace a la misma URL (estás en
+ * `/buscar/ajustes` pero has subido) también baja. Con `state.focus`, deja además el cursor en ese
+ * campo en cuanto aparece.
  */
-function useScrollToSection(pathname: string, container: RefObject<HTMLElement | null>) {
-  // La ruta de la vez anterior: en modo estricto el efecto corre dos veces con la misma.
+function useScrollToSection(location: Location, container: RefObject<HTMLElement | null>) {
+  const { pathname, key, state } = location
+  // Atrás y Adelante traen el `state` de entonces: llevan a la sección, pero no vuelven a enfocar.
+  const navigation = useNavigationType()
+  // La navegación de la vez anterior: en modo estricto el efecto corre dos veces con la misma.
   const previous = useRef<string | null>(null)
   useEffect(() => {
     const section = sectionOf(pathname)
-    const unchanged = previous.current === null || previous.current === pathname
-    previous.current = pathname
+    const unchanged = previous.current === null || previous.current === key
+    previous.current = key
+    const focus = unchanged || navigation === 'POP' ? null : focusOf(state)
     // Al abrir «Buscar» desde otra página, AppShell ya ha subido arriba del todo.
     if (section === 'search' && unchanged) return
     const target = () => document.getElementById(anchorOf(section))
     let active = true
+    let pending = focus
     const align = () => {
-      if (active) target()?.scrollIntoView({ block: 'start' })
+      if (!active) return
+      target()?.scrollIntoView({ block: 'start' })
+      const field = pending ? document.querySelector<HTMLElement>(pending) : null
+      if (field) {
+        field.focus({ preventScroll: true })
+        pending = null
+      }
     }
     align()
     const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(align)
@@ -72,7 +97,9 @@ function useScrollToSection(pathname: string, container: RefObject<HTMLElement |
       window.clearTimeout(timer)
       for (const name of events) window.removeEventListener(name, stop)
     }
-  }, [pathname, container])
+    // `state` y el tipo de navegación van con `key`: cada navegación trae los suyos.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key, pathname, container])
 }
 
 /** La sección que tienes delante: la última cuyo principio ya ha pasado por debajo del índice. */
@@ -133,11 +160,12 @@ function WhereSection({ pathname }: { pathname: string }) {
  */
 export function SearchHubPage() {
   const { t } = useTranslation('search')
-  const { pathname } = useLocation()
+  const location = useLocation()
+  const { pathname } = location
   const container = useRef<HTMLDivElement>(null)
   const section = sectionOf(pathname)
   const visible = useVisibleSection(section)
-  useScrollToSection(pathname, container)
+  useScrollToSection(location, container)
   // «Dónde buscar» en el índice vuelve a la vista que tenías abierta.
   const [lastWhere, setLastWhere] = useState('/fuentes/plataformas')
   if (pathname.startsWith('/fuentes/') && pathname !== lastWhere) setLastWhere(pathname)

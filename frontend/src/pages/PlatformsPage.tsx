@@ -33,11 +33,11 @@ import { dateFormatter } from '@/lib/labels'
 import { platformHome, searchLabel } from '@/lib/searches'
 import { splitIssues } from '@/lib/runIssues'
 import { cn } from '@/lib/utils'
+import { maxOffersOptions } from '@/lib/maxOffers'
 import { BusyLabel } from '@/components/StableLabel'
 
 const ACCESS: readonly BrowseAccess[] = ['free', 'login', 'blocked']
 // Ofertas que abre el agente en cada recorrido (el servidor acepta de 1 a 100).
-const MAX_OFFERS = [5, 10, 15, 20, 25, 30, 40, 50, 75, 100]
 
 function formatWhen(iso: string): string {
   return dateFormatter({ day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(iso))
@@ -475,9 +475,7 @@ function PlatformRow({ source, order, limits }: { source: SourceView; order: Slo
     max_offers?: number
   }) => update.mutate({ sourceId: source.id, ...body })
   const maxOffers = browse.max_offers ?? 0
-  const maxOffersOptions = MAX_OFFERS.includes(maxOffers)
-    ? MAX_OFFERS
-    : [...MAX_OFFERS, maxOffers].filter((n) => n > 0).sort((a, b) => a - b)
+  const offersOptions = maxOffersOptions(maxOffers)
 
   const onToggle = (next: boolean) => {
     if (next && linkedin) setConfirming(true)
@@ -600,7 +598,7 @@ function PlatformRow({ source, order, limits }: { source: SourceView; order: Slo
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {maxOffersOptions.map((n) => (
+                {offersOptions.map((n) => (
                   <SelectItem key={n} value={String(n)}>
                     {n}
                   </SelectItem>

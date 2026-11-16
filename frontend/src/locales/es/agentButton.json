@@ -35,7 +35,7 @@
   },
   "cantOpen": "No puedo abrir tu agente desde aquí",
   "noAgent": "No tienes ningún agente de IA instalado",
-  "pasteWhere": "Copia esta orden y pégala en tu agente (Claude Code, Codex…), en la ventana donde lo usas, abierto en la carpeta de CandidatAI.",
+  "pasteWhere": "Copia esta orden y pégala en tu agente, en la ventana donde lo usas, abierto en la carpeta de CandidatAI.",
   "promptLabel": "Orden para tu agente",
   "howToInstall": "Así se instala uno, en «Agente»",
   "closePrompt": "Cerrar"

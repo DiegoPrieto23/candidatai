@@ -20,7 +20,6 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.core.policies import get_policies
 from app.models import Source, SourceRun
 from app.models.base import utcnow
 from app.models.sources import PriorityConflictError
@@ -32,6 +31,7 @@ from app.schemas.sources import (
     SourceView,
 )
 from app.services import platforms
+from app.services.ingestion import max_offers as offers_limit
 from app.services.ingestion.service import SourceNotFoundError, get_source
 
 KIND = "agent_browse"
@@ -264,7 +264,7 @@ def save_source(session: Session, data: AgentBrowseSource) -> SaveSourceResult:
     config["priority"] = _priority(existing) if existing is not None else None
     if config["max_offers"] is None:  # sin valor, se conserva el que ya tenía (p. ej. de la UI)
         kept_max = (existing.config or {}).get("max_offers") if existing is not None else None
-        config["max_offers"] = kept_max or get_policies().agent_browse.default_max_offers
+        config["max_offers"] = kept_max or offers_limit.default_max_offers(session)
     name = " ".join(data.name.split())
 
     if existing is None:
@@ -367,6 +367,32 @@ def update_settings(
         place(session, source, priority, new=False)
     session.flush()
     return get_source(session, source.id)
+
+
+class MaxOffersResult(BaseModel):
+    sources: list[SourceView]  # las plataformas cambiadas, ya con su número nuevo
+    default_max_offers: int  # el de las plataformas nuevas, que pasa a ser este
+
+
+def set_max_offers(session: Session, source_ids: list[int], max_offers: int) -> MaxOffersResult:
+    """«Hasta N ofertas por portal» del panel de «Buscar ofertas»: el mismo número para varias
+    plataformas en una operación (todas o ninguna) y, desde ahora, para las nuevas."""
+    if not source_ids:
+        raise ValueError("Elige al menos una plataforma.")
+    if not offers_limit.MIN <= max_offers <= offers_limit.MAX:
+        raise ValueError(
+            f"El número de ofertas tiene que estar entre {offers_limit.MIN} y {offers_limit.MAX}."
+        )
+    ids = list(dict.fromkeys(source_ids))
+    stored = [browse_source(session, source_id) for source_id in ids]
+    for source in stored:
+        source.config = {**(source.config or {}), "max_offers": max_offers}
+    offers_limit.remember(session, max_offers)
+    session.flush()
+    return MaxOffersResult(
+        sources=[get_source(session, source.id) for source in stored],
+        default_max_offers=max_offers,
+    )
 
 
 def edit_platform(

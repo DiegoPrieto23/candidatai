@@ -3,14 +3,13 @@ import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import {
   ArrowsClockwiseIcon,
-  BrowserIcon,
   CaretRightIcon,
   CheckIcon,
   CompassIcon,
   KeyIcon,
 } from '@phosphor-icons/react'
 import type { SourceView } from '@/api/client'
-import { useEditableProfile, usePlatforms, useRunSource, useSearchRun, useSources } from '@/api/queries'
+import { useEditableProfile, usePlatforms, useRunSource, useSearchRun, useSetBrowseMaxOffers, useSources } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
 import { Hint } from '@/components/Hint'
 import { SiteIcon } from '@/components/SiteIcon'
@@ -20,10 +19,14 @@ import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
+import { errorMessage } from '@/lib/errors'
 import { formatRelative } from '@/lib/labels'
+import { maxOffersOptions } from '@/lib/maxOffers'
 import { splitIssues } from '@/lib/runIssues'
 import { cn } from '@/lib/utils'
+import type { SectionFocus } from '@/lib/searchFocus'
 
 const MAX_CHIPS = 6
 /** Lo mismo que admite el servidor: esto acaba en la orden que abre una terminal. */
@@ -156,6 +159,58 @@ function RefineField({
             </button>
           ))}
         </div>
+      )}
+    </div>
+  )
+}
+
+// --- Ofertas por portal --------------------------------------------------------------------------
+
+/**
+ * «Hasta [N] ofertas por portal»: cambia a la vez el límite de los portales elegidos (y el de los que
+ * añadas después). Si no tienen todos el mismo, lo dice y elegir un número los iguala. El de cada uno
+ * se sigue afinando en «Dónde buscar».
+ */
+function OffersPerPortal({ chosen }: { chosen: SourceView[] }) {
+  const { t } = useTranslation('search', { keyPrefix: 'plan.perPortal' })
+  const save = useSetBrowseMaxOffers()
+  const values = [...new Set(chosen.map((s) => s.browse?.max_offers ?? 0).filter((n) => n > 0))].sort((a, b) => a - b)
+  // Mientras se guarda, el que acabas de elegir; luego, el que dice el servidor.
+  const pending = save.isPending ? save.variables?.max_offers : undefined
+  const uniform = pending ?? (values.length === 1 ? values[0] : undefined)
+  const varies = pending === undefined && values.length > 1
+  const select = (
+    <Select
+      value={uniform ? String(uniform) : ''}
+      onValueChange={(v) => save.mutate({ source_ids: chosen.map((s) => s.id), max_offers: Number(v) })}
+      disabled={save.isPending || chosen.length === 0}
+    >
+      <SelectTrigger className="mx-1 inline-flex h-7 w-auto min-w-14 gap-1 px-2 align-middle" aria-label={varies ? t('ariaVaries') : t('aria', { count: uniform ?? 2 })}>
+        <SelectValue placeholder={varies ? t('varies') : '–'} />
+      </SelectTrigger>
+      <SelectContent>
+        {maxOffersOptions(...values).map((n) => (
+          <SelectItem key={n} value={String(n)}>
+            {n}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  )
+  return (
+    <div className="mt-3 grid gap-1">
+      <p className="text-sm">
+        {/* Con límites distintos no hay número: el plural general («ofertas»). */}
+        <Trans t={t} i18nKey="label" count={uniform ?? 2} components={{ n: select }} />{' '}
+        <Hint text={t('hint')} label={t('hintLabel')} />
+      </p>
+      {varies && (
+        <p className="text-xs text-muted-foreground">{t('variesHint', { min: values[0], max: values.at(-1) })}</p>
+      )}
+      {save.isError && (
+        <p role="alert" className="text-xs text-destructive">
+          {errorMessage(save.error)}
+        </p>
       )}
     </div>
   )
@@ -408,11 +463,9 @@ export function SearchPage() {
                 <p className="mt-1 text-lg leading-snug font-semibold tracking-tight">
                   {t('plan.summary', { portals: chosen.length, count: searches })}
                 </p>
-                <p className="text-sm text-muted-foreground">
-                  {t('plan.offers', { count: offers })}{' '}
-                  <Hint text={t('plan.offersHint')} label={t('plan.offersHintLabel')} />
-                  {' · '}
-                  {oneOff ? t('plan.oneOff') : t('plan.saved')}
+                <OffersPerPortal chosen={chosen} />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {t('plan.offers', { count: offers })} · {oneOff ? t('plan.oneOff') : t('plan.saved')}
                 </p>
               </>
             )}
@@ -425,20 +478,13 @@ export function SearchPage() {
                   <span className="text-muted-foreground">{t('plan.looking')}</span>{' '}
                   <span className="font-medium">{looking || t('plan.lookingNone')}</span>
                 </span>
-                <Link to="/buscar/ajustes" className="shrink-0 text-primary underline-offset-4 hover:underline">
+                <Link to="/buscar/ajustes" state={{ focus: 'roles' } satisfies { focus: SectionFocus }} className="shrink-0 text-primary underline-offset-4 hover:underline">
                   {t('plan.change')}
                 </Link>
               </p>
               <div className="grid gap-2">
                 <h4 className="text-xs font-medium text-muted-foreground">{t('plan.before')}</h4>
                 <ul className="grid gap-2 text-sm">
-                  <li className="flex gap-2">
-                    <BrowserIcon className="mt-0.5 size-4 shrink-0 text-primary" weight="duotone" aria-hidden />
-                    <span>
-                      <span className="font-medium">{t('plan.browser')}</span>{' '}
-                      <span className="text-muted-foreground">{t('plan.browserHint')}</span>
-                    </span>
-                  </li>
                   {withLogin.length > 0 && (
                     <li className="flex gap-2">
                       <KeyIcon className="mt-0.5 size-4 shrink-0 text-primary" weight="duotone" aria-hidden />

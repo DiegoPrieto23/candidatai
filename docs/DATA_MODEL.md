@@ -882,7 +882,7 @@ lee `services/agent_prefs.py`.
 | Columna | Tipo | Notas |
 |---|---|---|
 | id | int PK | |
-| scope | str | `default` (el agente por defecto), `agent` (el modelo de un agente) o `action` (el agente de una acción) |
+| scope | str | `default` (el agente por defecto), `agent` (el modelo de un agente), `action` (el agente de una acción), `tier` / `tier_undo` (niveles de gasto) o `setting` (un ajuste con su número o valor en `model`: `assess_min_score`, `extra_matching` y `browse_max_offers`, las ofertas por portal de las plataformas nuevas) |
 | key | str | Vacía en `default`; el agente en `agent`; la acción en `action`. Única con `scope` |
 | agent | str? | En `default` y `action` |
 | model / preset | str? | Uno de los dos o ninguno. El modelo es texto libre validado con `models.pattern` del agente, sin red |

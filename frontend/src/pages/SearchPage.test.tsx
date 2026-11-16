@@ -129,12 +129,48 @@ describe('Buscar ofertas', () => {
     )
     renderApp('/buscar')
     expect(await screen.findByText('2 portales, 3 búsquedas')).toBeInTheDocument()
-    expect(screen.getByText(/Hasta 25 ofertas, las más recientes/)).toBeInTheDocument()
+    expect(screen.getByText(/En total, hasta 25 ofertas, las más recientes/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Qué ofertas cuentan' })).toBeInTheDocument()
-    expect(screen.getByText('Ten el navegador conectado a tu agente.')).toBeInTheDocument()
+    // Ningún texto nombra un agente concreto ni pide conectar el navegador: lo dice tu agente si falta.
+    expect(screen.queryByText(/navegador conectado/)).not.toBeInTheDocument()
+    expect(document.body.textContent).not.toMatch(/Claude|Codex|Chrome/)
     expect(screen.getByText('Inicia sesión en Glassdoor.')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('checkbox', { name: /Glassdoor/ }))
     expect(screen.queryByText('Inicia sesión en Glassdoor.')).not.toBeInTheDocument()
+  })
+
+  it('cambia a la vez las ofertas por portal de los elegidos', async () => {
+    const calls = mockApi(
+      routes([platform(1, 'InfoJobs'), platform(2, 'Tecnoempleo'), platform(3, 'Glassdoor')], {
+        'POST /sources/browse/max-offers': { sources: [], default_max_offers: 20 },
+      }),
+    )
+    renderApp('/buscar')
+    const control = await screen.findByRole('combobox', { name: /ofertas por portal/i })
+    expect(control).toHaveTextContent('10')
+    expect(control).toHaveAccessibleName('Hasta 10 ofertas por portal')
+    // Glassdoor fuera: solo cambian los elegidos.
+    await userEvent.click(screen.getByRole('checkbox', { name: /Glassdoor/ }))
+    await userEvent.click(control)
+    await userEvent.click(await screen.findByRole('option', { name: '20' }))
+    await waitFor(() => expect(calls.some((c) => c.path === '/sources/browse/max-offers')).toBe(true))
+    expect(calls.find((c) => c.path === '/sources/browse/max-offers')?.body).toEqual({ source_ids: [1, 2], max_offers: 20 })
+  })
+
+  it('si cada portal tiene su límite, lo dice y elegir uno los iguala', async () => {
+    const browse = (max_offers: number) => ({ allow_agent_browsing: true, search_urls: [], priority: 1, access: 'free', max_offers, notes: '' })
+    const calls = mockApi(
+      routes([platform(1, 'InfoJobs', { browse: browse(5) }), platform(2, 'Tecnoempleo', { browse: browse(40) })], {
+        'POST /sources/browse/max-offers': { sources: [], default_max_offers: 15 },
+      }),
+    )
+    renderApp('/buscar')
+    const control = await screen.findByRole('combobox', { name: /ofertas por portal/i })
+    expect(control).toHaveTextContent('varía')
+    expect(screen.getByText('Cada portal tiene el suyo (de 5 a 40): elige un número para igualarlos.')).toBeInTheDocument()
+    await userEvent.click(control)
+    await userEvent.click(await screen.findByRole('option', { name: '15' }))
+    await waitFor(() => expect(calls.find((c) => c.path === '/sources/browse/max-offers')?.body).toEqual({ source_ids: [1, 2], max_offers: 15 }))
   })
 
   it('sin navegador, consulta las fuentes con API una a una', async () => {
