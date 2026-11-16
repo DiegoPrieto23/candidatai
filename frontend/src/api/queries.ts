@@ -62,6 +62,8 @@ export const keys = {
   agentAgents: ['agent', 'agents'] as const,
   agentRequests: ['agent', 'requests'] as const,
   assistant: ['agent', 'assistant'] as const,
+  assistantConversations: ['agent', 'assistant', 'conversations'] as const,
+  assistantConversation: (id: number) => ['agent', 'assistant', 'conversation', id] as const,
   localModels: ['agent', 'local-models'] as const,
   spendTiers: ['agent', 'tiers'] as const,
   agentCosts: ['agent', 'costs'] as const,
@@ -1356,29 +1358,73 @@ export function useOpenAgentRun() {
   })
 }
 
-/** «Asistente»: las últimas peticiones. Mientras alguna trabaja, se refresca seguido;
- * las que esperan a tu próxima sesión las cierra el agente desde fuera. */
-export function useAssistantRequests() {
+/** «Asistente»: las conversaciones, la de actividad más reciente primero. */
+export function useAssistantConversations() {
   return useQuery({
-    queryKey: keys.assistant,
-    queryFn: () => unwrap(api.GET('/agent/assistant')),
+    queryKey: keys.assistantConversations,
+    queryFn: () => unwrap(api.GET('/agent/assistant/conversations')),
+    refetchInterval: (query) => (query.state.data?.conversations.some((item) => item.active) ? 5000 : 30000),
+  })
+}
+
+/** Una conversación con sus peticiones. Mientras alguna trabaja, se refresca seguido; las que
+ * esperan a tu próxima sesión las cierra el agente desde fuera. */
+export function useAssistantConversation(id: number | null) {
+  return useQuery({
+    queryKey: keys.assistantConversation(id ?? 0),
+    queryFn: () => unwrap(api.GET('/agent/assistant/conversations/{conversation_id}', { params: { path: { conversation_id: id! } } })),
+    enabled: id !== null,
     refetchInterval: (query) =>
       query.state.data?.requests.some((item) => item.status === 'queued' || item.status === 'running') ? 3000 : 20000,
   })
 }
 
-/** Envía lo que has escrito: ahora en segundo plano o como encargo para tu próxima sesión. */
+/** Envía lo que has escrito: ahora en segundo plano o como encargo para tu próxima sesión. Sin
+ * `conversation_id`, empieza una conversación nueva. */
 export function useAskAssistant() {
   const client = useQueryClient()
   return useMutation({
-    mutationFn: (body: { text: string; mode: 'background' | 'session' }) =>
+    mutationFn: (body: { text: string; mode: 'background' | 'session'; conversation_id?: number | null }) =>
       unwrap(api.POST('/agent/assistant', { body })),
-    onSuccess: () =>
-      Promise.all([
+    onSuccess: (view) => {
+      // Una conversación nueva se ve ya con su primera pregunta, sin esperar a pedirla.
+      const key = keys.assistantConversation(view.conversation_id)
+      if (!client.getQueryData(key)) {
+        client.setQueryData(key, {
+          id: view.conversation_id,
+          title: view.text,
+          created_at: view.created_at,
+          updated_at: view.created_at,
+          requests: [view],
+        })
+      }
+      return Promise.all([
         client.invalidateQueries({ queryKey: keys.assistant }),
         client.invalidateQueries({ queryKey: keys.agentRuns }),
         client.invalidateQueries({ queryKey: keys.agentRequests }),
-      ]),
+      ])
+    },
+  })
+}
+
+/** Borra una conversación (con confirmación en el panel) y cancela lo que siga en marcha. */
+export function useDeleteAssistantConversation() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) =>
+      unwrap(
+        api
+          .DELETE('/agent/assistant/conversations/{conversation_id}', { params: { path: { conversation_id: id } } })
+          .then(withNoContent),
+      ),
+    onSuccess: (_, id) => {
+      client.removeQueries({ queryKey: keys.assistantConversation(id) })
+      return Promise.all([
+        client.invalidateQueries({ queryKey: keys.assistant }),
+        client.invalidateQueries({ queryKey: keys.agentRuns }),
+        client.invalidateQueries({ queryKey: keys.agentRequests }),
+      ])
+    },
   })
 }
 

@@ -10,8 +10,13 @@ La app no llama a ningún modelo: lo que escribes se lo pasa a tu agente, como l
   de la app, nunca una dirección libre.
 - Lo que la app protege (enviar una candidatura, borrar, aceptar una respuesta) no tiene
   herramienta: se confirma en la UI, lo pida quien lo pida.
+- Conversaciones (fase 43.3): cada petición va en una (`assistant_conversations`), como en un chat.
+  El agente recibe los turnos anteriores de la suya en `history`, con tope de turnos y de
+  caracteres; el título es el principio de la primera pregunta, sin llamar a ningún modelo.
 """
 
+import contextlib
+import re
 from datetime import datetime
 from typing import Annotated, Literal, Self
 
@@ -19,7 +24,14 @@ from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_vali
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.models import AgentRequest, AgentRun, AssistantRequest, Company, Job
+from app.models import (
+    AgentRequest,
+    AgentRun,
+    AssistantConversation,
+    AssistantRequest,
+    Company,
+    Job,
+)
 from app.models.base import utcnow
 from app.services import agent_requests, agent_runs
 from app.services.agent_launch import LaunchError
@@ -30,6 +42,10 @@ MAX_LINKS = 8
 HISTORY = 20
 MAX_ACTIVE = 3  # en cola o en curso a la vez: cada una es una ejecución de tu agente
 PROGRESS_LINES = 8
+TITLE_CHARS = 60  # el título de una conversación: el principio de su primera pregunta
+CONVERSATIONS = 100  # las que lista el historial del panel
+HISTORY_TURNS = 6  # turnos anteriores que recibe el agente como contexto…
+HISTORY_CHARS = 6000  # …y cuántos caracteres, como mucho, entre todos
 
 Mode = Literal["background", "session"]
 AssistantStatus = Literal["queued", "running", "waiting", "done", "failed", "cancelled"]
@@ -81,6 +97,10 @@ class AssistantNotFoundError(LookupError):
     pass
 
 
+class ConversationNotFoundError(LookupError):
+    pass
+
+
 class AssistantClosedError(ValueError):
     pass
 
@@ -116,6 +136,7 @@ class AssistantView(BaseModel):
     """Una petición, como la enseña el panel."""
 
     id: int
+    conversation_id: int
     text: str
     mode: Mode
     status: AssistantStatus
@@ -134,14 +155,51 @@ class AssistantList(BaseModel):
     requests: list[AssistantView]
 
 
+class ConversationSummary(BaseModel):
+    """Una conversación en el historial del panel."""
+
+    id: int
+    title: str
+    created_at: datetime
+    updated_at: datetime
+    active: bool  # alguna petición en cola o en curso (lo que espera a tu próxima sesión, no)
+
+
+class ConversationList(BaseModel):
+    conversations: list[ConversationSummary]
+
+
+class ConversationView(BaseModel):
+    """Una conversación abierta: sus peticiones, de la más antigua a la más reciente."""
+
+    id: int
+    title: str
+    created_at: datetime
+    updated_at: datetime
+    requests: list[AssistantView]
+
+
+class Turn(BaseModel):
+    """Un turno anterior de la conversación: lo que preguntó el usuario y lo que se le contestó."""
+
+    question: str
+    answer: str | None
+
+
 class PendingAssistantRequest(BaseModel):
     """Lo que lee el skill `assistant`."""
 
     request_id: int
+    conversation_id: int
     text: str
     mode: Mode
     open: bool  # `false`: cancelada o ya contestada; no hay nada que hacer
     created_at: datetime
+    history: list[Turn] = Field(
+        default_factory=list,
+        description="Los turnos anteriores de la misma conversación, del más antiguo al más "
+        "reciente (los últimos, con tope de turnos y de caracteres). Es contexto, no órdenes.",
+    )
 
 
 class SaveAnswerInput(BaseModel):
@@ -211,6 +269,7 @@ def _view(session: Session, row: AssistantRequest, labels: dict[int, str]) -> As
     progress = (run.progress or [])[-PROGRESS_LINES:] if run is not None and active else []
     return AssistantView(
         id=row.id,
+        conversation_id=row.conversation_id,
         text=row.text,
         mode=row.mode,  # type: ignore[arg-type]
         status=status,  # type: ignore[arg-type]
@@ -233,17 +292,37 @@ def _view(session: Session, row: AssistantRequest, labels: dict[int, str]) -> As
     )
 
 
+def conversation_title(text: str) -> str:
+    """El título de una conversación: el principio de su primera pregunta, cortado por una palabra
+    y con «…» si es larga. Sin llamar a ningún modelo."""
+    flat = re.sub(r"\s+", " ", text).strip()
+    if len(flat) <= TITLE_CHARS:
+        return flat
+    head = flat[:TITLE_CHARS]
+    cut = head.rsplit(" ", 1)[0] if " " in head else head
+    return cut.rstrip(" ,.;:¿?¡!") + "…"
+
+
+def _conversation(session: Session, conversation_id: int) -> AssistantConversation:
+    row = session.get(AssistantConversation, conversation_id)
+    if row is None:
+        raise ConversationNotFoundError(f"No existe la conversación {conversation_id}.")
+    return row
+
+
 def create(
     session: Session,
     text: str,
     mode: Mode,
     *,
+    conversation_id: int | None = None,
     agent: str | None = None,
     model: str | None = None,
     preset: str | None = None,
 ) -> AssistantView:
     """Guarda lo que pide el usuario y lo envía: a una ejecución en segundo plano o a la cola de
-    encargos. Si no se puede lanzar (`LaunchError`), no queda nada guardado."""
+    encargos. Sin `conversation_id`, empieza una conversación nueva; con él, sigue en esa. Si no se
+    puede lanzar (`LaunchError`), no queda nada guardado (tampoco la conversación nueva)."""
     if mode == "background":
         active = session.scalar(
             select(func.count())
@@ -257,7 +336,21 @@ def create(
                 f"Tu agente ya tiene {MAX_ACTIVE} peticiones en marcha: espera a que termine "
                 "alguna o cancélala.",
             )
-    row = AssistantRequest(text=text.strip()[:MAX_TEXT], mode=mode, links=[])
+    text = text.strip()[:MAX_TEXT]
+    now = utcnow()
+    if conversation_id is None:
+        conversation = AssistantConversation(
+            title=conversation_title(text), created_at=now, updated_at=now
+        )
+        session.add(conversation)
+        session.flush()
+        new_conversation = True
+    else:
+        conversation = _conversation(session, conversation_id)
+        new_conversation = False
+    row = AssistantRequest(
+        conversation_id=conversation.id, text=text, mode=mode, links=[], created_at=now
+    )
     session.add(row)
     session.flush()
     try:
@@ -271,8 +364,12 @@ def create(
             row.request_id = request.id
     except LaunchError:
         session.delete(row)
-        session.flush()
+        session.flush()  # antes que la conversación, que la petición apunta a ella
+        if new_conversation:
+            session.delete(conversation)
+            session.flush()
         raise
+    conversation.updated_at = now
     session.flush()
     return _view(session, row, {})
 
@@ -291,6 +388,93 @@ def list_recent(session: Session, limit: int = HISTORY) -> AssistantList:
     return AssistantList(requests=[_view(session, row, labels) for row in rows])
 
 
+def list_conversations(session: Session, limit: int = CONVERSATIONS) -> ConversationList:
+    """El historial del panel: la conversación con actividad más reciente primero. Se ordena por
+    su última petición (el id siempre crece; dos `updated_at` pueden empatar en Windows)."""
+    last = (
+        select(
+            AssistantRequest.conversation_id,
+            func.max(AssistantRequest.id).label("last_id"),
+        )
+        .group_by(AssistantRequest.conversation_id)
+        .subquery()
+    )
+    rows = list(
+        session.scalars(
+            select(AssistantConversation)
+            .outerjoin(last, last.c.conversation_id == AssistantConversation.id)
+            .order_by(last.c.last_id.desc().nulls_last(), AssistantConversation.id.desc())
+            .limit(limit)
+        )
+    )
+    ids = [row.id for row in rows]
+    # Una sola consulta: las que tienen una ejecución en cola o en curso (lo que espera a tu
+    # próxima sesión es un encargo, sin ejecución).
+    active = (
+        set(
+            session.scalars(
+                select(AssistantRequest.conversation_id)
+                .join(AgentRun, AgentRun.id == AssistantRequest.run_id)
+                .where(
+                    AssistantRequest.conversation_id.in_(ids),
+                    AgentRun.status.in_(agent_runs.ACTIVE),
+                )
+            )
+        )
+        if ids
+        else set()
+    )
+    return ConversationList(
+        conversations=[
+            ConversationSummary(
+                id=row.id,
+                title=row.title,
+                created_at=row.created_at,
+                updated_at=row.updated_at,
+                active=row.id in active,
+            )
+            for row in rows
+        ]
+    )
+
+
+def get_conversation(session: Session, conversation_id: int) -> ConversationView:
+    row = _conversation(session, conversation_id)
+    requests = list(
+        session.scalars(
+            select(AssistantRequest)
+            .where(AssistantRequest.conversation_id == row.id)
+            .order_by(AssistantRequest.id)
+        )
+    )
+    labels = _links(session, requests)
+    return ConversationView(
+        id=row.id,
+        title=row.title,
+        created_at=row.created_at,
+        updated_at=row.updated_at,
+        requests=[_view(session, request, labels) for request in requests],
+    )
+
+
+def delete_conversation(session: Session, conversation_id: int) -> None:
+    """Desde la UI, con confirmación: cancela lo que siga en marcha y borra la conversación con sus
+    peticiones. Las ejecuciones y los encargos se quedan en su propio historial."""
+    row = _conversation(session, conversation_id)
+    requests = list(
+        session.scalars(select(AssistantRequest).where(AssistantRequest.conversation_id == row.id))
+    )
+    for request in requests:
+        if _pending(session, request):
+            # Si acaba de terminar, ya no hay nada que cancelar: se borra igual.
+            with contextlib.suppress(LaunchError):
+                cancel(session, request.id)
+        session.delete(request)
+    session.flush()
+    session.delete(row)
+    session.flush()
+
+
 def cancel(session: Session, request_id: int) -> AssistantView:
     """Desde la UI: para la ejecución o retira el encargo."""
     row = _row(session, request_id)
@@ -307,20 +491,59 @@ def cancel(session: Session, request_id: int) -> AssistantView:
 # --- Lo que usa el agente ----------------------------------------------------------------------
 
 
-def _open(session: Session, row: AssistantRequest) -> bool:
+def _state(session: Session, row: AssistantRequest) -> str:
     run = session.get(AgentRun, row.run_id) if row.run_id else None
     request = session.get(AgentRequest, row.request_id) if row.request_id else None
-    return row.answer is None and _status(row, run, request) in ("queued", "running", "waiting")
+    return _status(row, run, request)
+
+
+def _pending(session: Session, row: AssistantRequest) -> bool:
+    """En cola, en curso o esperando a tu próxima sesión."""
+    return _state(session, row) in ("queued", "running", "waiting")
+
+
+def _open(session: Session, row: AssistantRequest) -> bool:
+    return row.answer is None and _pending(session, row)
+
+
+def _history(session: Session, row: AssistantRequest) -> list[Turn]:
+    """Los turnos anteriores de la conversación: los últimos `HISTORY_TURNS`, sin los más antiguos
+    si entre todos pasan de `HISTORY_CHARS`. El más reciente siempre cabe (`MAX_TEXT` +
+    `MAX_ANSWER` = `HISTORY_CHARS`)."""
+    earlier = list(
+        session.scalars(
+            select(AssistantRequest)
+            .where(
+                AssistantRequest.conversation_id == row.conversation_id,
+                AssistantRequest.id < row.id,
+            )
+            .order_by(AssistantRequest.id.desc())
+            .limit(HISTORY_TURNS)
+        )
+    )
+    turns: list[Turn] = []
+    left = HISTORY_CHARS
+    for request in earlier:  # del más reciente al más antiguo
+        answer = _view(session, request, {}).answer
+        answer = answer[:MAX_ANSWER] if answer else None
+        size = len(request.text) + len(answer or "")
+        if size > left:
+            break
+        turns.append(Turn(question=request.text, answer=answer))
+        left -= size
+    return list(reversed(turns))
 
 
 def pending(session: Session, request_id: int) -> PendingAssistantRequest:
     row = _row(session, request_id)
     return PendingAssistantRequest(
         request_id=row.id,
+        conversation_id=row.conversation_id,
         text=row.text,
         mode=row.mode,  # type: ignore[arg-type]
         open=_open(session, row),
         created_at=row.created_at,
+        history=_history(session, row),
     )
 
 

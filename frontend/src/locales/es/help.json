@@ -54,6 +54,22 @@
       "done": "Hecho",
       "failed": "No se pudo completar.",
       "cancelled": "Cancelada."
+    },
+    "conversations": {
+      "label": "Conversaciones",
+      "history": "Conversaciones anteriores",
+      "new": "Nueva conversación",
+      "empty": "Tus conversaciones aparecerán aquí.",
+      "delete": "Borrar",
+      "deleteLabel": "Borrar «{{title}}»",
+      "confirm": "¿Borrar «{{title}}»? Si tu agente sigue con ella, se cancela.",
+      "working": "Tu agente está trabajando",
+      "groups": {
+        "today": "Hoy",
+        "yesterday": "Ayer",
+        "week": "Últimos 7 días",
+        "older": "Antes"
+      }
     }
   },
   "screens": {
@@ -155,8 +171,8 @@
     },
     "askAgent": {
       "q": "¿Puedo pedirle algo a mi agente desde el portal?",
-      "a": "Sí. Pulsa «Asistente», abajo a la derecha, escribe lo que necesitas y pulsa Intro o la flecha. Si tu agente trabaja en segundo plano desde la app, la respuesta aparece en el mismo panel, con enlaces a lo que haya cambiado; si no, se guarda como encargo para tu próxima sesión.",
-      "keywords": "asistente chat preguntar pedir agente caja texto portal"
+      "a": "Sí. Pulsa «Asistente», abajo a la derecha, escribe lo que necesitas y pulsa Intro o la flecha. Si tu agente trabaja en segundo plano desde la app, la respuesta aparece en el mismo panel, con enlaces a lo que haya cambiado; si no, se guarda como encargo para tu próxima sesión. Cada vez que lo abres empiezas una conversación nueva; las anteriores siguen en «Conversaciones anteriores», y en una misma conversación tu agente recuerda lo que ya le preguntaste.",
+      "keywords": "asistente chat preguntar pedir agente caja texto portal conversación historial"
     },
     "askAgentLimits": {
       "q": "¿Qué puede hacer mi agente cuando se lo pido desde el portal?",

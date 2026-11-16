@@ -350,6 +350,12 @@ que ya usas.
   enseña el progreso y la respuesta, con enlaces a la oferta o a la pantalla de la que habla. Si tu
   agente necesita un dato, te lo pregunta en un aviso de la app.
 - **Si no,** se guarda como encargo para tu próxima sesión (`handle-requests`) y el hilo lo dice.
+- **Conversaciones:** cada vez que abres el panel empiezas una conversación nueva (salvo que tu
+  agente esté trabajando en una, que se abre). En una misma conversación, tu agente recibe lo que
+  ya le preguntaste y lo que te contestó, para que puedas seguir («¿y la de Acme?»). El botón de
+  la barra lateral, en la cabecera, abre tus conversaciones anteriores por fechas (Hoy, Ayer,
+  Últimos 7 días, Antes); el del lápiz empieza otra. Cada una se borra con la papelera, tras
+  confirmarlo.
 - **Qué puede hacer:** consultar tus ofertas, procesos, entrevistas, perfil y resultados, valorar
   una oferta ya leída y guardar las indicaciones de una carta. Para lo que tiene su propio botón
   (un CV, una carta, una guía de entrevista) te dice dónde está. No lee el texto original de las

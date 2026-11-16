@@ -303,3 +303,151 @@ def test_at_most_three_running_at_once(db: None, fake: Path) -> None:
     assert ask("session").status == "waiting"  # dejarla para la próxima sesión no cuenta
     with session_scope() as session:
         assert len(assistant.list_recent(session).requests) == assistant.MAX_ACTIVE + 1
+
+
+# --- Conversaciones ----------------------------------------------------------------------------
+
+
+def test_title_is_the_start_of_the_question() -> None:
+    assert assistant.conversation_title("  ¿Qué tengo\n pendiente?  ") == "¿Qué tengo pendiente?"
+    long = "Resúmeme cómo va mi búsqueda este mes y dime qué ofertas debería revisar primero hoy"
+    title = assistant.conversation_title(long)
+    assert title.endswith("…") and len(title) <= assistant.TITLE_CHARS + 1
+    assert title == "Resúmeme cómo va mi búsqueda este mes y dime qué ofertas…"
+    # Sin espacios donde cortar, corta a secas.
+    assert assistant.conversation_title("x" * 80) == "x" * assistant.TITLE_CHARS + "…"
+
+
+def test_each_new_question_starts_a_conversation_and_follow_ups_stay_in_it(db: None) -> None:
+    first = ask("session", "¿Qué tengo pendiente?")
+    other = ask("session", "Otra cosa")
+    assert first.conversation_id != other.conversation_id
+    with session_scope() as session:
+        follow = assistant.create(
+            session, "¿Y la semana que viene?", "session", conversation_id=first.conversation_id
+        )
+        assert follow.conversation_id == first.conversation_id
+        listed = assistant.list_conversations(session).conversations
+        # La de actividad más reciente, primero; el título no cambia con las siguientes.
+        assert [c.id for c in listed] == [first.conversation_id, other.conversation_id]
+        # Esperando a tu próxima sesión no cuenta como «en marcha».
+        assert listed[0].title == "¿Qué tengo pendiente?" and not listed[0].active
+        opened = assistant.get_conversation(session, first.conversation_id)
+        assert [r.text for r in opened.requests] == [
+            "¿Qué tengo pendiente?",
+            "¿Y la semana que viene?",
+        ]
+        with pytest.raises(assistant.ConversationNotFoundError):
+            assistant.create(session, "hola", "session", conversation_id=999)
+
+
+def test_failed_launch_leaves_no_empty_conversation(
+    db: None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(agent_launch, "_launchers", lambda: [])
+    with session_scope() as session:
+        with pytest.raises(LaunchError):
+            assistant.create(session, TEXT, "background")
+        assert assistant.list_conversations(session).conversations == []
+
+
+def test_the_agent_gets_the_earlier_turns_with_a_cap(db: None) -> None:
+    first = ask("session", "Primera pregunta")
+    with session_scope() as session:
+        assistant.save_answer(session, first.id, "Primera respuesta")
+        ids = [first.id]
+        for number in range(assistant.HISTORY_TURNS + 1):
+            view = assistant.create(
+                session, f"Pregunta {number}", "session", conversation_id=first.conversation_id
+            )
+            ids.append(view.id)
+        last = assistant.pending(session, ids[-1])
+        # Solo los últimos turnos, del más antiguo al más reciente, y nunca el actual.
+        assert len(last.history) == assistant.HISTORY_TURNS
+        assert last.history[-1].question == f"Pregunta {assistant.HISTORY_TURNS - 1}"
+        assert all(turn.question != last.text for turn in last.history)
+        second = assistant.pending(session, ids[1])
+        assert [(t.question, t.answer) for t in second.history] == [
+            ("Primera pregunta", "Primera respuesta")
+        ]
+        # Otra conversación no ve nada de esta.
+        alone = assistant.create(session, "Aparte", "session")
+        assert assistant.pending(session, alone.id).history == []
+
+
+def test_history_drops_the_oldest_turns_past_the_character_cap(db: None) -> None:
+    first = ask("session", "a" * assistant.MAX_TEXT)
+    with session_scope() as session:
+        assistant.save_answer(session, first.id, "b" * assistant.MAX_ANSWER)
+        second = assistant.create(
+            session, "c" * 100, "session", conversation_id=first.conversation_id
+        )
+        assistant.save_answer(session, second.id, "d" * 100)
+        third = assistant.create(session, "Ahora", "session", conversation_id=first.conversation_id)
+        history = assistant.pending(session, third.id).history
+    # 6000 + 200 no caben: se queda el turno más reciente.
+    assert [turn.question for turn in history] == ["c" * 100]
+
+
+def test_delete_conversation_cancels_what_is_running(db: None, fake: Path) -> None:
+    running = ask("background", "En marcha")
+    with session_scope() as session:
+        waiting = assistant.create(
+            session, "Para luego", "session", conversation_id=running.conversation_id
+        )
+        assert assistant.list_conversations(session).conversations[0].active  # en cola
+        assistant.delete_conversation(session, running.conversation_id)
+        assert assistant.list_conversations(session).conversations == []
+        assert agent_runs.get_run(session, running.run_id).status == "cancelled"
+        assert agent_requests.pending_count(session) == 0
+        with pytest.raises(assistant.AssistantNotFoundError):
+            assistant.get(session, waiting.id)
+        with pytest.raises(assistant.ConversationNotFoundError):
+            assistant.delete_conversation(session, running.conversation_id)
+
+
+def test_api_conversations(client: TestClient, fake: Path) -> None:
+    def post(body: dict[str, object]) -> dict[str, object]:
+        response = client.post("/agent/assistant", content=json.dumps(body), headers=JSON)
+        assert response.status_code == 201, response.text
+        return response.json()
+
+    first = post({"text": "¿Qué tengo pendiente?", "mode": "session"})
+    post({"text": "¿Y mañana?", "mode": "session", "conversation_id": first["conversation_id"]})
+    listed = client.get("/agent/assistant/conversations").json()["conversations"]
+    assert [(c["id"], c["title"], c["active"]) for c in listed] == [
+        (first["conversation_id"], "¿Qué tengo pendiente?", False)
+    ]
+    opened = client.get(f"/agent/assistant/conversations/{first['conversation_id']}").json()
+    assert [r["text"] for r in opened["requests"]] == ["¿Qué tengo pendiente?", "¿Y mañana?"]
+    missing = {"text": "hola", "mode": "session", "conversation_id": 999}
+    assert (
+        client.post("/agent/assistant", content=json.dumps(missing), headers=JSON).status_code
+        == 404
+    )
+    path = f"/agent/assistant/conversations/{first['conversation_id']}"
+    evil = {"Origin": "https://evil.example"}
+    assert client.delete(path, headers=evil).status_code == 403
+    assert client.delete(path, headers=JSON).status_code == 204
+    assert client.get(path).status_code == 404
+    assert client.get("/agent/assistant/conversations").json()["conversations"] == []
+
+
+def test_cli_show_includes_the_history(db: None) -> None:
+    from typer.testing import CliRunner
+
+    from app import cli
+
+    first = ask("session", "¿Qué tengo pendiente?")
+    with session_scope() as session:
+        assistant.save_answer(session, first.id, "Dos ofertas.")
+        follow = assistant.create(
+            session, "¿Y la segunda?", "session", conversation_id=first.conversation_id
+        )
+    result = CliRunner().invoke(cli.app, ["assistant", "show", str(follow.id), "--json"])
+    assert result.exit_code == 0, result.output
+    shown = json.loads(result.stdout)
+    assert shown["conversation_id"] == first.conversation_id
+    assert shown["history"] == [{"question": "¿Qué tengo pendiente?", "answer": "Dos ofertas."}]
+    text = CliRunner().invoke(cli.app, ["assistant", "show", str(follow.id)])
+    assert "P: ¿Qué tengo pendiente?" in text.stdout and "R: Dos ofertas." in text.stdout

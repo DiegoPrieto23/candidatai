@@ -54,6 +54,22 @@
       "done": "Done",
       "failed": "It could not be completed.",
       "cancelled": "Cancelled."
+    },
+    "conversations": {
+      "label": "Conversations",
+      "history": "Previous conversations",
+      "new": "New conversation",
+      "empty": "Your conversations will appear here.",
+      "delete": "Delete",
+      "deleteLabel": "Delete “{{title}}”",
+      "confirm": "Delete “{{title}}”? If your agent is still working on it, it is cancelled.",
+      "working": "Your agent is working",
+      "groups": {
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "week": "Last 7 days",
+        "older": "Earlier"
+      }
     }
   },
   "screens": {
@@ -155,8 +171,8 @@
     },
     "askAgent": {
       "q": "Can I ask my agent for something from the portal?",
-      "a": "Yes. Click “Assistant”, at the bottom right, write what you need and press Enter or the arrow. If your agent runs in the background from the app, the answer appears in the same panel, with links to whatever changed; if not, it is saved as a request for your next session.",
-      "keywords": "assistant chat ask request agent text box portal"
+      "a": "Yes. Click “Assistant”, at the bottom right, write what you need and press Enter or the arrow. If your agent runs in the background from the app, the answer appears in the same panel, with links to whatever changed; if not, it is saved as a request for your next session. Each time you open it you start a new conversation; earlier ones stay in “Previous conversations”, and within a conversation your agent remembers what you already asked.",
+      "keywords": "assistant chat ask request agent text box portal conversation history"
     },
     "askAgentLimits": {
       "q": "What can my agent do when I ask from the portal?",

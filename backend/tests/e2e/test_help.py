@@ -111,6 +111,24 @@ def test_ask_your_agent_and_read_the_answer(page: Page, fresh_demo_app: AppServe
     expect(history.get_by_text("Empieza por esta.")).to_be_visible()
     review = t("help.goTo", screen=t("help.screens.review"))
     expect(history.get_by_role("link", name=review)).to_be_visible()
+
+    # Seguir en la misma conversación: el agente recibe el turno anterior como contexto.
+    field.fill("¿Y la segunda?")
+    field.press("Enter")
+    expect(history.get_by_text("¿Y la segunda?")).to_be_visible()
+    second = api(server, "/agent/assistant")["requests"][0]
+    assert second["conversation_id"] == asked["conversation_id"]
+    context = cai(server, "assistant", "show", str(second["id"]))["history"]
+    assert context == [{"question": "¿Qué oferta miro primero?", "answer": "Empieza por esta."}]
+
+    # Una conversación nueva empieza vacía; la anterior sigue en la barra y se vuelve a abrir.
+    header = panel.locator("header")
+    header.get_by_role("button", name=t("help.assistant.conversations.new")).click()
+    expect(panel.get_by_role("region", name=t("help.assistant.suggestionsLabel"))).to_be_visible()
+    header.get_by_role("button", name=t("help.assistant.conversations.history")).click()
+    sidebar = panel.get_by_role("navigation", name=t("help.assistant.conversations.label"))
+    sidebar.get_by_role("button", name="¿Qué oferta miro primero?", exact=True).click()
+    expect(history.get_by_text("Empieza por esta.")).to_be_visible()
     history.get_by_role("link").first.click()
     expect(page).to_have_url(re.compile(rf"/jobs/{job['id']}$"))
     expect(panel).to_be_hidden()

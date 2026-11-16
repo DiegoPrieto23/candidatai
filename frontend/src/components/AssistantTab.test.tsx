@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import type { AssistantView } from '@/api/client'
 import { mockApi, renderApp, status } from '@/test/utils'
 
@@ -29,6 +29,7 @@ function launcher(background = true, noAgent = false) {
 function request(changes: Partial<AssistantView> = {}): AssistantView {
   return {
     id: 1,
+    conversation_id: 1,
     text: '¿Qué tengo pendiente?',
     mode: 'background',
     status: 'done',
@@ -48,12 +49,30 @@ function request(changes: Partial<AssistantView> = {}): AssistantView {
   }
 }
 
+/** La conversación 1 con estas peticiones (en orden), en el historial y abierta. */
+function conversation(requests: AssistantView[], title = '¿Qué tengo pendiente?') {
+  const summary = {
+    id: 1,
+    title,
+    created_at: requests[0]?.created_at ?? '2026-11-14T10:00:00Z',
+    updated_at: requests.at(-1)?.created_at ?? '2026-11-14T10:00:00Z',
+    active: requests.some((item) => item.status === 'queued' || item.status === 'running'),
+  }
+  return {
+    'GET /agent/assistant/conversations': { conversations: [summary] },
+    'GET /agent/assistant/conversations/1': { ...summary, requests },
+  }
+}
+
+beforeEach(() => localStorage.clear())
+
 async function openAssistant(extra: Record<string, unknown>) {
   const calls = mockApi({
     'GET /status': status(),
     'GET /jobs': emptyPage,
     'GET /agent': launcher(),
-    'GET /agent/assistant': { requests: [] },
+    'GET /agent/assistant/conversations': { conversations: [] },
+    'GET /agent/assistant/conversations/1': { id: 1, title: 'x', created_at: '2026-11-14T10:00:00Z', updated_at: '2026-11-14T10:00:00Z', requests: [] },
     'GET /prompts/pending': { prompts: [] },
     ...extra,
   })
@@ -64,6 +83,14 @@ async function openAssistant(extra: Record<string, unknown>) {
   const panel = screen.getByRole('dialog', { name: 'Tu asistente' })
   expect(within(panel).getByRole('tab', { name: 'Asistente' })).toHaveAttribute('aria-selected', 'true')
   return { calls, panel }
+}
+
+/** Abre la barra de conversaciones y, en ella, la conversación con este título. */
+async function openFromHistory(panel: HTMLElement, title: string | RegExp) {
+  await userEvent.click(within(panel).getByRole('button', { name: 'Conversaciones anteriores' }))
+  const sidebar = within(panel).getByRole('navigation', { name: 'Conversaciones' })
+  await userEvent.click(await within(sidebar).findByRole('button', { name: title }))
+  return sidebar
 }
 
 describe('Asistente', () => {
@@ -106,7 +133,7 @@ describe('Asistente', () => {
 
     await userEvent.keyboard('{Enter}')
     const post = calls.find((call) => call.method === 'POST' && call.path === '/agent/assistant')
-    expect(post?.body).toEqual({ text: '¿Qué tengo\npendiente?', mode: 'background' })
+    expect(post?.body).toEqual({ text: '¿Qué tengo\npendiente?', mode: 'background', conversation_id: null })
     expect(field).toHaveValue('')
   })
 
@@ -118,11 +145,12 @@ describe('Asistente', () => {
     expect(within(panel).getByRole('button', { name: 'Enviar' })).toBeDisabled()
     await userEvent.type(field, 'Resume mis procesos')
     await userEvent.click(within(panel).getByRole('button', { name: 'Enviar' }))
-    expect(calls.find((call) => call.method === 'POST')?.body).toEqual({ text: 'Resume mis procesos', mode: 'background' })
+    expect(calls.find((call) => call.method === 'POST')?.body).toEqual({ text: 'Resume mis procesos', mode: 'background', conversation_id: null })
   })
 
   it('enseña la respuesta con enlaces a la oferta y a la pantalla', async () => {
-    const { panel } = await openAssistant({ 'GET /agent/assistant': { requests: [request()] } })
+    const { panel } = await openAssistant(conversation([request()]))
+    await openFromHistory(panel, '¿Qué tengo pendiente?')
     const history = await within(panel).findByRole('log', { name: 'Peticiones anteriores' })
     expect(within(history).getByText('Tienes 1 oferta por revisar.')).toBeInTheDocument()
     expect(within(history).getByRole('link', { name: 'Data Engineer · Acme' })).toHaveAttribute('href', '/jobs/7')
@@ -139,7 +167,7 @@ describe('Asistente', () => {
       progress: [{ at: '2026-11-14T10:00:05Z', kind: 'tool', text: 'list_jobs' }],
     })
     const { calls, panel } = await openAssistant({
-      'GET /agent/assistant': { requests: [running] },
+      ...conversation([running]),
       'POST /agent/assistant/1/cancel': { status: 200, body: request({ status: 'cancelled', answer: null, links: [] }) },
     })
     expect(await within(panel).findByText('Tu agente está trabajando · list_jobs')).toBeInTheDocument()
@@ -170,7 +198,7 @@ describe('Asistente', () => {
     // La pregunta llega con el panel ya abierto: el aviso es un diálogo modal.
     let asked = false
     const { panel } = await openAssistant({
-      'GET /agent/assistant': { requests: [running] },
+      ...conversation([running]),
       'GET /prompts/pending': () => ({ prompts: asked ? [question] : [] }),
     })
     await within(panel).findByText('Tu agente está trabajando')
@@ -183,7 +211,8 @@ describe('Asistente', () => {
 
   it('si falla, dice por qué', async () => {
     const failed = request({ status: 'failed', answer: null, links: [], error: 'Superó el tiempo máximo (30 min).' })
-    const { panel } = await openAssistant({ 'GET /agent/assistant': { requests: [failed] } })
+    const { panel } = await openAssistant(conversation([failed]))
+    await openFromHistory(panel, '¿Qué tengo pendiente?')
     expect(await within(panel).findByText('No se pudo completar. Superó el tiempo máximo (30 min).')).toBeInTheDocument()
   })
 
@@ -192,7 +221,7 @@ describe('Asistente', () => {
     let sent = false
     const { calls, panel } = await openAssistant({
       'GET /agent': launcher(false),
-      'GET /agent/assistant': () => ({ requests: sent ? [waiting] : [] }),
+      'GET /agent/assistant/conversations/1': () => ({ ...conversation([waiting])['GET /agent/assistant/conversations/1'], requests: sent ? [waiting] : [] }),
       'POST /agent/assistant': () => {
         sent = true
         return waiting
@@ -200,7 +229,7 @@ describe('Asistente', () => {
     })
     await userEvent.type(within(panel).getByRole('textbox'), 'Resume mis procesos{Enter}')
     await waitFor(() => expect(calls.some((call) => call.method === 'POST')).toBe(true))
-    expect(calls.find((call) => call.method === 'POST')?.body).toEqual({ text: 'Resume mis procesos', mode: 'session' })
+    expect(calls.find((call) => call.method === 'POST')?.body).toEqual({ text: 'Resume mis procesos', mode: 'session', conversation_id: null })
     expect(await within(panel).findByText('Se lo pasaré a tu agente en tu próxima sesión')).toBeInTheDocument()
   })
 
@@ -221,7 +250,7 @@ describe('Asistente', () => {
     expect(field).toHaveValue('Hola')
     release(launcher())
     await waitFor(() => expect(calls.some((call) => call.method === 'POST')).toBe(true))
-    expect(calls.find((call) => call.method === 'POST')?.body).toEqual({ text: 'Hola', mode: 'background' })
+    expect(calls.find((call) => call.method === 'POST')?.body).toEqual({ text: 'Hola', mode: 'background', conversation_id: null })
     expect(field).toHaveValue('')
   })
 
@@ -238,8 +267,8 @@ describe('Asistente', () => {
       ...(sameYear ? {} : { year: 'numeric' }),
     }).format(tenDaysAgo)
     const newer = request({ id: 2, text: 'Segunda', answer: 'Respuesta dos', links: [], created_at: new Date().toISOString() })
-    // El servidor las da de la más nueva a la más antigua.
-    const { panel } = await openAssistant({ 'GET /agent/assistant': { requests: [newer, older] } })
+    const { panel } = await openAssistant(conversation([older, newer], 'Primera'))
+    await openFromHistory(panel, 'Primera')
     const history = await within(panel).findByRole('log', { name: 'Peticiones anteriores' })
     const turns = within(history).getAllByRole('listitem')
     expect(turns.map((turn) => turn.getAttribute('aria-label'))).toEqual(['Tú', 'Tu asistente', 'Tú', 'Tu asistente'])
@@ -252,6 +281,128 @@ describe('Asistente', () => {
     expect(within(history).queryByText(/Pedido el/)).not.toBeInTheDocument()
     // Lo que confirmas tú, en una ayuda junto a la caja.
     expect(within(panel).getByRole('button', { name: 'Qué confirmas tú' })).toBeInTheDocument()
+  })
+
+  it('al abrir empieza una conversación nueva; las anteriores, en la barra por fechas', async () => {
+    const now = new Date().toISOString()
+    const lastWeek = new Date(Date.now() - 3 * 86_400_000).toISOString()
+    const long = 'Resúmeme cómo va mi búsqueda este mes y dime qué ofertas…'
+    const { panel } = await openAssistant({
+      'GET /agent/assistant/conversations': {
+        conversations: [
+          { id: 1, title: '¿Qué tengo pendiente?', created_at: now, updated_at: now, active: false },
+          { id: 2, title: long, created_at: lastWeek, updated_at: lastWeek, active: false },
+        ],
+      },
+    })
+    // Nada de la conversación anterior: los ejemplos de una nueva.
+    expect(await within(panel).findByRole('region', { name: 'Ejemplos de peticiones' })).toBeInTheDocument()
+    expect(within(panel).queryByRole('log')).not.toBeInTheDocument()
+    const toggle = within(panel).getByRole('button', { name: 'Conversaciones anteriores' })
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    await userEvent.click(toggle)
+    expect(toggle).toHaveAttribute('aria-expanded', 'true')
+    const sidebar = within(panel).getByRole('navigation', { name: 'Conversaciones' })
+    const today = await within(sidebar).findByRole('region', { name: 'Hoy' })
+    expect(within(today).getByRole('button', { name: '¿Qué tengo pendiente?' })).toBeInTheDocument()
+    const week = within(sidebar).getByRole('region', { name: 'Últimos 7 días' })
+    // El título entero en la ayuda; la barra lo corta con «…» si no cabe.
+    expect(within(week).getByRole('button', { name: long })).toHaveAttribute('title', long)
+  })
+
+  it('una pregunta en una conversación abierta va en ella; «Nueva conversación» empieza otra', async () => {
+    const { calls, panel } = await openAssistant({
+      ...conversation([request()]),
+      'POST /agent/assistant': request({ id: 2, text: '¿Y mañana?', status: 'queued', answer: null, links: [] }),
+    })
+    const sidebar = await openFromHistory(panel, '¿Qué tengo pendiente?')
+    expect(within(sidebar).getByRole('button', { name: '¿Qué tengo pendiente?' })).toHaveAttribute('aria-current', 'true')
+    expect(await within(panel).findByText('Tienes 1 oferta por revisar.')).toBeInTheDocument()
+    const field = within(panel).getByRole('textbox', { name: 'Qué quieres pedirle a tu agente' })
+    await userEvent.type(field, '¿Y mañana?{Enter}')
+    await waitFor(() => expect(calls.some((call) => call.method === 'POST')).toBe(true))
+    expect(calls.find((call) => call.method === 'POST')?.body).toEqual({ text: '¿Y mañana?', mode: 'background', conversation_id: 1 })
+
+    // El de la cabecera (la barra tiene otro igual).
+    await userEvent.click(within(panel.querySelector('header')!).getByRole('button', { name: 'Nueva conversación' }))
+    expect(await within(panel).findByRole('region', { name: 'Ejemplos de peticiones' })).toBeInTheDocument()
+    expect(within(panel).queryByText('Tienes 1 oferta por revisar.')).not.toBeInTheDocument()
+    expect(within(sidebar).getByRole('button', { name: '¿Qué tengo pendiente?' })).not.toHaveAttribute('aria-current')
+    expect(field).toHaveFocus()
+  })
+
+  it('con tu agente trabajando en una, el panel abre esa', async () => {
+    const running = request({ status: 'running', answer: null, links: [], finished_at: null })
+    const { panel } = await openAssistant(conversation([running]))
+    expect(await within(panel).findByText('Tu agente está trabajando')).toBeInTheDocument()
+  })
+
+  it('borrar una conversación pide confirmación y, si era la abierta, deja una nueva', async () => {
+    let deleted = false
+    const routes = conversation([request()])
+    const { calls, panel } = await openAssistant({
+      ...routes,
+      'GET /agent/assistant/conversations': () => (deleted ? { conversations: [] } : routes['GET /agent/assistant/conversations']),
+      'DELETE /agent/assistant/conversations/1': () => {
+        deleted = true
+        return { status: 200, body: {} }
+      },
+    })
+    const sidebar = await openFromHistory(panel, '¿Qué tengo pendiente?')
+    await within(panel).findByText('Tienes 1 oferta por revisar.')
+    await userEvent.click(within(sidebar).getByRole('button', { name: 'Borrar «¿Qué tengo pendiente?»' }))
+    expect(within(sidebar).getByText(/si tu agente sigue con ella, se cancela/i)).toBeInTheDocument()
+    expect(calls.some((call) => call.method === 'DELETE')).toBe(false)
+    // «Cancelar» no borra nada.
+    await userEvent.click(within(sidebar).getByRole('button', { name: 'Cancelar' }))
+    expect(calls.some((call) => call.method === 'DELETE')).toBe(false)
+    await userEvent.click(within(sidebar).getByRole('button', { name: 'Borrar «¿Qué tengo pendiente?»' }))
+    await userEvent.click(within(sidebar).getByRole('button', { name: 'Borrar' }))
+    await waitFor(() => expect(calls.some((call) => call.method === 'DELETE')).toBe(true))
+    expect(await within(panel).findByRole('region', { name: 'Ejemplos de peticiones' })).toBeInTheDocument()
+    expect(await within(sidebar).findByText('Tus conversaciones aparecerán aquí.')).toBeInTheDocument()
+  })
+
+  it('Esc en la confirmación de borrar la cancela sin cerrar el panel', async () => {
+    const { calls, panel } = await openAssistant(conversation([request()]))
+    const sidebar = await openFromHistory(panel, '¿Qué tengo pendiente?')
+    const trash = within(sidebar).getByRole('button', { name: 'Borrar «¿Qué tengo pendiente?»' })
+    await userEvent.click(trash)
+    // El foco, en lo que no borra.
+    expect(within(sidebar).getByRole('button', { name: 'Cancelar' })).toHaveFocus()
+    await userEvent.keyboard('{Escape}')
+    expect(screen.getByRole('dialog', { name: 'Tu asistente' })).toBeInTheDocument()
+    expect(within(sidebar).queryByRole('button', { name: 'Cancelar' })).not.toBeInTheDocument()
+    expect(within(sidebar).getByRole('button', { name: 'Borrar «¿Qué tengo pendiente?»' })).toHaveFocus()
+    expect(calls.some((call) => call.method === 'DELETE')).toBe(false)
+  })
+
+  it('si pasas a otra conversación mientras se envía, no te devuelve a la anterior', async () => {
+    let release: (value: unknown) => void = () => {}
+    const slow = new Promise((resolve) => (release = resolve))
+    const { panel } = await openAssistant({
+      ...conversation([request()]),
+      'POST /agent/assistant': () => slow,
+    })
+    await openFromHistory(panel, '¿Qué tengo pendiente?')
+    await within(panel).findByText('Tienes 1 oferta por revisar.')
+    await userEvent.type(within(panel).getByRole('textbox', { name: 'Qué quieres pedirle a tu agente' }), '¿Y mañana?{Enter}')
+    await userEvent.click(within(panel.querySelector('header')!).getByRole('button', { name: 'Nueva conversación' }))
+    expect(await within(panel).findByRole('region', { name: 'Ejemplos de peticiones' })).toBeInTheDocument()
+    release(request({ id: 2, text: '¿Y mañana?', status: 'queued', answer: null, links: [] }))
+    // Sigue en la nueva.
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    expect(within(panel).getByRole('region', { name: 'Ejemplos de peticiones' })).toBeInTheDocument()
+    expect(within(panel).queryByText('Tienes 1 oferta por revisar.')).not.toBeInTheDocument()
+  })
+
+  it('la barra recuerda si la dejaste abierta', async () => {
+    const { panel } = await openAssistant({})
+    await userEvent.click(within(panel).getByRole('button', { name: 'Conversaciones anteriores' }))
+    expect(localStorage.getItem('cai.assistant.sidebar')).toBe('open')
+    await userEvent.click(within(panel).getByRole('button', { name: 'Cerrar la ayuda' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Asistente' }))
+    expect(screen.getByRole('navigation', { name: 'Conversaciones' })).toBeInTheDocument()
   })
 
   it('sin agente instalado lo dice y la pestaña «Ayuda» sigue funcionando', async () => {

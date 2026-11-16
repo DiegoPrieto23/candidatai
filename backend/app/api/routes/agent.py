@@ -12,7 +12,7 @@ comprobación previa CORS que esta API no concede.
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query, Response, status
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.agent_interface.errors import ErrorDetail, ToolError
@@ -469,12 +469,14 @@ def cancel_agent_request(
 
 class AssistantBody(BaseModel):
     """Lo que escribes en la caja. `background`: ahora, en segundo plano; `session`: como encargo
-    para tu próxima sesión. Solo texto, sin adjuntos."""
+    para tu próxima sesión. Solo texto, sin adjuntos. Sin `conversation_id`, empieza una
+    conversación nueva; con él, sigue en esa."""
 
     model_config = ConfigDict(extra="forbid")
 
     text: assistant.RequestText
     mode: assistant.Mode
+    conversation_id: int | None = None
 
 
 @router.get("/assistant", operation_id="list_assistant_requests")
@@ -494,10 +496,46 @@ def list_assistant_requests(
 def create_assistant_request(session: SessionDep, body: AssistantBody) -> assistant.AssistantView:
     """Guarda el texto y se lo pasa a tu agente. La orden del agente solo lleva el id."""
     try:
-        return assistant.create(session, body.text, body.mode)
+        return assistant.create(session, body.text, body.mode, conversation_id=body.conversation_id)
+    except assistant.ConversationNotFoundError as exc:
+        raise ToolError("not_found", str(exc)) from exc
     except LaunchError as exc:
         _raise(exc)
         raise
+
+
+@router.get("/assistant/conversations", operation_id="list_assistant_conversations")
+def list_assistant_conversations(session: SessionDep) -> assistant.ConversationList:
+    """El historial del panel: la conversación con actividad más reciente primero."""
+    return assistant.list_conversations(session)
+
+
+@router.get("/assistant/conversations/{conversation_id}", operation_id="get_assistant_conversation")
+def get_assistant_conversation(
+    session: SessionDep, conversation_id: int
+) -> assistant.ConversationView:
+    try:
+        return assistant.get_conversation(session, conversation_id)
+    except assistant.ConversationNotFoundError as exc:
+        raise ToolError("not_found", str(exc)) from exc
+
+
+@router.delete(
+    "/assistant/conversations/{conversation_id}",
+    operation_id="delete_assistant_conversation",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_ui)],
+)
+def delete_assistant_conversation(session: SessionDep, conversation_id: int) -> Response:
+    """Borra la conversación (con confirmación en la UI), cancelando lo que siga en marcha."""
+    try:
+        assistant.delete_conversation(session, conversation_id)
+    except assistant.ConversationNotFoundError as exc:
+        raise ToolError("not_found", str(exc)) from exc
+    except LaunchError as exc:
+        _raise(exc)
+        raise
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.get("/assistant/{request_id}", operation_id="get_assistant_request")

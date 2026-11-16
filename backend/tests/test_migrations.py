@@ -565,3 +565,47 @@ def test_0033_copies_the_title_of_each_extraction_and_back(db_url: str) -> None:
         assert "title_normalized" not in columns
     finally:
         engine.dispose()
+
+
+def test_0039_puts_each_assistant_request_in_its_own_conversation_and_back(db_url: str) -> None:
+    """Las peticiones de antes de las conversaciones quedan cada una en la suya, con su pregunta
+    como título (cortada con «…» si es larga)."""
+    migrations.upgrade(db_url, "0038")
+    engine = create_engine(db_url)
+    long = "Resúmeme cómo va mi búsqueda este mes y dime qué ofertas debería revisar primero hoy"
+    try:
+        with engine.begin() as conn:
+            for request_id, text, answered in (
+                (1, "¿Qué tengo\n pendiente?", "2026-11-14 10:05:00"),
+                (2, long, None),
+            ):
+                conn.exec_driver_sql(
+                    "INSERT INTO assistant_requests "
+                    "(id, text, mode, links, created_at, answered_at) "
+                    "VALUES (?, ?, 'session', '[]', '2026-11-14 10:00:00', ?)",
+                    (request_id, text, answered),
+                )
+        engine.dispose()
+
+        migrations.upgrade(db_url)
+        with engine.connect() as conn:
+            rows = conn.exec_driver_sql(
+                "SELECT r.id, c.title, c.created_at, c.updated_at FROM assistant_requests r "
+                "JOIN assistant_conversations c ON c.id = r.conversation_id ORDER BY r.id"
+            ).all()
+        assert [(r[0], r[1]) for r in rows] == [
+            (1, "¿Qué tengo pendiente?"),
+            (2, "Resúmeme cómo va mi búsqueda este mes y dime qué ofertas…"),
+        ]
+        assert str(rows[0][3]).startswith("2026-11-14 10:05")  # la última actividad
+        assert str(rows[1][3]).startswith("2026-11-14 10:00")
+        engine.dispose()
+
+        migrations.downgrade(db_url, "0038")
+        assert "assistant_conversations" not in _tables(db_url)
+        columns = {c["name"] for c in inspect(engine).get_columns("assistant_requests")}
+        assert "conversation_id" not in columns
+        with engine.connect() as conn:
+            assert conn.exec_driver_sql("SELECT count(*) FROM assistant_requests").scalar() == 2
+    finally:
+        engine.dispose()

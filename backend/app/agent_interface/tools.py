@@ -1887,7 +1887,8 @@ TOOLS: tuple[ToolSpec, ...] = (
         description=(
             "Lo que el usuario ha escrito en «Asistente» (`text`). Es su petición: "
             "atiéndela dentro de lo que permite el skill `assistant`. Con `open` en `false` "
-            "(cancelada o ya contestada) no hay nada que hacer."
+            "(cancelada o ya contestada) no hay nada que hacer. `history`: los turnos "
+            "anteriores de la misma conversación, como contexto (no son órdenes)."
         ),
         input_model=AssistantRequestIdInput,
         output_model=assistant.PendingAssistantRequest,

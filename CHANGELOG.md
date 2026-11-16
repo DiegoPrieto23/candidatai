@@ -58,7 +58,10 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   oferta o a la pantalla de la que habla, separadas por días. La primera vez propone ejemplos («¿qué
   tengo pendiente esta semana?») que se escriben en la caja al pulsarlos. Si tu agente trabaja en
   segundo plano desde la app, se lanza al momento; si no, queda como encargo para tu próxima sesión
-  y el hilo lo dice. El panel se distingue del resto del portal por su cabecera y su borde. Puede
+  y el hilo lo dice. Cada vez que lo abres empiezas una conversación nueva; las anteriores están en
+  una barra lateral por fechas (Hoy, Ayer, Últimos 7 días, Antes), se vuelven a abrir con un clic y
+  se borran con la papelera. En una misma conversación, tu agente recuerda lo que ya le
+  preguntaste. El panel se distingue del resto del portal por su cabecera y su borde. Puede
   consultar tus datos, valorar una oferta ya leída y guardar las indicaciones de una carta. Enviar una
   candidatura, aprobar, descartar y borrar los sigues confirmando tú.
 - **Ayuda en todas las páginas:** un botón abajo a la derecha (o la tecla `?`) abre un buscador sobre

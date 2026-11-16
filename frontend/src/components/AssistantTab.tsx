@@ -6,7 +6,8 @@ import type { AssistantView } from '@/api/client'
 import {
   useAgentLauncher,
   useAskAssistant,
-  useAssistantRequests,
+  useAssistantConversation,
+  useAssistantConversations,
   useCancelAssistantRequest,
   usePendingPrompts,
 } from '@/api/queries'
@@ -142,22 +143,48 @@ function Turn({ request, asking, onGo }: { request: AssistantView; asking: boole
 /**
  * «Asistente», como un chat: lo que escribes se guarda en la app y se lo pasa a tu agente, en
  * segundo plano si puede trabajar así desde la app o, si no, como encargo para tu próxima sesión.
- * La app no llama a ningún modelo. Arriba, las peticiones con su respuesta, por días; abajo, la caja.
+ * La app no llama a ningún modelo. Arriba, los mensajes de la conversación abierta, por días; abajo,
+ * la caja. `conversationId` en `null`: una conversación nueva, que se crea al enviar.
  */
-export function AssistantTab({ onGo }: { onGo: () => void }) {
+export function AssistantTab({
+  conversationId,
+  onConversation,
+  onAutoOpen,
+  onGo,
+}: {
+  conversationId: number | null
+  onConversation: (id: number | null) => void
+  /** Lo que la app elige al abrir (lo ignora si ya has elegido tú). */
+  onAutoOpen: (id: number | null) => void
+  onGo: () => void
+}) {
   const { t } = useTranslation('help')
   const [text, setText] = useState('')
   const field = useRef<HTMLTextAreaElement>(null)
   const scroller = useRef<HTMLDivElement>(null)
   const launcher = useAgentLauncher()
-  const requests = useAssistantRequests()
+  const conversations = useAssistantConversations()
+  const conversation = useAssistantConversation(conversationId)
   const prompts = usePendingPrompts()
   const ask = useAskAssistant()
   const dayLabel = useDayLabel()
 
+  // Al abrir: una conversación nueva, salvo que haya una con tu agente trabajando, que se abre. Con
+  // datos recién pedidos, no con los de la caché, que pueden ser de hace minutos.
+  useEffect(() => {
+    if (!conversations.isFetchedAfterMount || !conversations.data) return
+    onAutoOpen(conversations.data.conversations.find((item) => item.active)?.id ?? null)
+  }, [conversations.isFetchedAfterMount, conversations.data, onAutoOpen])
+
+  // La conversación abierta ahora (para no saltar a otra si cambias mientras se envía).
+  const shown = useRef(conversationId)
+  useEffect(() => {
+    shown.current = conversationId
+  }, [conversationId])
+
   useEffect(() => {
     field.current?.focus()
-  }, [])
+  }, [conversationId])
 
   const action = launcher.data?.actions.find((item) => item.id === 'assistant')
   const noAgent = launcher.data?.no_agent_installed ?? false
@@ -168,8 +195,8 @@ export function AssistantTab({ onGo }: { onGo: () => void }) {
   const [queued, setQueued] = useState<string | null>(null)
   const ready = trimmed.length > 0 && !ask.isPending && queued === null
 
-  // La más antigua arriba, como en un chat (el servidor las da de la más nueva a la más antigua).
-  const list = [...(requests.data?.requests ?? [])].reverse()
+  // La más antigua arriba, como en un chat. En una conversación nueva, nada.
+  const list = conversationId === null ? [] : (conversation.data?.requests ?? [])
   const last = list.at(-1)
 
   // Un mensaje nuevo baja hasta él; si cambia la respuesta del último, solo si ya estabas abajo
@@ -186,16 +213,20 @@ export function AssistantTab({ onGo }: { onGo: () => void }) {
   // (falla la consulta del agente), también: un encargo funciona con cualquier agente.
   const known = launcher.data !== undefined || launcher.isError
   const mode = canRunNow ? 'background' : 'session'
-  const submit = (body: string) =>
-    ask.mutate(
-      { text: body, mode },
-      {
-        onSuccess: () => {
-          setText('')
-          field.current?.focus()
-        },
-      },
-    )
+  // Con `mutateAsync`, la conversación nueva queda abierta aunque cambies de pestaña mientras se
+  // envía; si has pasado a otra conversación, no se salta de vuelta.
+  const submit = (body: string) => {
+    const from = conversationId
+    ask
+      .mutateAsync({ text: body, mode, conversation_id: from })
+      .then((view) => {
+        if (shown.current !== from) return
+        setText('')
+        onConversation(view.conversation_id)
+        field.current?.focus()
+      })
+      .catch(() => {}) // el error lo enseña `ask.error`
+  }
   const send = () => {
     if (!ready) return
     if (known) submit(trimmed)
@@ -239,7 +270,11 @@ export function AssistantTab({ onGo }: { onGo: () => void }) {
         }}
         className="min-h-0 flex-1 overflow-y-auto bg-muted/50 px-4 py-3 dark:bg-muted/30"
       >
-        {list.length === 0 ? (
+        {conversationId !== null && conversation.isError ? (
+          <p role="alert" className="text-sm text-destructive">
+            {errorMessage(conversation.error)}
+          </p>
+        ) : list.length === 0 && conversationId !== null ? null : list.length === 0 ? (
           <section aria-label={t('assistant.suggestionsLabel')}>
             <p className="text-sm text-pretty text-muted-foreground">{t('assistant.empty')}</p>
             <ul className="mt-2.5 flex flex-col items-start gap-1.5">

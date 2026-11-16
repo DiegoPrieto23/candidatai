@@ -1554,6 +1554,12 @@ def _render_message(result: Any) -> None:
 
 
 def _render_assistant_request(result: Any) -> None:
+    if result.history:
+        typer.echo(f"Antes, en la conversación {result.conversation_id}:")
+        for turn in result.history:
+            typer.echo(f"  P: {turn.question}")
+            typer.echo(f"  R: {turn.answer or '(sin respuesta)'}")
+        typer.echo("")
     state = "abierta" if result.open else "cerrada"
     typer.echo(f"Petición {result.request_id} ({state}):")
     typer.echo(result.text)

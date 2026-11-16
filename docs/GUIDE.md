@@ -355,6 +355,12 @@ box, and you send it. The app calls no model: it hands the request to the agent 
   needs something from you, it asks in an app notice.
 - **If not,** it is saved as a request for your next session (`handle-requests`) and the thread
   says so.
+- **Conversations:** every time you open the panel you start a new conversation (unless your agent
+  is working on one, which opens instead). Within a conversation, your agent receives what you
+  already asked and what it answered, so you can follow up (“what about the Acme one?”). The
+  sidebar button in the header opens your previous conversations by date (Today, Yesterday, Last 7
+  days, Earlier); the pencil starts a new one. Each one can be deleted with the bin, after you
+  confirm.
 - **What it can do:** look up your jobs, processes, interviews, profile and results, assess a job
   that has already been read, and save the instructions for a cover letter. For anything that has
   its own button (a CV, a letter, an interview guide) it tells you where that is. It does not read

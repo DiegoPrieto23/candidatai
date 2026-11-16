@@ -90,18 +90,36 @@ class AgentRequest(Base):
     completed_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
 
 
+class AssistantConversation(Base):
+    """Una conversación del «Asistente» (fase 43.3): sus peticiones van en orden y el agente recibe
+    las anteriores como contexto. `title`: el principio de la primera pregunta, sin llamar a ningún
+    modelo. No caduca: se borra a mano desde el panel."""
+
+    __tablename__ = "assistant_conversations"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[str] = mapped_column(String(120))
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow, index=True)
+
+
 class AssistantRequest(Base):
     """Lo que el usuario escribe en «Asistente», en la ayuda del portal.
 
     El texto se queda aquí: la orden del agente solo lleva el `id`, y el skill `assistant` lo lee
     con `get_assistant_request`. `run_id`: la ejecución en segundo plano (`mode = background`);
     `request_id`: el encargo para la próxima sesión (`mode = session`). `answer` y `links`: lo
-    que deja el agente con `save_assistant_answer`. Es también el historial del panel.
+    que deja el agente con `save_assistant_answer`. Cada una va en una conversación
+    (`conversation_id`).
     """
 
     __tablename__ = "assistant_requests"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    conversation_id: Mapped[int] = mapped_column(
+        ForeignKey("assistant_conversations.id", name="fk_assistant_requests_conversation_id"),
+        index=True,
+    )
     text: Mapped[str] = mapped_column(Text)
     mode: Mapped[str] = mapped_column(String(16))  # background | session
     run_id: Mapped[int | None] = mapped_column(ForeignKey("agent_runs.id"), index=True)
