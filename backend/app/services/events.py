@@ -1,20 +1,29 @@
 """Registro de eventos: la única forma de cambiar el estado de una oferta."""
 
+from collections.abc import Sequence
 from datetime import UTC, datetime, timedelta
 from typing import Any, Literal, get_args
+from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel
+from sqlalchemy import update
 from sqlalchemy.orm import Session
 
-from app.models import Application, Event, Job
+from app.core.policies import get_policies
+from app.models import Application, Event, Job, MessageDraft, Reply
 from app.models.base import utcnow
 from app.services.pipeline import (
+    TRANSITIONS,
     Actor,
     EventType,
+    InvalidTransitionError,
+    ProjectionState,
     Stage,
+    apply_event,
     job_events,
     project,
     save_projection,
+    tolerated,
 )
 
 
@@ -64,6 +73,101 @@ def _after_same_minute(occurred_at: datetime, previous: list[Event]) -> datetime
     return occurred_at
 
 
+# --- Eventos posteriores que chocan con uno anotado con fecha pasada ----------------------------
+
+# Lo que el usuario puede haber anotado por error y quitar al anotar algo con fecha pasada (p. ej.
+# un seguimiento detrás de un cierre, o cerrar y reabrir para probar). Las entrevistas y las
+# pruebas no: van con su hito, que se borra desde su ficha. Una oferta recibida o aceptada, tampoco.
+REMOVABLE_ON_CONFLICT = frozenset(
+    {
+        EventType.FOLLOWUP_SENT,
+        EventType.REPLY_RECEIVED,
+        EventType.REJECTED,
+        EventType.WITHDRAWN,
+        EventType.EXPIRED,
+        EventType.REOPENED,
+    }
+)
+
+
+class LaterEventsConflictError(InvalidTransitionError):
+    """El evento encaja donde cae, pero algo anotado después deja de encajar con él."""
+
+    def __init__(self, message: str, conflicts: list[Event]) -> None:
+        super().__init__(message)
+        self.conflicts = conflicts
+
+
+def _utc(value: datetime) -> datetime:
+    return value.replace(tzinfo=UTC) if value.tzinfo is None else value  # SQLite: UTC sin zona
+
+
+def _local(value: datetime) -> str:
+    zone = ZoneInfo(get_policies().calendar.timezone)
+    return _utc(value).astimezone(zone).strftime("%d/%m/%Y %H:%M")
+
+
+def _removable(event: Event) -> bool:
+    return (
+        EventType(event.type) in REMOVABLE_ON_CONFLICT
+        and event.actor != Actor.SYSTEM.value
+        and "milestone_id" not in (event.payload or {})
+    )
+
+
+def _replay(previous: Sequence[Event], event: Event) -> tuple[ProjectionState, list[Event]]:
+    """Proyecta `previous` con `event` en su sitio. Lanza `InvalidTransitionError` si `event` no es
+    válido donde cae; si lo es, devuelve el estado y los eventos posteriores que dejan de encajar
+    (se saltan para seguir buscando: así salen todos, no solo el primero).
+
+    Un cierre con fecha pasada tampoco deja pasar un `reopened` posterior: la oferta acabaría
+    abierta sin que nadie lo pidiera, porque ese `reopened` deshacía otro cierre."""
+    ordered = sorted([*previous, event], key=lambda e: _utc(e.occurred_at))
+    closing = TRANSITIONS[EventType(event.type)].to == Stage.CLOSED
+    state: ProjectionState | None = None
+    conflicts: list[Event] = []
+    seen = False
+    for item in ordered:
+        if item is event:
+            seen = True
+            state = apply_event(state, item)
+            continue
+        if tolerated(state, item):
+            continue
+        if (
+            seen
+            and closing
+            and item.type == EventType.REOPENED
+            and state is not None
+            and state.stage == Stage.CLOSED
+        ):
+            conflicts.append(item)
+            continue
+        try:
+            state = apply_event(state, item)
+        except InvalidTransitionError:
+            if not seen:
+                raise
+            conflicts.append(item)
+    assert state is not None
+    return state, conflicts
+
+
+def _conflict_message(event: Event, conflicts: list[Event]) -> str:
+    listed = ", ".join(f"«{c.type}» ({_local(c.occurred_at)})" for c in conflicts)
+    last = _local(max(_utc(c.occurred_at) for c in conflicts))
+    message = (
+        f"No se puede anotar «{event.type}» el {_local(event.occurred_at)}: después hay anotado "
+        f"{listed}, que no encaja con eso. Pon una fecha posterior al {last}"
+    )
+    if all(_removable(c) for c in conflicts):
+        return (
+            f"{message}. Si lo anotaste por error, anótalo desde la ficha de la oferta: allí te "
+            "propone quitarlo."
+        )
+    return f"{message}."
+
+
 def record(
     session: Session,
     job_id: int,
@@ -99,7 +203,9 @@ def record(
         recorded_at=utcnow(),
     )
     # Valida contra la secuencia completa antes de persistir: si falla, no se escribe nada.
-    state = project([*previous, event])
+    state, conflicts = _replay(previous, event)
+    if conflicts:
+        raise LaterEventsConflictError(_conflict_message(event, conflicts), conflicts)
     session.add(event)
     save_projection(session, job_id, state)
     session.flush()
@@ -244,6 +350,93 @@ ApplicationChannel = Literal["ats_form", "email", "linkedin_manual", "portal_man
 APPLICATION_CHANNELS: tuple[str, ...] = get_args(ApplicationChannel)
 
 
+class ConflictingEvent(BaseModel):
+    id: int
+    type: str
+    occurred_at: datetime
+    removable: bool  # se puede quitar como anotado por error (`REMOVABLE_ON_CONFLICT`)
+
+
+class EventConflicts(BaseModel):
+    """Qué impide anotar un evento con fecha pasada y cómo arreglarlo (solo la UI)."""
+
+    conflicts: list[ConflictingEvent]
+    # Quitar todos los `conflicts` deja anotarlo en la fecha pedida.
+    can_remove: bool
+    # El primer minuto después del último conflicto en que sí se puede anotar, si lo hay.
+    suggested_at: datetime | None
+
+
+def _probe(job_id: int, type: EventType, occurred_at: datetime) -> Event:
+    return Event(
+        job_id=job_id, type=type.value, actor=Actor.USER.value, payload={}, occurred_at=occurred_at
+    )
+
+
+def _fits(previous: Sequence[Event], probe: Event) -> bool:
+    try:
+        return not _replay(previous, probe)[1]
+    except InvalidTransitionError:
+        return False
+
+
+def check_user_event(
+    session: Session, job_id: int, type: str, occurred_at: datetime
+) -> EventConflicts:
+    """Los eventos posteriores que no dejarían anotar `type` en `occurred_at`, si quitarlos lo
+    arregla y la primera fecha en que sí se puede. No escribe nada. Si el evento no es válido ni
+    siquiera donde cae (no por lo de después), lanza `InvalidTransitionError`."""
+    event_type = parse_event_type(type)
+    if session.get(Job, job_id) is None:
+        raise JobNotFoundError(f"No existe la oferta {job_id}.")
+    if occurred_at.tzinfo is None:
+        raise ValueError("`occurred_at` debe llevar zona horaria.")
+    previous = job_events(session, job_id)
+    occurred_at = _after_same_minute(occurred_at, previous)
+    _, conflicts = _replay(previous, _probe(job_id, event_type, occurred_at))
+    if not conflicts:
+        return EventConflicts(conflicts=[], can_remove=False, suggested_at=None)
+    ids = {c.id for c in conflicts}
+    can_remove = all(_removable(c) for c in conflicts) and _fits(
+        [e for e in previous if e.id not in ids], _probe(job_id, event_type, occurred_at)
+    )
+    last = max(_utc(c.occurred_at) for c in conflicts)
+    suggested: datetime | None = last.replace(second=0, microsecond=0) + timedelta(minutes=1)
+    if suggested is not None and (
+        suggested > utcnow() or not _fits(previous, _probe(job_id, event_type, suggested))
+    ):
+        suggested = None
+    return EventConflicts(
+        conflicts=[
+            ConflictingEvent(
+                id=c.id, type=c.type, occurred_at=_utc(c.occurred_at), removable=_removable(c)
+            )
+            for c in conflicts
+        ],
+        can_remove=can_remove,
+        suggested_at=suggested,
+    )
+
+
+def _remove_conflicts(
+    session: Session, job_id: int, type: EventType, occurred_at: datetime, ids: list[int]
+) -> None:
+    """Quita los eventos anotados por error que impiden anotar `type` en `occurred_at`. Tienen que
+    ser justo los que salen en `check_user_event`: si algo cambió desde entonces, no se quita nada.
+    Lo que apuntaba a ellos (un borrador, un correo aceptado) se queda, sin el enlace."""
+    found = check_user_event(session, job_id, type, occurred_at)
+    if not found.can_remove or {c.id for c in found.conflicts} != set(ids):
+        raise InvalidTransitionError(
+            "Lo que impedía anotarlo ha cambiado desde que lo viste: vuelve a intentarlo."
+        )
+    for model in (Reply, MessageDraft):
+        session.execute(update(model).where(model.event_id.in_(ids)).values(event_id=None))
+    for event in job_events(session, job_id):
+        if event.id in ids:
+            session.delete(event)
+    session.flush()
+
+
 def add_user_event(
     session: Session,
     job_id: int,
@@ -252,6 +445,7 @@ def add_user_event(
     occurred_at: datetime | None = None,
     reason: str | None = None,
     channel: str | None = None,
+    remove_event_ids: list[int] | None = None,
 ) -> AddEventResult:
     """Registra un evento del usuario (actor `user`). La nota va en `payload.note`.
 
@@ -259,6 +453,10 @@ def add_user_event(
     `applied` y `applied_manually` admiten el canal (`channel`) y apuntan en `payload.render_id`
     el render seleccionado del último CV de la oferta, si lo hay (el CV enviado), y encolan el
     archivo de la candidatura en `data/documentos/candidaturas/` (`archive_application`).
+
+    `remove_event_ids` (solo la UI, tras confirmarlo el usuario): los eventos posteriores anotados
+    por error que impiden anotar este en `occurred_at` (`check_user_event`). Se quitan y se anota
+    en la misma transacción; si algo falla, no cambia nada.
     """
     event_type = parse_event_type(type)
     if event_type not in USER_EVENTS:
@@ -294,14 +492,19 @@ def add_user_event(
         render_id = selected_render_id(session, job_id)
         if render_id is not None:
             payload["render_id"] = render_id
-    event = record(
-        session,
-        job_id,
-        event_type,
-        Actor.USER,
-        payload=payload or None,
-        occurred_at=occurred_at,
-    )
+    if remove_event_ids and occurred_at is None:
+        raise ValueError("Para quitar eventos posteriores hace falta la fecha (`occurred_at`).")
+    with session.begin_nested():
+        if remove_event_ids and occurred_at is not None:
+            _remove_conflicts(session, job_id, event_type, occurred_at, remove_event_ids)
+        event = record(
+            session,
+            job_id,
+            event_type,
+            Actor.USER,
+            payload=payload or None,
+            occurred_at=occurred_at,
+        )
     if applied:
         # Import diferido: el archivo usa los servicios de documentos, que importan este módulo.
         from app.services import application_archive

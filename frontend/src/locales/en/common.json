@@ -49,6 +49,7 @@
       "validation_error": "Invalid input",
       "invalid_request": "Invalid request",
       "invalid_transition": "Invalid state change",
+      "later_events": "Something logged later doesn't fit",
       "exists": "Already exists",
       "invalid_file": "Invalid file",
       "too_large": "Too large",

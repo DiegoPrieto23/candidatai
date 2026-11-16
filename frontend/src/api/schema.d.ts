@@ -187,6 +187,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/jobs/{job_id}/events/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Check Job Event
+         * @description Qué anotado después impide anotar un evento con fecha pasada y cómo arreglarlo. No escribe
+         *     nada.
+         */
+        post: operations["check_job_event"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/jobs/{job_id}/check-open": {
         parameters: {
             query?: never;
@@ -3620,6 +3641,11 @@ export interface components {
              * @description Canal del envío (solo en `applied` y `applied_manually`).
              */
             channel?: ("ats_form" | "email" | "linkedin_manual" | "portal_manual") | null;
+            /**
+             * Remove Event Ids
+             * @description Solo la UI: eventos posteriores anotados por error que se quitan para poder anotar este con fecha pasada (los de `POST /jobs/{id}/events/check`).
+             */
+            remove_event_ids?: number[] | null;
         };
         /**
          * AgentBrowseLimits
@@ -4527,6 +4553,15 @@ export interface components {
              */
             force: boolean;
         };
+        /** CheckUserEventBody */
+        CheckUserEventBody: {
+            type: components["schemas"]["EventType"];
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
+        };
         /** ClosedSignal */
         ClosedSignal: {
             /**
@@ -4602,6 +4637,20 @@ export interface components {
             /** Company */
             company: string;
             research: components["schemas"]["ResearchView"] | null;
+        };
+        /** ConflictingEvent */
+        ConflictingEvent: {
+            /** Id */
+            id: number;
+            /** Type */
+            type: string;
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
+            /** Removable */
+            removable: boolean;
         };
         /** ContactFields */
         ContactFields: {
@@ -5509,6 +5558,18 @@ export interface components {
              */
             ok: boolean;
             error: components["schemas"]["ErrorInfo"];
+        };
+        /**
+         * EventConflicts
+         * @description Qué impide anotar un evento con fecha pasada y cómo arreglarlo (solo la UI).
+         */
+        EventConflicts: {
+            /** Conflicts */
+            conflicts: components["schemas"]["ConflictingEvent"][];
+            /** Can Remove */
+            can_remove: boolean;
+            /** Suggested At */
+            suggested_at: string | null;
         };
         /** EventOut */
         EventOut: {
@@ -10129,6 +10190,104 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AddEventResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    check_job_event: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CheckUserEventBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventConflicts"];
                 };
             };
             /** @description Unauthorized */

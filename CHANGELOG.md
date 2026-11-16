@@ -379,6 +379,11 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   leer cada oferta una a una.
 
 ### Corregido
+- **Cerrar una candidatura con la fecha en que pasó:** si después habías anotado algo que no encaja
+  con el cierre (un seguimiento, o cerrarla y reabrirla para probar), la app ya no da un error
+  confuso. Te enseña qué es y te propone quitarlo, si lo anotaste por error, o anotar el cierre
+  justo después. Lo que la app recalcula sola, como el encaje, ya no impide cerrarla con una
+  fecha pasada.
 - **Tu agente no podía conectarse a la app** si esta seguía abierta tras actualizarla: en Windows el
   servidor MCP fallaba con «fichero en uso» o no llegaba a arrancar, y tu agente iba más lento, por otro camino.
 - **Tablero:** ya se puede agarrar una tarjeta justo después de soltar otra. Antes, durante un instante, el
