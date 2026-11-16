@@ -49,6 +49,7 @@
       "validation_error": "Entrada no válida",
       "invalid_request": "Petición no válida",
       "invalid_transition": "Cambio de estado no válido",
+      "later_events": "Algo anotado después no encaja",
       "exists": "Ya existe",
       "invalid_file": "Fichero no válido",
       "too_large": "Demasiado grande",

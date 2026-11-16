@@ -23,6 +23,7 @@ STATUS_BY_TYPE = {
     "invalid_request": 422,
     "page_unavailable": 422,
     "invalid_transition": 409,
+    "later_events": 409,  # algo anotado después no encaja con un evento con fecha pasada
     "exists": 409,
     "conflict": 409,  # fase 25.7: el fichero cambió desde que la UI lo leyó
     "referenced": 409,  # fase 25.7: lo cita una historia STAR

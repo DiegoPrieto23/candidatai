@@ -1194,6 +1194,129 @@
         }
       }
     },
+    "/jobs/{job_id}/events/check": {
+      "post": {
+        "tags": [
+          "jobs"
+        ],
+        "summary": "Check Job Event",
+        "description": "Qué anotado después impide anotar un evento con fecha pasada y cómo arreglarlo. No escribe\nnada.",
+        "operationId": "check_job_event",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckUserEventBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventConflicts"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
     "/jobs/{job_id}/check-open": {
       "post": {
         "tags": [
@@ -21987,6 +22110,22 @@
             ],
             "title": "Channel",
             "description": "Canal del envío (solo en `applied` y `applied_manually`)."
+          },
+          "remove_event_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array",
+                "maxItems": 50
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remove Event Ids",
+            "description": "Solo la UI: eventos posteriores anotados por error que se quitan para poder anotar este con fecha pasada (los de `POST /jobs/{id}/events/check`)."
           }
         },
         "additionalProperties": false,
@@ -24763,6 +24902,25 @@
         "type": "object",
         "title": "CheckOpenBody"
       },
+      "CheckUserEventBody": {
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/EventType"
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Occurred At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "type",
+          "occurred_at"
+        ],
+        "title": "CheckUserEventBody"
+      },
       "ClosedSignal": {
         "properties": {
           "since": {
@@ -24939,6 +25097,35 @@
           "research"
         ],
         "title": "CompanyResearchResult"
+      },
+      "ConflictingEvent": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Occurred At"
+          },
+          "removable": {
+            "type": "boolean",
+            "title": "Removable"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "type",
+          "occurred_at",
+          "removable"
+        ],
+        "title": "ConflictingEvent"
       },
       "ContactFields": {
         "properties": {
@@ -27341,6 +27528,41 @@
           "error"
         ],
         "title": "ErrorResponse"
+      },
+      "EventConflicts": {
+        "properties": {
+          "conflicts": {
+            "items": {
+              "$ref": "#/components/schemas/ConflictingEvent"
+            },
+            "type": "array",
+            "title": "Conflicts"
+          },
+          "can_remove": {
+            "type": "boolean",
+            "title": "Can Remove"
+          },
+          "suggested_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suggested At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "conflicts",
+          "can_remove",
+          "suggested_at"
+        ],
+        "title": "EventConflicts",
+        "description": "Qué impide anotar un evento con fecha pasada y cómo arreglarlo (solo la UI)."
       },
       "EventOut": {
         "properties": {

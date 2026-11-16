@@ -150,6 +150,21 @@ TRANSITIONS: dict[EventType, Transition] = {
 }
 
 
+# Avisos que registra el sistema solo mientras la oferta está abierta (recalcular el encaje, la
+# valoración, «puede que ya no esté publicada»…). Si después se anota un cierre con fecha pasada,
+# quedan detrás de él en el historial: no cambian la etapa, así que al reproducir se ignoran en vez
+# de impedir el cierre. Uno nuevo en una oferta cerrada sigue sin ser válido.
+TOLERATED_WHEN_CLOSED = frozenset(
+    {
+        EventType.SCORED,
+        EventType.FIT_ASSESSED,
+        EventType.CLOSURE_SUSPECTED,
+        EventType.INJECTION_SUSPECTED,
+        EventType.EXTRACTION_FAILED,
+    }
+)
+
+
 class InvalidTransitionError(ValueError):
     """El evento no es válido en la etapa actual de la oferta."""
 
@@ -263,14 +278,28 @@ def apply_event(state: ProjectionState | None, event: EventLike) -> ProjectionSt
     return replace(new, stage=target)
 
 
-def project(events: Iterable[EventLike]) -> ProjectionState:
+def tolerated(state: ProjectionState | None, event: EventLike) -> bool:
+    """Un aviso del sistema que quedó detrás de un cierre con fecha pasada (ver
+    `TOLERATED_WHEN_CLOSED`): al reproducir los eventos se ignora."""
+    return (
+        state is not None
+        and state.stage == Stage.CLOSED
+        and EventType(event.type) in TOLERATED_WHEN_CLOSED
+    )
+
+
+def project(events: Iterable[EventLike], strict: EventLike | None = None) -> ProjectionState:
     """Reproduce los eventos en orden cronológico.
 
     La ordenación es estable: a igual `occurred_at` se respeta el orden de entrada (el de
-    registro), así que los eventos deben llegar ordenados por `id`.
+    registro), así que los eventos deben llegar ordenados por `id`. Los avisos del sistema que
+    quedan detrás de un cierre se ignoran (`tolerated`), salvo `strict`: el evento que se está
+    registrando, que tiene que ser válido donde cae.
     """
     state: ProjectionState | None = None
     for event in sorted(events, key=lambda e: e.occurred_at):
+        if event is not strict and tolerated(state, event):
+            continue
         state = apply_event(state, event)
     if state is None:
         raise ValueError("No hay eventos: la oferta no tiene etapa.")
