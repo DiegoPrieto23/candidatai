@@ -161,11 +161,14 @@ def test_your_templates_are_renamed_and_deleted_in_the_list(
     expect(page.get_by_role("article", name="La definitiva")).to_have_count(0)
     assert not target.exists()
 
-    # Las integradas no ofrecen ni renombrar ni eliminar.
+    # Las integradas no se renombran. «Eliminar» sí está: las quita de tu lista sin borrarlas del
+    # programa, y se restauran desde «Plantillas eliminadas».
     integrated = page.get_by_role("article").first
+    rename = t("templates.actions.rename", name="").strip()
+    expect(integrated.get_by_role("button", name=re.compile(re.escape(rename)))).to_have_count(0)
     expect(
         integrated.get_by_role("button", name=re.compile(t("templates.actions.delete")))
-    ).to_have_count(0)
+    ).to_have_count(1)
 
 
 def test_a_job_ready_to_send_is_discarded_with_a_reason_and_reopened(

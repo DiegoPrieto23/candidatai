@@ -1382,6 +1382,8 @@ export function useAssistantConversations() {
   return useQuery({
     queryKey: keys.assistantConversations,
     queryFn: () => unwrap(api.GET('/agent/assistant/conversations')),
+    // Tu agente contesta desde fuera: al abrir el Asistente, siempre lo último, aunque la caché sea de hace segundos.
+    refetchOnMount: 'always',
     refetchInterval: (query) => (query.state.data?.conversations.some((item) => item.active) ? 5000 : 30000),
   })
 }
@@ -1393,6 +1395,7 @@ export function useAssistantConversation(id: number | null) {
     queryKey: keys.assistantConversation(id ?? 0),
     queryFn: () => unwrap(api.GET('/agent/assistant/conversations/{conversation_id}', { params: { path: { conversation_id: id! } } })),
     enabled: id !== null,
+    refetchOnMount: 'always',
     refetchInterval: (query) =>
       query.state.data?.requests.some((item) => item.status === 'queued' || item.status === 'running') ? 3000 : 20000,
   })
