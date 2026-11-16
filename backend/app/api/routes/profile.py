@@ -17,7 +17,7 @@ from app.agent_interface.errors import ToolError
 from app.api.deps import EmptyBody, SessionDep, require_ui, require_ui_read
 from app.core.config import get_settings
 from app.services import profile as profiles
-from app.services import profile_editor
+from app.services import profile_editor, search_titles
 from app.services import profile_suggestions as suggestions
 from app.services.documents import photo
 from app.services.profile import ProfileSection
@@ -205,6 +205,19 @@ def delete_profile_photo(session: SessionDep, body: EmptyBody) -> photo.PhotoInf
     info = photo.delete_photo(_profile_or_none())
     profile_editor.record_edit(session, "photo", None, "delete", None, None)
     return info
+
+
+# --- Puestos que sugerir en «Buscar ofertas» ---------------------------------------------------
+
+
+@router.get(
+    "/profile/role-suggestions",
+    operation_id="list_role_suggestions",
+    dependencies=[Depends(require_ui_read)],
+)
+def list_role_suggestions(session: SessionDep) -> list[search_titles.RoleSuggestion]:
+    """Títulos de lo que apruebas que tus puestos aún no cubren, para añadirlos con un clic."""
+    return search_titles.role_suggestions(session)
 
 
 # --- Propuestas de tu agente (fase 41.2) ------------------------------------------------------

@@ -299,7 +299,7 @@ describe('Plataformas', () => {
     expect(await screen.findByText('Aún no buscas en ningún portal')).toBeInTheDocument()
     // Sin plataformas, lo destacado es configurarlas; buscar no tiene sentido aún.
     expect(screen.getByRole('button', { name: 'Configurar con mi agente' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Añadir portal' })).toBeInTheDocument()
+    expect(within(screen.getByRole('region', { name: 'Dónde buscar' })).getByRole('button', { name: 'Añadir portal' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Buscar ofertas' })).not.toBeInTheDocument()
     expect(screen.getByText(/Pide a tu agente que lo configure/)).toBeInTheDocument()
   })
@@ -432,7 +432,7 @@ describe('Añadir portal', () => {
   it('LinkedIn: avisa de por qué conviene dejarla desactivada y la crea desactivada', async () => {
     const calls = mockApi(routes())
     renderApp('/plataformas')
-    await userEvent.click(await screen.findByRole('button', { name: 'Añadir portal' }))
+    await userEvent.click(await within(await screen.findByRole('region', { name: 'Dónde buscar' })).findByRole('button', { name: 'Añadir portal' }))
     const dialog = await screen.findByRole('dialog')
     await userEvent.selectOptions(within(dialog).getByLabelText('Portal'), 'linkedin')
     expect(within(dialog).getByRole('note')).toHaveTextContent('puede restringir o cerrar tu cuenta')
@@ -454,7 +454,7 @@ describe('Añadir portal', () => {
       'GET /sources/linkedin-public': publicView(),
     })
     renderApp('/plataformas')
-    await userEvent.click(await screen.findByRole('button', { name: 'Añadir portal' }))
+    await userEvent.click(await within(await screen.findByRole('region', { name: 'Dónde buscar' })).findByRole('button', { name: 'Añadir portal' }))
     const dialog = await screen.findByRole('dialog')
     await userEvent.selectOptions(within(dialog).getByLabelText('Portal'), 'indeed')
     const priority = within(dialog).getByLabelText('Prioridad (1 = primero)')
@@ -484,7 +484,7 @@ describe('Añadir portal', () => {
       },
     })
     renderApp('/plataformas')
-    await userEvent.click(await screen.findByRole('button', { name: 'Añadir portal' }))
+    await userEvent.click(await within(await screen.findByRole('region', { name: 'Dónde buscar' })).findByRole('button', { name: 'Añadir portal' }))
     const dialog = await screen.findByRole('dialog')
     await userEvent.selectOptions(within(dialog).getByLabelText('Portal'), 'indeed')
     const searches = within(dialog).getByLabelText('Búsquedas')
@@ -524,7 +524,7 @@ describe('Añadir portal', () => {
   it('otro portal: hay que escribir su id', async () => {
     const calls = mockApi(routes())
     renderApp('/plataformas')
-    await userEvent.click(await screen.findByRole('button', { name: 'Añadir portal' }))
+    await userEvent.click(await within(await screen.findByRole('region', { name: 'Dónde buscar' })).findByRole('button', { name: 'Añadir portal' }))
     const dialog = await screen.findByRole('dialog')
     await userEvent.selectOptions(within(dialog).getByLabelText('Portal'), 'otra')
     await userEvent.type(within(dialog).getByLabelText('Nombre'), 'Mi portal')

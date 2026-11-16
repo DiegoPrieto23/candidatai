@@ -114,3 +114,23 @@ def test_candidate_the_prefilter_cannot_read(session: Session) -> None:
 def test_candidates_need_a_profile(session: Session) -> None:
     view = search_titles.search_titles(session, candidates=["BI Analyst"])
     assert view.profile_missing and view.candidates == []
+
+
+def test_role_suggestions_are_approved_titles_your_roles_miss(session: Session) -> None:
+    """«+ Añadir puesto» en «Buscar ofertas»: solo lo aprobado que tus puestos aún no cubren."""
+    assert search_titles.role_suggestions(session) == []  # sin perfil, nada que sugerir
+    profile.import_profile(session, profile.EXAMPLE_PATH)  # Data Engineer, Analytics…, Data Analyst
+    _approve(session, _job(session, "Data Engineer"))  # ya cubierto
+    for company in ("Una", "Dos"):
+        _approve(session, _job(session, "Ingeniero de Telecomunicaciones", company=company))
+    _approve(session, _job(session, "Product Manager", company="Tres"))
+    long_title = "Ingeniero " + "muy " * 30 + "largo"  # no cabe en un puesto
+    _approve(session, _job(session, long_title, company="Larga"))
+    _discard(session, _job(session, "Sales Executive", company="Cuatro"), "skills")  # descartada
+
+    suggestions = search_titles.role_suggestions(session)
+    assert [(s.title, s.count) for s in suggestions] == [
+        ("Ingeniero de Telecomunicaciones", 2),
+        ("Product Manager", 1),
+    ]
+    assert len(search_titles.role_suggestions(session, limit=1)) == 1

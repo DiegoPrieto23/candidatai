@@ -255,7 +255,7 @@ hayas aprobado. Skill `search-jobs`.
   su prioridad, su acceso, cuántas ofertas abre en cada recorrido (`max_offers`, de 1 a 100) y si
   el agente puede recorrerla. Si el
   agente vuelve a guardarla sin `max_offers`, se conserva el que tenía.
-- **Ofertas por portal para todos a la vez.** En el panel de «Buscar», «Hasta N ofertas por
+- **Ofertas por portal para todos a la vez.** En la franja de «Buscar», «Hasta N ofertas por
   portal» pone el mismo `max_offers` a todos los portales elegidos en una operación
   (`POST /sources/browse/max-offers`, solo desde la UI) y ese número pasa a ser el de las
   plataformas nuevas: se guarda en tu base de datos y `list_sources` lo devuelve como

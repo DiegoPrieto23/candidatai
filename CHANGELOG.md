@@ -173,6 +173,14 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   vez de 23).
 
 ### Cambiado
+- **«Buscar ofertas», más visual y más fácil de cambiar:** arriba, una franja con tus puestos y
+  lugares como etiquetas. Las quitas con su ✕ y añades más con **+ Añadir puesto** o **+ Añadir
+  lugar**. Cada cambio se guarda en tu perfil al momento, con **Deshacer**, y al añadir un puesto te
+  sugiere los títulos de las ofertas que apruebas y que tus puestos aún no cubren. A la derecha,
+  **Buscar ahora** con los portales y el total de ofertas. Tus portales pasan a tarjetas que se marcan
+  con un clic, con su estado y lo que dieron la última vez (vistas, las que pasan tus filtros y
+  nuevas); los que no se pueden usar dicen por qué. Al pie, la última búsqueda con enlace a la
+  bandeja. **Afinar esta búsqueda** pasa a ser **Buscar otra cosa solo esta vez**.
 - **«Buscar ofertas», número de ofertas en un solo sitio:** junto a «Buscar ahora», «Hasta N ofertas
   por portal» cambia a la vez el límite de todos los portales elegidos y el de los que añadas
   después. Si cada portal tiene el suyo, lo dice («varía») y elegir un número los iguala. El de un

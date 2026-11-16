@@ -46,6 +46,8 @@ export const keys = {
   // Fase 25.7b: «Mi perfil» editable. Bajo `profile`: guardar invalida todo lo del perfil.
   profile: ['profile'] as const,
   editableProfile: ['profile', 'editable'] as const,
+  // Bajo `profile`: al guardar tus puestos se vuelven a pedir (los que añades dejan de sugerirse).
+  roleSuggestions: ['profile', 'roleSuggestions'] as const,
   profileDiff: ['profile', 'diff'] as const,
   // Fase 27.5: el sueldo mínimo (`private`), solo para la UI. Bajo `profile`: guardar lo refresca.
   salaryFloor: ['profile', 'salary-floor'] as const,
@@ -1525,6 +1527,16 @@ export function useEditableProfile() {
     // Mientras tu agente lo crea (aún sin fichero o sin importar), se ve en cuanto lo guarda. Los
     // bloques con cambios sin guardar los conservan.
     refetchInterval: (query) => (query.state.data && query.state.data.profile_version_id === null ? 5_000 : false),
+  })
+}
+
+/** Títulos de lo que apruebas que tus puestos aún no cubren: «+ Añadir puesto» en «Buscar ofertas». */
+export function useRoleSuggestions(enabled = true) {
+  return useQuery({
+    queryKey: keys.roleSuggestions,
+    queryFn: () => unwrap(api.GET('/profile/role-suggestions')),
+    enabled,
+    staleTime: 60_000,
   })
 }
 

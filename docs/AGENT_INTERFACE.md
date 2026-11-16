@@ -176,6 +176,10 @@ mismo servicio que `cai profile init`, con tus datos en vez del ejemplo), `PUT
 `POST`/`DELETE /context/style-samples`. Un test del registro comprueba
 que no hay ninguna herramienta MCP de escritura del perfil. Para el agente, el perfil se escribe
 con `update-profile` o `expand`, que preguntan antes, y `get_profile` sigue sin email ni teléfono.
+La franja de «Buscar ofertas» guarda tus puestos y lugares por esa misma `PUT
+/profile/sections/preferences`, y sus sugerencias de puestos salen de `GET
+/profile/role-suggestions` (solo la UI): los grupos de `get_search_titles` aprobados que hoy no
+pasan el filtro previo, con su número de ofertas.
 
 `add_event` no acepta los eventos que registra su propia herramienta o el sistema: `found`,
 `duplicate_detected`, `extracted`, `hard_filter_failed`, `scored`, `fit_assessed`,
