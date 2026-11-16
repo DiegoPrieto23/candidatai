@@ -60,9 +60,10 @@ def test_help_in_english_searches_the_english_guide(page: Page, demo_app: AppSer
 
 
 def test_ask_your_agent_and_read_the_answer(page: Page, fresh_demo_app: AppServer) -> None:
-    """«Asistente»: la petición queda para la próxima sesión, el agente (simulado, con
-    los mismos comandos `cai … --json`) la lee y contesta, y el panel enseña la respuesta con un
-    enlace a la oferta. Aquí no hay agente instalado: se simula que hay uno sin segundo plano."""
+    """«Asistente»: sin segundo plano, la petición queda para la próxima sesión, el agente
+    (simulado, con los mismos comandos `cai … --json`) la lee y contesta, y el panel enseña la
+    respuesta con un enlace a la oferta. Aquí no hay agente instalado: se simula que hay uno sin
+    segundo plano."""
     server = fresh_demo_app
 
     def with_agent(route: Route) -> None:
@@ -81,10 +82,11 @@ def test_ask_your_agent_and_read_the_answer(page: Page, fresh_demo_app: AppServe
     expect(panel).to_have_accessible_name(t("help.assistantTitle"))
     field = panel.get_by_role("textbox", name=t("help.assistant.label"))
     expect(field).to_be_focused()
-    expect(panel.get_by_role("button", name=t("help.assistant.sendNow"))).to_be_disabled()
+    expect(panel.get_by_role("button", name=t("help.assistant.send"), exact=True)).to_be_disabled()
 
+    # Sin segundo plano, Intro lo deja como encargo para la próxima sesión y el hilo lo dice.
     field.fill("¿Qué oferta miro primero?")
-    panel.get_by_role("button", name=t("help.assistant.sendLater")).click()
+    field.press("Enter")
     expect(panel.get_by_text(t("help.assistant.status.waiting"))).to_be_visible()
     expect(field).to_have_value("")
 
@@ -105,7 +107,7 @@ def test_ask_your_agent_and_read_the_answer(page: Page, fresh_demo_app: AppServe
     # Al volver a la pestaña, la respuesta y sus enlaces.
     panel.get_by_role("tab", name=t("help.tabs.help")).click()
     panel.get_by_role("tab", name=t("help.tabs.assistant")).click()
-    history = panel.get_by_role("region", name=t("help.assistant.history"))
+    history = panel.get_by_role("log", name=t("help.assistant.history"))
     expect(history.get_by_text("Empieza por esta.")).to_be_visible()
     review = t("help.goTo", screen=t("help.screens.review"))
     expect(history.get_by_role("link", name=review)).to_be_visible()

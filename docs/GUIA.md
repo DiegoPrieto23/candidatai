@@ -339,15 +339,17 @@ también se abre con la tecla `?` y se cierra con `Esc`) busca en las
 hace. Funciona sin conexión y sin agente.
 
 Al lado, el botón **Asistente** (el del destello, también en todas las páginas) abre el
-mismo panel en su otra pestaña: una caja de texto para pedirle algo a tu agente con tus palabras
-(«¿qué tengo pendiente esta semana?», «valora la oferta de Acme»). La primera vez propone unos
-ejemplos; al pulsar uno se escribe en la caja, y lo envías tú. La app no llama a
-ningún modelo: le pasa la petición al agente que ya usas.
+mismo panel en su otra pestaña, que funciona como un chat: escribes abajo lo que quieres pedirle a
+tu agente con tus palabras («¿qué tengo pendiente esta semana?», «valora la oferta de Acme») y
+pulsas Intro o la flecha (Mayús+Intro salta de línea). Tu pregunta queda a la derecha y la
+respuesta a la izquierda, separadas por días. La primera vez propone unos ejemplos; al pulsar uno se
+escribe en la caja, y lo envías tú. La app no llama a ningún modelo: le pasa la petición al agente
+que ya usas.
 
-- **Enviar ahora** la lanza en segundo plano. El panel enseña el progreso y la respuesta, con
-  enlaces a la oferta o a la pantalla de la que habla. Si tu agente necesita un dato, te lo
-  pregunta en un aviso de la app.
-- **Dejar para mi próxima sesión** la guarda como encargo (`handle-requests`).
+- **Si tu agente trabaja en segundo plano desde la app,** la petición se lanza al momento. El panel
+  enseña el progreso y la respuesta, con enlaces a la oferta o a la pantalla de la que habla. Si tu
+  agente necesita un dato, te lo pregunta en un aviso de la app.
+- **Si no,** se guarda como encargo para tu próxima sesión (`handle-requests`) y el hilo lo dice.
 - **Qué puede hacer:** consultar tus ofertas, procesos, entrevistas, perfil y resultados, valorar
   una oferta ya leída y guardar las indicaciones de una carta. Para lo que tiene su propio botón
   (un CV, una carta, una guía de entrevista) te dice dónde está. No lee el texto original de las

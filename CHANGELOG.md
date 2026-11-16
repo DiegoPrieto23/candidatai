@@ -52,11 +52,13 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   «Convirtiendo en plantilla…» mientras tu agente trabaja.
 - **Ayuda del periodo en Habilidades por desarrollar:** junto a 30/60/90/180 días, qué ofertas cuenta
   cada ventana y para qué sirve cambiarla.
-- **Asistente:** un botón con rótulo abajo a la derecha, junto al de ayuda, abre una caja
-  de texto para pedirle algo a tu agente con tus palabras. La primera vez propone ejemplos («¿qué
-  tengo pendiente esta semana?») que se escriben en la caja al pulsarlos.
-  **Enviar ahora** lo lanza en segundo plano y la respuesta aparece ahí mismo, con enlaces a la oferta
-  o a la pantalla de la que habla; **Dejar para mi próxima sesión** lo guarda como encargo. Puede
+- **Asistente:** un botón con rótulo abajo a la derecha, junto al de ayuda, abre un chat para
+  pedirle algo a tu agente con tus palabras. Escribes abajo y pulsas Intro o la flecha (Mayús+Intro
+  salta de línea); tu pregunta queda a la derecha y la respuesta a la izquierda, con enlaces a la
+  oferta o a la pantalla de la que habla, separadas por días. La primera vez propone ejemplos («¿qué
+  tengo pendiente esta semana?») que se escriben en la caja al pulsarlos. Si tu agente trabaja en
+  segundo plano desde la app, se lanza al momento; si no, queda como encargo para tu próxima sesión
+  y el hilo lo dice. El panel se distingue del resto del portal por su cabecera y su borde. Puede
   consultar tus datos, valorar una oferta ya leída y guardar las indicaciones de una carta. Enviar una
   candidatura, aprobar, descartar y borrar los sigues confirmando tú.
 - **Ayuda en todas las páginas:** un botón abajo a la derecha (o la tecla `?`) abre un buscador sobre

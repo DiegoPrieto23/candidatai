@@ -86,7 +86,7 @@ Where: “Agent”.
 
 ### Can I ask my agent for something from the portal?
 
-Yes. Click “Assistant”, at the bottom right, and write what you need. “Send now” runs it in the background and the answer appears in the same panel, with links to whatever changed. “Leave it for my next session” saves it as a request.
+Yes. Click “Assistant”, at the bottom right, write what you need and press Enter or the arrow. If your agent runs in the background from the app, the answer appears in the same panel, with links to whatever changed; if not, it is saved as a request for your next session.
 
 ### What can my agent do when I ask from the portal?
 

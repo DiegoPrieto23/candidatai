@@ -344,15 +344,17 @@ guide, and each answer takes you to the screen where it is done. It works offlin
 agent.
 
 Next to it, the **Assistant** button (the one with the sparkle, also on every page) opens the
-same panel on its other tab: a text box for asking your agent in your own words (“what do I have
-pending this week?”, “assess the Acme job”). The first time it suggests a few examples; clicking one
-writes it in the box, and you send it. The app calls no model: it hands the request to
-the agent you already use.
+same panel on its other tab, which works like a chat: at the bottom you write what you want to ask
+your agent in your own words (“what do I have pending this week?”, “assess the Acme job”) and press
+Enter or the arrow (Shift+Enter adds a new line). Your question sits on the right and the answer on
+the left, grouped by day. The first time it suggests a few examples; clicking one writes it in the
+box, and you send it. The app calls no model: it hands the request to the agent you already use.
 
-- **Send now** runs it in the background. The panel shows the progress and the answer, with links
-  to the job or the screen it refers to. If your agent needs something from you, it asks in an app
-  notice.
-- **Leave it for my next session** saves it as a request (`handle-requests`).
+- **If your agent runs in the background from the app,** the request starts right away. The panel
+  shows the progress and the answer, with links to the job or the screen it refers to. If your agent
+  needs something from you, it asks in an app notice.
+- **If not,** it is saved as a request for your next session (`handle-requests`) and the thread
+  says so.
 - **What it can do:** look up your jobs, processes, interviews, profile and results, assess a job
   that has already been read, and save the instructions for a cover letter. For anything that has
   its own button (a CV, a letter, an interview guide) it tells you where that is. It does not read

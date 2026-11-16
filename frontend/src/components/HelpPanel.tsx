@@ -175,16 +175,29 @@ function Panel({ tab, setTab, onClose }: { tab: Tab; setTab: (tab: Tab) => void;
       role="dialog"
       aria-label={title}
       data-help-panel
-      className="pointer-events-auto flex max-h-[min(34rem,calc(100dvh-6rem))] w-96 max-w-[calc(100vw-2rem)] flex-col rounded-xl border bg-card text-card-foreground shadow-lg animate-in fade-in slide-in-from-bottom-1 duration-200"
+      className={cn(
+        'pointer-events-auto flex max-w-[calc(100vw-2rem)] flex-col rounded-xl border bg-card text-card-foreground animate-in fade-in slide-in-from-bottom-1 duration-200',
+        // El asistente, como un chat: más ancho, de alto fijo (la caja abajo) y con borde, sombra y
+        // cabecera propios para que no se confunda con la página.
+        tab === 'assistant'
+          ? 'h-[min(36rem,calc(100dvh-6rem))] w-[28rem] overflow-hidden border-primary/30 shadow-2xl dark:border-primary/40'
+          : 'max-h-[min(34rem,calc(100dvh-6rem))] w-96 shadow-lg',
+      )}
     >
-      <header className="flex items-center gap-2 border-b px-4 py-2.5">
+      <header
+        className={cn('flex items-center gap-2 border-b px-4 py-2.5', tab === 'assistant' && 'bg-primary/10 dark:bg-primary/15')}
+      >
         <TitleIcon className="size-4 text-primary" weight={tab === 'assistant' ? 'fill' : 'bold'} aria-hidden />
         <h2 className="flex-1 text-sm font-semibold">{title}</h2>
         <Button variant="ghost" size="icon" className="size-7" aria-label={t('close')} onClick={onClose}>
           <XIcon weight="bold" aria-hidden />
         </Button>
       </header>
-      <div role="tablist" aria-label={t('tabs.label')} className="flex gap-1 border-b px-3 pt-1.5">
+      <div
+        role="tablist"
+        aria-label={t('tabs.label')}
+        className={cn('flex gap-1 border-b px-3 pt-1.5', tab === 'assistant' && 'bg-primary/10 dark:bg-primary/15')}
+      >
         {TABS.map((name) => (
           <button
             key={name}
