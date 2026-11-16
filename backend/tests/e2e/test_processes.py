@@ -30,6 +30,7 @@ from tests.e2e.flows import (
     timeline,
 )
 from tests.e2e.harness import AppServer, t
+from tests.e2e.pickers import pick_datetime
 from tests.e2e.sites import FIXTURES
 
 pytestmark = pytest.mark.e2e
@@ -85,7 +86,9 @@ def _add_interview(page: Page, job_id: int, title: str, when: datetime) -> int:
     section.get_by_label(t("process.milestoneForm.kind"), exact=True).select_option("interview")
     section.get_by_label(t("process.milestoneForm.interviewType")).select_option("technical")
     section.get_by_label(t("process.milestoneForm.title")).fill(title)
-    section.get_by_label(t("process.milestoneForm.dateTime")).fill(when.strftime("%Y-%m-%dT%H:%M"))
+    pick_datetime(
+        section.get_by_label(t("process.milestoneForm.dateTime")), when.strftime("%Y-%m-%dT%H:%M")
+    )
     section.get_by_role("button", name=t("process.milestoneForm.save")).click()
     expect(section.get_by_text(title)).to_be_visible()
     return _milestone_id(page, title)
@@ -353,7 +356,7 @@ def test_a_step_in_the_same_minute_as_the_last_event(page: Page, fresh_demo_app:
     status = panel.get_by_role("region", name=t("status.label"))
     status.get_by_role("button", name=t("status.steps.reply_received")).click()
     dialog = page.get_by_role("dialog", name=t("move.title"))
-    dialog.get_by_label(t("move.when")).fill(minute)
+    pick_datetime(dialog.get_by_label(t("move.when")), minute)
     dialog.get_by_role("button", name=t("move.register")).click()
     expect(dialog).to_be_hidden()
     assert api(server, f"/jobs/{job_id}")["stage"] == "in_process"

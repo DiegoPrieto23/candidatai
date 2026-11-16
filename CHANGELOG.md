@@ -394,6 +394,9 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   leer cada oferta una a una.
 
 ### Corregido
+- **Asistente: la respuesta de tu agente sale en cuanto vuelves a él.** Si tu agente contestaba
+  desde su ventana una petición que esperaba a tu próxima sesión, al volver al Asistente podía
+  tardar hasta 20 segundos en verse. Ahora se pide al momento cada vez que lo abres.
 - **«Cambiar» en «Buscas: …» de «Buscar ofertas»** no hacía nada si ya habías entrado por
   «Configuración de tu búsqueda» y habías vuelto arriba. Ahora siempre baja a tus puestos y deja el
   cursor en la caja para escribir uno.
