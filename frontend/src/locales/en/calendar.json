@@ -36,6 +36,8 @@
     "description": "Choose the job and fill in the milestone: it is saved on the job's page.",
     "job": "Job",
     "pickJob": "Choose a job…",
+    "searchJob": "Search by company or job title",
+    "noMatch": "No job matches “{{query}}”",
     "none": "Milestones are saved on an open job.",
     "toBoard": "See your processes"
   },

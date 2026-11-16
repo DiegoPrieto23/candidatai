@@ -24,8 +24,8 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   igual, cada tarjeta de una columna con varias etapas dice la suya y **Restablecer** vuelve a las de
   siempre.
 - **Añadir hitos desde el Calendario:** con **Añadir hito**, el «+» de un día o pulsando una hora
-  libre de la semana o del día. Eliges la oferta y el hito se guarda en su ficha, con la fecha ya
-  puesta.
+  libre de la semana o del día. Eliges la oferta en una lista con buscador (por empresa o puesto,
+  sin importar tildes ni mayúsculas) y el hito se guarda en su ficha, con la fecha ya puesta.
 - **Avisos sin correos:** el fichero del calendario y la suscripción llevan alarmas (un día y una
   hora antes de cada hito con hora; a las 9:00 del día anterior en los plazos) para que Outlook o
   Apple Calendar te avisen solos. Y con **Avisos del navegador** en el Calendario, mientras la app
@@ -168,6 +168,7 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   vez de 23).
 
 ### Cambiado
+- **Arranque:** la página «Arrancando CandidatAI» dice «Se abrirá en unos segundos».
 - **Tu CV se sube arrastrándolo:** en **Mi perfil** («Empieza por tu CV» e «Importar información
   desde un CV») y en los primeros pasos de **Inicio**, una caja donde soltar el PDF o el Word, o
   hacer clic para elegirlo. Si el formato no vale, lo dice sin subirlo. Con el CV ya subido, la caja

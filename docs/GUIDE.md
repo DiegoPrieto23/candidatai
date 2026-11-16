@@ -442,11 +442,11 @@ The worker runs the automatic sources every day at `connectors.daily_at`
   With **Customize columns** you pick 3 to 5 columns by grouping consecutive stages (e.g. **Approved**
   and **CV ready**) and name them; it only changes the view, stages stay as they are, and **Reset**
   brings back the usual ones. It's saved in your browser.
-- **Calendar:** all your milestones (interviews, tests, deadlines and others, past ones included)
-  by month, week, day or agenda. Click one to see its details and open the job. To add one, use
-  **Add milestone**, a day's **+** or a free hour in the week view: pick the job and it's saved on
-  its page. Today, weekends and days from other months stand out at a glance, and each milestone
-  type has its color and icon.
+- **Calendar:** all your milestones (interviews, tests, deadlines and others, past ones included) by
+  month, week, day or agenda. Click one to see its details and open the job. To add one, use **Add
+  milestone**, a day's **+** or a free hour in the week view: pick the job (with many, search it by
+  company or title) and it's saved on its page. Today, weekends and days from other months stand out
+  at a glance, and each milestone type has its color and icon.
 - **Reminders:** the `.ics` and the feed carry alarms, so your calendar reminds you without the app
   sending any email: a day and an hour before each timed milestone, and at 9:00 the day before each
   deadline. Outlook and Apple Calendar use them; Google Calendar applies its own notifications.

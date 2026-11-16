@@ -36,6 +36,8 @@
     "description": "Elige la oferta y completa el hito: se guarda en su ficha.",
     "job": "Oferta",
     "pickJob": "Elige una oferta…",
+    "searchJob": "Busca por empresa o puesto",
+    "noMatch": "Ninguna oferta coincide con «{{query}}»",
     "none": "Los hitos se guardan en una oferta abierta.",
     "toBoard": "Ver los procesos"
   },

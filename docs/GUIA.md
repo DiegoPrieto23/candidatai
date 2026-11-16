@@ -440,9 +440,9 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
   las de siempre. Se guarda en tu navegador.
 - **Calendario:** todos tus hitos (entrevistas, pruebas, plazos y otros, también los pasados) por
   mes, semana, día o agenda. Pulsa uno para ver sus datos e ir a la oferta. Para añadir uno, «Añadir
-  hito», el «+» de un día o una hora libre de la semana: eliges la oferta y se guarda en su ficha.
-  Hoy, los fines de semana y los días de otro mes se distinguen a simple vista, y cada tipo de hito
-  lleva su color y su icono.
+  hito», el «+» de un día o una hora libre de la semana: eliges la oferta (con muchas, la buscas por
+  empresa o puesto) y se guarda en su ficha. Hoy, los fines de semana y los días de otro mes se
+  distinguen a simple vista, y cada tipo de hito lleva su color y su icono.
 - **Avisos:** el `.ics` y el feed llevan alarmas, para que tu calendario te avise sin que la app
   envíe correos: un día y una hora antes de cada hito con hora, y a las 9:00 del día anterior de
   cada plazo. Outlook y Apple Calendar las usan; Google Calendar aplica sus propias notificaciones.

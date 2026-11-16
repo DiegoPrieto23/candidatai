@@ -5,13 +5,14 @@ import { useBoard, useCreateMilestone } from '@/api/queries'
 import { MilestoneForm } from '@/components/MilestoneForm'
 import { milestoneBody } from '@/lib/milestoneDraft'
 import { ErrorState } from '@/components/States'
+import { Combobox } from '@/components/ui/combobox'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { STAGE_LABEL } from '@/lib/labels'
 
 /**
- * Alta de un hito desde el calendario: se elige la oferta (de los procesos abiertos) y se rellena el
+ * Alta de un hito desde el calendario: se elige la oferta (de los procesos abiertos, con búsqueda) y se rellena el
  * mismo formulario que en la ficha, con la fecha del día o de la hora pulsada.
  */
 export function AddMilestoneDialog({ date, onClose }: { date: string | null; onClose: () => void }) {
@@ -53,19 +54,21 @@ function AddMilestone({ date, onDone }: { date: string; onDone: () => void }) {
         <>
           <div className="space-y-1.5">
             <Label htmlFor="add-milestone-job">{t('job')}</Label>
-            <select
+            <Combobox
               id="add-milestone-job"
-              value={jobId ?? ''}
-              onChange={(e) => setJobId(e.target.value ? Number(e.target.value) : null)}
-              className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
-            >
-              <option value="">{t('pickJob')}</option>
-              {cards.map((c) => (
-                <option key={c.job_id} value={c.job_id}>
-                  {c.title} · {c.company} ({STAGE_LABEL[c.stage]})
-                </option>
-              ))}
-            </select>
+              label={t('job')}
+              value={jobId === null ? null : String(jobId)}
+              onChange={(value) => setJobId(Number(value))}
+              options={cards.map((c) => ({
+                value: String(c.job_id),
+                label: c.company,
+                description: c.title,
+                meta: STAGE_LABEL[c.stage],
+              }))}
+              placeholder={t('pickJob')}
+              searchLabel={t('searchJob')}
+              noMatch={(query) => t('noMatch', { query })}
+            />
           </div>
           {card && (
             <MilestoneForm

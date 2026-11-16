@@ -4,16 +4,9 @@
  * en el idioma de la UI; la lista de códigos se saca de ahí también, sin diccionario propio.
  */
 
-export type CodeKind = 'language' | 'region'
+import { fold } from '@/lib/text'
 
-/** Sin tildes, mayúsculas ni signos: «Reino  Unido» y «reino unido» son lo mismo. */
-const fold = (text: string) =>
-  text
-    .normalize('NFD')
-    .replace(/\p{M}/gu, '')
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N}]+/gu, ' ')
-    .trim()
+export type CodeKind = 'language' | 'region'
 
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 // Lo que el navegador conoce como región pero no es un país: Unión Europea, ONU, «desconocida»…
