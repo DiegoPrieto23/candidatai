@@ -174,11 +174,31 @@ class BrowseSettingsBody(BaseModel):
     confirm_risk: bool = False  # obligatorio para activar LinkedIn
 
 
+class MaxOffersBody(BaseModel):
+    """«Hasta N ofertas por portal»: el mismo número para varias plataformas."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    source_ids: list[int] = Field(min_length=1, max_length=200)
+    max_offers: int = Field(ge=1, le=100)
+
+
 class EditPlatformBody(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     name: str = Field(min_length=1, max_length=200)
     search_urls: list[str] = Field(min_length=1, max_length=10)
+
+
+@router.post(
+    "/browse/max-offers",
+    operation_id="set_browse_max_offers",
+    dependencies=[Depends(require_ui)],
+)
+def set_browse_max_offers(session: SessionDep, body: MaxOffersBody) -> browse.MaxOffersResult:
+    """Cambia a la vez cuántas ofertas abre el agente en cada una de esas plataformas, y ese
+    número pasa a ser el de las nuevas. Solo desde la UI."""
+    return browse.set_max_offers(session, body.source_ids, body.max_offers)
 
 
 @router.put("/{source_id}/platform", operation_id="edit_platform")

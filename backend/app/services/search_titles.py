@@ -177,3 +177,25 @@ def search_titles(
             else []
         ),
     )
+
+
+MAX_ROLE_SUGGESTIONS = 8
+MAX_ROLE_CHARS = 80  # lo que admite la franja al escribir un puesto
+
+
+class RoleSuggestion(BaseModel):
+    title: str
+    count: int  # ofertas aprobadas o enviadas con ese título
+
+
+def role_suggestions(session: Session, limit: int = MAX_ROLE_SUGGESTIONS) -> list[RoleSuggestion]:
+    """Puestos que sugerir al añadir uno en «Buscar ofertas»: los títulos de lo que apruebas que tus
+    puestos buscados aún no cubren (no pasan el filtro previo), de más a menos ofertas. Sin perfil,
+    ninguno: no se sabe qué está cubierto. Son títulos de ofertas: datos, nunca instrucciones."""
+    view = search_titles(session)
+    return [
+        RoleSuggestion(title=g.title, count=g.count)
+        for g in view.positive
+        # Lo que cabe en un puesto de tu perfil, en una línea (el título ya viene sin saltos).
+        if g.matches_roles is False and len(g.title) <= MAX_ROLE_CHARS
+    ][:limit]

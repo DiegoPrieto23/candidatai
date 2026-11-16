@@ -60,7 +60,7 @@ describe('Botones «en tu agente»', () => {
     renderApp('/')
     await userEvent.click(await screen.findByRole('button', { name: 'Buscar ofertas' }))
     expect(await screen.findByText('No puedo abrir tu agente desde aquí')).toBeInTheDocument()
-    expect(screen.getByText(/pégala en tu agente \(Claude Code, Codex…\), en la ventana donde lo usas/)).toBeInTheDocument()
+    expect(screen.getByText(/pégala en tu agente, en la ventana donde lo usas/)).toBeInTheDocument()
     expect(screen.getByLabelText('Orden para tu agente')).toHaveTextContent('Usa el skill search-jobs de CandidatAI.')
     await userEvent.click(screen.getByRole('button', { name: 'Copiar: Orden para tu agente' }))
     await waitFor(() => expect(writeText).toHaveBeenCalledWith('Usa el skill search-jobs de CandidatAI.'))

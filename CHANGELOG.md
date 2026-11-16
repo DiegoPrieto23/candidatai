@@ -24,8 +24,8 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   igual, cada tarjeta de una columna con varias etapas dice la suya y **Restablecer** vuelve a las de
   siempre.
 - **Añadir hitos desde el Calendario:** con **Añadir hito**, el «+» de un día o pulsando una hora
-  libre de la semana o del día. Eliges la oferta y el hito se guarda en su ficha, con la fecha ya
-  puesta.
+  libre de la semana o del día. Eliges la oferta en una lista con buscador (por empresa o puesto,
+  sin importar tildes ni mayúsculas) y el hito se guarda en su ficha, con la fecha ya puesta.
 - **Avisos sin correos:** el fichero del calendario y la suscripción llevan alarmas (un día y una
   hora antes de cada hito con hora; a las 9:00 del día anterior en los plazos) para que Outlook o
   Apple Calendar te avisen solos. Y con **Avisos del navegador** en el Calendario, mientras la app
@@ -52,11 +52,16 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   «Convirtiendo en plantilla…» mientras tu agente trabaja.
 - **Ayuda del periodo en Habilidades por desarrollar:** junto a 30/60/90/180 días, qué ofertas cuenta
   cada ventana y para qué sirve cambiarla.
-- **Asistente:** un botón con rótulo abajo a la derecha, junto al de ayuda, abre una caja
-  de texto para pedirle algo a tu agente con tus palabras. La primera vez propone ejemplos («¿qué
-  tengo pendiente esta semana?») que se escriben en la caja al pulsarlos.
-  **Enviar ahora** lo lanza en segundo plano y la respuesta aparece ahí mismo, con enlaces a la oferta
-  o a la pantalla de la que habla; **Dejar para mi próxima sesión** lo guarda como encargo. Puede
+- **Asistente:** un botón con rótulo abajo a la derecha, junto al de ayuda, abre un chat para
+  pedirle algo a tu agente con tus palabras. Escribes abajo y pulsas Intro o la flecha (Mayús+Intro
+  salta de línea); tu pregunta queda a la derecha y la respuesta a la izquierda, con enlaces a la
+  oferta o a la pantalla de la que habla, separadas por días. La primera vez propone ejemplos («¿qué
+  tengo pendiente esta semana?») que se escriben en la caja al pulsarlos. Si tu agente trabaja en
+  segundo plano desde la app, se lanza al momento; si no, queda como encargo para tu próxima sesión
+  y el hilo lo dice. Cada vez que lo abres empiezas una conversación nueva; las anteriores están en
+  una barra lateral por fechas (Hoy, Ayer, Últimos 7 días, Antes), se vuelven a abrir con un clic y
+  se borran con la papelera. En una misma conversación, tu agente recuerda lo que ya le
+  preguntaste. El panel se distingue del resto del portal por su cabecera y su borde. Puede
   consultar tus datos, valorar una oferta ya leída y guardar las indicaciones de una carta. Enviar una
   candidatura, aprobar, descartar y borrar los sigues confirmando tú.
 - **Ayuda en todas las páginas:** un botón abajo a la derecha (o la tecla `?`) abre un buscador sobre
@@ -168,6 +173,22 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   vez de 23).
 
 ### Cambiado
+- **«Buscar ofertas», más visual y más fácil de cambiar:** arriba, una franja con tus puestos y
+  lugares como etiquetas. Las quitas con su ✕ y añades más con **+ Añadir puesto** o **+ Añadir
+  lugar**. Cada cambio se guarda en tu perfil al momento, con **Deshacer**, y al añadir un puesto te
+  sugiere los títulos de las ofertas que apruebas y que tus puestos aún no cubren. A la derecha,
+  **Buscar ahora** con los portales y el total de ofertas. Tus portales pasan a tarjetas que se marcan
+  con un clic, con su estado y lo que dieron la última vez (vistas, las que pasan tus filtros y
+  nuevas); los que no se pueden usar dicen por qué. Al pie, la última búsqueda con enlace a la
+  bandeja. **Afinar esta búsqueda** pasa a ser **Buscar otra cosa solo esta vez**.
+- **«Buscar ofertas», número de ofertas en un solo sitio:** junto a «Buscar ahora», «Hasta N ofertas
+  por portal» cambia a la vez el límite de todos los portales elegidos y el de los que añadas
+  después. Si cada portal tiene el suyo, lo dice («varía») y elegir un número los iguala. El de un
+  portal suelto se sigue cambiando en «Dónde buscar».
+- **Sin nombres de agentes en «Buscar ofertas»:** fuera «Ten el navegador conectado a tu agente» y
+  su ayuda, que hablaba de un agente concreto (si al tuyo le falta el navegador, te lo dice al
+  empezar). La ventana para copiar la orden dice «pégala en tu agente», sin ejemplos.
+- **Arranque:** la página «Arrancando CandidatAI» dice «Se abrirá en unos segundos».
 - **Tu CV se sube arrastrándolo:** en **Mi perfil** («Empieza por tu CV» e «Importar información
   desde un CV») y en los primeros pasos de **Inicio**, una caja donde soltar el PDF o el Word, o
   hacer clic para elegirlo. Si el formato no vale, lo dice sin subirlo. Con el CV ya subido, la caja
@@ -373,6 +394,9 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   leer cada oferta una a una.
 
 ### Corregido
+- **«Cambiar» en «Buscas: …» de «Buscar ofertas»** no hacía nada si ya habías entrado por
+  «Configuración de tu búsqueda» y habías vuelto arriba. Ahora siempre baja a tus puestos y deja el
+  cursor en la caja para escribir uno.
 - **Cerrar una candidatura con la fecha en que pasó:** si después habías anotado algo que no encaja
   con el cierre (un seguimiento, o cerrarla y reabrirla para probar), la app ya no da un error
   confuso. Te enseña qué es y te propone quitarlo, si lo anotaste por error, o anotar el cierre

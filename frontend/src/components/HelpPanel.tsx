@@ -1,7 +1,17 @@
-import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { ArrowRightIcon, CaretDownIcon, MagnifyingGlassIcon, QuestionIcon, SparkleIcon, XIcon } from '@phosphor-icons/react'
+import {
+  ArrowRightIcon,
+  CaretDownIcon,
+  MagnifyingGlassIcon,
+  NotePencilIcon,
+  QuestionIcon,
+  SidebarSimpleIcon,
+  SparkleIcon,
+  XIcon,
+} from '@phosphor-icons/react'
+import { AssistantConversations } from '@/components/AssistantConversations'
 import { AssistantTab } from '@/components/AssistantTab'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -118,6 +128,23 @@ type Tab = 'help' | 'assistant'
 // La pestaña del agente, la primera: es lo que abre el botón principal de la esquina.
 const TABS: Tab[] = ['assistant', 'help']
 
+// Si la barra de conversaciones del Asistente se quedó abierta: por navegador, sin más.
+const SIDEBAR_KEY = 'cai.assistant.sidebar'
+function readSidebar(): boolean {
+  try {
+    return localStorage.getItem(SIDEBAR_KEY) === 'open'
+  } catch {
+    return false
+  }
+}
+function saveSidebar(open: boolean) {
+  try {
+    localStorage.setItem(SIDEBAR_KEY, open ? 'open' : 'closed')
+  } catch {
+    // sin almacenamiento, se queda como esté en esta visita
+  }
+}
+
 function Panel({ tab, setTab, onClose }: { tab: Tab; setTab: (tab: Tab) => void; onClose: () => void }) {
   const { t, i18n } = useTranslation('help')
   const [query, setQuery] = useState('')
@@ -125,6 +152,28 @@ function Panel({ tab, setTab, onClose }: { tab: Tab; setTab: (tab: Tab) => void;
   const [guide, setGuide] = useState<GuideSection[] | null>(null)
   const input = useRef<HTMLInputElement>(null)
   const language = i18n.language
+  // El Asistente: la conversación abierta (`null`, una nueva) y la barra de conversaciones.
+  const [conversationId, setConversationId] = useState<number | null>(null)
+  const [sidebar, setSidebar] = useState(readSidebar)
+  // Al abrir, la app elige una sola vez (una nueva o la que tiene a tu agente trabajando); en
+  // cuanto eliges tú (abrir, nueva, enviar), ya no cambia sola.
+  const chosen = useRef(false)
+  const chooseConversation = useCallback((id: number | null) => {
+    chosen.current = true
+    setConversationId(id)
+  }, [])
+  const autoOpen = useCallback((id: number | null) => {
+    if (chosen.current) return
+    chosen.current = true
+    if (id !== null) setConversationId(id)
+  }, [])
+  const toggleSidebar = () => {
+    setSidebar((open) => {
+      saveSidebar(!open)
+      return !open
+    })
+  }
+  const assistant = tab === 'assistant'
 
   useEffect(() => {
     if (tab === 'help') input.current?.focus()
@@ -175,16 +224,57 @@ function Panel({ tab, setTab, onClose }: { tab: Tab; setTab: (tab: Tab) => void;
       role="dialog"
       aria-label={title}
       data-help-panel
-      className="pointer-events-auto flex max-h-[min(34rem,calc(100dvh-6rem))] w-96 max-w-[calc(100vw-2rem)] flex-col rounded-xl border bg-card text-card-foreground shadow-lg animate-in fade-in slide-in-from-bottom-1 duration-200"
+      className={cn(
+        'pointer-events-auto flex max-w-[calc(100vw-2rem)] flex-col rounded-xl border bg-card text-card-foreground animate-in fade-in slide-in-from-bottom-1 duration-200',
+        // El asistente, como un chat: más ancho, de alto fijo (la caja abajo) y con borde, sombra y
+        // cabecera propios para que no se confunda con la página.
+        // Con la barra de conversaciones abierta, más ancho todavía (como ChatGPT o Claude).
+        assistant
+          ? 'h-[min(36rem,calc(100dvh-6rem))] overflow-hidden border-primary/30 shadow-2xl dark:border-primary/40'
+          : 'max-h-[min(34rem,calc(100dvh-6rem))] w-96 shadow-lg',
+        assistant && (sidebar ? 'w-[44rem]' : 'w-[28rem]'),
+      )}
     >
-      <header className="flex items-center gap-2 border-b px-4 py-2.5">
+      <header
+        className={cn('flex items-center gap-2 border-b px-4 py-2.5', tab === 'assistant' && 'bg-primary/10 dark:bg-primary/15')}
+      >
         <TitleIcon className="size-4 text-primary" weight={tab === 'assistant' ? 'fill' : 'bold'} aria-hidden />
         <h2 className="flex-1 text-sm font-semibold">{title}</h2>
+        {assistant && (
+          <>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-7"
+              aria-label={t('assistant.conversations.history')}
+              aria-expanded={sidebar}
+              aria-controls="assistant-conversations"
+              title={t('assistant.conversations.history')}
+              onClick={toggleSidebar}
+            >
+              <SidebarSimpleIcon weight={sidebar ? 'fill' : 'bold'} aria-hidden />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-7"
+              aria-label={t('assistant.conversations.new')}
+              title={t('assistant.conversations.new')}
+              onClick={() => chooseConversation(null)}
+            >
+              <NotePencilIcon weight="bold" aria-hidden />
+            </Button>
+          </>
+        )}
         <Button variant="ghost" size="icon" className="size-7" aria-label={t('close')} onClick={onClose}>
           <XIcon weight="bold" aria-hidden />
         </Button>
       </header>
-      <div role="tablist" aria-label={t('tabs.label')} className="flex gap-1 border-b px-3 pt-1.5">
+      <div
+        role="tablist"
+        aria-label={t('tabs.label')}
+        className={cn('flex gap-1 border-b px-3 pt-1.5', tab === 'assistant' && 'bg-primary/10 dark:bg-primary/15')}
+      >
         {TABS.map((name) => (
           <button
             key={name}
@@ -219,7 +309,26 @@ function Panel({ tab, setTab, onClose }: { tab: Tab; setTab: (tab: Tab) => void;
         aria-labelledby={`help-tab-${tab}`}
         className="flex min-h-0 flex-1 flex-col"
       >
-      {tab === 'assistant' && <AssistantTab onGo={onClose} />}
+      {assistant && (
+        <div className="flex min-h-0 flex-1">
+          {sidebar && (
+            <AssistantConversations
+              id="assistant-conversations"
+              currentId={conversationId}
+              onOpen={chooseConversation}
+              onNew={() => chooseConversation(null)}
+            />
+          )}
+          <div className="flex min-w-0 flex-1 flex-col">
+            <AssistantTab
+              conversationId={conversationId}
+              onConversation={chooseConversation}
+              onAutoOpen={autoOpen}
+              onGo={onClose}
+            />
+          </div>
+        </div>
+      )}
       {tab === 'help' && (
       <>
       <div className="relative border-b px-4 py-3">

@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useState, type FormEvent, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PencilSimpleIcon, PlusIcon, SparkleIcon, WarningIcon } from '@phosphor-icons/react'
 import type { BrowseAccess, SourceView } from '@/api/client'
@@ -328,17 +328,29 @@ export function EditPlatformButton({ source }: { source: SourceView }) {
   )
 }
 
-/** Botón y diálogo «Añadir plataforma». */
-/** `primary`: relleno, si es la acción destacada de la pantalla; si no, con borde. */
-export function AddPlatformButton({ primary = false }: { primary?: boolean }) {
+/**
+ * Botón y diálogo «Añadir portal». `primary`: relleno, si es la acción destacada de la pantalla; si
+ * no, con borde. Con `render`, el botón lo pinta quien lo usa (la tarjeta de «Buscar»).
+ */
+export function AddPlatformButton({
+  primary = false,
+  render,
+}: {
+  primary?: boolean
+  render?: (open: () => void, label: string) => ReactNode
+}) {
   const { t } = useTranslation('platforms', { keyPrefix: 'add' })
   const [open, setOpen] = useState(false)
   return (
     <>
-      <Button type="button" size="sm" variant={primary ? 'default' : 'outline'} onClick={() => setOpen(true)}>
-        <PlusIcon />
-        {t('button')}
-      </Button>
+      {render ? (
+        render(() => setOpen(true), t('button'))
+      ) : (
+        <Button type="button" size="sm" variant={primary ? 'default' : 'outline'} onClick={() => setOpen(true)}>
+          <PlusIcon />
+          {t('button')}
+        </Button>
+      )}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-h-[90dvh] overflow-y-auto">
           {open && <AddPlatformForm onDone={() => setOpen(false)} />}

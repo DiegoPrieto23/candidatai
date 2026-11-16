@@ -147,6 +147,26 @@ def test_browse_settings_validation(client: TestClient) -> None:
     assert changed["browse"]["max_offers"] == 30
 
 
+def test_one_number_for_several_platforms(client: TestClient) -> None:
+    source_id = _linkedin_id()
+    url = "/sources/browse/max-offers"
+    assert client.post(url, json={"source_ids": [], "max_offers": 20}).status_code == 422
+    assert client.post(url, json={"source_ids": [source_id], "max_offers": 101}).status_code == 422
+    assert client.post(url, json={"source_ids": [99], "max_offers": 20}).status_code == 404
+    company = client.post("/sources", json=BODY).json()["id"]
+    other_kind = client.post(url, json={"source_ids": [source_id, company], "max_offers": 20})
+    assert other_kind.status_code == 422 and "no es una plataforma" in other_kind.text
+    # Solo la UI: un formulario de otra web no puede cambiarlo.
+    form = client.post(url, data={"source_ids": str(source_id), "max_offers": "20"})
+    assert form.status_code == 403
+
+    changed = client.post(url, json={"source_ids": [source_id], "max_offers": 20}).json()
+    assert changed["default_max_offers"] == 20
+    assert [s["browse"]["max_offers"] for s in changed["sources"]] == [20]
+    listed = client.get("/sources", params={"kind": "agent_browse"}).json()
+    assert listed["agent_browse"]["default_max_offers"] == 20
+
+
 def test_set_website(client: TestClient) -> None:
     source_id = client.post("/sources", json=BODY).json()["id"]
     url = f"/sources/{source_id}/website"

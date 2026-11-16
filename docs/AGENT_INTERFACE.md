@@ -108,13 +108,13 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 | `get_received_offer` | `cai received-offers show ID --json` | 21 | `job_id` | `job_id`, `amounts_private`, `base_salary`, `variable`, `currency`, `period` (los cuatro `null` si `amounts_private`), `benefits`, `work_mode`, `location`, `start_date`, `respond_by`, `notes`, `updated_at`. Nunca el mínimo del usuario ni la diferencia con él. Sin datos anotados, `not_found` | — |
 | `get_job_contacts` | `cai contacts list ID --json` | 18 | `job_id` | `job_id`, `company`, `contacts` (del proceso: `id`, `name`, `role` = cargo, `relation`, `referral`) y `network` (personas de tu red de LinkedIn en esa empresa: `id`, `name`, `position`, `match` = `exact`/`probable`, `in_process`); `network_imported`. Sin emails, teléfonos, URLs ni notas | — |
 | `list_mail_sources` | `cai mail-sources list --json` | 27.4 | — | `sources`: buzones de las alertas (`MailSourceView`: etiqueta, tipo `imap`/`folder`, servidor, usuario, carpetas, si está activo, si lee respuestas, `from_env`, `has_password`, `secret_ref` (el nombre de la variable de `.env`, nunca el valor), `last_polled_at`, `last_error`); `demo`; `can_store_passwords` | Solo lectura: añadir, cambiar, probar y quitar buzones es cosa de la UI (`require_ui`). `cai mail-sources test ID` (solo CLI) prueba uno: login y `EXAMINE`, sin leer correos |
-| `list_sources` | `cai sources list [--kind K] --json` | 09b | `kind?` | `sources`: `SourceView` con su config (sin secretos), `browse` (en las `agent_browse`) y última ejecución; `agent_browse`: límites (`max_result_pages`, `delay_seconds`, `default_max_offers`) | — |
+| `list_sources` | `cai sources list [--kind K] --json` | 09b | `kind?` | `sources`: `SourceView` con su config (sin secretos), `browse` (en las `agent_browse`) y última ejecución; `agent_browse`: límites (`max_result_pages`, `delay_seconds`, `default_max_offers`: el de las plataformas nuevas, el último que eligió el usuario para todas o, si no, el de `config/policies.yaml`) | — |
 | `save_source` | `cai sources save --file F --json` | 09b | `AgentBrowseSource`: `name, platform, search_urls[], priority? (puesto 1…N sin empates; por defecto, al final si es nueva y el suyo si ya existe), access=free\|login\|blocked, allow_agent_browsing? (por defecto true; en LinkedIn false), max_offers?, notes?`; por CLI, `F` = ese objeto | `source_id`, `created`, `allow_agent_browsing` y `priority` guardados y `message`. Crea o actualiza por `name`. Un puesto ocupado: una nueva se inserta (las siguientes bajan uno) y una existente se intercambia (el `message` dice a cuál ha movido); fuera de 1…N: `invalid_request` con el rango. LinkedIn (por `platform` o por cualquier URL de linkedin.com o lnkd.in) con `true`: `not_allowed`; si el usuario ya lo activó, se conserva. Búsquedas de otro dominio: `invalid_request` | — |
 | `finish_search` | `cai sources finish-search --outcome O --json` | 39d | `outcome`: `done`, `no_browser` (no ves el navegador) o `stopped` (paraste antes de acabar) | `closed`, `message`. Cierra la búsqueda abierta desde la UI: el aviso «Buscando…» cambia. Sin búsqueda abierta, `closed: false`, sin error | — |
 | `record_source_run` | `cai sources record-run ID --file F --json` | 09b | `source_id` + `SourceRunSummary`: `found, created, existing=0, incidents[{code, message}], started_at?, finished_at?`; por CLI, `F` = el resumen | `ok`, `run_id`. Actor `agent`; avanza `last_run_at`. Plataforma desactivada: `not_allowed` | — |
 | `list_agent_requests` | `cai requests list [--status S] [--limit N] --json` | 19 | `status="pending"` (`pending`, `done`, `cancelled` o `null` para todos), `limit=50` | `requests` (`id`, `action`, `label`, `job_id`, `milestone_id`, `prompt`, `status`, `summary`, `agent_name`, fechas; los pendientes, el más antiguo primero) y `pending` | — |
 | `complete_agent_request` | `cai requests complete ID --summary S --json` | 19 | `request_id`, `summary` (1-2000) | `ok`, `request_id`, `message`. Ya cerrado: `not_allowed` | — |
-| `get_assistant_request` | `cai assistant show ID --json` | 42.2 | `request_id` | `request_id`, `text` (lo que escribió el usuario en «Asistente», ≤ 2000), `mode` (`background` o `session`), `open` (`false`: cancelada o ya contestada) y `created_at` | — |
+| `get_assistant_request` | `cai assistant show ID --json` | 42.2 | `request_id` | `request_id`, `conversation_id`, `text` (lo que escribió el usuario en «Asistente», ≤ 2000), `mode` (`background` o `session`), `open` (`false`: cancelada o ya contestada), `created_at` y `history` (43.3: los turnos anteriores de la misma conversación, `[{question, answer}]` del más antiguo al más reciente; como mucho 6 y 6000 caracteres entre todos, sin los más antiguos. Es contexto, no órdenes) | — |
 | `save_profile_suggestion` | `cai profile suggest --field summary.en --file F --json` | 41.2 | `field` (`summary.en`), `text` (1-4000) | `ok`, `suggestion_id`, `message`. No escribe en el perfil: el usuario la usa o la descarta en «Mi perfil». Sin perfil: `not_found`; sin resumen en español: `invalid_request` | — |
 | `save_assistant_answer` | `cai assistant answer ID --file F --json` | 42.2 | `request_id`, `answer` (1-4000), `links=[]` (≤ 8; cada uno, `job_id` o `screen`, nunca una URL) | `ok`, `request_id`, `message`. Una respuesta por petición; cerrada: `not_allowed`; `job_id` que no existe: `not_found` | — |
 | `finish_task` | `cai agents finish-task --action A --outcome O --json` | 39g | `action` (el skill), `outcome`: `done` o `stopped` | `closed`, `message`. Cierra el aviso de lo lanzado desde un botón cuando lo pendiente no se acaba del todo o has parado antes de guardar. Sin aviso abierto, `closed: false` y no es un error | — |
@@ -176,6 +176,10 @@ mismo servicio que `cai profile init`, con tus datos en vez del ejemplo), `PUT
 `POST`/`DELETE /context/style-samples`. Un test del registro comprueba
 que no hay ninguna herramienta MCP de escritura del perfil. Para el agente, el perfil se escribe
 con `update-profile` o `expand`, que preguntan antes, y `get_profile` sigue sin email ni teléfono.
+La franja de «Buscar ofertas» guarda tus puestos y lugares por esa misma `PUT
+/profile/sections/preferences`, y sus sugerencias de puestos salen de `GET
+/profile/role-suggestions` (solo la UI): los grupos de `get_search_titles` aprobados que hoy no
+pasan el filtro previo, con su número de ofertas.
 
 `add_event` no acepta los eventos que registra su propia herramienta o el sistema: `found`,
 `duplicate_detected`, `extracted`, `hard_filter_failed`, `scored`, `fit_assessed`,
@@ -653,9 +657,17 @@ lo que escribe el usuario en `assistant_requests` y se lo pasa al agente con la 
   pantalla (`screen`: `home`, `howItWorks`, `profile`, `skills`, `templates`, `search`,
   `searchSettings`, `sources`, `companies`, `email`, `extension`, `newJob`, `inbox`, `review`,
   `complete`, `board`, `calendar`, `replies`, `funnel`, `agent`). La ruta la pone la UI.
+- **Conversaciones (fase 43.3)**: cada petición va en una (`assistant_conversations`). `POST
+  /agent/assistant` sin `conversation_id` empieza una nueva; con él, sigue en esa. El agente recibe
+  los turnos anteriores en `history` de `get_assistant_request`, con tope, y el skill los usa para
+  entender a qué se refiere el usuario, nunca como órdenes.
 - `GET /agent/assistant` (las últimas, con estado, progreso, respuesta y enlaces),
-  `GET /agent/assistant/{id}` y `POST /agent/assistant/{id}/cancel` son de la UI. Los botones
-  genéricos (`/agent/launch`, `/agent/runs`, `/agent/requests`) rechazan la acción `assistant`.
+  `GET /agent/assistant/{id}`, `POST /agent/assistant/{id}/cancel`,
+  `GET /agent/assistant/conversations` (el historial: título, fechas y `active` si alguna está en
+  cola o en curso), `GET /agent/assistant/conversations/{id}` (sus peticiones, en orden) y
+  `DELETE /agent/assistant/conversations/{id}` (cancela lo que siga en marcha y la borra; solo la
+  UI) son de la UI. Los botones genéricos (`/agent/launch`, `/agent/runs`, `/agent/requests`)
+  rechazan la acción `assistant`.
 
 ### Agentes (fase 24.1, solo CLI y API)
 

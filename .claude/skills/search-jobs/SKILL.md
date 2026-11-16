@@ -16,7 +16,7 @@ llega de la página «Buscar ofertas» puede traer además los `id` de las plata
 búsqueda puntual con puesto, ubicación o ambos (ver «Modo búsqueda»).
 
 ## Requisitos
-- Necesitas acceso al navegador del usuario (en Claude Code, Claude in Chrome). Si no lo tienes,
+- Necesitas acceso al navegador del usuario. Si no lo tienes,
   dilo, propón las alternativas (alertas por correo y el botón «Enviar a CandidatAI») y llama a
   `finish_search` con `outcome: no_browser`: la app está enseñando «Buscando…» y, si no, no lo sabe.
 - Ejecuta este skill en una sesión dedicada, no en una de desarrollo.
@@ -33,7 +33,8 @@ búsqueda puntual con puesto, ubicación o ambos (ver «Modo búsqueda»).
    ella, una nueva va al final y una existente conserva el suyo; un puesto ocupado intercambia
    las dos o, en una nueva, la inserta ahí y baja las siguientes), `access` (`free`, `login` o
    `blocked`), `max_offers` (si no lo das, se conserva el que tenga, que el usuario puede cambiar
-   en la UI; en una nueva, `default_max_offers`) y `notes`. Las `search_urls`
+   en la UI; en una nueva, el `default_max_offers` que devuelve `list_sources`, que puede ser el que
+   eligió el usuario para todos sus portales) y `notes`. Las `search_urls`
    deben ser del dominio de la plataforma (una plataforma por sitio). Guardar otra vez con el
    mismo `name` la actualiza. Por defecto queda con la búsqueda con navegador activada.
 5. LinkedIn queda siempre con la búsqueda desactivada: no pases `allow_agent_browsing` (con

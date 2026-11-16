@@ -134,10 +134,13 @@ describe('Calendario: añadir un hito', () => {
     const day = await screen.findByRole('listitem', { name: 'jueves, 15 de octubre' })
     await userEvent.click(within(day).getByRole('button', { name: 'Añadir un hito el jueves, 15 de octubre' }))
     const dialog = await screen.findByRole('dialog')
-    const job = await within(dialog).findByLabelText('Oferta')
-    // Solo los procesos abiertos.
-    expect(within(job).queryByText(/Oferta 4/)).not.toBeInTheDocument()
-    await userEvent.selectOptions(job, '3')
+    await userEvent.click(await within(dialog).findByRole('button', { name: 'Oferta' }))
+    const list = await screen.findByRole('listbox', { name: 'Oferta' })
+    // Solo los procesos abiertos; con pocos, sin caja de búsqueda.
+    expect(within(list).queryByText('Empresa 4')).not.toBeInTheDocument()
+    expect(screen.queryByRole('combobox', { name: 'Busca por empresa o puesto' })).not.toBeInTheDocument()
+    await userEvent.click(within(list).getByRole('option', { name: /Empresa 3/ }))
+    expect(within(dialog).getByRole('button', { name: 'Oferta' })).toHaveTextContent('Empresa 3 · Oferta 3')
     await userEvent.type(within(dialog).getByLabelText('Título (opcional)'), 'Técnica')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Guardar hito' }))
     await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true))
@@ -145,6 +148,25 @@ describe('Calendario: añadir un hito', () => {
     expect(post.path).toBe('/jobs/3/milestones')
     // 14:00 en Madrid el 15 de octubre (horario de verano).
     expect(post.body).toMatchObject({ kind: 'interview', title: 'Técnica', starts_at: '2026-10-15T14:00:00+02:00', all_day: false })
+  })
+
+  it('con muchas ofertas, se busca por empresa o puesto sin tildes ni mayúsculas', async () => {
+    const cards = Array.from({ length: 9 }, (_, i) => boardCard(10 + i, 'applied'))
+    cards.push(boardCard(30, 'in_process', { company: 'Brétema Analytics', title: 'Data Engineer' }))
+    mockApi({ ...routes(), 'GET /board': board(cards) })
+    renderApp('/calendario?view=month&date=2026-10-05')
+    const day = await screen.findByRole('listitem', { name: 'jueves, 15 de octubre' })
+    await userEvent.click(within(day).getByRole('button', { name: 'Añadir un hito el jueves, 15 de octubre' }))
+    const dialog = await screen.findByRole('dialog')
+    await userEvent.click(await within(dialog).findByRole('button', { name: 'Oferta' }))
+    const search = await screen.findByRole('combobox', { name: 'Busca por empresa o puesto' })
+    await waitFor(() => expect(search).toHaveFocus())
+    await userEvent.type(search, 'BRETEMA data')
+    const list = screen.getByRole('listbox', { name: 'Oferta' })
+    expect(within(list).getAllByRole('option')).toHaveLength(1)
+    await userEvent.keyboard('{Enter}')
+    expect(within(dialog).getByRole('button', { name: 'Oferta' })).toHaveTextContent('Brétema Analytics · Data Engineer')
+    expect(await within(dialog).findByRole('button', { name: 'Guardar hito' })).toBeInTheDocument()
   })
 
   it('distingue hoy, fines de semana y días de otro mes', async () => {

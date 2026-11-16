@@ -841,13 +841,27 @@ junto al campo en «Mi perfil» y el perfil solo cambia con «Guardar».
 | status | str | `pending`, `used` (pasó al formulario), `discarded` o `replaced` (llegó otra del mismo campo) |
 | created_at / resolved_at | datetime | |
 
+### `assistant_conversations`
+Las conversaciones del «Asistente» (fase 43.3, migración 0039), como en un chat: el panel abre una
+nueva y lista las anteriores. No caducan; se borran a mano desde el panel (y con ellas, sus
+peticiones; lo que siga en marcha se cancela).
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | int PK | |
+| title | str | El principio de la primera pregunta (≤ 60 caracteres, cortado por una palabra con «…»), sin llamar a ningún modelo |
+| created_at / updated_at | datetime | `updated_at`: la última pregunta. El historial se ordena por la última petición |
+
+La migración 0039 pone cada petición anterior en una conversación propia, con su pregunta como título.
+
 ### `assistant_requests`
 Lo que escribes en «Asistente», en la ayuda del portal (fase 42.2, migración 0037), y
-la respuesta de tu agente. Es también el historial del panel.
+la respuesta de tu agente. Cada una va en una conversación.
 
 | Columna | Tipo | Notas |
 |---|---|---|
 | id | int PK | Lo único que lleva la orden del agente |
+| conversation_id | FK | Su conversación (`assistant_conversations`) |
 | text | text | Tu petición (≤ 2000). La lee el skill `assistant` con `get_assistant_request` |
 | mode | str | `background` (una ejecución de `agent_runs`) o `session` (un encargo de `agent_requests`) |
 | run_id / request_id | FK? | La ejecución o el encargo que la atiende |
@@ -868,7 +882,7 @@ lee `services/agent_prefs.py`.
 | Columna | Tipo | Notas |
 |---|---|---|
 | id | int PK | |
-| scope | str | `default` (el agente por defecto), `agent` (el modelo de un agente) o `action` (el agente de una acción) |
+| scope | str | `default` (el agente por defecto), `agent` (el modelo de un agente), `action` (el agente de una acción), `tier` / `tier_undo` (niveles de gasto) o `setting` (un ajuste con su número o valor en `model`: `assess_min_score`, `extra_matching` y `browse_max_offers`, las ofertas por portal de las plataformas nuevas) |
 | key | str | Vacía en `default`; el agente en `agent`; la acción en `action`. Única con `scope` |
 | agent | str? | En `default` y `action` |
 | model / preset | str? | Uno de los dos o ninguno. El modelo es texto libre validado con `models.pattern` del agente, sin red |

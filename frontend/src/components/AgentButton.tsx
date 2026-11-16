@@ -77,6 +77,7 @@ export function AgentButton({
   prepare,
   disabled = false,
   className,
+  fill = false,
   onStarted,
 }: {
   action: AgentAction
@@ -97,6 +98,8 @@ export function AgentButton({
   prepare?: () => Promise<unknown>
   disabled?: boolean
   className?: string
+  /** Ocupa todo el ancho de su caja (el botón principal de «Buscar»). */
+  fill?: boolean
   /** Se abrió en una terminal o se puso en marcha en segundo plano (no al dejarlo para luego). */
   onStarted?: () => void
 }) {
@@ -195,9 +198,9 @@ export function AgentButton({
         setFeedback(null)
       }}
     >
-    <span data-slot="agent-button" className={cn('inline-flex', className)}>
+    <span data-slot="agent-button" className={cn('inline-flex', fill && 'flex w-full', className)}>
       <Popover.Anchor asChild>
-      <span className="inline-flex">
+      <span className={cn('inline-flex', fill && 'flex-1')}>
         <Hint
           text={
             <span className="grid gap-1.5">
@@ -215,7 +218,7 @@ export function AgentButton({
         >
           {/* Bloqueado, el botón no recibe el foco: lo recibe el envoltorio (con el nombre del botón) para que el globo salga con el teclado. */}
           <span
-            className="inline-flex"
+            className={cn('inline-flex', fill && 'flex-1')}
             {...(blocked ? { tabIndex: 0, role: 'group', 'aria-labelledby': buttonId } : {})}
           >
             <Button
@@ -225,7 +228,7 @@ export function AgentButton({
               size={size}
               onClick={() => run()}
               disabled={busy || disabled || blocked !== null}
-              className="rounded-r-none"
+              className={cn('rounded-r-none', fill && 'flex-1')}
               aria-describedby={hintId}
             >
               <RobotIcon className={cn(!primary && 'text-primary')} />

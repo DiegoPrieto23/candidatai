@@ -214,6 +214,60 @@ def test_user_sets_offers_per_run_and_the_agent_keeps_it(session: Session) -> No
     assert _config(session, source_id)["max_offers"] == 20
 
 
+def test_one_number_for_several_platforms_and_the_new_ones(session: Session) -> None:
+    tecno = _save(session, **TECNO).source_id
+    linkedin = _save(session, **LINKEDIN).source_id
+    other = _save(session, **{**TECNO, "name": "Otra", "max_offers": 40}).source_id
+    assert service.list_sources(session, "agent_browse").agent_browse.default_max_offers == 15
+
+    result = browse.set_max_offers(session, [tecno, linkedin, tecno], 25)
+
+    assert [s.id for s in result.sources] == [tecno, linkedin]  # sin repetir
+    assert all(s.browse is not None and s.browse.max_offers == 25 for s in result.sources)
+    assert result.default_max_offers == 25
+    assert _config(session, other)["max_offers"] == 40  # la que no elegiste, igual
+    # Lo demás de cada plataforma no cambia.
+    assert _config(session, linkedin)["allow_agent_browsing"] is False
+    # Las nuevas empiezan con ese número, y el agente lo ve en los límites.
+    assert service.list_sources(session, "agent_browse").agent_browse.default_max_offers == 25
+    new = _save(session, **{**TECNO, "name": "Nueva"}).source_id
+    assert _config(session, new)["max_offers"] == 25
+    # Una que ya existe conserva el suyo si el agente la guarda sin `max_offers`.
+    _save(session, **{**TECNO, "name": "Otra"})
+    assert _config(session, other)["max_offers"] == 40
+
+
+@pytest.mark.parametrize("stored", ["abc", "0", "500", ""])
+def test_a_broken_default_falls_back_to_the_policies(session: Session, stored: str) -> None:
+    from app.models import AgentPreference
+    from app.services.ingestion import max_offers
+
+    session.add(AgentPreference(scope="setting", key="browse_max_offers", model=stored))
+    session.flush()
+    assert max_offers.default_max_offers(session) == 15  # agent_browse.default_max_offers
+    assert _config(session, _save(session, **TECNO).source_id)["max_offers"] == 15
+
+
+def test_one_number_for_several_checks_everything_first(session: Session) -> None:
+    tecno = _save(session, **TECNO).source_id
+    ingest.add_from_text(session, "Data Engineer", "Acme", POSTING_TEXT)
+    manual = session.scalars(select(Source).where(Source.kind != "agent_browse")).one()
+
+    for ids, value, error in (
+        ([], 20, "al menos una"),
+        ([tecno], 0, "entre 1 y 100"),
+        ([tecno], 101, "entre 1 y 100"),
+        ([tecno, manual.id], 20, "no es una plataforma"),
+    ):
+        with pytest.raises(ValueError, match=error):
+            browse.set_max_offers(session, ids, value)
+    with pytest.raises(service.SourceNotFoundError):
+        browse.set_max_offers(session, [tecno, 99], 20)
+    # Nada a medias: la buena sigue con el suyo y las nuevas, con el de las políticas.
+    assert _config(session, tecno)["max_offers"] == 15
+    assert service.list_sources(session).agent_browse.default_max_offers == 15
+
+
 def test_update_settings_only_on_platforms(session: Session) -> None:
     ingest.add_from_text(session, "Data Engineer", "Acme", POSTING_TEXT)
     manual = session.scalars(select(Source)).one()

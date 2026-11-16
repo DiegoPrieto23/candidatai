@@ -35,7 +35,7 @@
   },
   "cantOpen": "I can't open your agent from here",
   "noAgent": "You don't have any AI agent installed",
-  "pasteWhere": "Copy this command and paste it into your agent (Claude Code, Codex…), in the window where you use it, opened in the CandidatAI folder.",
+  "pasteWhere": "Copy this command and paste it into your agent, in the window where you use it, opened in the CandidatAI folder.",
   "promptLabel": "Command for your agent",
   "howToInstall": "How to install one, in “Agent”",
   "closePrompt": "Close"

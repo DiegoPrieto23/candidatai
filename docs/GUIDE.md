@@ -344,15 +344,23 @@ guide, and each answer takes you to the screen where it is done. It works offlin
 agent.
 
 Next to it, the **Assistant** button (the one with the sparkle, also on every page) opens the
-same panel on its other tab: a text box for asking your agent in your own words (“what do I have
-pending this week?”, “assess the Acme job”). The first time it suggests a few examples; clicking one
-writes it in the box, and you send it. The app calls no model: it hands the request to
-the agent you already use.
+same panel on its other tab, which works like a chat: at the bottom you write what you want to ask
+your agent in your own words (“what do I have pending this week?”, “assess the Acme job”) and press
+Enter or the arrow (Shift+Enter adds a new line). Your question sits on the right and the answer on
+the left, grouped by day. The first time it suggests a few examples; clicking one writes it in the
+box, and you send it. The app calls no model: it hands the request to the agent you already use.
 
-- **Send now** runs it in the background. The panel shows the progress and the answer, with links
-  to the job or the screen it refers to. If your agent needs something from you, it asks in an app
-  notice.
-- **Leave it for my next session** saves it as a request (`handle-requests`).
+- **If your agent runs in the background from the app,** the request starts right away. The panel
+  shows the progress and the answer, with links to the job or the screen it refers to. If your agent
+  needs something from you, it asks in an app notice.
+- **If not,** it is saved as a request for your next session (`handle-requests`) and the thread
+  says so.
+- **Conversations:** every time you open the panel you start a new conversation (unless your agent
+  is working on one, which opens instead). Within a conversation, your agent receives what you
+  already asked and what it answered, so you can follow up (“what about the Acme one?”). The
+  sidebar button in the header opens your previous conversations by date (Today, Yesterday, Last 7
+  days, Earlier); the pencil starts a new one. Each one can be deleted with the bin, after you
+  confirm.
 - **What it can do:** look up your jobs, processes, interviews, profile and results, assess a job
   that has already been read, and save the instructions for a cover letter. For anything that has
   its own button (a CV, a letter, an interview guide) it tells you where that is. It does not read
@@ -387,7 +395,7 @@ A typical day:
 | **Manfred and freehire.me** | No keys: a search on the same page or with `cai sources add --kind manfred --name Manfred --query "data engineer"` (for freehire, also `--country` and `--remote-only`) |
 | **Email alerts** | Create job alerts on LinkedIn, InfoJobs, Indeed… and have them land in a label of your mailbox. In **Where to search → Email alerts → Add mailbox**, connect one or more mailboxes (Gmail, Outlook, Yahoo, iCloud or other IMAP, always read-only) or a folder of `.eml` files; the wizard explains each provider and tests the connection before saving. The password is stored encrypted in the system keychain (Credential Manager on Windows, Keychain on macOS) and never comes out again. Step by step in [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md) (Spanish). What comes in shows up in the **Job inbox**; the ones that only bring a title and a link wait in its **To complete** tab |
 | **"Send to CandidatAI" button** | In **Where to search → Browser button**: the app guides you through loading `extension/` in Chrome, Edge or Brave and connects it in one click. Instructions: [`extension/README.md`](../extension/README.md) (Spanish) |
-| **Your agent with your browser** | In **Where to search → Job boards**, **Set up with my agent** (`search-jobs configurar`) picks job boards and searches; or add them yourself: on InfoJobs, Tecnoempleo, Indeed and LinkedIn the searches come from the roles and locations in your profile, and each job board is edited with its pencil; `search-jobs` browses them. LinkedIn stays off until you turn it on. When you press **Search now**, a notice says “Searching…” on every page and changes when your agent finishes. On each job board, **problems** are what stopped it being read (a captcha, a login, a changed page) and **notes** are what your agent wrote down without anything failing, like the searches it didn't get to |
+| **Your agent with your browser** | In **Where to search → Job boards**, **Set up with my agent** (`search-jobs configurar`) picks job boards and searches; or add them yourself: on InfoJobs, Tecnoempleo, Indeed and LinkedIn the searches come from the roles and locations in your profile, and each job board is edited with its pencil; `search-jobs` browses them. LinkedIn stays off until you turn it on. In the strip at the top of **Search**, you remove your roles and places with their ✕ and add them with **+ Add role** or **+ Add place**: each change is saved to your profile right away, with **Undo**, and adding a role suggests the titles of jobs you approve that your roles don't cover yet. **Search for something else just this once** uses a role and a place without changing your profile, and **More filters** takes you to the rest of the settings. In the same strip, **Up to N jobs per job board** changes the limit of all the chosen job boards at once, and of the ones you add (a single one's, in **Where to search**). When you press **Search now**, a notice says “Searching…” on every page and changes when your agent finishes. On each job board, **problems** are what stopped it being read (a captcha, a login, a changed page) and **notes** are what your agent wrote down without anything failing, like the searches it didn't get to |
 | **LinkedIn's public search** | The **Public search without signing in** switch on the LinkedIn card in **Where to search → Job boards**. Off by default: it goes against LinkedIn's terms and may get your IP blocked for a while |
 
 The worker runs the automatic sources every day at `connectors.daily_at`
@@ -442,11 +450,11 @@ The worker runs the automatic sources every day at `connectors.daily_at`
   With **Customize columns** you pick 3 to 5 columns by grouping consecutive stages (e.g. **Approved**
   and **CV ready**) and name them; it only changes the view, stages stay as they are, and **Reset**
   brings back the usual ones. It's saved in your browser.
-- **Calendar:** all your milestones (interviews, tests, deadlines and others, past ones included)
-  by month, week, day or agenda. Click one to see its details and open the job. To add one, use
-  **Add milestone**, a day's **+** or a free hour in the week view: pick the job and it's saved on
-  its page. Today, weekends and days from other months stand out at a glance, and each milestone
-  type has its color and icon.
+- **Calendar:** all your milestones (interviews, tests, deadlines and others, past ones included) by
+  month, week, day or agenda. Click one to see its details and open the job. To add one, use **Add
+  milestone**, a day's **+** or a free hour in the week view: pick the job (with many, search it by
+  company or title) and it's saved on its page. Today, weekends and days from other months stand out
+  at a glance, and each milestone type has its color and icon.
 - **Reminders:** the `.ics` and the feed carry alarms, so your calendar reminds you without the app
   sending any email: a day and an hour before each timed milestone, and at 9:00 the day before each
   deadline. Outlook and Apple Calendar use them; Google Calendar applies its own notifications.

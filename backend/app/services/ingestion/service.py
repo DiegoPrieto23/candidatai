@@ -57,6 +57,7 @@ from app.services.ingestion.greenhouse import GreenhouseConnector
 from app.services.ingestion.infojobs import InfoJobsConnector
 from app.services.ingestion.lever import LeverConnector
 from app.services.ingestion.manfred import ManfredConnector
+from app.services.ingestion.max_offers import default_max_offers
 from app.services.ingestion.personio import PersonioConnector
 from app.services.ingestion.prefilter import Prefilter
 from app.services.ingestion.recruitee import RecruiteeConnector
@@ -242,10 +243,12 @@ def list_sources(session: Session, kind: str | None = None) -> SourceList:
     query = select(Source).order_by(Source.name, Source.id)
     if kind:
         query = query.where(Source.kind == kind)
-    limits = get_policies().agent_browse
+    limits = get_policies().agent_browse.model_dump()
+    # El de las plataformas nuevas: el último que elegiste para todas o, si no, el de las políticas.
+    limits["default_max_offers"] = default_max_offers(session)
     return SourceList(
         sources=[_view(session, s) for s in session.scalars(query)],
-        agent_browse=AgentBrowseLimits.model_validate(limits.model_dump()),
+        agent_browse=AgentBrowseLimits.model_validate(limits),
     )
 
 

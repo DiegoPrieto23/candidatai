@@ -339,15 +339,23 @@ también se abre con la tecla `?` y se cierra con `Esc`) busca en las
 hace. Funciona sin conexión y sin agente.
 
 Al lado, el botón **Asistente** (el del destello, también en todas las páginas) abre el
-mismo panel en su otra pestaña: una caja de texto para pedirle algo a tu agente con tus palabras
-(«¿qué tengo pendiente esta semana?», «valora la oferta de Acme»). La primera vez propone unos
-ejemplos; al pulsar uno se escribe en la caja, y lo envías tú. La app no llama a
-ningún modelo: le pasa la petición al agente que ya usas.
+mismo panel en su otra pestaña, que funciona como un chat: escribes abajo lo que quieres pedirle a
+tu agente con tus palabras («¿qué tengo pendiente esta semana?», «valora la oferta de Acme») y
+pulsas Intro o la flecha (Mayús+Intro salta de línea). Tu pregunta queda a la derecha y la
+respuesta a la izquierda, separadas por días. La primera vez propone unos ejemplos; al pulsar uno se
+escribe en la caja, y lo envías tú. La app no llama a ningún modelo: le pasa la petición al agente
+que ya usas.
 
-- **Enviar ahora** la lanza en segundo plano. El panel enseña el progreso y la respuesta, con
-  enlaces a la oferta o a la pantalla de la que habla. Si tu agente necesita un dato, te lo
-  pregunta en un aviso de la app.
-- **Dejar para mi próxima sesión** la guarda como encargo (`handle-requests`).
+- **Si tu agente trabaja en segundo plano desde la app,** la petición se lanza al momento. El panel
+  enseña el progreso y la respuesta, con enlaces a la oferta o a la pantalla de la que habla. Si tu
+  agente necesita un dato, te lo pregunta en un aviso de la app.
+- **Si no,** se guarda como encargo para tu próxima sesión (`handle-requests`) y el hilo lo dice.
+- **Conversaciones:** cada vez que abres el panel empiezas una conversación nueva (salvo que tu
+  agente esté trabajando en una, que se abre). En una misma conversación, tu agente recibe lo que
+  ya le preguntaste y lo que te contestó, para que puedas seguir («¿y la de Acme?»). El botón de
+  la barra lateral, en la cabecera, abre tus conversaciones anteriores por fechas (Hoy, Ayer,
+  Últimos 7 días, Antes); el del lápiz empieza otra. Cada una se borra con la papelera, tras
+  confirmarlo.
 - **Qué puede hacer:** consultar tus ofertas, procesos, entrevistas, perfil y resultados, valorar
   una oferta ya leída y guardar las indicaciones de una carta. Para lo que tiene su propio botón
   (un CV, una carta, una guía de entrevista) te dice dónde está. No lee el texto original de las
@@ -383,7 +391,7 @@ Un día normal:
 | **Manfred y freehire.me** | Sin claves: una búsqueda en la misma página o con `cai sources add --kind manfred --name Manfred --query "data engineer"` (en freehire, también `--country` y `--remote-only`) |
 | **Alertas por correo** | Crea alertas en LinkedIn, InfoJobs, Indeed… y que lleguen a una etiqueta de tu correo. En «Dónde buscar → Alertas por correo → Añadir buzón» conecta uno o varios buzones (Gmail, Outlook, Yahoo, iCloud u otro IMAP, siempre en solo lectura) o una carpeta de `.eml`; el asistente explica cada proveedor y prueba la conexión antes de guardar. La contraseña se guarda cifrada en el llavero del sistema (Administrador de credenciales en Windows, Llavero en macOS) y no vuelve a salir. Paso a paso en [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md). Lo que llega aparece en la **Bandeja de ofertas**; las que solo traen título y enlace esperan en su pestaña «Por completar» |
 | **Botón «Enviar a CandidatAI»** | En **Dónde buscar → Botón del navegador**: la app te guía para cargar `extension/` en Chrome, Edge o Brave y la conecta con un clic. Instrucciones: [`extension/README.md`](../extension/README.md) |
-| **Tu agente con tu navegador** | En «Dónde buscar → Portales de empleo», «Configurar con mi agente» (`search-jobs configurar`) elige portales y búsquedas; o añádelos tú: en InfoJobs, Tecnoempleo, Indeed y LinkedIn las búsquedas salen solas de los puestos y las ubicaciones de tu perfil, y cada portal se edita con su lápiz; `search-jobs` los recorre. LinkedIn queda desactivado hasta que lo actives tú. Al pulsar «Buscar ahora», un aviso dice «Buscando…» en todas las páginas y cambia cuando tu agente termina. En cada portal, los **problemas** son lo que impidió leerlo (captcha, inicio de sesión, página cambiada) y las **notas**, lo que tu agente apuntó sin que fallara nada, como las búsquedas que dejó sin recorrer |
+| **Tu agente con tu navegador** | En «Dónde buscar → Portales de empleo», «Configurar con mi agente» (`search-jobs configurar`) elige portales y búsquedas; o añádelos tú: en InfoJobs, Tecnoempleo, Indeed y LinkedIn las búsquedas salen solas de los puestos y las ubicaciones de tu perfil, y cada portal se edita con su lápiz; `search-jobs` los recorre. LinkedIn queda desactivado hasta que lo actives tú. En la franja de arriba de «Buscar», tus puestos y lugares se quitan con su ✕ y se añaden con «+ Añadir puesto» o «+ Añadir lugar»: cada cambio se guarda en tu perfil al momento, con «Deshacer», y al añadir un puesto te sugiere los títulos de las ofertas que apruebas y que tus puestos aún no cubren. «Buscar otra cosa solo esta vez» usa un puesto y un lugar sin cambiar tu perfil, y «Más filtros» lleva al resto de la configuración. En la misma franja, «Hasta N ofertas por portal» cambia a la vez el límite de los portales elegidos y el de los que añadas (el de uno solo, en «Dónde buscar»). Al pulsar «Buscar ahora», un aviso dice «Buscando…» en todas las páginas y cambia cuando tu agente termina. En cada portal, los **problemas** son lo que impidió leerlo (captcha, inicio de sesión, página cambiada) y las **notas**, lo que tu agente apuntó sin que fallara nada, como las búsquedas que dejó sin recorrer |
 | **Búsqueda pública de LinkedIn** | Interruptor «Búsqueda pública sin sesión» en la tarjeta de LinkedIn de «Dónde buscar → Portales de empleo». Apagado por defecto: va contra las condiciones de LinkedIn y puede bloquear tu IP un tiempo |
 
 El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.daily_at`
@@ -440,9 +448,9 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
   las de siempre. Se guarda en tu navegador.
 - **Calendario:** todos tus hitos (entrevistas, pruebas, plazos y otros, también los pasados) por
   mes, semana, día o agenda. Pulsa uno para ver sus datos e ir a la oferta. Para añadir uno, «Añadir
-  hito», el «+» de un día o una hora libre de la semana: eliges la oferta y se guarda en su ficha.
-  Hoy, los fines de semana y los días de otro mes se distinguen a simple vista, y cada tipo de hito
-  lleva su color y su icono.
+  hito», el «+» de un día o una hora libre de la semana: eliges la oferta (con muchas, la buscas por
+  empresa o puesto) y se guarda en su ficha. Hoy, los fines de semana y los días de otro mes se
+  distinguen a simple vista, y cada tipo de hito lleva su color y su icono.
 - **Avisos:** el `.ics` y el feed llevan alarmas, para que tu calendario te avise sin que la app
   envíe correos: un día y una hora antes de cada hito con hora, y a las 9:00 del día anterior de
   cada plazo. Outlook y Apple Calendar las usan; Google Calendar aplica sus propias notificaciones.

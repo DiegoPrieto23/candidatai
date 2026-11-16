@@ -59,6 +59,54 @@ def test_search_jobs_is_one_page_with_an_index(page: Page, demo_app: AppServer) 
     expect(page).to_have_url(f"{demo_app.url}/fuentes/correo")
 
 
+def test_more_filters_takes_you_to_your_roles_even_from_the_same_address(
+    page: Page, demo_app: AppServer
+) -> None:
+    # Con la URL ya en `/buscar/ajustes` (entraste por el índice y subiste), el enlace no cambia
+    # de ruta: aun así tiene que bajar y dejar el cursor en tus puestos.
+    page.goto("/buscar/ajustes")
+    roles = page.get_by_role("textbox", name=t("profileEditor.fields.roles"))
+    expect(roles).to_be_in_viewport()
+    page.evaluate("window.scrollTo(0, 0)")
+    expect(roles).not_to_be_in_viewport()
+    page.get_by_role("link", name=t("search.strip.moreFilters"), exact=True).click()
+    expect(roles).to_be_focused()
+    expect(roles).to_be_in_viewport()
+    expect(page).to_have_url(f"{demo_app.url}/buscar/ajustes")
+    # Atrás y Adelante vuelven a esa entrada del historial, pero no te ponen el cursor otra vez.
+    roles.blur()
+    page.go_back()
+    page.go_forward()
+    expect(page.get_by_role("heading", level=2, name=t("search.nav.settings"))).to_be_in_viewport()
+    expect(roles).not_to_be_focused()
+    # Y desde `/buscar`, igual.
+    page.goto("/buscar")
+    page.get_by_role("link", name=t("search.strip.moreFilters"), exact=True).click()
+    expect(roles).to_be_focused()
+    expect(roles).to_be_in_viewport()
+
+
+def test_a_role_added_in_the_strip_is_saved_to_your_profile(
+    page: Page, demo_app: AppServer
+) -> None:
+    # La franja guarda en tu perfil de verdad: el puesto aparece en la configuración, y se deshace.
+    page.goto("/buscar")
+    strip = page.get_by_role("region", name=t("search.strip.label"))
+    roles = strip.get_by_role("group", name=t("search.strip.roles"))
+    roles.get_by_role("button", name=t("search.strip.addRole")).click()
+    roles.get_by_role("combobox", name=t("search.strip.addRole")).fill("Data Platform Engineer")
+    page.keyboard.press("Enter")
+    expect(roles.get_by_text("Data Platform Engineer", exact=True)).to_be_visible()
+    expect(strip.get_by_role("button", name=t("search.strip.undo"))).to_be_enabled()
+    settings = page.get_by_role("region", name=t("profileEditor.blocks.searchRole.title"))
+    expect(settings.get_by_text("Data Platform Engineer", exact=True)).to_be_attached()
+
+    strip.get_by_role("button", name=t("search.strip.undo")).click()
+    expect(strip.get_by_text(t("search.strip.undone"))).to_be_visible()
+    expect(roles.get_by_text("Data Platform Engineer", exact=True)).to_have_count(0)
+    expect(settings.get_by_text("Data Platform Engineer", exact=True)).to_have_count(0)
+
+
 def test_what_you_are_after_lives_in_search_jobs(page: Page, demo_app: AppServer) -> None:
     page.goto("/buscar/ajustes")
     expect(page.get_by_role("heading", level=2, name=t("search.nav.settings"))).to_be_visible()

@@ -169,6 +169,7 @@ def test_writes_are_only_for_the_ui(client: TestClient, method: str, url: str, b
         "/context/style-samples",
         "/context/style-samples/a.txt/text",
         "/context/documents/cv",
+        "/profile/role-suggestions",
     ],
 )
 def test_reads_with_contact_are_only_for_the_ui(client: TestClient, url: str) -> None:
@@ -356,3 +357,9 @@ def test_a_wrong_source_document_is_refused(
 def test_only_cv_and_linkedin_take_uploads(client: TestClient) -> None:
     body = {"filename": "a.pdf", "content_base64": "JVBERg=="}
     assert client.post("/context/documents/referencias", json=body, headers=JSON).status_code == 422
+
+
+def test_role_suggestions_for_the_search_page(client: TestClient) -> None:
+    response = client.get("/profile/role-suggestions", headers={"Origin": UI_ORIGIN})
+    assert response.status_code == 200, response.text
+    assert response.json() == []  # aún no has aprobado nada

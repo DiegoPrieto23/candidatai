@@ -5,6 +5,7 @@ from app.models.agents import (
     AgentRequest,
     AgentRun,
     AgentTask,
+    AssistantConversation,
     AssistantRequest,
 )
 from app.models.applier import ApplicationAttempt
@@ -37,6 +38,7 @@ from app.models.sources import (
 
 __all__ = [
     "AgentTask",
+    "AssistantConversation",
     "AssistantRequest",
     "AgentPreference",
     "AgentRequest",
