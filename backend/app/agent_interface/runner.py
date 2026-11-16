@@ -40,7 +40,7 @@ from app.services.documents.service import (
 from app.services.documents.templates import TemplateNotFoundError
 from app.services.documents.uploads import InvalidUploadError, UploadTooLargeError
 from app.services.drafts import DraftNotAllowedError, DraftNotFoundError
-from app.services.events import JobNotFoundError
+from app.services.events import JobNotFoundError, LaterEventsConflictError
 from app.services.extractions import ExtractionNotFoundError
 from app.services.ingest import PageUnavailableError
 from app.services.ingestion.browse import BrowsingNotAllowedError, PriorityConflictError
@@ -117,6 +117,7 @@ _ERROR_TYPES: tuple[tuple[type[Exception], str], ...] = (
     (PdfConverterUnavailableError, "pdf_unavailable"),
     (PdfConversionError, "pdf_failed"),
     (migrations.DatabaseNotReadyError, "database_not_ready"),
+    (LaterEventsConflictError, "later_events"),  # antes que su base, `InvalidTransitionError`
     (InvalidTransitionError, "invalid_transition"),
     (PageUnavailableError, "page_unavailable"),
     # IngestError, InvalidQueryError, UnknownEventTypeError, ReservedEventError…

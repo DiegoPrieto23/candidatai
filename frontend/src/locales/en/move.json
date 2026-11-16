@@ -27,5 +27,17 @@
     "reopenTo": "Reopening it takes it back to “{{stage}}”.",
     "cannotReopen": "This job can't be reopened from the board.",
     "noEvent": "From “{{from}}” there is no event that takes it to “{{to}}”."
+  },
+  "conflict": {
+    "title": "Something is logged after that date",
+    "intro": "To log “{{event}}” on {{when}}, this can't come after it:",
+    "removeHint": "If you logged it by mistake, remove it and the event is logged on the date you chose.",
+    "remove": "Remove it and log on {{when}}",
+    "removeMany": "Remove these {{count}} and log on {{when}}",
+    "cannotRemove": "This can't be removed from here: interviews and tests are deleted from their own card, and a received or accepted offer can't be removed.",
+    "laterHint": "Or log it right after, even if it isn't the exact date:",
+    "later": "Log on {{when}}",
+    "noLater": "Pick a date after the items in the list.",
+    "back": "Change the date"
   }
 }

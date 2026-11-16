@@ -263,6 +263,24 @@ La proyección vive en `services/pipeline.py`: `stage_for(events) -> Stage`, con
 cada transición. Una transición no válida (p. ej. `applied` sin `cv_ready` ni `applied_manually`)
 se rechaza con error claro.
 
+**Eventos con fecha pasada.** Se colocan en su sitio y la etapa se recalcula reproduciendo todo el
+historial, así que el evento tiene que encajar también con lo anotado después:
+
+- Los avisos del sistema (`scored`, `fit_assessed`, `closure_suspected`, `injection_suspected`,
+  `extraction_failed`) que quedan detrás de un cierre con fecha pasada se ignoran al reproducir:
+  se registraron con la oferta abierta y no cambian la etapa. Uno nuevo en una oferta cerrada sigue
+  sin ser válido.
+- Si otro evento posterior deja de encajar (un `followup_sent` detrás de un `rejected`, o un
+  `reopened` que reabriría la oferta recién cerrada), no se guarda nada y el error es
+  `later_events` (409), que nombra esos eventos y la fecha a partir de la cual sí se puede.
+- La UI pregunta entonces qué lo impide (`POST /jobs/{id}/events/check`, solo la UI) y propone dos
+  arreglos: anotarlo el minuto siguiente al último conflicto o, si todos son `followup_sent`,
+  `reply_received`, `rejected`, `withdrawn`, `expired` o `reopened` sin hito (lo que se pudo anotar
+  por error), quitarlos y anotarlo en la fecha pedida. Quitar va en `remove_event_ids` de
+  `POST /jobs/{id}/events`, solo desde la UI, tras confirmarlo el usuario: tienen que ser justo los
+  que devolvió la comprobación, y se quitan y se anota en la misma transacción. Lo que apuntaba a
+  ellos (un borrador, un correo aceptado) se queda sin el enlace.
+
 ## Ampliaciones de la fase 08c
 
 - `document_renders` guarda también los renders de cartas (`options` = `CoverLetterRenderOptions`
@@ -325,8 +343,8 @@ Ni el plan, ni el repaso, ni el tipo, ni las indicaciones registran eventos ni c
 
 Un hito anotado por error se borra (`POST /milestones/{id}/delete`, solo desde la UI) con todos sus
 eventos (los que llevan su `payload.milestone_id`), su plan, su guía (también el PDF) y su repaso,
-y la etapa de la oferta se recalcula con los eventos que quedan. Es la única vía por la que se
-borran eventos. Si lo que pasó después deja de ser válido sin ellos (p. ej. `accepted` tras la
+y la etapa de la oferta se recalcula con los eventos que quedan. Aparte de esto, solo se borran
+eventos al deshacer «hecha» en una entrevista y al anotar algo con fecha pasada (ver la proyección). Si lo que pasó después deja de ser válido sin ellos (p. ej. `accepted` tras la
 única entrevista), no se borra nada (409). Lo que apuntaba al hito o a sus eventos (borradores,
 encargos y ejecuciones del agente, correos aceptados) se queda sin el enlace.
 

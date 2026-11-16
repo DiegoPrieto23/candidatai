@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query, Request, status
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 
 from app.api.deps import EmptyBody, SessionDep, require_ui, require_ui_read
@@ -41,6 +41,17 @@ class AddUserEventBody(_Body):
     channel: events.ApplicationChannel | None = Field(
         default=None, description="Canal del envío (solo en `applied` y `applied_manually`)."
     )
+    remove_event_ids: list[int] | None = Field(
+        default=None,
+        max_length=50,
+        description="Solo la UI: eventos posteriores anotados por error que se quitan para "
+        "poder anotar este con fecha pasada (los de `POST /jobs/{id}/events/check`).",
+    )
+
+
+class CheckUserEventBody(_Body):
+    type: EventType
+    occurred_at: AwareDatetime
 
 
 @router.get("", operation_id="list_jobs")
@@ -130,9 +141,11 @@ def add_job_from_text(session: SessionDep, body: AddFromTextBody) -> ingest.AddJ
 
 @router.post("/{job_id}/events", operation_id="add_job_event", status_code=status.HTTP_201_CREATED)
 def add_job_event(
-    session: SessionDep, job_id: int, body: AddUserEventBody
+    session: SessionDep, request: Request, job_id: int, body: AddUserEventBody
 ) -> events.AddEventResult:
     """Registra un evento del usuario (nota, aprobar, descartar con motivo, reabrir…)."""
+    if body.remove_event_ids:
+        require_ui(request)  # quitar eventos, solo con el usuario delante
     return events.add_user_event(
         session,
         job_id,
@@ -141,7 +154,21 @@ def add_job_event(
         occurred_at=body.occurred_at,
         reason=body.reason,
         channel=body.channel,
+        remove_event_ids=body.remove_event_ids,
     )
+
+
+@router.post(
+    "/{job_id}/events/check",
+    operation_id="check_job_event",
+    dependencies=[Depends(require_ui)],
+)
+def check_job_event(
+    session: SessionDep, job_id: int, body: CheckUserEventBody
+) -> events.EventConflicts:
+    """Qué anotado después impide anotar un evento con fecha pasada y cómo arreglarlo. No escribe
+    nada."""
+    return events.check_user_event(session, job_id, body.type, body.occurred_at)
 
 
 @router.post(

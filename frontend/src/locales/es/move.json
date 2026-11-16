@@ -27,5 +27,17 @@
     "reopenTo": "Al reabrirla vuelve a «{{stage}}».",
     "cannotReopen": "Esta oferta no se puede reabrir desde el tablero.",
     "noEvent": "Desde «{{from}}» no hay ningún evento que la lleve a «{{to}}»."
+  },
+  "conflict": {
+    "title": "Hay algo anotado después de esa fecha",
+    "intro": "Para anotar «{{event}}» el {{when}}, esto no puede quedar después:",
+    "removeHint": "Si lo anotaste por error, quítalo y se anota en la fecha que has puesto.",
+    "remove": "Quitarlo y anotar el {{when}}",
+    "removeMany": "Quitar estos {{count}} y anotar el {{when}}",
+    "cannotRemove": "No se puede quitar desde aquí: las entrevistas y las pruebas se borran desde su ficha, y una oferta recibida o aceptada no se quita.",
+    "laterHint": "O anótalo justo después, aunque no sea la fecha exacta:",
+    "later": "Anotar el {{when}}",
+    "noLater": "Elige una fecha posterior a lo de la lista.",
+    "back": "Cambiar la fecha"
   }
 }

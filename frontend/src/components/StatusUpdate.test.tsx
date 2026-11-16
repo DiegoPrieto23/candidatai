@@ -40,6 +40,43 @@ describe('«¿Qué ha pasado?» en la ficha', () => {
     })
   })
 
+  it('si algo anotado después no encaja con la fecha, propone quitarlo o anotarlo después', async () => {
+    const conflicts = {
+      conflicts: [
+        { id: 31, type: 'followup_sent', occurred_at: '2026-11-05T17:01:00Z', removable: true },
+        { id: 32, type: 'followup_sent', occurred_at: '2026-11-05T17:01:01Z', removable: true },
+      ],
+      can_remove: true,
+      suggested_at: '2026-11-05T17:02:00Z',
+    }
+    const calls = mockApi({
+      ...routes('in_process'),
+      'POST /jobs/1/events': async (request: Request) => {
+        const body = (await request.json()) as { remove_event_ids?: number[] }
+        return body.remove_event_ids
+          ? { status: 201, body: { ok: true, event_id: 9, stage: 'closed' } }
+          : { status: 409, body: { ok: false, error: { type: 'later_events', message: 'No se puede anotar.', details: [] } } }
+      },
+      'POST /jobs/1/events/check': conflicts,
+    })
+    renderApp('/jobs/1')
+    const region = await screen.findByRole('region', { name: '¿Qué ha pasado?' })
+    await userEvent.click(await within(region).findByRole('button', { name: 'Me han rechazado' }))
+    const dialog = await screen.findByRole('dialog')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Registrar' }))
+
+    expect(await within(dialog).findByRole('heading', { name: 'Hay algo anotado después de esa fecha' })).toBeInTheDocument()
+    expect(within(dialog).getAllByText('Seguimiento enviado')).toHaveLength(2)
+    expect(within(dialog).getByRole('button', { name: /^Anotar el / })).toBeInTheDocument()
+    expect(within(dialog).queryByRole('alert')).not.toBeInTheDocument()
+    await userEvent.click(within(dialog).getByRole('button', { name: /^Quitar estos 2 y anotar el / }))
+    await waitFor(() => {
+      const posts = calls.filter((c) => c.method === 'POST' && c.path === '/jobs/1/events')
+      expect(posts.at(-1)?.body).toMatchObject({ type: 'rejected', remove_event_ids: [31, 32] })
+    })
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+  })
+
   it('en proceso deja anotar otra entrevista, una prueba o una oferta sin cambiar de etapa (H-007)', async () => {
     const calls = mockApi({
       ...routes('in_process'),

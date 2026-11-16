@@ -122,13 +122,16 @@ def test_paths_reach_their_stage() -> None:
 
 @pytest.mark.parametrize(("event_type", "from_stage"), CASES, ids=lambda v: str(v))
 def test_transition(event_type: EventType, from_stage: Stage) -> None:
-    events = [*seq(*PATHS[from_stage]), Ev(event_type.value, occurred_at=T0 + timedelta(days=1))]
+    # El evento nuevo se valida estricto, como al registrarlo (`strict`): sin él, un aviso del
+    # sistema detrás de un cierre se ignoraría al reproducir.
+    new = Ev(event_type.value, occurred_at=T0 + timedelta(days=1))
+    events = [*seq(*PATHS[from_stage]), new]
     expected = EXPECTED[event_type].get(from_stage)
     if expected is None:
         with pytest.raises(InvalidTransitionError, match=f"«{event_type}» no es válido"):
-            stage_for(events)
+            project(events, strict=new)
     else:
-        assert stage_for(events) == expected
+        assert project(events, strict=new).stage == expected
 
 
 def test_first_event_must_be_found() -> None:

@@ -1,6 +1,7 @@
 """API REST para la UI (`app/api/`), con `TestClient` sobre una BD migrada temporal."""
 
 from collections.abc import Iterator
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -216,6 +217,48 @@ def test_invalid_transition_is_conflict(client: TestClient) -> None:
     response = client.post(f"/jobs/{job_id}/events", json={"type": "applied"})
     assert response.status_code == 409
     assert response.json()["error"]["type"] == "invalid_transition"
+
+
+def test_backdated_close_proposes_removing_later_mistakes(client: TestClient) -> None:
+    """Cerrar con fecha anterior a un seguimiento anotado por error: 409 `later_events`, la UI
+    pregunta qué lo impide y, si el usuario acepta, se quita y se cierra en esa fecha."""
+    job_id = _add_text(client)["job_id"]
+    _save_extraction(job_id)
+    events_url = f"/jobs/{job_id}/events"
+    now = datetime.now(UTC).replace(second=0, microsecond=0)
+
+    def at(minutes: int) -> str:
+        return (now + timedelta(minutes=minutes)).isoformat()
+
+    sent = {"type": "applied_manually", "occurred_at": at(1)}
+    assert client.post(events_url, json=sent).status_code == 201
+    followup = {"type": "followup_sent", "occurred_at": at(3)}
+    assert client.post(events_url, json=followup).status_code == 201
+    close = {"type": "rejected", "occurred_at": at(2)}
+
+    blocked = client.post(events_url, json=close)
+    assert blocked.status_code == 409
+    assert blocked.json()["error"]["type"] == "later_events"
+
+    check = client.post(f"{events_url}/check", json=close)
+    assert check.status_code == 200
+    found = check.json()
+    assert [c["type"] for c in found["conflicts"]] == ["followup_sent"]
+    assert found["can_remove"] is True
+    assert found["suggested_at"] is None  # el minuto siguiente aún no ha llegado
+    ids = [c["id"] for c in found["conflicts"]]
+
+    # Quitar eventos solo lo pide la UI.
+    other = client.post(
+        events_url, json={**close, "remove_event_ids": ids}, headers={"Origin": "http://evil.test"}
+    )
+    assert other.status_code == 403
+
+    accepted = client.post(events_url, json={**close, "remove_event_ids": ids})
+    assert accepted.status_code == 201, accepted.text
+    assert accepted.json()["stage"] == "closed"
+    types = [e["type"] for e in client.get(f"/jobs/{job_id}").json()["events"]]
+    assert "followup_sent" not in types
 
 
 def test_user_can_approve_after_extraction(client: TestClient) -> None:

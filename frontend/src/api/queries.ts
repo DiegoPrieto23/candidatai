@@ -232,6 +232,14 @@ export function useJobEvent() {
   })
 }
 
+/** Qué anotado después impide registrar un evento con fecha pasada y cómo arreglarlo. No escribe nada. */
+export function useCheckJobEvent() {
+  return useMutation({
+    mutationFn: ({ jobId, body }: { jobId: number; body: Schemas['CheckUserEventBody'] }) =>
+      unwrap(api.POST('/jobs/{job_id}/events/check', { params: { path: { job_id: jobId } }, body })),
+  })
+}
+
 /** ¿Sigue abierta? (fase 16): comprueba la URL ahora (o devuelve la comprobación reciente). */
 export function useCheckJobOpen() {
   const client = useQueryClient()

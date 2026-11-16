@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { ApplicationChannel, BoardCard, DiscardReason, EventType, InterviewType } from '@/api/client'
-import { useCreateMilestone, useJobEvent } from '@/api/queries'
+import { ApiError, type ApplicationChannel, type BoardCard, type DiscardReason, type EventType, type InterviewType, type Schemas } from '@/api/client'
+import { useCheckJobEvent, useCreateMilestone, useJobEvent, type UserEventBody } from '@/api/queries'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -23,7 +23,7 @@ import {
   MOVE_HINT,
   STAGE_LABEL,
 } from '@/lib/labels'
-import { fromLocalInput, toLocalInput } from '@/lib/time'
+import { formatWhen, fromLocalInput, toLocalInput } from '@/lib/time'
 import type { MoveOption } from '@/lib/moves'
 import { errorMessage } from '@/lib/errors'
 import { cn } from '@/lib/utils'
@@ -66,8 +66,11 @@ function MoveForm({ card, options, onDone, title }: { card: BoardCard; options: 
   const [interviewType, setInterviewType] = useState<InterviewType | ''>('')
   const event = useJobEvent()
   const milestone = useCreateMilestone()
-  const pending = event.isPending || milestone.isPending
-  const error = event.error ?? milestone.error
+  const check = useCheckJobEvent()
+  // Lo anotado después que impide registrar el evento con esa fecha, y para qué evento y fecha.
+  const [conflict, setConflict] = useState<{ body: UserEventBody; found: Schemas['EventConflicts'] } | null>(null)
+  const pending = event.isPending || milestone.isPending || check.isPending
+  const error = event.error ?? milestone.error ?? check.error
 
   const milestoneKind = choice ? MILESTONE_EVENTS[choice.event] : undefined
   const occurred = fromLocalInput(occurredAt)
@@ -79,9 +82,32 @@ function MoveForm({ card, options, onDone, title }: { card: BoardCard; options: 
     (choice.event === 'discarded' && (!reason || (reason === 'other' && !note.trim()))) ||
     (startsDate !== '' && !starts)
 
+  // Si algo anotado después no encaja con la fecha, se pregunta qué lo impide para proponer cómo arreglarlo.
+  const record = (body: UserEventBody) =>
+    event.mutate(
+      { jobId: card.job_id, body },
+      {
+        onSuccess: onDone,
+        onError: (err) => {
+          if (!(err instanceof ApiError) || err.type !== 'later_events' || !body.occurred_at) return
+          check.mutate(
+            { jobId: card.job_id, body: { type: body.type, occurred_at: body.occurred_at } },
+            {
+              onSuccess: (found) => {
+                if (found.conflicts.length === 0) return
+                setConflict({ body, found })
+                event.reset() // el panel ya explica el error: no se repite debajo
+              },
+            },
+          )
+        },
+      },
+    )
+
   const submit = (e: FormEvent) => {
     e.preventDefault()
     if (missing || !choice || !occurred) return
+    setConflict(null)
     const trimmed = note.trim() || undefined
     if (milestoneKind && starts) {
       milestone.mutate(
@@ -101,18 +127,36 @@ function MoveForm({ card, options, onDone, title }: { card: BoardCard; options: 
       )
       return
     }
-    event.mutate(
-      {
-        jobId: card.job_id,
-        body: {
-          type: choice.event,
-          occurred_at: occurred,
-          note: trimmed,
-          reason: choice.event === 'discarded' ? (reason ?? undefined) : undefined,
-          channel: choice.event.startsWith('applied') && channel ? channel : undefined,
-        },
-      },
-      { onSuccess: onDone },
+    record({
+      type: choice.event,
+      occurred_at: occurred,
+      note: trimmed,
+      reason: choice.event === 'discarded' ? (reason ?? undefined) : undefined,
+      channel: choice.event.startsWith('applied') && channel ? channel : undefined,
+    })
+  }
+
+  // Al cambiar el evento o la fecha, la propuesta deja de valer.
+  const shown = conflict && conflict.body.type === choice?.event && conflict.body.occurred_at === occurred ? conflict : null
+
+  if (shown) {
+    return (
+      <ConflictPanel
+        conflict={shown}
+        pending={pending}
+        error={event.error}
+        onRemove={() =>
+          event.mutate(
+            { jobId: card.job_id, body: { ...shown.body, remove_event_ids: shown.found.conflicts.map((c) => c.id) } },
+            { onSuccess: onDone },
+          )
+        }
+        onLater={(at) => event.mutate({ jobId: card.job_id, body: { ...shown.body, occurred_at: at } }, { onSuccess: onDone })}
+        onBack={() => {
+          setConflict(null)
+          event.reset()
+        }}
+      />
     )
   }
 
@@ -290,5 +334,81 @@ function MoveForm({ card, options, onDone, title }: { card: BoardCard; options: 
         </Button>
       </DialogFooter>
     </form>
+  )
+}
+
+interface ConflictProps {
+  conflict: { body: UserEventBody; found: Schemas['EventConflicts'] }
+  pending: boolean
+  error: Error | null
+  onRemove: () => void
+  onLater: (at: string) => void
+  onBack: () => void
+}
+
+/** Propone cómo anotar un evento con fecha pasada cuando algo anotado después no encaja con él. */
+function ConflictPanel({ conflict, pending, error, onRemove, onLater, onBack }: ConflictProps) {
+  const { t } = useTranslation('move')
+  const { body, found } = conflict
+  const when = body.occurred_at ? formatWhen(body.occurred_at) : ''
+  const count = found.conflicts.length
+  return (
+    <div className="grid gap-5">
+      <DialogHeader>
+        <DialogTitle>{t('conflict.title')}</DialogTitle>
+        <DialogDescription>{t('conflict.intro', { event: eventLabel(body.type), when })}</DialogDescription>
+      </DialogHeader>
+
+      <ul className="grid gap-1 rounded-md border px-3 py-2 text-sm">
+        {found.conflicts.map((c) => (
+          <li key={c.id} className="flex items-baseline justify-between gap-3">
+            <span className="font-medium">{eventLabel(c.type)}</span>
+            <time dateTime={c.occurred_at} className="shrink-0 text-xs text-muted-foreground">
+              {formatWhen(c.occurred_at)}
+            </time>
+          </li>
+        ))}
+      </ul>
+
+      {found.can_remove ? (
+        <div className="grid gap-2">
+          <p className="text-sm">{t('conflict.removeHint')}</p>
+          <Button type="button" onClick={onRemove} disabled={pending} className="justify-self-start">
+            {count === 1 ? t('conflict.remove', { when }) : t('conflict.removeMany', { count, when })}
+          </Button>
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground">{t('conflict.cannotRemove')}</p>
+      )}
+
+      {found.suggested_at ? (
+        <div className="grid gap-2">
+          <p className="text-sm text-muted-foreground">{t('conflict.laterHint')}</p>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => found.suggested_at && onLater(found.suggested_at)}
+            disabled={pending}
+            className="justify-self-start"
+          >
+            {t('conflict.later', { when: formatWhen(found.suggested_at) })}
+          </Button>
+        </div>
+      ) : (
+        !found.can_remove && <p className="text-sm text-muted-foreground">{t('conflict.noLater')}</p>
+      )}
+
+      {error && (
+        <p role="alert" className="text-sm text-destructive">
+          {errorMessage(error)}
+        </p>
+      )}
+
+      <DialogFooter>
+        <Button type="button" variant="outline" onClick={onBack} disabled={pending}>
+          {t('conflict.back')}
+        </Button>
+      </DialogFooter>
+    </div>
   )
 }
