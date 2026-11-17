@@ -146,8 +146,8 @@
     "submit": "Añadir",
     "button": "Añadir portal",
     "fromProfile": "Rellenar desde mi perfil",
-    "urlsHintGenerated": "Salen de los puestos y las ubicaciones de tu perfil («Buscar ofertas → Configuración de tu búsqueda»). Puedes quitar o añadir líneas: una dirección por búsqueda.",
-    "urlsHintNoRoles": "Añade en «Buscar ofertas → Configuración de tu búsqueda» los puestos que buscas y se rellenan solas. O haz la búsqueda en el portal y copia aquí la dirección de los resultados.",
+    "urlsHintGenerated": "Salen de los puestos y las ubicaciones de tu perfil (los cambias en «Buscar ofertas»). Puedes quitar o añadir líneas: una dirección por búsqueda.",
+    "urlsHintNoRoles": "Añade en «Buscar ofertas» los puestos que buscas y se rellenan solas. O haz la búsqueda en el portal y copia aquí la dirección de los resultados.",
     "willSearch": "Buscará:"
   },
   "edit": {

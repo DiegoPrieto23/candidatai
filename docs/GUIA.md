@@ -259,10 +259,10 @@ documentos y correos. Las claves van en `.env`, también fuera de git.
 | **Documentos fuente** (CVs antiguos, títulos, referencias) | `data/documentos/` | Tu CV y tu exportación de LinkedIn se suben en «Mi perfil → Documentos»; el resto, en su carpeta. `update-profile` los puede leer, confirmando antes de escribir |
 | **Lo que has hecho en público** (repositorios, portfolio, Kaggle, Scholar, certificaciones verificables) | `data/profile.yaml` | Skill `expand`, o «Mejorar el contenido de mi perfil» en «Mi perfil». Úsalo **justo después de crear el perfil** y cuando quieras pulirlo: revisa el perfil entero (logros sin cifra, textos de relleno, huecos) y propone proyectos, skills (sin nivel: lo pones tú), logros con los números que da la fuente y certificaciones, cada uno con su enlace en `source`, y solo escribe lo que aceptes. Solo web pública: ni LinkedIn ni nada con login. Leer los enlaces necesita un agente con búsqueda web; revisar el perfil, no |
 
-Tu mínimo salarial va en «Buscar ofertas → Configuración de tu búsqueda» (o en `private.salary_floor_eur` del perfil): la
+Tu mínimo salarial va en «Buscar ofertas → Más ajustes» (o en `private.salary_floor_eur` del perfil): la
 app descarta las ofertas que publican un sueldo por debajo y lo usa para comparar las ofertas
 recibidas, pero el agente nunca ve la cifra; solo sabe que una oferta cayó «por debajo de tu
-mínimo salarial». En «Configuración de tu búsqueda» también eliges años mínimo y máximo, palabras que descartan,
+mínimo salarial». En «Más ajustes» también eliges años mínimo y máximo, idiomas, palabras que descartan,
 tipo de contrato y jornada, y si excluyes consultoras o agencias de selección.
 
 **Dónde están tus datos y cómo copiarlos.** `uv run cai paths` (o `cai paths` en la carpeta de la
@@ -286,7 +286,7 @@ En «Mi perfil», cada logro y cada historia tienen **«Mejorar con mi agente»*
 una versión más clara, te pregunta los números que falten (nunca los inventa) y solo escribe con tu
 OK. En «Historias STAR», **«Proponer historias desde mi experiencia»** te sugiere historias a partir
 de los logros que aún no tienen. Tu correo y tu teléfono se editan ahí, pero tu agente sigue sin
-verlos. Lo mismo tu mínimo salarial (`private`), en «Configuración de tu búsqueda».
+verlos. Lo mismo tu mínimo salarial (`private`), en «Buscar ofertas → Más ajustes».
 
 ## 5. Conectar tu agente
 
@@ -370,8 +370,8 @@ El menú tiene nueve entradas: **Inicio** y **Mi perfil**; en Búsqueda, **Busca
 **Bandeja de ofertas**; en Procesos, **Tablero**, **Calendario**, **Respuestas** y **Resultados**; y
 **Agente**. Lo demás son pestañas dentro de ellas: la Bandeja tiene **Revisión rápida** y **Por
 completar**, y Mi perfil, **Habilidades por desarrollar** y **Plantillas de CV**. Buscar ofertas es
-una sola página con tres secciones, con un índice arriba: **Buscar**, **Configuración de tu
-búsqueda** y **Dónde buscar**.
+una sola página con dos secciones, con un índice arriba: **Buscar** (lo que buscas, con «Más
+ajustes», y tus portales) y **Dónde buscar**.
 
 Un día normal:
 
@@ -391,7 +391,7 @@ Un día normal:
 | **Manfred y freehire.me** | Sin claves: una búsqueda en la misma página o con `cai sources add --kind manfred --name Manfred --query "data engineer"` (en freehire, también `--country` y `--remote-only`) |
 | **Alertas por correo** | Crea alertas en LinkedIn, InfoJobs, Indeed… y que lleguen a una etiqueta de tu correo. En «Dónde buscar → Alertas por correo → Añadir buzón» conecta uno o varios buzones (Gmail, Outlook, Yahoo, iCloud u otro IMAP, siempre en solo lectura) o una carpeta de `.eml`; el asistente explica cada proveedor y prueba la conexión antes de guardar. La contraseña se guarda cifrada en el llavero del sistema (Administrador de credenciales en Windows, Llavero en macOS) y no vuelve a salir. Paso a paso en [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md). Lo que llega aparece en la **Bandeja de ofertas**; las que solo traen título y enlace esperan en su pestaña «Por completar» |
 | **Botón «Enviar a CandidatAI»** | En **Dónde buscar → Botón del navegador**: la app te guía para cargar `extension/` en Chrome, Edge o Brave y la conecta con un clic. Instrucciones: [`extension/README.md`](../extension/README.md) |
-| **Tu agente con tu navegador** | En «Dónde buscar → Portales de empleo», «Configurar con mi agente» (`search-jobs configurar`) elige portales y búsquedas; o añádelos tú: en InfoJobs, Tecnoempleo, Indeed y LinkedIn las búsquedas salen solas de los puestos y las ubicaciones de tu perfil, y cada portal se edita con su lápiz; `search-jobs` los recorre. LinkedIn queda desactivado hasta que lo actives tú. En la franja de arriba de «Buscar», tus puestos y lugares se quitan con su ✕ y se añaden con «+ Añadir puesto» o «+ Añadir lugar»: cada cambio se guarda en tu perfil al momento, con «Deshacer», y al añadir un puesto te sugiere los títulos de las ofertas que apruebas y que tus puestos aún no cubren. «Buscar otra cosa solo esta vez» usa un puesto y un lugar sin cambiar tu perfil, y «Más filtros» lleva al resto de la configuración. En la misma franja, «Hasta N ofertas por portal» cambia a la vez el límite de los portales elegidos y el de los que añadas (el de uno solo, en «Dónde buscar»). Al pulsar «Buscar ahora», un aviso dice «Buscando…» en todas las páginas y cambia cuando tu agente termina. En cada portal, los **problemas** son lo que impidió leerlo (captcha, inicio de sesión, página cambiada) y las **notas**, lo que tu agente apuntó sin que fallara nada, como las búsquedas que dejó sin recorrer |
+| **Tu agente con tu navegador** | En «Dónde buscar → Portales de empleo», «Configurar con mi agente» (`search-jobs configurar`) elige portales y búsquedas; o añádelos tú: en InfoJobs, Tecnoempleo, Indeed y LinkedIn las búsquedas salen solas de los puestos y las ubicaciones de tu perfil, y cada portal se edita con su lápiz; `search-jobs` los recorre. LinkedIn queda desactivado hasta que lo actives tú. En la franja de arriba de «Buscar», tus puestos y lugares se quitan con su ✕ y se añaden con «+ Añadir puesto» o «+ Añadir lugar»; al pulsar un lugar eliges qué aceptas en él (cualquier modalidad, solo híbrido o remoto, o descartarlo), y la modalidad y el nivel se marcan como chips. Cada cambio se guarda en tu perfil al momento, con «Deshacer», y al añadir un puesto te sugiere los títulos de las ofertas que apruebas y que tus puestos aún no cubren. En la misma franja, «Hasta N ofertas por portal» cambia a la vez el límite de los portales elegidos y el de los que añadas (el de uno solo, en «Dónde buscar»). «Más ajustes» (con el número de grupos que tienen algo puesto) despliega debajo los años de experiencia, el sueldo mínimo, los idiomas, el contrato y la jornada, y lo que descartas; esos se guardan juntos con «Guardar cambios», con «Deshacer» después. `/buscar/ajustes` abre la página con «Más ajustes» desplegado. Al pulsar «Buscar ahora», un aviso dice «Buscando…» en todas las páginas y cambia cuando tu agente termina. En cada portal, los **problemas** son lo que impidió leerlo (captcha, inicio de sesión, página cambiada) y las **notas**, lo que tu agente apuntó sin que fallara nada, como las búsquedas que dejó sin recorrer |
 | **Búsqueda pública de LinkedIn** | Interruptor «Búsqueda pública sin sesión» en la tarjeta de LinkedIn de «Dónde buscar → Portales de empleo». Apagado por defecto: va contra las condiciones de LinkedIn y puede bloquear tu IP un tiempo |
 
 El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.daily_at`

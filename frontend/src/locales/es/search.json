@@ -6,7 +6,6 @@
   "nav": {
     "label": "Secciones de «Buscar ofertas»",
     "search": "Buscar",
-    "settings": "Configuración de tu búsqueda",
     "where": "Dónde buscar"
   },
   "platforms": "Portales en los que buscar",
@@ -36,16 +35,12 @@
     "undo": "Deshacer",
     "undone": "Deshecho: tu perfil vuelve a estar como antes.",
     "noProfile": "Lo que buscas se guarda en tu perfil: <to>créalo primero</to>.",
-    "oneOff": "Buscar otra cosa solo esta vez",
-    "oneOffTitle": "Solo esta vez",
-    "oneOffNote": "tu perfil no cambia",
-    "oneOffHint": "Tu agente usará este puesto y este lugar en vez de los de tu perfil.",
-    "back": "Volver a tu búsqueda",
-    "moreFilters": "Más filtros"
+    "modes": "Modalidad",
+    "levels": "Nivel",
+    "changed": "Cambiado «{{item}}»: guardado en tu perfil.",
+    "issues": "Tu perfil tiene errores que hay que arreglar: los ves en <to>Mi perfil</to>."
   },
   "go": {
-    "summary_one": "<b>{{portals}} portales</b> · hasta <b>{{count}}</b> oferta",
-    "summary_other": "<b>{{portals}} portales</b> · hasta <b>{{count}}</b> ofertas",
     "login": "Inicia sesión en {{names}}",
     "loginHint": "Ese portal pide iniciar sesión: tu agente te avisará antes de seguir.",
     "loginHintLabel": "Por qué hay que iniciar sesión"
@@ -74,7 +69,8 @@
       "found": "Vistas",
       "passed": "Pasan tus filtros",
       "created": "Nuevas"
-    }
+    },
+    "companies": "Empresas con portal propio"
   },
   "last": {
     "title": "Última búsqueda:",
@@ -111,32 +107,53 @@
     "othersHint": "También entran solas tus alertas por correo y lo que envíes con el botón del navegador. Se configuran en «Dónde buscar».",
     "othersLabel": "Qué más entra sin navegador"
   },
-  "refine": {
-    "role": "Puesto",
-    "rolePlaceholder": "Por ejemplo, Data Engineer",
-    "location": "Dónde",
-    "locationPlaceholder": "Por ejemplo, Madrid o remoto",
-    "badText": "Usa solo letras, números y signos sencillos (. , + # / & ( ) -)."
-  },
   "empty": {
     "title": "Aún no hay portales en los que buscar",
     "body": "Dile a tu agente dónde sueles buscar o añade un portal tú mismo.",
     "configure": "Elegir portales con mi agente",
     "manage": "Ir a «Dónde buscar»"
   },
-  "settings": {
-    "intro": "Deciden qué busca tu agente y qué ofertas pasan tus filtros.",
-    "issues": "Tu perfil tiene errores que hay que arreglar. Los ves en <to>Mi perfil</to>.",
-    "noProfile": {
-      "title": "Primero, tu perfil",
-      "body": "Lo que buscas se guarda en tu perfil, y aún no tienes uno que se pueda leer.",
-      "go": "Ir a «Mi perfil»"
-    },
-    "introHint": "Se guarda en tu perfil. Cada bloque se guarda por separado.",
-    "introHintLabel": "Dónde se guarda",
-    "rule": "Cada filtro se aplica solo cuando la oferta indica ese dato.",
-    "ruleHint": "Por ejemplo, una oferta que no dice el tipo de contrato pasa el filtro de contrato, y una sin sueldo publicado pasa el del sueldo mínimo.",
-    "ruleHintLabel": "Ofertas sin ese dato"
+  "searching": "Buscando…",
+  "launch": {
+    "eyebrow": "Tu agente buscará en",
+    "portals_one": "{{count}} portal",
+    "portals_other": "{{count}} portales",
+    "change": "Cambiar",
+    "offers_one": "hasta <n>{{count}}</n> oferta",
+    "offers_other": "hasta <n>{{count}}</n> ofertas"
   },
-  "searching": "Buscando…"
+  "more": {
+    "button": "Más ajustes",
+    "active_one": "{{count}} grupo con ajustes",
+    "active_other": "{{count}} grupos con ajustes",
+    "label": "Más ajustes de tu búsqueda",
+    "experience": "Experiencia y sueldo",
+    "years": "Años de experiencia que pida la oferta",
+    "yearsHintLabel": "Cómo se aplican los años",
+    "salaryPrivate": "Solo lo ves tú: tu agente nunca ve esta cifra.",
+    "salaryHintLabel": "Cómo se aplica el sueldo mínimo",
+    "languages": "Idiomas de trabajo",
+    "contract": "Contrato y jornada",
+    "anyIfEmpty": "Sin marcar, valen todos.",
+    "ruleHint": "Cada filtro se aplica solo cuando la oferta indica ese dato: una oferta que no dice el tipo de contrato pasa el filtro de contrato, y una sin sueldo publicado pasa el del sueldo mínimo.",
+    "ruleHintLabel": "Ofertas sin ese dato",
+    "discard": "Ofertas que no quieres",
+    "keywords": "Palabras en el título",
+    "keywordsHintLabel": "Qué palabras descartan",
+    "employerLabel": "Empresas que no quieres",
+    "employer": {
+      "consultancy": "Consultoras que asignan a su personal a un cliente",
+      "agency": "ETT y agencias de selección",
+      "employer_hidden": "Ofertas que no dicen qué empresa contrata"
+    },
+    "reset": "Restablecer",
+    "discardChanges": "Descartar cambios",
+    "save": "Guardar cambios",
+    "saving": "Guardando…",
+    "rescore": "Al guardar se recalcula el encaje de tus ofertas abiertas.",
+    "saved": "Guardado en tu perfil.",
+    "undo": "Deshacer",
+    "undone": "Deshecho: tus ajustes vuelven a estar como antes.",
+    "unsavedConfirm": "Tienes cambios sin guardar en «Más ajustes». ¿Salir sin guardarlos?"
+  }
 }

@@ -6,7 +6,6 @@
   "nav": {
     "label": "Search jobs sections",
     "search": "Search",
-    "settings": "Your search settings",
     "where": "Where to search"
   },
   "platforms": "Job boards to search",
@@ -36,16 +35,12 @@
     "undo": "Undo",
     "undone": "Undone: your profile is back as it was.",
     "noProfile": "What you're after is saved in your profile: <to>create it first</to>.",
-    "oneOff": "Search for something else just this once",
-    "oneOffTitle": "Just this once",
-    "oneOffNote": "your profile doesn't change",
-    "oneOffHint": "Your agent will use this role and place instead of the ones in your profile.",
-    "back": "Back to your search",
-    "moreFilters": "More filters"
+    "modes": "Work mode",
+    "levels": "Level",
+    "changed": "Changed “{{item}}”: saved to your profile.",
+    "issues": "Your profile has errors to fix: see them in <to>My profile</to>."
   },
   "go": {
-    "summary_one": "<b>{{portals}} job boards</b> · up to <b>{{count}}</b> job",
-    "summary_other": "<b>{{portals}} job boards</b> · up to <b>{{count}}</b> jobs",
     "login": "Sign in to {{names}}",
     "loginHint": "That job board needs you to sign in: your agent will tell you before going on.",
     "loginHintLabel": "Why you need to sign in"
@@ -74,7 +69,8 @@
       "found": "Seen",
       "passed": "Pass your filters",
       "created": "New"
-    }
+    },
+    "companies": "Companies with their own careers site"
   },
   "last": {
     "title": "Last search:",
@@ -111,32 +107,53 @@
     "othersHint": "Your email alerts and what you send with the browser button also come in on their own. You set them up in “Where to search”.",
     "othersLabel": "What else comes in without a browser"
   },
-  "refine": {
-    "role": "Role",
-    "rolePlaceholder": "For example, Data Engineer",
-    "location": "Where",
-    "locationPlaceholder": "For example, Madrid or remote",
-    "badText": "Use only letters, numbers and simple signs (. , + # / & ( ) -)."
-  },
   "empty": {
     "title": "No job boards to search yet",
     "body": "Tell your agent where you usually search or add a job board yourself.",
     "configure": "Choose job boards with my agent",
     "manage": "Go to “Where to search”"
   },
-  "settings": {
-    "intro": "They decide what your agent looks for and which jobs pass your filters.",
-    "issues": "Your profile has errors to fix. See them in <to>My profile</to>.",
-    "noProfile": {
-      "title": "Your profile first",
-      "body": "Your search settings are saved in your profile, and you don't have a readable one yet.",
-      "go": "Go to “My profile”"
-    },
-    "introHint": "Saved in your profile. Each block is saved on its own.",
-    "introHintLabel": "Where it is saved",
-    "rule": "Each filter applies only when the job states that detail.",
-    "ruleHint": "For example, a job that doesn't state the contract type passes the contract filter, and one with no published salary passes the minimum salary one.",
-    "ruleHintLabel": "Jobs without that detail"
+  "searching": "Searching…",
+  "launch": {
+    "eyebrow": "Your agent will search",
+    "portals_one": "{{count}} job board",
+    "portals_other": "{{count}} job boards",
+    "change": "Change",
+    "offers_one": "up to <n>{{count}}</n> job",
+    "offers_other": "up to <n>{{count}}</n> jobs"
   },
-  "searching": "Searching…"
+  "more": {
+    "button": "More settings",
+    "active_one": "{{count}} group with settings",
+    "active_other": "{{count}} groups with settings",
+    "label": "More settings for your search",
+    "experience": "Experience and salary",
+    "years": "Years of experience the job asks for",
+    "yearsHintLabel": "How the years apply",
+    "salaryPrivate": "Only you see it: your agent never sees this figure.",
+    "salaryHintLabel": "How the minimum salary applies",
+    "languages": "Working languages",
+    "contract": "Contract and hours",
+    "anyIfEmpty": "With none ticked, all of them are fine.",
+    "ruleHint": "Each filter applies only when the job states that detail: a job that doesn't state the contract type passes the contract filter, and one with no published salary passes the minimum salary one.",
+    "ruleHintLabel": "Jobs without that detail",
+    "discard": "Jobs you don't want",
+    "keywords": "Words in the title",
+    "keywordsHintLabel": "Which words rule a job out",
+    "employerLabel": "Employers you don't want",
+    "employer": {
+      "consultancy": "Consultancies that place their staff with a client",
+      "agency": "Temp and recruitment agencies",
+      "employer_hidden": "Jobs that don't say which company is hiring"
+    },
+    "reset": "Reset",
+    "discardChanges": "Discard changes",
+    "save": "Save changes",
+    "saving": "Saving…",
+    "rescore": "Saving recalculates the fit of your open jobs.",
+    "saved": "Saved to your profile.",
+    "undo": "Undo",
+    "undone": "Undone: your settings are back as they were.",
+    "unsavedConfirm": "You have unsaved changes in “More settings”. Leave without saving them?"
+  }
 }

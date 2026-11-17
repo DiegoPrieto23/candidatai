@@ -30,10 +30,10 @@
       "open": "Start by hand",
       "headlineHint": "What you'd put under your name on a CV, e.g. “Data Analyst · SQL · Power BI”.",
       "role": "Role you're looking for",
-      "roleHint": "One to start with; add more later in “Search jobs → Your search settings”.",
+      "roleHint": "One to start with; add more later in “Search jobs”.",
       "summary": "Summary (optional)",
       "summaryHint": "Two or three sentences about you. Left empty, your headline is used.",
-      "defaults": "Everything else, such as work mode or the photo on the CV, starts open to anything and you change it in “Your search settings” and “Documents”. Your experience and skills go in “Experience and education”.",
+      "defaults": "Everything else, such as work mode or the photo on the CV, starts open to anything and you change it in “Search jobs” and “Documents”. Your experience and skills go in “Experience and education”.",
       "required": "Needed to create your profile.",
       "pickOne": "Pick at least one.",
       "create": "Create my profile",
@@ -152,22 +152,6 @@
       "add": "Add story",
       "untitled": "New story",
       "needEvidence": "Each story needs at least one piece of evidence before it can be saved."
-    },
-    "searchRole": {
-      "title": "Role",
-      "hint": "Which roles and levels you want, and which title words discard a job. When you save you'll see the change, and the fit of your open jobs will be recalculated."
-    },
-    "searchExperience": {
-      "title": "Experience and salary",
-      "hint": "The years of experience a job asks for and the minimum salary you accept."
-    },
-    "searchWhere": {
-      "title": "Where and how",
-      "hint": "Work mode, locations and the languages you would work in."
-    },
-    "searchContract": {
-      "title": "Contract and employer",
-      "hint": "With no option ticked, all are accepted."
     },
     "cv": {
       "title": "CV preferences",

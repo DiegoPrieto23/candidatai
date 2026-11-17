@@ -1,21 +1,21 @@
 import { describe, expect, it } from 'vitest'
 import type { SourceView } from '@/api/client'
-import { addPlace, lastSearchOf, placesOf, removePlace } from './searchStrip'
+import { addPlace, lastSearchOf, placesOf, removePlace, setPlaceMode } from './searchStrip'
 
 describe('lugares de la franja', () => {
-  it('junta los de cualquier modalidad y los de solo remoto, sin repetir', () => {
+  it('junta las tres listas con su modalidad, sin repetir', () => {
     expect(placesOf({ preferred: ['Vigo', 'madrid'], allowed: ['Madrid', 'Lugo'], excluded: ['Ourense'] })).toEqual([
-      { place: 'Vigo', onlyRemote: false },
-      { place: 'madrid', onlyRemote: false },
-      { place: 'Lugo', onlyRemote: true },
+      { place: 'Vigo', mode: 'preferred' },
+      { place: 'madrid', mode: 'preferred' },
+      { place: 'Lugo', mode: 'allowed' },
+      { place: 'Ourense', mode: 'excluded' },
     ])
     expect(placesOf(undefined)).toEqual([])
   })
 
-  it('quitar lo saca de su lista y añadir lo pone en cualquier modalidad, aunque estuviera descartado', () => {
-    expect(removePlace({ preferred: ['Vigo'], allowed: ['Lugo'] }, 'lugo')).toEqual({ preferred: ['Vigo'], allowed: [] })
-    // Quitar una etiqueta no borra un descarte con el mismo nombre.
-    expect(removePlace({ preferred: ['Vigo'], excluded: ['vigo'] }, 'Vigo')).toEqual({ preferred: [], allowed: undefined, excluded: ['vigo'] })
+  it('quitar lo saca de sus listas y añadir lo pone en cualquier modalidad, aunque estuviera descartado', () => {
+    expect(removePlace({ preferred: ['Vigo'], allowed: ['Lugo'] }, 'lugo')).toEqual({ preferred: ['Vigo'], allowed: [], excluded: undefined })
+    expect(removePlace({ preferred: ['Vigo'], excluded: ['vigo'] }, 'Vigo')).toEqual({ preferred: [], allowed: undefined, excluded: [] })
     expect(addPlace({ preferred: ['Vigo'], excluded: ['Málaga'], radius: 3 }, 'malaga')).toEqual({
       preferred: ['Vigo', 'malaga'],
       allowed: undefined,
@@ -23,6 +23,13 @@ describe('lugares de la franja', () => {
       radius: 3,
     })
     expect(addPlace(undefined, 'Vigo')).toEqual({ preferred: ['Vigo'], allowed: undefined, excluded: undefined })
+  })
+
+  it('cambiar la modalidad de un lugar lo pasa de lista con su nombre de siempre', () => {
+    expect(setPlaceMode({ preferred: ['Vigo', 'Madrid'] }, 'madrid', 'allowed')).toEqual({ preferred: ['Vigo'], allowed: ['Madrid'], excluded: undefined })
+    expect(setPlaceMode({ allowed: ['Madrid'] }, 'Madrid', 'excluded')).toEqual({ preferred: undefined, allowed: [], excluded: ['Madrid'] })
+    const same = { preferred: ['Vigo'] }
+    expect(setPlaceMode(same, 'Vigo', 'preferred')).toBe(same)
   })
 })
 

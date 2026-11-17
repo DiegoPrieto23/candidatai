@@ -30,10 +30,10 @@
       "open": "Empezar a mano",
       "headlineHint": "Lo que pondrías bajo tu nombre en un CV, p. ej. «Analista de datos · SQL · Power BI».",
       "role": "Puesto que buscas",
-      "roleHint": "Uno para empezar; luego añades más en «Buscar ofertas → Configuración de tu búsqueda».",
+      "roleHint": "Uno para empezar; luego añades más en «Buscar ofertas».",
       "summary": "Resumen (opcional)",
       "summaryHint": "Dos o tres frases sobre ti. Si lo dejas vacío, se usa tu titular.",
-      "defaults": "Lo demás, como la modalidad o la foto en el CV, empieza abierto a todo y lo cambias en «Configuración de tu búsqueda» y en «Documentos». Tu experiencia y tus skills, en «Experiencia y formación».",
+      "defaults": "Lo demás, como la modalidad o la foto en el CV, empieza abierto a todo y lo cambias en «Buscar ofertas» y en «Documentos». Tu experiencia y tus skills, en «Experiencia y formación».",
       "required": "Hace falta para crear tu perfil.",
       "pickOne": "Elige al menos uno.",
       "create": "Crear mi perfil",
@@ -152,22 +152,6 @@
       "add": "Añadir historia",
       "untitled": "Historia nueva",
       "needEvidence": "Cada historia necesita al menos una evidencia para poder guardarse."
-    },
-    "searchRole": {
-      "title": "Puesto",
-      "hint": "Qué puestos y niveles buscas, y qué palabras del título descartan una oferta. Al guardar verás el cambio y se recalcularán tus ofertas abiertas."
-    },
-    "searchExperience": {
-      "title": "Experiencia y sueldo",
-      "hint": "Los años de experiencia que pide la oferta y el sueldo mínimo que aceptas."
-    },
-    "searchWhere": {
-      "title": "Dónde y cómo",
-      "hint": "Modalidad, ubicaciones e idiomas en los que trabajarías."
-    },
-    "searchContract": {
-      "title": "Contrato y empresa",
-      "hint": "Si no marcas ninguna opción, se aceptan todas."
     },
     "cv": {
       "title": "Preferencias de CV",

@@ -146,8 +146,8 @@
     "submit": "Add",
     "button": "Add job board",
     "fromProfile": "Fill in from my profile",
-    "urlsHintGenerated": "They come from the roles and locations in your profile (“Search jobs → Your search settings”). You can remove or add lines: one address per search.",
-    "urlsHintNoRoles": "Add the roles you're looking for in “Search jobs → Your search settings” and they fill in by themselves. Or run the search on the job board and paste the results address here.",
+    "urlsHintGenerated": "They come from the roles and locations in your profile (you change them in “Search jobs”). You can remove or add lines: one address per search.",
+    "urlsHintNoRoles": "Add the roles you're looking for in “Search jobs” and they fill in by themselves. Or run the search on the job board and paste the results address here.",
     "willSearch": "It will search:"
   },
   "edit": {

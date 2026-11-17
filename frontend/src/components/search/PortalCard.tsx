@@ -5,18 +5,9 @@ import type { SourceView } from '@/api/client'
 import { AddPlatformButton } from '@/components/AddPlatformDialog'
 import { SiteIcon } from '@/components/SiteIcon'
 import { formatRelative } from '@/lib/labels'
+import { hostOf } from '@/lib/siteHost'
 import { splitIssues } from '@/lib/runIssues'
 import { cn } from '@/lib/utils'
-
-function hostOf(source: SourceView): string | null {
-  const url = source.website ?? source.browse?.search_urls[0]
-  if (!url) return null
-  try {
-    return new URL(url).hostname
-  } catch {
-    return null
-  }
-}
 
 /** Por qué tu agente no puede buscar en un portal (lo cambias en «Dónde buscar»). */
 function unusableReason(source: SourceView): 'off' | 'blocked' | 'noAgent' {

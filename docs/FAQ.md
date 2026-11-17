@@ -150,9 +150,9 @@ Where: “Quick review”.
 
 ### Where do I say which jobs I want and which are discarded?
 
-In “Your search settings”: roles, work mode, areas, years of experience, contract type, words that discard a job and your minimum salary. Your agent never sees that figure.
+In “Search jobs”. In the strip at the top, your roles, your places (click one to choose what you accept there), work mode and level. In “More settings”, years of experience, your minimum salary, languages, contract type and what you rule out. Your agent never sees your minimum salary.
 
-Where: “Your search settings”.
+Where: “More settings for your search”.
 
 ### What are the jobs “To complete”?
 

@@ -46,11 +46,12 @@ def test_search_jobs_is_one_page_with_an_index(page: Page, demo_app: AppServer) 
 
     # El índice lleva a cada sección sin salir de la página, y la URL dice dónde estás.
     index = page.get_by_role("navigation", name=t("search.nav.label"))
-    index.get_by_role("link", name=t("search.nav.settings")).click()
-    expect(page).to_have_url(f"{demo_app.url}/buscar/ajustes")
-    expect(page.get_by_role("heading", level=2, name=t("search.nav.settings"))).to_be_in_viewport()
+    expect(index.get_by_role("link")).to_have_count(2)
     index.get_by_role("link", name=t("search.nav.search"), exact=True).click()
     expect(page).to_have_url(f"{demo_app.url}/buscar")
+    # La URL cambia antes de que acabe de pintarse la página (la vista de portales se carga aparte):
+    # se espera a que «Dónde buscar» deje de enseñar el correo.
+    expect(page.get_by_role("heading", level=3, name=t("alerts.email.title"))).to_have_count(0)
     expect(
         page.get_by_role("button", name=t("search.searchNow"), exact=False).first
     ).to_be_in_viewport()
@@ -59,37 +60,32 @@ def test_search_jobs_is_one_page_with_an_index(page: Page, demo_app: AppServer) 
     expect(page).to_have_url(f"{demo_app.url}/fuentes/correo")
 
 
-def test_more_filters_takes_you_to_your_roles_even_from_the_same_address(
+def test_more_settings_open_in_the_strip_and_the_address_says_so(
     page: Page, demo_app: AppServer
 ) -> None:
-    # Con la URL ya en `/buscar/ajustes` (entraste por el índice y subiste), el enlace no cambia
-    # de ruta: aun así tiene que bajar y dejar el cursor en tus puestos.
+    # `/buscar/ajustes` (la dirección de la antigua configuración) llega con «Más ajustes» abierto.
     page.goto("/buscar/ajustes")
-    roles = page.get_by_role("textbox", name=t("profileEditor.fields.roles"))
-    expect(roles).to_be_in_viewport()
-    page.evaluate("window.scrollTo(0, 0)")
-    expect(roles).not_to_be_in_viewport()
-    page.get_by_role("link", name=t("search.strip.moreFilters"), exact=True).click()
-    expect(roles).to_be_focused()
-    expect(roles).to_be_in_viewport()
+    strip = page.get_by_role("region", name=t("search.strip.label"))
+    button = strip.get_by_role("button", name=t("search.more.button"), exact=False)
+    more = page.get_by_role("region", name=t("search.more.label"))
+    expect(button).to_have_attribute("aria-expanded", "true")
+    expect(more).to_be_visible()
+    expect(more.get_by_role("heading", name=t("search.more.contract"))).to_be_visible()
+    # Plegarlo y desplegarlo cambia la dirección sin llevarte a otro sitio de la página.
+    button.click()
+    expect(page).to_have_url(f"{demo_app.url}/buscar")
+    expect(more).to_be_hidden()
+    expect(button).to_be_in_viewport()
+    button.click()
     expect(page).to_have_url(f"{demo_app.url}/buscar/ajustes")
-    # Atrás y Adelante vuelven a esa entrada del historial, pero no te ponen el cursor otra vez.
-    roles.blur()
-    page.go_back()
-    page.go_forward()
-    expect(page.get_by_role("heading", level=2, name=t("search.nav.settings"))).to_be_in_viewport()
-    expect(roles).not_to_be_focused()
-    # Y desde `/buscar`, igual.
-    page.goto("/buscar")
-    page.get_by_role("link", name=t("search.strip.moreFilters"), exact=True).click()
-    expect(roles).to_be_focused()
-    expect(roles).to_be_in_viewport()
+    expect(more).to_be_visible()
+    expect(button).to_be_in_viewport()
 
 
 def test_a_role_added_in_the_strip_is_saved_to_your_profile(
     page: Page, demo_app: AppServer
 ) -> None:
-    # La franja guarda en tu perfil de verdad: el puesto aparece en la configuración, y se deshace.
+    # La franja guarda en tu perfil de verdad: el puesto sigue al recargar, y se deshace.
     page.goto("/buscar")
     strip = page.get_by_role("region", name=t("search.strip.label"))
     roles = strip.get_by_role("group", name=t("search.strip.roles"))
@@ -98,20 +94,29 @@ def test_a_role_added_in_the_strip_is_saved_to_your_profile(
     page.keyboard.press("Enter")
     expect(roles.get_by_text("Data Platform Engineer", exact=True)).to_be_visible()
     expect(strip.get_by_role("button", name=t("search.strip.undo"))).to_be_enabled()
-    settings = page.get_by_role("region", name=t("profileEditor.blocks.searchRole.title"))
-    expect(settings.get_by_text("Data Platform Engineer", exact=True)).to_be_attached()
+    page.reload()
+    expect(roles.get_by_text("Data Platform Engineer", exact=True)).to_be_visible()
 
+    remove = roles.get_by_role(
+        "button", name=t("search.strip.remove", item="Data Platform Engineer")
+    )
+    remove.click()
+    expect(roles.get_by_text("Data Platform Engineer", exact=True)).to_have_count(0)
     strip.get_by_role("button", name=t("search.strip.undo")).click()
     expect(strip.get_by_text(t("search.strip.undone"))).to_be_visible()
+    expect(roles.get_by_text("Data Platform Engineer", exact=True)).to_be_visible()
+    remove.click()
     expect(roles.get_by_text("Data Platform Engineer", exact=True)).to_have_count(0)
-    expect(settings.get_by_text("Data Platform Engineer", exact=True)).to_have_count(0)
+    page.reload()
+    expect(roles.get_by_role("button", name=t("search.strip.addRole"))).to_be_visible()
+    expect(roles.get_by_text("Data Platform Engineer", exact=True)).to_have_count(0)
 
 
 def test_what_you_are_after_lives_in_search_jobs(page: Page, demo_app: AppServer) -> None:
     page.goto("/buscar/ajustes")
-    expect(page.get_by_role("heading", level=2, name=t("search.nav.settings"))).to_be_visible()
+    more = page.get_by_role("region", name=t("search.more.label"))
     expect(
-        page.get_by_role("region", name=t("profileEditor.blocks.searchRole.title"))
+        more.get_by_role("spinbutton", name=t("profileEditor.fields.salaryFloor"))
     ).to_be_visible()
     page.goto("/perfil")
     expect(page.get_by_role("tab", name=t("profileEditor.tabs.about"))).to_be_visible()

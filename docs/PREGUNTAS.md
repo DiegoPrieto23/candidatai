@@ -150,9 +150,9 @@ Dónde: «Revisión rápida».
 
 ### ¿Dónde indico qué ofertas quiero y cuáles se descartan?
 
-En «Configuración de tu búsqueda»: puestos, modalidad, zonas, años de experiencia, tipo de contrato, palabras que descartan y tu mínimo salarial. Tu agente nunca ve esa cifra.
+En «Buscar ofertas». En la franja de arriba, tus puestos, tus lugares (pulsa uno para elegir qué aceptas en él), la modalidad y el nivel. En «Más ajustes», los años de experiencia, tu sueldo mínimo, los idiomas, el tipo de contrato y lo que descartas. Tu agente nunca ve tu sueldo mínimo.
 
-Dónde: «Configuración de tu búsqueda».
+Dónde: «Más ajustes de tu búsqueda».
 
 ### ¿Qué son las ofertas «Por completar»?
 

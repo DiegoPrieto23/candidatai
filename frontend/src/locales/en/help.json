@@ -79,7 +79,7 @@
     "skills": "Skills to build",
     "templates": "CV templates",
     "search": "Search jobs",
-    "searchSettings": "Your search settings",
+    "searchSettings": "More settings for your search",
     "sources": "Where to search",
     "companies": "Company career sites",
     "email": "Email alerts",
@@ -221,7 +221,7 @@
     },
     "filters": {
       "q": "Where do I say which jobs I want and which are discarded?",
-      "a": "In “Your search settings”: roles, work mode, areas, years of experience, contract type, words that discard a job and your minimum salary. Your agent never sees that figure.",
+      "a": "In “Search jobs”. In the strip at the top, your roles, your places (click one to choose what you accept there), work mode and level. In “More settings”, years of experience, your minimum salary, languages, contract type and what you rule out. Your agent never sees your minimum salary.",
       "keywords": "filters salary minimum remote work mode location preferences discard"
     },
     "toComplete": {
