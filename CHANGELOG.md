@@ -171,6 +171,11 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 - **Navegar con teclado:** el primer Tab de cada página enseña **Saltar al contenido**, que se
   salta el menú y te deja en la página: la acción principal queda a unos pocos Tab (en Inicio, 6 en
   vez de 23).
+- **Skills por categoría:** en «Mi perfil», además de por nivel, filtras tus skills por categoría
+  (Lenguajes, Cloud…, o «Sin categoría»), y los dos filtros se combinan. Cada filtro dice cuántas
+  quedarían, los que dejarían la lista vacía se ven atenuados y **Quitar filtros** vuelve a todas. Con
+  muchas categorías, eliges la tuya en una lista con buscador. Una skill que cambias con un filtro
+  puesto ya no desaparece mientras la editas.
 
 ### Cambiado
 - **«Buscar ofertas»: buscar y configurar en un solo panel.** En la franja de arriba, además de tus
@@ -417,6 +422,9 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   resto, y los iconos pesan un tercio menos. Con una conexión lenta, Inicio se ve un 20 % antes.
 - **El embudo va más rápido con muchas ofertas:** «Por semana» y «Por puesto» se calculan sin
   leer cada oferta una a una.
+- **Idiomas más claros en «Mi perfil»:** «Idioma» y «Nivel» van en columnas alineadas, también con
+  un nivel escrito a mano, y sale de la pantalla «Dónde ponerlo». Si ya lo tenías relleno, se
+  conserva en tu perfil y tus CVs lo siguen teniendo en cuenta.
 
 ### Corregido
 - **Asistente: la respuesta de tu agente sale en cuanto vuelves a él.** Si tu agente contestaba

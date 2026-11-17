@@ -578,23 +578,153 @@ describe('Mi perfil editable', () => {
     expect(within(preview).getByText('Sin guardias').tagName).toBe('STRONG')
   })
 
+  const withSkills = (skills: Array<{ name: string; level: string; category?: string | null }>) => ({
+    ...BASE,
+    'GET /profile/editable': { ...EDITABLE, profile: { ...PROFILE, skills } },
+  })
+
   it('filtra las skills por nivel y una nueva se ve aunque hubiera filtro', async () => {
-    mockApi(BASE)
+    mockApi(withSkills([{ name: 'Python', level: 'F' }, { name: 'Go', level: 'B' }]))
     renderApp('/perfil')
     await openTab('Experiencia y formación')
     const block = await screen.findByRole('region', { name: 'Skills' })
     const filters = within(block).getByRole('group', { name: 'Filtrar skills por nivel' })
     const rows = () => within(block).queryAllByRole('textbox', { name: 'Skill' })
-    expect(rows().length).toBeGreaterThan(0)
+    expect(rows()).toHaveLength(2)
+    // Un nivel sin skills no se puede elegir: dejaría la lista vacía.
+    expect(within(filters).getByRole('button', { name: /^C\+/ })).toBeDisabled()
     await userEvent.click(within(filters).getByRole('button', { name: /^B/ }))
     expect(within(filters).getByRole('button', { name: /^B/ })).toHaveAttribute('aria-pressed', 'true')
-    expect(rows()).toHaveLength(0)
-    expect(within(block).getByText('Ninguna skill con este nivel.')).toBeInTheDocument()
-    const before = within(filters).getByRole('button', { name: /^Todas/ }).textContent
+    expect(rows().map((r) => (r as HTMLInputElement).value)).toEqual(['Go'])
+    // La que editas con un filtro puesto no desaparece aunque deje de casar.
+    await userEvent.selectOptions(within(block).getByRole('group', { name: 'Go' }).querySelector('select')!, 'F')
+    expect(rows().map((r) => (r as HTMLInputElement).value)).toEqual(['Go'])
     await userEvent.click(within(block).getByRole('button', { name: 'Añadir skill' }))
     expect(within(filters).getByRole('button', { name: /^Todas/ })).toHaveAttribute('aria-pressed', 'true')
-    expect(rows().length).toBeGreaterThan(0)
-    expect(within(filters).getByRole('button', { name: /^Todas/ }).textContent).not.toBe(before)
+    expect(rows()).toHaveLength(3)
+    expect(within(filters).getByRole('button', { name: /^Todas/ })).toHaveTextContent('3')
+  })
+
+  it('combina el filtro de nivel con el de categoría, con recuentos, atenuados y «Quitar filtros»', async () => {
+    mockApi(
+      withSkills([
+        { name: 'Python', level: 'F', category: 'Lenguajes' },
+        { name: 'SQL', level: 'C', category: 'lenguajes ' },
+        { name: 'BigQuery', level: 'C', category: 'Cloud y DWH' },
+        { name: 'Excel', level: 'B' },
+      ]),
+    )
+    renderApp('/perfil')
+    await openTab('Experiencia y formación')
+    const block = await screen.findByRole('region', { name: 'Skills' })
+    const levels = within(block).getByRole('group', { name: 'Filtrar skills por nivel' })
+    const categories = within(block).getByRole('group', { name: 'Filtrar skills por categoría' })
+    const names = () => within(block).queryAllByRole('textbox', { name: 'Skill' }).map((r) => (r as HTMLInputElement).value)
+    const chip = (group: HTMLElement, name: RegExp) => within(group).getByRole('button', { name })
+    // En el orden en que aparecen, sin duplicar «Lenguajes» y con «Sin categoría» al final.
+    expect(within(categories).getAllByRole('button').map((b) => b.textContent)).toEqual([
+      'Todas4',
+      'Lenguajes2',
+      'Cloud y DWH1',
+      'Sin categoría1',
+    ])
+    expect(within(block).queryByRole('button', { name: /Quitar filtros/ })).not.toBeInTheDocument()
+
+    await userEvent.click(chip(categories, /^Lenguajes/))
+    expect(names()).toEqual(['Python', 'SQL'])
+    // Los recuentos de nivel ya son los de «Lenguajes»: B se queda en 0 y atenuado.
+    expect(chip(levels, /^Todas/)).toHaveTextContent('2')
+    expect(chip(levels, /^B/)).toHaveTextContent('0')
+    expect(chip(levels, /^B/)).toBeDisabled()
+
+    await userEvent.click(chip(levels, /^C\d/))
+    expect(names()).toEqual(['SQL'])
+    expect(chip(categories, /^Cloud/)).toHaveTextContent('1')
+    expect(chip(categories, /^Sin categoría/)).toBeDisabled()
+
+    await userEvent.click(within(block).getByRole('button', { name: /Quitar filtros/ }))
+    expect(names()).toEqual(['Python', 'SQL', 'BigQuery', 'Excel'])
+    expect(chip(levels, /^Todas/)).toHaveAttribute('aria-pressed', 'true')
+    expect(chip(categories, /^Todas/)).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('con muchas categorías, el filtro es un desplegable con búsqueda que atenúa las que vaciarían la lista', async () => {
+    const many = ['Lenguajes', 'Cloud', 'BI', 'ML', 'IA', 'Datos', 'DevOps', 'Gestión', 'Idiomas'].map((category, i) => ({
+      name: `S${i}`,
+      level: i === 0 ? 'F' : 'C',
+      category,
+    }))
+    mockApi(withSkills(many))
+    renderApp('/perfil')
+    await openTab('Experiencia y formación')
+    const block = await screen.findByRole('region', { name: 'Skills' })
+    const names = () => within(block).queryAllByRole('textbox', { name: 'Skill' }).map((r) => (r as HTMLInputElement).value)
+    expect(within(block).queryByRole('group', { name: 'Filtrar skills por categoría' })).not.toBeInTheDocument()
+    const picker = within(block).getByRole('button', { name: 'Filtrar skills por categoría' })
+    const levels = within(block).getByRole('group', { name: 'Filtrar skills por nivel' })
+    await userEvent.click(within(levels).getByRole('button', { name: /^F/ }))
+    await userEvent.click(picker)
+    expect(screen.getByRole('option', { name: /Lenguajes/ })).not.toHaveAttribute('aria-disabled')
+    expect(screen.getByRole('option', { name: /DevOps/ })).toHaveAttribute('aria-disabled', 'true')
+    await userEvent.click(screen.getByRole('option', { name: /DevOps/ }))
+    expect(names()).toEqual(['S0'])
+    await userEvent.click(within(levels).getByRole('button', { name: /^Todas/ }))
+    await userEvent.click(picker)
+    await userEvent.type(screen.getByRole('combobox', { name: 'Buscar una categoría' }), 'devo')
+    await userEvent.click(screen.getByRole('option', { name: /DevOps/ }))
+    expect(names()).toEqual(['S6'])
+    expect(within(block).getByRole('button', { name: /Quitar filtros/ })).toBeInTheDocument()
+  })
+
+  it('al renombrar la categoría filtrada, el filtro sigue y la fila no desaparece', async () => {
+    mockApi(
+      withSkills([
+        { name: 'Python', level: 'F', category: 'Lenguajes' },
+        { name: 'AWS', level: 'C', category: 'Cloud' },
+      ]),
+    )
+    renderApp('/perfil')
+    await openTab('Experiencia y formación')
+    const block = await screen.findByRole('region', { name: 'Skills' })
+    const categories = within(block).getByRole('group', { name: 'Filtrar skills por categoría' })
+    await userEvent.click(within(categories).getByRole('button', { name: /^Cloud/ }))
+    const field = within(within(block).getByRole('group', { name: 'AWS' })).getByRole('textbox', { name: 'Categoría' })
+    await userEvent.clear(field)
+    await userEvent.type(field, 'Nube')
+    expect(within(block).queryAllByRole('textbox', { name: 'Skill' }).map((r) => (r as HTMLInputElement).value)).toEqual(['AWS'])
+    expect(within(categories).getByRole('button', { name: /^Cloud/ })).toHaveAttribute('aria-pressed', 'true')
+    expect(within(categories).getByRole('button', { name: /^Nube/ })).toBeInTheDocument()
+  })
+
+  it('los idiomas van en una rejilla de Idioma y Nivel, sin «Dónde ponerlo»', async () => {
+    mockApi(BASE)
+    renderApp('/perfil')
+    await openTab('Experiencia y formación')
+    const block = await screen.findByRole('region', { name: 'Idiomas' })
+    const language = within(block).getByRole('group', { name: 'Inglés' })
+    expect(within(language).getByRole('textbox', { name: 'Idioma' })).toHaveValue('Inglés')
+    expect(within(language).getByRole('combobox', { name: 'Nivel' })).toBeInTheDocument()
+    expect(within(block).queryByText('Dónde ponerlo')).not.toBeInTheDocument()
+    expect(within(block).queryByText(/gallego en Galicia/)).not.toBeInTheDocument()
+  })
+
+  it('cambiar un idioma conserva «regional» del YAML aunque ya no se vea', async () => {
+    const calls = mockApi({
+      ...BASE,
+      'GET /profile/editable': { ...EDITABLE, profile: { ...PROFILE, languages: [{ language: 'Gallego', level: 'C1', regional: 'Galicia' }] } },
+      'PUT /profile/sections/languages': saved('languages', { dry_run: true, diff: 'Nivel: C1 → C2' }),
+    })
+    renderApp('/perfil')
+    await openTab('Experiencia y formación')
+    const block = await screen.findByRole('region', { name: 'Idiomas' })
+    const language = within(block).getByRole('group', { name: 'Gallego' })
+    await userEvent.type(within(language).getByRole('textbox', { name: 'Idioma' }), ' ')
+    expect(within(block).getByRole('textbox', { name: 'Idioma' })).toHaveFocus()
+    await userEvent.selectOptions(within(block).getByRole('combobox', { name: 'Nivel' }), 'C2')
+    await userEvent.click(within(block).getByRole('button', { name: 'Guardar' }))
+    await waitFor(() => expect(calls.some((c) => c.method === 'PUT')).toBe(true))
+    const body = calls.find((c) => c.method === 'PUT')?.body as { content: unknown[] }
+    expect(body.content[0]).toMatchObject({ level: 'C2', regional: 'Galicia' })
   })
 
   it('la foto es opcional: se encuadra, se sube, se cambia y se quita pidiendo confirmación', async () => {

@@ -142,9 +142,17 @@
       "levels": "F: strong, you use it daily · C+: used in real projects · C: you know it · B: basic, only as \"knowledge of\".",
       "addSkill": "Add skill",
       "filterLabel": "Filter skills by level",
+      "categoryFilterLabel": "Filter skills by category",
+      "levelHeading": "Level",
+      "categoryHeading": "Category",
       "all": "All",
-      "noneAtLevel": "No skills at this level.",
-      "reorderHint": "To change the order, show all of them."
+      "allCategories": "All categories",
+      "noCategory": "No category",
+      "searchCategory": "Search a category",
+      "noCategoryMatch": "No category matches “{{query}}”.",
+      "clearFilters": "Clear filters",
+      "noneMatch": "No skills match these filters.",
+      "reorderHint": "To change the order, clear the filters."
     },
     "stories": {
       "title": "STAR stories",
@@ -247,8 +255,6 @@
     "native": "Native",
     "otherLevel": "Other (type it)",
     "otherLevelText": "Level (free text)",
-    "regional": "Where to show it",
-    "regionalHint": "Only if it matters in one region (e.g. Galician in Galicia).",
     "skill": "Skill",
     "category": "Category",
     "basicSkills": "Basic skills",

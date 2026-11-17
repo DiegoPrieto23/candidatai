@@ -142,9 +142,17 @@
       "levels": "F: fuerte, la usas a diario · C+: la has usado en proyectos reales · C: la conoces · B: básica, solo como «conocimientos de».",
       "addSkill": "Añadir skill",
       "filterLabel": "Filtrar skills por nivel",
+      "categoryFilterLabel": "Filtrar skills por categoría",
+      "levelHeading": "Nivel",
+      "categoryHeading": "Categoría",
       "all": "Todas",
-      "noneAtLevel": "Ninguna skill con este nivel.",
-      "reorderHint": "Para cambiar el orden, muestra todas."
+      "allCategories": "Todas las categorías",
+      "noCategory": "Sin categoría",
+      "searchCategory": "Buscar una categoría",
+      "noCategoryMatch": "Ninguna categoría con «{{query}}».",
+      "clearFilters": "Quitar filtros",
+      "noneMatch": "Ninguna skill con estos filtros.",
+      "reorderHint": "Para cambiar el orden, quita los filtros."
     },
     "stories": {
       "title": "Historias STAR",
@@ -247,8 +255,6 @@
     "native": "Nativo",
     "otherLevel": "Otro (escríbelo)",
     "otherLevelText": "Nivel (texto libre)",
-    "regional": "Dónde ponerlo",
-    "regionalHint": "Solo si tiene sentido en una región (p. ej. gallego en Galicia).",
     "skill": "Skill",
     "category": "Categoría",
     "basicSkills": "Skills básicas",
