@@ -173,6 +173,16 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   vez de 23).
 
 ### Cambiado
+- **Añadir una empresa es pegar su web de empleo:** en «Empresas con portal propio», su nombre y la
+  dirección de su web de empleo tal como la ves (`https://careers.acme.com/madrid/`), sin saber qué
+  sistema usa ni qué es un «slug». La app lo detecta, respeta la ciudad de la dirección («Solo
+  Madrid», que cambias en su tarjeta) y pone su logo. Si no reconoce la web, la añade a tus portales
+  para que tu agente la recorra al buscar. Lo de antes (sistema y nombre en la dirección) sigue en
+  **Más opciones**. En la terminal, `cai sources add --name … --url …`.
+- **Solo lo que encaja contigo:** «Probar» y cada empresa enseñan solo las ofertas que pasan tus
+  filtros («Encontrada: usa Greenhouse · 3 ofertas para ti», «Hoy: 2 ofertas nuevas para ti»), sin
+  «encontradas», «tras filtros» ni «Ver también las filtradas». Igual en la búsqueda pública de
+  LinkedIn. Los totales siguen en `cai sources list` y `cai sources test`.
 - **Una oferta de LinkedIn en «Nueva oferta» te guía en vez de dar un error:** si pegas su
   enlace, la app te da dos caminos. El primero, **Abrir la oferta** y pulsar allí el botón
   «Enviar a CandidatAI» (si aún no lo tienes, un enlace te lleva a instalarlo; si ya está

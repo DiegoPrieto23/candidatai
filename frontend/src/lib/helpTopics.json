@@ -42,6 +42,7 @@
 
     { "id": "addJob", "group": "jobs", "screen": "newJob" },
     { "id": "sources", "group": "jobs", "screen": "sources" },
+    { "id": "companyUrl", "group": "jobs", "screen": "companies" },
     { "id": "searchNow", "group": "jobs", "screen": "search" },
     { "id": "emailAlerts", "group": "jobs", "screen": "email" },
     { "id": "browserButton", "group": "jobs", "screen": "extension" },

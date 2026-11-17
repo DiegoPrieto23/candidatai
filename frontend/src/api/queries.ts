@@ -693,6 +693,20 @@ export function useSetSourceWebsite() {
   })
 }
 
+export function useSetSourceLocations() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: ({ sourceId, locations }: { sourceId: number; locations: string[] }) =>
+      unwrap(
+        api.POST('/sources/{source_id}/locations', {
+          params: { path: { source_id: sourceId } },
+          body: { locations },
+        }),
+      ),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.sources }),
+  })
+}
+
 // --- Alertas por correo: ofertas resumen (fase 09b) --------------------------------------------
 
 export function useAlerts() {

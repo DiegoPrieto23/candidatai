@@ -9,17 +9,35 @@
     "freehireHint": "No keys. Searches the job titles."
   },
   "more": "… and {{count}} more.",
-  "pass": "Passes",
-  "filtered": "Filtered",
-  "nonePass": "None match your filters.",
-  "onlyPassing": "Show only the ones that pass",
-  "alsoFiltered": "Also show the {{count}} filtered",
+  "forYou_one": "{{count}} job for you",
+  "forYou_other": "{{count}} jobs for you",
+  "nonePass": "No job matches your search right now; it's checked every day.",
+  "onlyIn": "Only {{places}}",
   "runHint": "They go to “To read”: press “Assess new jobs”.",
   "see": "See them",
+  "run": {
+    "created_one": "{{count}} new job for you.",
+    "created_other": "{{count}} new jobs for you.",
+    "none": "Nothing new for you this time."
+  },
+  "resolve": {
+    "found": "Found: it uses {{ats}}",
+    "how": {
+      "url": "from the address",
+      "page": "linked from its site",
+      "search": "by its name"
+    },
+    "detail": "{{board}}, {{how}}. If that isn't its job site, fix it in “More options”.",
+    "none": "We don't recognize that site's job system. We'll add it to your job sites and your agent will browse it when searching."
+  },
   "form": {
     "label": "Add source",
-    "origin": "Job site it uses",
     "company": "Company",
+    "url": "Address of its careers site",
+    "urlHint": "As you see it in the browser; if it filters by city, that's kept.",
+    "more": "More options",
+    "origin": "Job site it uses",
+    "auto": "Detect it",
     "searchName": "Search name",
     "slug": "Name in the address",
     "slugHint": "What goes in the address of its job site:",
@@ -39,18 +57,18 @@
     "country": "Country",
     "remoteOnly": "Remote jobs only",
     "added": "“{{name}}” added. It's checked every day; you can also search now.",
-    "testing": "Testing…",
+    "addedBrowse": "“{{name}}” added to your job sites: your agent will browse it when searching.",
+    "testing": "Searching…",
     "test": "Test",
     "saving": "Saving…",
     "add": "Add",
-    "website": "Company website (optional)",
-    "websiteHint": "For its logo, e.g. acme.com. If it posts its jobs on its own domain, the app takes it from there.",
     "slugPart": "name"
   },
   "row": {
     "paused": "Paused",
     "noKeys": "Its access keys are missing",
-    "last": "{{when}}: {{found}} found, {{after}} after filters, {{created}} new",
+    "last_one": "{{when}}: {{count}} new job for you",
+    "last_other": "{{when}}: {{count}} new jobs for you",
     "notRun": "Not checked yet",
     "testing": "Testing…",
     "test": "Test",
@@ -62,18 +80,22 @@
     "changeWebsite": "Change website",
     "websiteLabel": "Website of {{name}}",
     "websiteHint": "Only used for its logo. Leave it empty to remove it.",
+    "addPlaces": "Limit to some places",
+    "changePlaces": "Change",
+    "placesLabel": "Places of {{name}}",
+    "placesHint": "Separated by commas. Empty: jobs from anywhere.",
     "save": "Save",
     "saving": "Saving…",
     "cancel": "Cancel"
   },
   "empty": {
     "title": "You don't follow any company yet",
-    "body": "Pick the job site it uses and test it before saving: you'll see how many jobs it has and how many match your filters.",
+    "body": "Paste the address of its careers site and test it: you'll see which jobs fit you.",
     "add": "Add company"
   },
   "title": "Company career sites",
   "intro": "Companies with their own careers site: while it's open, the app checks it every day and brings in what fits you.",
-  "addTitle": "Add company or search",
+  "addTitle": "Add company",
   "following": "Following",
   "closeAdd": "Close"
 }

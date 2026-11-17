@@ -1332,12 +1332,25 @@ def templates_preview(
 # --- Fuentes: empresas con portal propio y portales -----------------------------------------------
 
 KIND_OPTION = typer.Option(
-    ...,
+    None,
     "--kind",
     help=(
         "ATS: greenhouse, lever, ashby, personio, teamtailor, workable, smartrecruiters o "
-        "recruitee. Portales: infojobs, adzuna, manfred o freehire."
+        "recruitee. Portales: infojobs, adzuna, manfred o freehire. Con --url, opcional."
     ),
+)
+URL_OPTION = typer.Option(
+    None,
+    "--url",
+    help=(
+        "Empresas: dirección de su web de empleo. Sin --kind, la app deduce el ATS, el slug y los "
+        "lugares de la dirección."
+    ),
+)
+LOCATIONS_OPTION = typer.Option(
+    None,
+    "--locations",
+    help="Empresas: solo ofertas de estos lugares, separados por comas (p. ej. `Madrid`).",
 )
 NAME_OPTION = typer.Option(..., "--name", help="Empresa (en un ATS) o etiqueta de la búsqueda.")
 SLUG_OPTION = typer.Option(None, "--slug", help="Slug del tablero del ATS (p. ej. `acme`).")
@@ -1363,7 +1376,7 @@ SOURCE_ID_ARG = typer.Argument(..., help="Id de la fuente (ver `cai sources list
 
 
 def _source_input(
-    kind: str,
+    kind: str | None,
     name: str,
     slug: str | None,
     region: str,
@@ -1376,6 +1389,8 @@ def _source_input(
     lang: str = "ES",
     remote_only: bool = False,
     website: str | None = None,
+    url: str | None = None,
+    locations: str | None = None,
 ) -> Any:
     from app.schemas.sources import SourceInput
 
@@ -1394,6 +1409,8 @@ def _source_input(
             "remote_only": remote_only,
             "title_keywords": _csv(keywords) or [],
             "website": website,
+            "url": url,
+            "locations": _csv(locations),
         }
     )
 
@@ -1419,6 +1436,19 @@ def _render_source(source: Any) -> None:
 
 
 def _render_preview(result: Any) -> None:
+    if found := result.resolution:
+        how = {
+            "url": "por la dirección",
+            "page": "enlazado desde su web",
+            "search": "buscado por el nombre",
+        }
+        if found.kind:
+            board = f"{found.kind_label} · {found.slug}"
+            typer.echo(f"Detectado: {board} ({how[found.how]}).")
+        if found.locations:
+            typer.echo(f"Solo ofertas de: {', '.join(found.locations)}.")
+        for issue in found.issues:
+            typer.secho(f"  ! {issue}", fg="yellow")
     typer.echo(f"{result.name}: {result.message.rstrip('.')}.")
     if result.found == 0 and result.errors:
         return  # el mensaje ya es el error de la fuente
@@ -1448,8 +1478,10 @@ def _render_source_run(result: Any) -> None:
 
 @sources_app.command("add")
 def sources_add(
-    kind: str = KIND_OPTION,
+    kind: str | None = KIND_OPTION,
     name: str = NAME_OPTION,
+    url: str | None = URL_OPTION,
+    locations: str | None = LOCATIONS_OPTION,
     slug: str | None = SLUG_OPTION,
     region: str = REGION_OPTION,
     query: str | None = QUERY_OPTION,
@@ -1463,7 +1495,8 @@ def sources_add(
     website: str | None = WEBSITE_OPTION,
     as_json: bool = JSON_OPTION,
 ) -> None:
-    """Añade una empresa con portal propio (ATS + slug) o una búsqueda en un portal con API."""
+    """Añade una empresa con portal propio (su web de empleo con --url, o ATS + slug) o una
+    búsqueda en un portal con API."""
     from app.services.ingestion import service as sources
 
     try:
@@ -1482,6 +1515,8 @@ def sources_add(
             lang,
             remote_only,
             website,
+            url,
+            locations,
         )
         with session_scope() as session:
             view = sources.add_source(session, data)
@@ -1617,6 +1652,8 @@ def sources_test(
     source_id: int | None = typer.Argument(None, help="Id de una fuente guardada."),
     kind: str | None = typer.Option(None, "--kind", help="Para probar sin guardar: el tipo."),
     name: str | None = typer.Option(None, "--name", help="Para probar sin guardar: el nombre."),
+    url: str | None = URL_OPTION,
+    locations: str | None = LOCATIONS_OPTION,
     slug: str | None = SLUG_OPTION,
     region: str = REGION_OPTION,
     query: str | None = QUERY_OPTION,
@@ -1636,7 +1673,7 @@ def sources_test(
         migrations.ensure_current()
         if source_id is not None:
             target: Any = source_id
-        elif kind and name:
+        elif (kind or url) and name:
             target = _source_input(
                 kind,
                 name,
@@ -1650,10 +1687,12 @@ def sources_test(
                 language,
                 lang,
                 remote_only,
+                url=url,
+                locations=locations,
             )
         else:
             raise ValueError(
-                "Indica el id de una fuente o, para probar sin guardar, --kind y --name."
+                "Indica el id de una fuente o, para probar sin guardar, --name y --url (o --kind)."
             )
         with session_scope() as session:
             result = sources.preview_source(session, target)

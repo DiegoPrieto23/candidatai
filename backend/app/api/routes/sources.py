@@ -7,6 +7,7 @@ from app.schemas.sources import (
     BrowseAccess,
     LinkedInPublicRunResult,
     LinkedInPublicView,
+    Places,
     SourceInput,
     SourceList,
     SourceRunResult,
@@ -33,6 +34,12 @@ class SetWebsiteBody(BaseModel):
     website: Website | None  # `null` la quita
 
 
+class SetLocationsBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    locations: Places  # vacía: todas
+
+
 @router.get("", operation_id="list_sources")
 def list_sources(session: SessionDep, kind: str | None = None) -> SourceList:
     """Fuentes con su configuración (sin secretos) y su última ejecución."""
@@ -41,7 +48,9 @@ def list_sources(session: SessionDep, kind: str | None = None) -> SourceList:
 
 @router.post("", operation_id="add_source", status_code=status.HTTP_201_CREATED)
 def add_source(session: SessionDep, body: SourceInput) -> SourceView:
-    """Añade una empresa con portal propio (ATS + slug) o una búsqueda en un portal con API."""
+    """Añade una empresa con portal propio (nombre y dirección de su web de empleo, o ATS + slug)
+    o una búsqueda en un portal con API. Una web sin ATS reconocible queda como plataforma que el
+    agente recorre con el navegador (`kind: agent_browse`)."""
     return sources.add_source(session, body)
 
 
@@ -225,3 +234,9 @@ def update_browse_settings(
         confirm_risk=body.confirm_risk,
         expected_priority=body.expected_priority,
     )
+
+
+@router.post("/{source_id}/locations", operation_id="set_source_locations")
+def set_source_locations(session: SessionDep, source_id: int, body: SetLocationsBody) -> SourceView:
+    """Cambia los lugares a los que se limita una empresa («Solo Madrid»); vacía, todos."""
+    return sources.set_locations(session, source_id, body.locations)

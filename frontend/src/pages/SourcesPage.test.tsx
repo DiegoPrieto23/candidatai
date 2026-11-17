@@ -32,14 +32,30 @@ const preview: SourceTestResult = {
   kind: 'greenhouse',
   name: 'Brétema',
   found: 12,
-  after_filters: 3,
+  after_filters: 1,
   filters_applied: true,
-  message: '12 ofertas encontradas, 3 tras filtros',
+  message: '12 ofertas encontradas, 1 tras filtros',
   errors: [],
   jobs: [
     { external_id: '1', title: 'Data Engineer', company: 'Brétema', location: 'Vigo', url: 'https://example.com/1', passed: true, reason: null },
     { external_id: '2', title: 'Account Executive', company: 'Brétema', location: 'Madrid', url: 'https://example.com/2', passed: false, reason: 'El título no encaja con tus puestos.' },
   ],
+}
+
+const URL = 'https://careers.bretema.example/vigo/'
+const resolved: SourceTestResult = {
+  ...preview,
+  resolution: {
+    url: URL,
+    how: 'page',
+    kind: 'greenhouse',
+    kind_label: 'Greenhouse',
+    slug: 'bretema',
+    region: 'global',
+    locations: ['Vigo'],
+    website: 'https://bretema.example',
+    issues: [],
+  },
 }
 
 describe('Empresas objetivo', () => {
@@ -48,7 +64,7 @@ describe('Empresas objetivo', () => {
       'GET /status': status(),
       'GET /sources': {
         sources: [
-          source(),
+          source({ config: { slug: 'acmedatos', region: 'global', title_keywords: [], locations: ['Madrid'] } }),
           source({ id: 2, kind: 'manual_text', kind_label: 'Alta manual por texto', name: 'Manual', config: {} }),
           source({ id: 3, kind: 'adzuna', kind_label: 'Adzuna', name: 'Datos Vigo', config: { query: 'data' }, keys_missing: true, last_run: null, active: false }),
         ],
@@ -57,7 +73,10 @@ describe('Empresas objetivo', () => {
     renderApp('/empresas')
 
     expect(await screen.findByRole('heading', { name: 'Acme Datos' })).toBeInTheDocument()
-    expect(screen.getByText(/12 encontradas, 3 tras filtros,\s+2 nuevas/)).toBeInTheDocument()
+    // Solo lo nuevo que encaja contigo: nada de «encontradas» ni «tras filtros».
+    expect(screen.getByText(/2 ofertas nuevas para ti/)).toBeInTheDocument()
+    expect(screen.queryByText(/tras filtros|encontradas/)).not.toBeInTheDocument()
+    expect(screen.getByText('Solo Madrid')).toBeInTheDocument()
     expect(screen.queryByText('Manual')).not.toBeInTheDocument()
     expect(screen.getByText('Faltan sus claves de acceso')).toBeInTheDocument()
     expect(screen.getByText('Pausada')).toBeInTheDocument()
@@ -71,11 +90,11 @@ describe('Empresas objetivo', () => {
     expect(screen.getByRole('form', { name: 'Añadir fuente' })).toBeInTheDocument()
   })
 
-  it('prueba una empresa antes de guardarla y luego la añade', async () => {
+  it('prueba una empresa con su nombre y su dirección y luego la añade', async () => {
     const calls = mockApi({
       'GET /status': status(),
       'GET /sources': { sources: [] },
-      'POST /sources/test': preview,
+      'POST /sources/test': resolved,
       'POST /sources': source({ id: 5, name: 'Brétema' }),
     })
     renderApp('/empresas')
@@ -83,30 +102,102 @@ describe('Empresas objetivo', () => {
     expect(await screen.findByText('Aún no sigues ninguna empresa')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Añadir empresa' })).not.toBeInTheDocument()
     const form = screen.getByRole('form', { name: 'Añadir fuente' })
+    // Solo dos campos: nada de ATS ni de slug a la vista.
+    expect(within(form).queryByLabelText('Nombre en la dirección')).not.toBeInTheDocument()
+    expect(within(form).queryByLabelText('Web de empleo que usa')).not.toBeInTheDocument()
     await userEvent.type(within(form).getByLabelText('Empresa'), 'Brétema')
-    await userEvent.type(within(form).getByLabelText('Nombre en la dirección'), 'bretema')
+    await userEvent.type(within(form).getByLabelText('Dirección de su web de empleo'), URL)
     await userEvent.click(within(form).getByRole('button', { name: 'Probar' }))
 
-    expect(await within(form).findByText('12 ofertas encontradas, 3 tras filtros')).toBeInTheDocument()
+    expect(await within(form).findByText('Encontrada: usa Greenhouse · 1 oferta para ti')).toBeInTheDocument()
+    expect(within(form).getByText('Solo Vigo')).toBeInTheDocument()
+    expect(within(form).getByText(/Greenhouse · bretema, enlazado desde su web/)).toBeInTheDocument()
     expect(within(form).getByRole('link', { name: 'Data Engineer' })).toHaveAttribute('href', 'https://example.com/1')
+    // Lo que no encaja no se enseña, ni siquiera plegado.
     expect(within(form).queryByText('Account Executive')).not.toBeInTheDocument()
-    await userEvent.click(within(form).getByRole('button', { name: /Ver también las 9 filtradas/ }))
-    expect(within(form).getByText('Account Executive')).toBeInTheDocument()
+    expect(within(form).queryByText(/filtradas/)).not.toBeInTheDocument()
 
     await userEvent.click(within(form).getByRole('button', { name: 'Añadir' }))
     expect(await within(form).findByText(/«Brétema» añadida/)).toBeInTheDocument()
     const posted = calls.filter((c) => c.method === 'POST').map((c) => c.body)
-    expect(posted[0]).toMatchObject({ kind: 'greenhouse', name: 'Brétema', slug: 'bretema', query: null })
-    expect(posted[1]).toEqual(posted[0])
+    expect(posted[0]).toMatchObject({ name: 'Brétema', url: URL })
+    expect(posted[0]).not.toHaveProperty('kind')
+    // Al añadir, lo detectado: no vuelve a buscar su web de empleo.
+    expect(posted[1]).toMatchObject({ kind: 'greenhouse', name: 'Brétema', slug: 'bretema', url: URL, locations: ['Vigo'] })
   })
 
-  it('pide búsqueda en vez de slug para un portal', async () => {
+  it('«Más opciones» trae lo detectado para corregirlo', async () => {
+    mockApi({ 'GET /status': status(), 'GET /sources': { sources: [] }, 'POST /sources/test': resolved })
+    renderApp('/empresas')
+    const form = await screen.findByRole('form', { name: 'Añadir fuente' })
+    await userEvent.type(within(form).getByLabelText('Empresa'), 'Brétema')
+    await userEvent.type(within(form).getByLabelText('Dirección de su web de empleo'), URL)
+    await userEvent.click(within(form).getByRole('button', { name: 'Probar' }))
+    await within(form).findByText('Solo Vigo')
+    await userEvent.click(within(form).getByRole('button', { name: 'Más opciones' }))
+    expect(within(form).getByLabelText('Nombre en la dirección')).toHaveValue('bretema')
+    expect(within(form).getByRole('combobox', { name: 'Web de empleo que usa' })).toHaveTextContent('Greenhouse')
+  })
+
+  it('una web sin sistema conocido se añade a los portales', async () => {
+    mockApi({
+      'GET /status': status(),
+      'GET /sources': { sources: [] },
+      'POST /sources/test': {
+        ...preview,
+        kind: 'agent_browse',
+        found: 0,
+        after_filters: 0,
+        jobs: [],
+        resolution: { ...resolved.resolution!, how: 'none', kind: null, kind_label: null, slug: null, locations: [] },
+      },
+      'POST /sources': source({ id: 7, kind: 'agent_browse', kind_label: 'Búsqueda con navegador', name: 'Brétema' }),
+    })
+    renderApp('/empresas')
+    const form = await screen.findByRole('form', { name: 'Añadir fuente' })
+    await userEvent.type(within(form).getByLabelText('Empresa'), 'Brétema')
+    await userEvent.type(within(form).getByLabelText('Dirección de su web de empleo'), URL)
+    await userEvent.click(within(form).getByRole('button', { name: 'Probar' }))
+    expect(await within(form).findByText(/No reconocemos el sistema de empleo/)).toBeInTheDocument()
+    await userEvent.click(within(form).getByRole('button', { name: 'Añadir' }))
+    expect(await within(form).findByText(/añadida a tus portales/)).toBeInTheDocument()
+  })
+
+  it('sin ofertas que encajen, lo dice', async () => {
+    mockApi({
+      'GET /status': status(),
+      'GET /sources': { sources: [source()] },
+      'POST /sources/1/test': { ...preview, after_filters: 0, jobs: [preview.jobs[1]!] },
+    })
+    renderApp('/empresas')
+    await userEvent.click(await screen.findByRole('button', { name: 'Probar' }))
+    expect(await screen.findByText('0 ofertas para ti')).toBeInTheDocument()
+    expect(screen.getByText('Ninguna oferta encaja ahora con tu búsqueda; se revisa cada día.')).toBeInTheDocument()
+    expect(screen.queryByText('Account Executive')).not.toBeInTheDocument()
+  })
+
+  it('cambia los lugares de una empresa desde su tarjeta', async () => {
+    const calls = mockApi({
+      'GET /status': status(),
+      'GET /sources': { sources: [source()] },
+      'POST /sources/1/locations': { status: 200, body: source() },
+    })
+    renderApp('/empresas')
+    await userEvent.click(await screen.findByRole('button', { name: 'Limitar a unos lugares' }))
+    await userEvent.type(screen.getByRole('textbox', { name: 'Lugares de Acme Datos' }), 'Madrid, Vigo')
+    await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+    expect(calls.find((c) => c.path === '/sources/1/locations')?.body).toEqual({ locations: ['Madrid', 'Vigo'] })
+  })
+
+  it('pide búsqueda en vez de dirección para un portal', async () => {
     mockApi({ 'GET /status': status(), 'GET /sources': { sources: [] } })
     renderApp('/empresas')
     const form = await screen.findByRole('form', { name: 'Añadir fuente' })
+    await userEvent.click(within(form).getByRole('button', { name: 'Más opciones' }))
     await userEvent.click(within(form).getByRole('combobox', { name: 'Web de empleo que usa' }))
     await userEvent.click(await screen.findByRole('option', { name: 'Adzuna (búsqueda)' }))
     expect(within(form).getByLabelText('Palabras de búsqueda')).toBeInTheDocument()
+    expect(within(form).queryByLabelText('Dirección de su web de empleo')).not.toBeInTheDocument()
     expect(within(form).queryByLabelText('Nombre en la dirección')).not.toBeInTheDocument()
     expect(within(form).getByLabelText('Ubicación (opcional)')).toBeInTheDocument()
   })
@@ -117,15 +208,15 @@ describe('Empresas objetivo', () => {
       'GET /sources': { sources: [] },
       'POST /sources': {
         status: 422,
-        body: { ok: false, error: { type: 'validation_error', message: 'Entrada no válida (1 error): slug.', details: [{ field: 'slug', received: 'a/b', reason: 'Slug no válido.' }] } },
+        body: { ok: false, error: { type: 'validation_error', message: 'Entrada no válida (1 error): url.', details: [{ field: 'url', received: 'ftp://x', reason: 'Dirección no válida.' }] } },
       },
     })
     renderApp('/empresas')
     const form = await screen.findByRole('form', { name: 'Añadir fuente' })
     await userEvent.type(within(form).getByLabelText('Empresa'), 'X')
-    await userEvent.type(within(form).getByLabelText('Nombre en la dirección'), 'a/b')
+    await userEvent.type(within(form).getByLabelText('Dirección de su web de empleo'), 'ftp://x')
     await userEvent.click(within(form).getByRole('button', { name: 'Añadir' }))
-    expect(await within(form).findByText('Slug no válido.')).toBeInTheDocument()
+    expect(await within(form).findByText('Dirección no válida.')).toBeInTheDocument()
   })
 
   it('ejecuta una fuente ahora y la pausa', async () => {
@@ -152,7 +243,8 @@ describe('Empresas objetivo', () => {
     })
     renderApp('/empresas')
     await userEvent.click(await screen.findByRole('button', { name: /Buscar ahora/ }))
-    expect(await screen.findByText(/2 nuevas, 1 ya estaba/)).toBeInTheDocument()
+    expect(await screen.findByText('2 ofertas nuevas para ti.')).toBeInTheDocument()
+    expect(screen.queryByText(/tras filtros/)).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Verlas' })).toHaveAttribute('href', '/bandeja?stage=pending_extraction')
 
     await userEvent.click(screen.getByRole('button', { name: 'Pausar' }))
@@ -191,7 +283,7 @@ describe('Empresas objetivo', () => {
     expect(screen.getByText('A')).toBeInTheDocument()
   })
 
-  it('ofrece los ATS nuevos con su ejemplo de slug y su idioma en Personio', async () => {
+  it('en «Más opciones», los ATS con su ejemplo de slug y su idioma en Personio', async () => {
     const calls = mockApi({
       'GET /status': status(),
       'GET /sources': { sources: [] },
@@ -199,8 +291,9 @@ describe('Empresas objetivo', () => {
     })
     renderApp('/empresas')
     const form = await screen.findByRole('form', { name: 'Añadir fuente' })
+    await userEvent.click(within(form).getByRole('button', { name: 'Más opciones' }))
     await userEvent.click(within(form).getByRole('combobox', { name: 'Web de empleo que usa' }))
-    for (const name of ['Teamtailor', 'Workable', 'SmartRecruiters', 'Recruitee', 'Manfred (búsqueda)', 'freehire (búsqueda)']) {
+    for (const name of ['Detectarla sola', 'Teamtailor', 'Workable', 'SmartRecruiters', 'Recruitee', 'Manfred (búsqueda)', 'freehire (búsqueda)']) {
       expect(await screen.findByRole('option', { name })).toBeInTheDocument()
     }
     await userEvent.click(screen.getByRole('option', { name: 'Personio' }))
@@ -218,7 +311,7 @@ describe('Empresas objetivo', () => {
       kind: 'personio',
       slug: 'bretema',
       language: 'en',
-      query: null,
+      url: null,
     })
   })
 
@@ -230,6 +323,7 @@ describe('Empresas objetivo', () => {
     })
     renderApp('/empresas')
     const form = await screen.findByRole('form', { name: 'Añadir fuente' })
+    await userEvent.click(within(form).getByRole('button', { name: 'Más opciones' }))
     await userEvent.click(within(form).getByRole('combobox', { name: 'Web de empleo que usa' }))
     await userEvent.click(await screen.findByRole('option', { name: 'freehire (búsqueda)' }))
     expect(within(form).queryByLabelText('Nombre en la dirección')).not.toBeInTheDocument()
@@ -241,7 +335,7 @@ describe('Empresas objetivo', () => {
     await userEvent.type(country, 'PT')
     await userEvent.click(within(form).getByLabelText('Solo ofertas en remoto'))
     await userEvent.click(within(form).getByRole('button', { name: 'Probar' }))
-    expect(await within(form).findByText('12 ofertas encontradas, 3 tras filtros')).toBeInTheDocument()
+    expect(await within(form).findByText('1 oferta para ti')).toBeInTheDocument()
     expect(calls.find((c) => c.method === 'POST')?.body).toMatchObject({
       kind: 'freehire',
       query: 'data engineer',

@@ -106,6 +106,12 @@ In “Where to search” you choose where they come from: job boards, company ca
 
 Where: “Where to search”.
 
+### How do I follow a specific company's jobs?
+
+In “Where to search → Company career sites”, press “Add company” and paste its name and the address of its careers site as you see it. “Test” tells you which system it uses and which jobs fit you; if the address filters by city, that's kept. From then on it's checked every day. If the site isn't recognized, it's added to your job sites and your agent browses it when searching.
+
+Where: “Company career sites”.
+
 ### How do I search for jobs on the job boards?
 
 In “Search jobs”, press “Search now”: your agent goes through the job boards you have chosen with your browser and adds what it finds. A notice tells you when it finishes.

@@ -5039,7 +5039,7 @@
           "sources"
         ],
         "summary": "Add Source",
-        "description": "Añade una empresa con portal propio (ATS + slug) o una búsqueda en un portal con API.",
+        "description": "Añade una empresa con portal propio (nombre y dirección de su web de empleo, o ATS + slug)\no una búsqueda en un portal con API. Una web sin ATS reconocible queda como plataforma que el\nagente recorre con el navegador (`kind: agent_browse`).",
         "operationId": "add_source",
         "requestBody": {
           "required": true,
@@ -6540,6 +6540,129 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/BrowseSettingsBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceView"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/sources/{source_id}/locations": {
+      "post": {
+        "tags": [
+          "sources"
+        ],
+        "summary": "Set Source Locations",
+        "description": "Cambia los lugares a los que se limita una empresa («Solo Madrid»); vacía, todos.",
+        "operationId": "set_source_locations",
+        "parameters": [
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Source Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetLocationsBody"
               }
             }
           }
@@ -37951,6 +38074,26 @@
         ],
         "title": "SetActiveBody"
       },
+      "SetLocationsBody": {
+        "properties": {
+          "locations": {
+            "items": {
+              "type": "string",
+              "maxLength": 80,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 10,
+            "title": "Locations"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "locations"
+        ],
+        "title": "SetLocationsBody"
+      },
       "SetWebsiteBody": {
         "properties": {
           "website": {
@@ -38275,20 +38418,27 @@
       "SourceInput": {
         "properties": {
           "kind": {
-            "type": "string",
-            "enum": [
-              "greenhouse",
-              "lever",
-              "ashby",
-              "personio",
-              "teamtailor",
-              "workable",
-              "smartrecruiters",
-              "recruitee",
-              "infojobs",
-              "adzuna",
-              "manfred",
-              "freehire"
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "greenhouse",
+                  "lever",
+                  "ashby",
+                  "personio",
+                  "teamtailor",
+                  "workable",
+                  "smartrecruiters",
+                  "recruitee",
+                  "infojobs",
+                  "adzuna",
+                  "manfred",
+                  "freehire"
+                ]
+              },
+              {
+                "type": "null"
+              }
             ],
             "title": "Kind"
           },
@@ -38408,16 +38558,45 @@
               }
             ],
             "title": "Website"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "locations": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "maxLength": 80,
+                  "minLength": 1
+                },
+                "type": "array",
+                "maxItems": 10
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Locations"
           }
         },
         "additionalProperties": false,
         "type": "object",
         "required": [
-          "kind",
           "name"
         ],
         "title": "SourceInput",
-        "description": "Alta de una fuente. En los ATS, `name` es la empresa tal como quieres verla."
+        "description": "Alta de una fuente. En los ATS, `name` es la empresa tal como quieres verla.\n\nUna empresa se puede dar de alta solo con `name` y `url` (la dirección de su web de empleo):\nel servicio deduce el ATS, el slug y los lugares. Con `kind` y `slug`, se usan esos."
       },
       "SourceList": {
         "properties": {
@@ -38438,6 +38617,104 @@
           "agent_browse"
         ],
         "title": "SourceList"
+      },
+      "SourceResolution": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "how": {
+            "type": "string",
+            "enum": [
+              "url",
+              "page",
+              "search",
+              "none"
+            ],
+            "title": "How"
+          },
+          "kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kind"
+          },
+          "kind_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kind Label"
+          },
+          "slug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Slug"
+          },
+          "region": {
+            "type": "string",
+            "enum": [
+              "global",
+              "eu"
+            ],
+            "title": "Region",
+            "default": "global"
+          },
+          "locations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Locations"
+          },
+          "website": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Website"
+          },
+          "issues": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Issues"
+          }
+        },
+        "type": "object",
+        "required": [
+          "url",
+          "how",
+          "kind",
+          "kind_label",
+          "slug",
+          "locations",
+          "website",
+          "issues"
+        ],
+        "title": "SourceResolution",
+        "description": "Lo que la app ha deducido de la dirección de una web de empleo.\n\n`how`: `url` (es la del ATS), `page` (la web enlaza su ATS), `search` (encontrado por el nombre\no el dominio) o `none` (no se reconoce: se guarda como plataforma que recorre el agente)."
       },
       "SourceRunResult": {
         "properties": {
@@ -38631,6 +38908,16 @@
           "message": {
             "type": "string",
             "title": "Message"
+          },
+          "resolution": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SourceResolution"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -38645,7 +38932,7 @@
           "message"
         ],
         "title": "SourceTestResult",
-        "description": "Prueba de una fuente sin guardar nada: «12 ofertas encontradas, 3 tras filtros»."
+        "description": "Prueba de una fuente sin guardar nada: «12 ofertas encontradas, 3 tras filtros».\n\nLa UI enseña solo las que pasan (`after_filters`); los totales quedan para el diagnóstico."
       },
       "SourceView": {
         "properties": {

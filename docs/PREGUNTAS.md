@@ -106,6 +106,12 @@ En «Dónde buscar» eliges de dónde vienen: portales de empleo, empresas con p
 
 Dónde: «Dónde buscar».
 
+### ¿Cómo sigo las ofertas de una empresa concreta?
+
+En «Dónde buscar → Empresas con portal propio», pulsa «Añadir empresa» y pega su nombre y la dirección de su web de empleo tal como la ves. «Probar» te dice qué sistema usa y qué ofertas encajan contigo; si la dirección filtra por ciudad, se respeta. Desde entonces se revisa cada día. Si no reconoce su web, la añade a tus portales y tu agente la recorre al buscar.
+
+Dónde: «Empresas con portal propio».
+
 ### ¿Cómo busco ofertas en los portales?
 
 En «Buscar ofertas», pulsa «Buscar ahora»: tu agente recorre con tu navegador los portales que hayas elegido y da de alta lo que encuentra. Un aviso te dice cuándo termina.

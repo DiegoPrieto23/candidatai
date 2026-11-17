@@ -81,7 +81,7 @@ def test_test_without_saving_and_by_id(db: None) -> None:
 def test_test_needs_a_target(db: None) -> None:
     result = runner.invoke(cli.app, ["sources", "test", "--json"])
     assert result.exit_code == 1
-    assert "--kind y --name" in json.loads(result.stdout)["error"]["message"]
+    assert "--name y --url" in json.loads(result.stdout)["error"]["message"]
 
 
 @respx.mock

@@ -802,7 +802,9 @@ export interface paths {
         put?: never;
         /**
          * Add Source
-         * @description Añade una empresa con portal propio (ATS + slug) o una búsqueda en un portal con API.
+         * @description Añade una empresa con portal propio (nombre y dirección de su web de empleo, o ATS + slug)
+         *     o una búsqueda en un portal con API. Una web sin ATS reconocible queda como plataforma que el
+         *     agente recorre con el navegador (`kind: agent_browse`).
          */
         post: operations["add_source"];
         delete?: never;
@@ -1079,6 +1081,26 @@ export interface paths {
          *     LinkedIn exige `confirm_risk: true`.
          */
         post: operations["update_browse_settings"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/sources/{source_id}/locations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Set Source Locations
+         * @description Cambia los lugares a los que se limita una empresa («Solo Madrid»); vacía, todos.
+         */
+        post: operations["set_source_locations"];
         delete?: never;
         options?: never;
         head?: never;
@@ -8794,6 +8816,11 @@ export interface components {
             /** Active */
             active: boolean;
         };
+        /** SetLocationsBody */
+        SetLocationsBody: {
+            /** Locations */
+            locations: string[];
+        };
         /** SetWebsiteBody */
         SetWebsiteBody: {
             /** Website */
@@ -8909,13 +8936,13 @@ export interface components {
         /**
          * SourceInput
          * @description Alta de una fuente. En los ATS, `name` es la empresa tal como quieres verla.
+         *
+         *     Una empresa se puede dar de alta solo con `name` y `url` (la dirección de su web de empleo):
+         *     el servicio deduce el ATS, el slug y los lugares. Con `kind` y `slug`, se usan esos.
          */
         SourceInput: {
-            /**
-             * Kind
-             * @enum {string}
-             */
-            kind: "greenhouse" | "lever" | "ashby" | "personio" | "teamtailor" | "workable" | "smartrecruiters" | "recruitee" | "infojobs" | "adzuna" | "manfred" | "freehire";
+            /** Kind */
+            kind?: ("greenhouse" | "lever" | "ashby" | "personio" | "teamtailor" | "workable" | "smartrecruiters" | "recruitee" | "infojobs" | "adzuna" | "manfred" | "freehire") | null;
             /** Name */
             name: string;
             /** Slug */
@@ -8957,12 +8984,50 @@ export interface components {
             title_keywords: string[];
             /** Website */
             website?: string | null;
+            /** Url */
+            url?: string | null;
+            /** Locations */
+            locations?: string[] | null;
         };
         /** SourceList */
         SourceList: {
             /** Sources */
             sources: components["schemas"]["SourceView"][];
             agent_browse: components["schemas"]["AgentBrowseLimits"];
+        };
+        /**
+         * SourceResolution
+         * @description Lo que la app ha deducido de la dirección de una web de empleo.
+         *
+         *     `how`: `url` (es la del ATS), `page` (la web enlaza su ATS), `search` (encontrado por el nombre
+         *     o el dominio) o `none` (no se reconoce: se guarda como plataforma que recorre el agente).
+         */
+        SourceResolution: {
+            /** Url */
+            url: string;
+            /**
+             * How
+             * @enum {string}
+             */
+            how: "url" | "page" | "search" | "none";
+            /** Kind */
+            kind: string | null;
+            /** Kind Label */
+            kind_label: string | null;
+            /** Slug */
+            slug: string | null;
+            /**
+             * Region
+             * @default global
+             * @enum {string}
+             */
+            region: "global" | "eu";
+            /** Locations */
+            locations: string[];
+            /** Website */
+            website: string | null;
+            /** Issues */
+            issues: string[];
         };
         /** SourceRunResult */
         SourceRunResult: {
@@ -9018,6 +9083,8 @@ export interface components {
         /**
          * SourceTestResult
          * @description Prueba de una fuente sin guardar nada: «12 ofertas encontradas, 3 tras filtros».
+         *
+         *     La UI enseña solo las que pasan (`after_filters`); los totales quedan para el diagnóstico.
          */
         SourceTestResult: {
             /** Kind */
@@ -9036,6 +9103,7 @@ export interface components {
             filters_applied: boolean;
             /** Message */
             message: string;
+            resolution?: components["schemas"]["SourceResolution"] | null;
         };
         /** SourceView */
         SourceView: {
@@ -14814,6 +14882,104 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["BrowseSettingsBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    set_source_locations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetLocationsBody"];
             };
         };
         responses: {

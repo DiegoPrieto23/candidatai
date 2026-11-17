@@ -309,6 +309,11 @@
       "a": "La app abre solo la carpeta o etiqueta que elijas y solo para leer. Usa una contraseña de aplicación, distinta de la tuya, que puedes revocar cuando quieras; se guarda cifrada en el llavero del sistema y tu agente nunca la ve.",
       "keywords": "seguro contraseña correo gmail lectura permisos revocar llavero cifrada"
     },
+    "companyUrl": {
+      "q": "¿Cómo sigo las ofertas de una empresa concreta?",
+      "a": "En «Dónde buscar → Empresas con portal propio», pulsa «Añadir empresa» y pega su nombre y la dirección de su web de empleo tal como la ves. «Probar» te dice qué sistema usa y qué ofertas encajan contigo; si la dirección filtra por ciudad, se respeta. Desde entonces se revisa cada día. Si no reconoce su web, la añade a tus portales y tu agente la recorre al buscar.",
+      "keywords": "empresa web de empleo careers trabaja con nosotros dirección url greenhouse lever ciudad"
+    },
     "linkedin": {
       "q": "¿Y LinkedIn?",
       "a": "Sus ofertas llegan por tus alertas de correo o con el botón del navegador, y las candidaturas en LinkedIn las envías siempre tú. Si pegas el enlace de una en «Nueva oferta», la app te guía: ábrela y pulsa el botón del navegador, o pega su texto. Buscar en LinkedIn es opcional: se activa en su tarjeta de «Dónde buscar», bajo tu responsabilidad.",

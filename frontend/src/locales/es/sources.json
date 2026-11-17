@@ -9,17 +9,35 @@
     "freehireHint": "Sin claves. Busca en el título de las ofertas."
   },
   "more": "… y {{count}} más.",
-  "pass": "Pasa",
-  "filtered": "Filtrada",
-  "nonePass": "Ninguna encaja con tus filtros.",
-  "onlyPassing": "Ver solo las que pasan",
-  "alsoFiltered": "Ver también las {{count}} filtradas",
+  "forYou_one": "{{count}} oferta para ti",
+  "forYou_other": "{{count}} ofertas para ti",
+  "nonePass": "Ninguna oferta encaja ahora con tu búsqueda; se revisa cada día.",
+  "onlyIn": "Solo {{places}}",
   "runHint": "Quedan en «Por leer»: pulsa «Valorar las ofertas nuevas».",
   "see": "Verlas",
+  "run": {
+    "created_one": "{{count}} oferta nueva para ti.",
+    "created_other": "{{count}} ofertas nuevas para ti.",
+    "none": "Nada nuevo para ti esta vez."
+  },
+  "resolve": {
+    "found": "Encontrada: usa {{ats}}",
+    "how": {
+      "url": "por la dirección",
+      "page": "enlazado desde su web",
+      "search": "por su nombre"
+    },
+    "detail": "{{board}}, {{how}}. Si no es su web de empleo, corrígelo en «Más opciones».",
+    "none": "No reconocemos el sistema de empleo de esa web. La añadiremos a tus portales y tu agente la recorrerá con el navegador al buscar."
+  },
   "form": {
     "label": "Añadir fuente",
-    "origin": "Web de empleo que usa",
     "company": "Empresa",
+    "url": "Dirección de su web de empleo",
+    "urlHint": "Tal como la ves en el navegador; si filtra por ciudad, se respeta.",
+    "more": "Más opciones",
+    "origin": "Web de empleo que usa",
+    "auto": "Detectarla sola",
     "searchName": "Nombre de la búsqueda",
     "slug": "Nombre en la dirección",
     "slugHint": "Lo que va en la dirección de su web de empleo:",
@@ -39,18 +57,18 @@
     "country": "País",
     "remoteOnly": "Solo ofertas en remoto",
     "added": "«{{name}}» añadida. Se revisa cada día; también puedes buscar ahora.",
-    "testing": "Probando…",
+    "addedBrowse": "«{{name}}» añadida a tus portales: tu agente la recorrerá al buscar.",
+    "testing": "Buscando…",
     "test": "Probar",
     "saving": "Guardando…",
     "add": "Añadir",
-    "website": "Web de la empresa (opcional)",
-    "websiteHint": "Para su logo, p. ej. acme.com. Si publica sus ofertas en su propio dominio, la app la saca de ahí.",
     "slugPart": "nombre"
   },
   "row": {
     "paused": "Pausada",
     "noKeys": "Faltan sus claves de acceso",
-    "last": "{{when}}: {{found}} encontradas, {{after}} tras filtros, {{created}} nuevas",
+    "last_one": "{{when}}: {{count}} oferta nueva para ti",
+    "last_other": "{{when}}: {{count}} ofertas nuevas para ti",
     "notRun": "Aún no se ha revisado",
     "testing": "Probando…",
     "test": "Probar",
@@ -62,18 +80,22 @@
     "changeWebsite": "Cambiar web",
     "websiteLabel": "Web de {{name}}",
     "websiteHint": "Solo sirve para su logo. Déjala vacía para quitarla.",
+    "addPlaces": "Limitar a unos lugares",
+    "changePlaces": "Cambiar",
+    "placesLabel": "Lugares de {{name}}",
+    "placesHint": "Separados por comas. Vacío: ofertas de cualquier lugar.",
     "save": "Guardar",
     "saving": "Guardando…",
     "cancel": "Cancelar"
   },
   "empty": {
     "title": "Aún no sigues ninguna empresa",
-    "body": "Elige la web de empleo que usa y pruébala antes de guardarla: verás cuántas ofertas tiene y cuántas encajan con tus filtros.",
+    "body": "Pega la dirección de su web de empleo y pruébala: verás qué ofertas encajan contigo.",
     "add": "Añadir empresa"
   },
   "title": "Empresas con portal propio",
   "intro": "Empresas con web de empleo propia: la app la revisa cada día mientras está abierta y trae lo que encaja contigo.",
-  "addTitle": "Añadir empresa o búsqueda",
+  "addTitle": "Añadir empresa",
   "following": "Seguidas",
   "closeAdd": "Cerrar"
 }
