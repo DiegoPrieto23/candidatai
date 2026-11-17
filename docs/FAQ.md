@@ -254,7 +254,7 @@ Where: “Email alerts”.
 
 ### And LinkedIn?
 
-Its jobs arrive through your email alerts or with the browser button, and applications on LinkedIn are always sent by you. Searching LinkedIn is optional: you turn it on in its card in “Where to search”, under your responsibility.
+Its jobs arrive through your email alerts or with the browser button, and applications on LinkedIn are always sent by you. If you paste a job's link into “New job”, the app guides you: open it and click the browser button, or paste its text. Searching LinkedIn is optional: you turn it on in its card in “Where to search”, under your responsibility.
 
 Where: “Where to search”.
 

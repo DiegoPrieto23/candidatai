@@ -389,7 +389,7 @@ A typical day:
 
 | Source | How to set it up |
 |---|---|
-| **Manual** | **New job** in the UI: a URL or pasted text (with text, the role and company are required because they're how duplicates are spotted, and the button says what's missing) |
+| **Manual** | **New job** in the UI: a URL or pasted text (with text, the role and company are required because they're how duplicates are spotted, and the button says what's missing). With a LinkedIn URL, the app guides you: "Open the job" to click the browser button there, or "Paste text" with the link already filled in |
 | **Company career sites** (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee) | In **Search jobs**, the **Where to search → Company career sites** section or `cai sources add --kind greenhouse --name "Acme" --slug acme`. `cai sources discover --file companies.txt` finds the board of each company in a list. How to find the slug: [`FUENTES_OFERTAS.md`](FUENTES_OFERTAS.md#cómo-encontrar-el-slug) (Spanish) |
 | **InfoJobs and Adzuna** | Their keys in `.env` (`CAI_INFOJOBS_CLIENT_ID`/`_SECRET`, `CAI_ADZUNA_APP_ID`/`_KEY`) and a search with `cai sources add` |
 | **Manfred and freehire.me** | No keys: a search on the same page or with `cai sources add --kind manfred --name Manfred --query "data engineer"` (for freehire, also `--country` and `--remote-only`) |

@@ -88,9 +88,10 @@ def test_add_from_url(client: TestClient) -> None:
 
 
 def test_add_from_url_rejects_linkedin(client: TestClient) -> None:
+    """Un código estable para que la UI enseñe su aviso (botón del navegador o pegar el texto)."""
     response = client.post("/jobs/url", json={"url": "https://www.linkedin.com/jobs/view/1"})
     assert response.status_code == 422
-    assert response.json()["error"]["type"] == "invalid_request"
+    assert response.json()["error"]["type"] == "linkedin_url"
 
 
 def test_add_from_url_that_cannot_be_opened_says_page_unavailable(client: TestClient) -> None:

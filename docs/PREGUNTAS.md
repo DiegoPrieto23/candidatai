@@ -254,7 +254,7 @@ Dónde: «Alertas por correo».
 
 ### ¿Y LinkedIn?
 
-Sus ofertas llegan por tus alertas de correo o con el botón del navegador, y las candidaturas en LinkedIn las envías siempre tú. Buscar en LinkedIn es opcional: se activa en su tarjeta de «Dónde buscar», bajo tu responsabilidad.
+Sus ofertas llegan por tus alertas de correo o con el botón del navegador, y las candidaturas en LinkedIn las envías siempre tú. Si pegas el enlace de una en «Nueva oferta», la app te guía: ábrela y pulsa el botón del navegador, o pega su texto. Buscar en LinkedIn es opcional: se activa en su tarjeta de «Dónde buscar», bajo tu responsabilidad.
 
 Dónde: «Dónde buscar».
 

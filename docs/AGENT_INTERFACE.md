@@ -784,7 +784,8 @@ el agente (los roles: solo los campos de `field`, como mucho dos veces); la app 
 | `not_found` | No existe la oferta, aún no tiene extracción, no hay perfil importado, no existe el CV o la plantilla |
 | `invalid_transition` | El evento no es válido en la etapa actual de la oferta |
 | `later_events` | El evento, con fecha pasada, encaja donde cae pero algo anotado después deja de encajar (p. ej. un seguimiento detrás de un cierre). El mensaje dice qué y desde qué fecha se puede; quitar lo anotado por error solo lo hace el usuario desde la UI |
-| `invalid_request` | El servicio rechaza la petición (URL de LinkedIn, evento reservado…) |
+| `invalid_request` | El servicio rechaza la petición (dirección local, evento reservado…) |
+| `linkedin_url` | `add_job_from_url` con una URL de LinkedIn, que nunca se descarga: que la persona pulse el botón «Enviar a CandidatAI» con la oferta abierta en su navegador, o da de alta su texto con `add_job_from_text` |
 | `page_unavailable` | `add_job_from_url` no pudo abrir la página (sin red, login, bloqueo o JavaScript): da de alta su texto con `add_job_from_text` |
 | `not_allowed` | La búsqueda con navegador no está permitida ahí: activar LinkedIn desde el agente, o anotar ofertas o recorridos de una plataforma desactivada (403 en la API) |
 | `database_not_ready` | Falta `cai db upgrade` |

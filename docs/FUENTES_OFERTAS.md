@@ -234,6 +234,12 @@ found ─► pending_detail ─(detail_captured)─► pending_extraction ─►
 - **Resultado** en el popup del botón: «Nueva», «Completada» (tenía un resumen de una alerta),
   «Ya estaba» o un error con lo que hay que hacer, y «Abrir ficha». El icono queda marcado en esa
   pestaña (✓, = o !). Instalación y uso: `extension/README.md`.
+- **Una URL de LinkedIn en «Nueva oferta»** no se descarga (error `linkedin_url`): en vez de un
+  error, la UI enseña los dos caminos, primero «Abrir la oferta» para pulsar el botón desde ella
+  (con el enlace a «Botón del navegador» si aún no está conectado, o una línea que dice que sí lo
+  está) y después «Pegar texto» con la URL ya rellena. «Ver cómo se hace» enseña una animación
+  corta del gesto (`docs/img/<idioma>/anim/extension.webp`, con un fotograma fijo para quien
+  prefiere menos movimiento), la misma que la página «Botón del navegador».
 - Honestidad: las condiciones de LinkedIn prohíben extensiones que copien su contenido. Aquí la
   acción es tuya, oferta a oferta, equivalente a copiar y pegar: no recorre páginas ni busca por
   su cuenta. Es la misma práctica que las herramientas de seguimiento de candidaturas conocidas.

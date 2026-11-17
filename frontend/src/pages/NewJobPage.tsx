@@ -1,9 +1,17 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router'
-import { ClipboardTextIcon, LinkIcon, WarningCircleIcon } from '@phosphor-icons/react'
+import { Link, useNavigate } from 'react-router'
+import {
+  ArrowSquareOutIcon,
+  CheckCircleIcon,
+  ClipboardTextIcon,
+  LinkIcon,
+  PuzzlePieceIcon,
+  WarningCircleIcon,
+} from '@phosphor-icons/react'
 import { ApiError, type AddJobResult } from '@/api/client'
-import { useAddFromText, useAddFromUrl } from '@/api/queries'
+import { useAddFromText, useAddFromUrl, useExtensionStatus } from '@/api/queries'
+import { ExtensionDemo } from '@/components/ExtensionDemo'
 import { InlineCode } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,6 +19,7 @@ import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { errorMessage } from '@/lib/errors'
+import { useExtensionReply } from '@/lib/extension'
 import { formatList } from '@/lib/i18n'
 import type { AddedState } from './JobPage'
 import { BusyLabel } from '@/components/StableLabel'
@@ -108,6 +117,83 @@ function PageUnavailable({ onUsePaste }: { onUsePaste: () => void }) {
   )
 }
 
+/** Uno de los dos caminos del aviso de LinkedIn: número, título y lo que se hace. */
+function Way({ n, title, children }: { n: number; title: string; children: ReactNode }) {
+  return (
+    <li className="flex gap-3">
+      <span
+        aria-hidden
+        className="grid size-6 shrink-0 place-items-center rounded-full border bg-background text-xs font-semibold"
+      >
+        {n}
+      </span>
+      <div className="grid min-w-0 flex-1 gap-2.5 pt-0.5">
+        <h2 className="font-medium">{title}</h2>
+        {children}
+      </div>
+    </li>
+  )
+}
+
+/**
+ * Una URL de LinkedIn (`linkedin_url`): la app no descarga sus ofertas, así que en vez de un error se
+ * dan los dos caminos. Primero el botón del navegador, desde la propia oferta (con su demostración y,
+ * si aún no está conectado, el enlace para instalarlo); después, pegar el texto con la URL rellena.
+ */
+function LinkedInGuide({ url, onUsePaste }: { url: string; onUsePaste: () => void }) {
+  const { t } = useTranslation('newJob', { keyPrefix: 'linkedin' })
+  const status = useExtensionStatus()
+  // Sin sondeo continuo: esta página no espera a que se instale; al volver a ella, se pregunta otra vez.
+  const reply = useExtensionReply(status.data?.extension_id, { poll: false })
+  const connected = Boolean(reply.data?.connected)
+  return (
+    <div className="grid gap-4 rounded-lg border bg-muted/30 p-4 text-sm">
+      {/* Solo el título es región viva: el resto (enlaces, botones, demostración) se recorre normal. */}
+      <p role="status" className="font-medium">
+        {t('title')}
+      </p>
+      <ol role="list" className="grid gap-5">
+        <Way n={1} title={t('button.title')}>
+          <p className="text-muted-foreground">{t('button.body')}</p>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <Button asChild size="sm">
+              <a href={url} target="_blank" rel="noreferrer noopener">
+                <ArrowSquareOutIcon />
+                {t('button.open')}
+                <span className="sr-only">{t('button.newTab')}</span>
+              </a>
+            </Button>
+            {connected ? (
+              <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+                <CheckCircleIcon className="size-4 text-emerald-600 dark:text-emerald-400" weight="fill" aria-hidden />
+                {t('button.connected')}
+              </span>
+            ) : (
+              <Link
+                to="/fuentes/extension"
+                className="inline-flex items-center gap-1.5 font-medium text-primary underline-offset-4 hover:underline"
+              >
+                <PuzzlePieceIcon className="size-4" aria-hidden />
+                {t('button.install')}
+              </Link>
+            )}
+          </div>
+          <ExtensionDemo />
+        </Way>
+        <Way n={2} title={t('paste.title')}>
+          <p className="text-muted-foreground">{t('paste.body')}</p>
+          <div>
+            <Button type="button" variant="outline" size="sm" onClick={onUsePaste}>
+              <ClipboardTextIcon />
+              {t('paste.button')}
+            </Button>
+          </div>
+        </Way>
+      </ol>
+    </div>
+  )
+}
+
 function UrlForm({ onUsePaste }: { onUsePaste: (url?: string) => void }) {
   const { t } = useTranslation('newJob', { keyPrefix: 'url' })
   const [url, setUrl] = useState('')
@@ -155,7 +241,9 @@ function UrlForm({ onUsePaste }: { onUsePaste: (url?: string) => void }) {
           className="h-10 bg-background"
         />
       </Field>
-      {add.error instanceof ApiError && add.error.type === 'page_unavailable' ? (
+      {add.error instanceof ApiError && add.error.type === 'linkedin_url' ? (
+        <LinkedInGuide url={add.variables?.url ?? url.trim()} onUsePaste={() => onUsePaste(url.trim())} />
+      ) : add.error instanceof ApiError && add.error.type === 'page_unavailable' ? (
         <PageUnavailable onUsePaste={() => onUsePaste(url.trim())} />
       ) : (
         <FormError error={add.error && !errors.url ? add.error : null} />

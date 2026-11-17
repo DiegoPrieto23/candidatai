@@ -173,6 +173,11 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   vez de 23).
 
 ### Cambiado
+- **Una oferta de LinkedIn en «Nueva oferta» te guía en vez de dar un error:** si pegas su
+  enlace, la app te da dos caminos. El primero, **Abrir la oferta** y pulsar allí el botón
+  «Enviar a CandidatAI» (si aún no lo tienes, un enlace te lleva a instalarlo; si ya está
+  conectado, te lo dice). El segundo, **Pegar texto**, con el enlace ya rellenado. **Ver cómo se
+  hace** enseña el gesto en una animación corta, que también está en «Botón del navegador».
 - **«Buscar ofertas», más visual y más fácil de cambiar:** arriba, una franja con tus puestos y
   lugares como etiquetas. Las quitas con su ✕ y añades más con **+ Añadir puesto** o **+ Añadir
   lugar**. Cada cambio se guarda en tu perfil al momento, con **Deshacer**, y al añadir un puesto te

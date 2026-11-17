@@ -101,7 +101,8 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
   captura no lo necesita: sus `host_permissions` la eximen, y `POST /capture` exige su origen y token.
 - Errores con el mismo formato que la interfaz para agentes (`{ok: false, error: {type, message,
   details}}`): 404 `not_found`, 409 `invalid_transition`, `later_events` o `exists`, 413 `too_large`, 422
-  validación o `page_unavailable` (no se pudo abrir la página de una oferta), 503 BD sin migrar o sin conversor a PDF (`pdf_unavailable`). Las rutas de la
+  validación, `page_unavailable` (no se pudo abrir la página de una oferta) o `linkedin_url` (una
+  oferta de LinkedIn, que no se descarga), 503 BD sin migrar o sin conversor a PDF (`pdf_unavailable`). Las rutas de la
   candidatura asistida añaden el código del servicio en `details` (`field: "code"`: `busy`,
   `stale`, `company_mismatch`, `invalid_url`…).
 - Los ficheros solo se sirven desde `data/cvs/` (renders), `data/applications/` (capturas de la

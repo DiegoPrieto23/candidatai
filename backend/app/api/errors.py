@@ -22,6 +22,7 @@ STATUS_BY_TYPE = {
     "validation_error": 422,
     "invalid_request": 422,
     "page_unavailable": 422,
+    "linkedin_url": 422,  # una URL de LinkedIn: la UI guía hacia el botón del navegador o el texto
     "invalid_transition": 409,
     "later_events": 409,  # algo anotado después no encaja con un evento con fecha pasada
     "exists": 409,

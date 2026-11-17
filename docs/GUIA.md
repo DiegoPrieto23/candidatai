@@ -385,7 +385,7 @@ Un día normal:
 
 | Fuente | Cómo se configura |
 |---|---|
-| **Alta manual** | «Nueva oferta» en la UI (URL o texto pegado; con texto, el puesto y la empresa son obligatorios porque con ellos se detectan duplicados, y el botón dice qué falta) |
+| **Alta manual** | «Nueva oferta» en la UI (URL o texto pegado; con texto, el puesto y la empresa son obligatorios porque con ellos se detectan duplicados, y el botón dice qué falta). Con una URL de LinkedIn, la app te guía: «Abrir la oferta» para pulsar allí el botón del navegador, o «Pegar texto» con el enlace ya rellenado |
 | **Empresas con portal propio** (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee) | En «Buscar ofertas», sección «Dónde buscar → Empresas con portal propio» o `cai sources add --kind greenhouse --name "Acme" --slug acme`. `cai sources discover --file empresas.txt` busca el tablero de cada empresa de una lista. Cómo encontrar el slug, en [`FUENTES_OFERTAS.md`](FUENTES_OFERTAS.md#cómo-encontrar-el-slug) |
 | **InfoJobs y Adzuna** | Sus claves en `.env` (`CAI_INFOJOBS_CLIENT_ID`/`_SECRET`, `CAI_ADZUNA_APP_ID`/`_KEY`) y una búsqueda con `cai sources add` |
 | **Manfred y freehire.me** | Sin claves: una búsqueda en la misma página o con `cai sources add --kind manfred --name Manfred --query "data engineer"` (en freehire, también `--country` y `--remote-only`) |

@@ -4,7 +4,7 @@
   "required": "(obligatorio)",
   "url": {
     "label": "Enlace de la oferta",
-    "hint": "Una página pública, como Greenhouse o la web de la empresa. Para las ofertas de LinkedIn, <paste>pega el texto</paste>.",
+    "hint": "Una página pública, como Greenhouse o la web de la empresa. Las de LinkedIn se añaden con el botón del navegador o <paste>pegando el texto</paste>.",
     "downloading": "Descargando…",
     "submit": "Dar de alta",
     "unavailable": "No he podido abrir esa página: puede que no responda, que pida iniciar sesión o que cargue la oferta con JavaScript. Copia el texto de la oferta y pégalo.",
@@ -29,5 +29,21 @@
   "title": "Nueva oferta",
   "intro": "Pega el enlace o el texto de una oferta. Si ya la tenías, no se duplica; después tu agente la lee y saca sus datos.",
   "byUrl": "Por URL",
-  "pasteText": "Pegar texto"
+  "pasteText": "Pegar texto",
+  "linkedin": {
+    "title": "Las ofertas de LinkedIn se añaden de una de estas dos formas:",
+    "button": {
+      "title": "Con el botón del navegador",
+      "body": "Abre la oferta en LinkedIn y pulsa «Enviar a CandidatAI» en la barra del navegador.",
+      "open": "Abrir la oferta",
+      "connected": "Tu botón del navegador está conectado.",
+      "install": "Instalar el botón del navegador",
+      "newTab": "(se abre en una pestaña nueva)"
+    },
+    "paste": {
+      "title": "Pegando el texto",
+      "body": "Copia el texto de la oferta y pégalo. El enlace ya va rellenado.",
+      "button": "Pegar texto"
+    }
+  }
 }

@@ -1,7 +1,47 @@
-import { screen } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { jobView, mockApi, renderApp, status } from '@/test/utils'
+
+const LINKEDIN = 'https://www.linkedin.com/jobs/view/4012345678'
+const EXTENSION_ID = 'hnaofhehllbkghfehnehamjbkcmdjmle'
+const LINKEDIN_ERROR = {
+  status: 422,
+  body: {
+    ok: false,
+    error: {
+      type: 'linkedin_url',
+      message: 'Las ofertas de LinkedIn no se descargan. … (`add_job_from_text` o `cai jobs add-text`).',
+      details: [],
+    },
+  },
+}
+
+/** La extensión del navegador, instalada y conectada (o no, con `connected: false`). */
+function installExtension(connected: boolean) {
+  vi.stubGlobal('chrome', {
+    runtime: {
+      sendMessage: (_id: string, _message: unknown, callback: (reply: unknown) => void) =>
+        setTimeout(() => callback({ version: '0.3.0', connected, kind: connected ? 'connected' : 'no_token', message: '' }), 0),
+    },
+  })
+}
+
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
+
+async function submitLinkedIn(connected: boolean | null) {
+  if (connected !== null) installExtension(connected)
+  mockApi({
+    'GET /status': status(),
+    'POST /jobs/url': LINKEDIN_ERROR,
+    'GET /capture/extension': { configured: true, extension_id: EXTENSION_ID, version: '0.3.0', folder: 'C:/CandidatAI/app/extension' },
+  })
+  renderApp('/nueva')
+  await userEvent.type(screen.getByLabelText('Enlace de la oferta'), LINKEDIN)
+  await userEvent.click(screen.getByRole('button', { name: 'Dar de alta' }))
+}
 
 describe('Alta de ofertas', () => {
   it('da de alta por URL y lleva a la ficha', async () => {
@@ -24,13 +64,51 @@ describe('Alta de ofertas', () => {
       'GET /status': status(),
       'POST /jobs/url': {
         status: 422,
-        body: { ok: false, error: { type: 'invalid_request', message: 'LinkedIn no se descarga: pega el texto.', details: [] } },
+        body: { ok: false, error: { type: 'invalid_request', message: 'No se descargan direcciones locales.', details: [] } },
       },
     })
     renderApp('/nueva')
-    await userEvent.type(screen.getByLabelText('Enlace de la oferta'), 'https://www.linkedin.com/jobs/view/1')
+    await userEvent.type(screen.getByLabelText('Enlace de la oferta'), 'http://localhost/jobs/1')
     await userEvent.click(screen.getByRole('button', { name: 'Dar de alta' }))
-    expect(await screen.findByRole('alert')).toHaveTextContent('LinkedIn no se descarga: pega el texto.')
+    expect(await screen.findByRole('alert')).toHaveTextContent('No se descargan direcciones locales.')
+  })
+
+  it('una URL de LinkedIn guía hacia el botón del navegador o «Pegar texto», sin nombres internos', async () => {
+    await submitLinkedIn(null)
+    const guide = (await screen.findByText(/se añaden de una de estas dos formas/)).parentElement as HTMLElement
+    expect(guide).not.toHaveTextContent(/add_job_from_text|cai jobs|add-text/)
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    // Primero el botón del navegador: abre la oferta en otra pestaña y, sin extensión, lleva a instalarla.
+    expect(screen.getByRole('status')).toHaveTextContent('Las ofertas de LinkedIn se añaden')
+    const open = within(guide).getByRole('link', { name: /^Abrir la oferta/ })
+    expect(open).toHaveAttribute('href', LINKEDIN)
+    expect(open).toHaveAttribute('target', '_blank')
+    expect(within(guide).getByRole('link', { name: 'Instalar el botón del navegador' })).toHaveAttribute(
+      'href',
+      '/fuentes/extension',
+    )
+    const headings = within(guide).getAllByRole('heading').map((h) => h.textContent)
+    expect(headings).toEqual(['Con el botón del navegador', 'Pegando el texto'])
+  })
+
+  it('con el botón del navegador ya conectado, lo dice en una línea en vez de mandar a instalarlo', async () => {
+    await submitLinkedIn(true)
+    expect(await screen.findByText('Tu botón del navegador está conectado.')).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Instalar el botón del navegador' })).not.toBeInTheDocument()
+  })
+
+  it('instalado pero sin conectar, sigue llevando a «Botón del navegador»', async () => {
+    await submitLinkedIn(false)
+    expect(await screen.findByRole('link', { name: 'Instalar el botón del navegador' })).toBeInTheDocument()
+    expect(screen.queryByText('Tu botón del navegador está conectado.')).not.toBeInTheDocument()
+  })
+
+  it('«Pegar texto» del aviso de LinkedIn cambia de pestaña con la URL rellena', async () => {
+    await submitLinkedIn(null)
+    await screen.findByText(/se añaden de una de estas dos formas/)
+    await userEvent.click(screen.getByRole('button', { name: 'Pegar texto' }))
+    expect(await screen.findByLabelText(/^Enlace(?! de)/)).toHaveValue(LINKEDIN)
+    expect(screen.getByRole('tab', { name: /Pegar texto/ })).toHaveAttribute('aria-selected', 'true')
   })
 
   it('si no puede abrir la página, lo explica sin el error técnico y lleva a pegar el texto', async () => {

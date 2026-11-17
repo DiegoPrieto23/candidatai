@@ -33,7 +33,7 @@ SHOTS = "--sin-capturas" not in sys.argv
 SCENES = (
     ARGS[0].split(",")
     if ARGS
-    else ["tour", "profile", "discard", "mailbox", "cv", "apply", "triage"]
+    else ["tour", "profile", "discard", "mailbox", "cv", "apply", "extension", "triage"]
 )
 DEMO = "data-demo-en-shots" if LANG == "en" else "data-demo-shots"
 OUT = ROOT / "docs" / "img" / LANG

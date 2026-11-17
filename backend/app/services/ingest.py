@@ -45,6 +45,13 @@ _SUGGEST_TEXT = (
     "Copia el texto de la oferta y dalo de alta como texto (`add_job_from_text`, "
     "`cai jobs add-text` o «Pegar texto» en la UI)."
 )
+# LinkedIn: además de pegar el texto, el botón del navegador «Enviar a CandidatAI» la manda desde la
+# propia página de la oferta, ya abierta en el navegador de la persona.
+_LINKEDIN_HELP = (
+    "Las ofertas de LinkedIn no se descargan. Pide a la persona que abra la oferta en su navegador "
+    "y pulse el botón «Enviar a CandidatAI», o copia el texto de la oferta y dalo de alta como "
+    "texto (`add_job_from_text` o `cai jobs add-text`)."
+)
 
 DetailLevel = Literal["summary", "full"]
 
@@ -53,6 +60,13 @@ SOURCE_NAMES = {"manual_url": "Alta manual por URL", "manual_text": "Alta manual
 
 class IngestError(ValueError):
     """La oferta no se puede dar de alta; el mensaje dice por qué y qué hacer."""
+
+
+class LinkedInUrlError(IngestError):
+    """La URL es de LinkedIn, que nunca se descarga (POLICIES §8).
+
+    Error `linkedin_url`. La UI lo traduce a un aviso con los dos caminos: el botón del navegador
+    desde la página de la oferta o pegar su texto."""
 
 
 class PageUnavailableError(IngestError):
@@ -228,7 +242,7 @@ def _check_host(host: str) -> None:
     contenido no confiable). Solo se comprueban IPs literales y `localhost`; no se resuelve DNS."""
     host = host.lower().rstrip(".")
     if any(host == blocked or host.endswith(f".{blocked}") for blocked in _BLOCKED_HOSTS):
-        raise IngestError(f"Las ofertas de LinkedIn no se descargan. {_SUGGEST_TEXT}")
+        raise LinkedInUrlError(_LINKEDIN_HELP)
     if host == "localhost" or host.endswith(".localhost"):
         raise IngestError("No se descargan direcciones locales.")
     try:

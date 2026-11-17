@@ -311,8 +311,8 @@
     },
     "linkedin": {
       "q": "And LinkedIn?",
-      "a": "Its jobs arrive through your email alerts or with the browser button, and applications on LinkedIn are always sent by you. Searching LinkedIn is optional: you turn it on in its card in “Where to search”, under your responsibility.",
-      "keywords": "linkedin alerts public search account block"
+      "a": "Its jobs arrive through your email alerts or with the browser button, and applications on LinkedIn are always sent by you. If you paste a job's link into “New job”, the app guides you: open it and click the browser button, or paste its text. Searching LinkedIn is optional: you turn it on in its card in “Where to search”, under your responsibility.",
+      "keywords": "linkedin alerts public search account block link url new job button"
     },
     "demo": {
       "q": "What is “Demo mode”?",
