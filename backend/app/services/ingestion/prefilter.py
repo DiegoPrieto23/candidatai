@@ -63,8 +63,16 @@ def _english(title: str) -> str:
 class Prefilter:
     """Se construye una vez por ejecución. Sin preferencias (sin perfil), todo pasa."""
 
-    def __init__(self, preferences: Preferences | None, extra_title_keywords: list[str]) -> None:
+    def __init__(
+        self,
+        preferences: Preferences | None,
+        extra_title_keywords: list[str],
+        places: list[str] | None = None,
+    ) -> None:
         self.preferences = preferences
+        # Lugares de la propia fuente («Solo Madrid», de la dirección de su web de empleo): se
+        # aplican también sin perfil.
+        self.places = [p for p in places or [] if fold(p)]
         self.extra = [k for k in extra_title_keywords if fold(k)]
         # Las del perfil y las de `policies.yaml` (fase 27.5), como en los filtros duros.
         own = preferences.discard_title_keywords if preferences is not None else []
@@ -84,6 +92,11 @@ class Prefilter:
         return self.preferences is not None
 
     def check(self, title: str, location: str | None, remote: bool | None) -> Verdict:
+        if self.places and location and not location_matches(location, self.places):
+            remote_ok = self.preferences is None or "remote" in self.preferences.remote_modes
+            is_remote = remote is True or "remote" in normalize_location(location).split()
+            if not (is_remote and remote_ok):
+                return Verdict(False, f"Fuera de los lugares de esta empresa: {location}.")
         if self.preferences is None:
             return PASS
         if title not in self._titles:

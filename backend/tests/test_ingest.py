@@ -14,6 +14,7 @@ from app.services.events import get_timeline
 from app.services.ingest import (
     MAX_TEXT_CHARS,
     IngestError,
+    LinkedInUrlError,
     add_from_text,
     add_from_url,
     clean_text,
@@ -270,10 +271,14 @@ def test_fuzzy_duplicate_outside_window(session: Session) -> None:
     ],
 )
 @respx.mock
-def test_linkedin_goes_to_add_text(session: Session, url: str) -> None:
-    with pytest.raises(IngestError, match="LinkedIn.*add-text"):
+def test_linkedin_goes_to_extension_or_add_text(session: Session, url: str) -> None:
+    """Código propio (`LinkedInUrlError` → `linkedin_url`) y un texto para agentes que da los dos
+    caminos: el botón del navegador o el alta como texto."""
+    with pytest.raises(LinkedInUrlError, match="LinkedIn.*Enviar a CandidatAI.*add-text"):
         add_from_url(session, url)
     assert respx.calls.call_count == 0
+    # Quien ya capturaba `IngestError` (correo, liveness, búsqueda pública) la sigue recibiendo.
+    assert issubclass(LinkedInUrlError, IngestError)
 
 
 @pytest.mark.parametrize("url", ["ftp://example.com/x", "careers.example.com/jobs/1", "https://"])
@@ -435,7 +440,7 @@ def test_redirect_to_linkedin_blocked(session: Session) -> None:
         return_value=httpx.Response(302, headers={"location": "https://www.linkedin.com/jobs/1"})
     )
     linkedin = respx.get("https://www.linkedin.com/jobs/1")
-    with pytest.raises(IngestError, match="LinkedIn"):
+    with pytest.raises(LinkedInUrlError, match="LinkedIn"):
         add_from_url(session, f"{BASE}/go/1")
     assert not linkedin.called
 

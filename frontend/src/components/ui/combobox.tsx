@@ -22,6 +22,8 @@ export interface ComboboxOption {
   description?: string
   /** Dato pequeño a la derecha (p. ej. la etapa). No se busca en él. */
   meta?: string
+  /** Se ve atenuada y no se puede elegir (p. ej. un filtro que dejaría la lista vacía). */
+  disabled?: boolean
 }
 
 /** Con este número de opciones o menos, la lista se recorre sin caja de búsqueda. */
@@ -91,6 +93,7 @@ export function Combobox({
   }, [current, open])
 
   function choose(option: ComboboxOption) {
+    if (option.disabled) return
     onChange(option.value)
     setOpen(false)
   }
@@ -210,12 +213,13 @@ export function Combobox({
                   id={optionId(index)}
                   role="option"
                   aria-selected={isSelected}
+                  aria-disabled={option.disabled || undefined}
                   data-active={index === current ? '' : undefined}
                   onMouseMove={() => setActive(index)}
                   // Sin robar el foco a la caja de búsqueda: el clic elige y cierra.
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => choose(option)}
-                  className="flex cursor-pointer items-start gap-2 rounded-lg px-2 py-1.5 text-sm data-[active]:bg-accent data-[active]:text-accent-foreground"
+                  className="flex cursor-pointer items-start gap-2 rounded-lg px-2 py-1.5 text-sm data-[active]:bg-accent data-[active]:text-accent-foreground aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
                 >
                   <CheckIcon
                     aria-hidden="true"

@@ -32,6 +32,12 @@ Sí. En «Mi perfil», «Empezar a mano» crea un perfil con tu nombre, tu titul
 
 Dónde: «Mi perfil».
 
+### ¿Puedo ver qué ha cambiado en mi perfil y volver atrás?
+
+Sí. En «Mi perfil», pestaña «Historial», cada versión dice cuándo se hizo, quién la hizo y qué cambió, bloque a bloque. «Volver a esta versión» la recupera como una versión nueva, que también puedes deshacer.
+
+Dónde: «Mi perfil».
+
 ### ¿Qué puedo hacer sin agente?
 
 Añadir, aprobar y descartar ofertas, seguir tus procesos, usar el calendario y los resultados, editar tu perfil y cambiar el diseño de un CV ya generado. Leer ofertas y redactar CVs, cartas y guías de entrevista requiere el agente.
@@ -106,6 +112,12 @@ En «Dónde buscar» eliges de dónde vienen: portales de empleo, empresas con p
 
 Dónde: «Dónde buscar».
 
+### ¿Cómo sigo las ofertas de una empresa concreta?
+
+En «Dónde buscar → Empresas con portal propio», pulsa «Añadir empresa» y pega su nombre y la dirección de su web de empleo tal como la ves. «Probar» te dice qué sistema usa y qué ofertas encajan contigo; si la dirección filtra por ciudad, se respeta. Desde entonces se revisa cada día. Si no reconoce su web, la añade a tus portales y tu agente la recorre al buscar.
+
+Dónde: «Empresas con portal propio».
+
 ### ¿Cómo busco ofertas en los portales?
 
 En «Buscar ofertas», pulsa «Buscar ahora»: tu agente recorre con tu navegador los portales que hayas elegido y da de alta lo que encuentra. Un aviso te dice cuándo termina.
@@ -144,9 +156,9 @@ Dónde: «Revisión rápida».
 
 ### ¿Dónde indico qué ofertas quiero y cuáles se descartan?
 
-En «Configuración de tu búsqueda»: puestos, modalidad, zonas, años de experiencia, tipo de contrato, palabras que descartan y tu mínimo salarial. Tu agente nunca ve esa cifra.
+En «Buscar ofertas». En la franja de arriba, tus puestos, tus lugares (pulsa uno para elegir qué aceptas en él), la modalidad y el nivel. En «Más ajustes», los años de experiencia, tu sueldo mínimo, los idiomas, el tipo de contrato y lo que descartas. Tu agente nunca ve tu sueldo mínimo.
 
-Dónde: «Configuración de tu búsqueda».
+Dónde: «Más ajustes de tu búsqueda».
 
 ### ¿Qué son las ofertas «Por completar»?
 
@@ -254,7 +266,7 @@ Dónde: «Alertas por correo».
 
 ### ¿Y LinkedIn?
 
-Sus ofertas llegan por tus alertas de correo o con el botón del navegador, y las candidaturas en LinkedIn las envías siempre tú. Buscar en LinkedIn es opcional: se activa en su tarjeta de «Dónde buscar», bajo tu responsabilidad.
+Sus ofertas llegan por tus alertas de correo o con el botón del navegador, y las candidaturas en LinkedIn las envías siempre tú. Si pegas el enlace de una en «Nueva oferta», la app te guía: ábrela y pulsa el botón del navegador, o pega su texto. Buscar en LinkedIn es opcional: se activa en su tarjeta de «Dónde buscar», bajo tu responsabilidad.
 
 Dónde: «Dónde buscar».
 

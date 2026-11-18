@@ -56,5 +56,10 @@
     "send": "Open a job (for example, on LinkedIn while signed in) and press the button. It tells you whether it's <strong>new</strong>, whether it <strong>completed</strong> a summary or whether you <strong>already had it</strong>, with a link to its page.",
     "selection": "If it can't find the description, select the job's text with the mouse, company included, and press again."
   },
-  "privacy": "It only acts when you press its button, on the tab in front of you: it doesn't crawl pages, doesn't read your cookies and only talks to CandidatAI on your computer. LinkedIn's terms forbid extensions that copy its content; this one saves only the job you ask for, as if you copied and pasted it, but that ban is still in their terms."
+  "privacy": "It only acts when you press its button, on the tab in front of you: it doesn't crawl pages, doesn't read your cookies and only talks to CandidatAI on your computer. LinkedIn's terms forbid extensions that copy its content; this one saves only the job you ask for, as if you copied and pasted it, but that ban is still in their terms.",
+  "demo": {
+    "show": "See how it's done",
+    "alt": "Animation: a job open on LinkedIn, a click on the “Send to CandidatAI” button in the browser toolbar, the new-job notice and the job already in the CandidatAI Inbox.",
+    "play": "Play the animation"
+  }
 }

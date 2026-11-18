@@ -393,208 +393,14 @@ describe('Mi perfil editable', () => {
     expect(body.content[0]).toMatchObject({ title: 'Migración sin parar', evidence: ['exp-norte/a1'] })
   })
 
-  it('las preferencias de búsqueda enseñan el diff antes de guardar', async () => {
-    const diff = '-  roles: [Data Engineer]\n+  roles: [Data Engineer, Analytics Engineer]'
-    let current: unknown = EDITABLE
-    const calls = mockApi({
-      ...BASE,
-      // Como el servidor: después de guardar, el perfil ya trae el cambio.
-      'GET /profile/editable': () => current,
-      'PUT /profile/sections/preferences': (request: Request) =>
-        request
-          .clone()
-          .json()
-          .then((body: { dry_run: boolean; content: unknown }) => {
-            if (body.dry_run) return saved('preferences', { dry_run: true, diff, file_hash: 'h1', version_created: false })
-            current = { ...EDITABLE, file_hash: 'h2', profile: { ...PROFILE, preferences: body.content } }
-            return saved('preferences', { diff })
-          }),
-    })
-    renderApp('/buscar/ajustes')
-    const block = await screen.findByRole('region', { name: 'Puesto' })
-    await userEvent.type(within(block).getByRole('textbox', { name: 'Puestos que buscas' }), 'Analytics Engineer{Enter}')
-    await userEvent.click(within(block).getByRole('button', { name: 'Guardar' }))
-
-    expect(await within(block).findByLabelText('Cambios en tu perfil')).toHaveTextContent('Analytics Engineer')
-    expect(within(block).getByText(/se recalcula el encaje/)).toBeInTheDocument()
-    const puts = () => calls.filter((c) => c.method === 'PUT')
-    expect(puts()).toHaveLength(1)
-    expect(puts()[0].body).toMatchObject({ dry_run: true })
-    expect((puts()[0].body as { content: { roles: string[]; cv: unknown } }).content).toMatchObject({
-      roles: ['Data Engineer', 'Analytics Engineer'],
-      cv: { photo_policy: { default: true } }, // el resto de `preferences`, tal cual
-      exclude_signals: ['fixed_term'],
-    })
-
-    await userEvent.click(within(block).getByRole('button', { name: 'Guardar estos cambios' }))
-    await waitFor(() => expect(puts()).toHaveLength(2))
-    expect(puts()[1].body).toMatchObject({ dry_run: false, file_hash: 'h1' })
-    expect(await within(block).findByText('Guardado')).toBeInTheDocument()
-  })
-
-  it('«Búsqueda» va en cuatro bloques, cada uno con su botón de guardar', async () => {
-    mockApi(BASE)
-    renderApp('/buscar/ajustes')
-    for (const name of ['Puesto', 'Experiencia y sueldo', 'Dónde y cómo', 'Contrato y empresa']) {
-      const block = await screen.findByRole('region', { name })
-      expect(within(block).getByRole('button', { name: 'Guardar' })).toBeDisabled()
-    }
-    const role = screen.getByRole('region', { name: 'Puesto' })
-    expect(within(role).getByText(/También descartan las de la configuración de la app: sales/)).toBeInTheDocument()
-    const where = screen.getByRole('region', { name: 'Dónde y cómo' })
-    expect(within(where).getByRole('combobox', { name: 'Qué aceptas en Vigo' })).toHaveValue('preferred')
-    const years = screen.getByRole('group', { name: 'Años de experiencia que pida la oferta' })
-    expect(within(years).getByText(/Se admite 1 año de margen/)).toBeInTheDocument()
-  })
-
+  // Lo que buscas (puestos, lugares, modalidad, años, sueldo, contrato…) se edita en «Buscar ofertas»:
+  // sus pruebas están en `SearchPage.test.tsx`.
   it('en una etiqueta, el campo va antes que las etiquetas: los de una fila empiezan a la misma altura', async () => {
-    mockApi(BASE)
+    mockApi({ ...BASE, 'GET /sources': { sources: [], agent_browse: { max_result_pages: 3, delay_seconds: 5 } }, 'GET /profile/role-suggestions': [] })
     renderApp('/buscar/ajustes')
-    const block = await screen.findByRole('region', { name: 'Dónde y cómo' })
-    const input = within(block).getByRole('combobox', { name: 'Idiomas de trabajo' })
-    const tags = within(block).getByRole('list', { name: 'Idiomas de trabajo' })
+    const input = await screen.findByRole('combobox', { name: 'Idiomas de trabajo' })
+    const tags = screen.getByRole('list', { name: 'Idiomas de trabajo' })
     expect(input.compareDocumentPosition(tags) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-  })
-
-  it('cada ubicación lleva su modalidad y se guarda en las tres listas de siempre', async () => {
-    const calls = mockApi({ ...BASE, 'PUT /profile/sections/preferences': saved('preferences', { dry_run: true, diff: '+ x' }) })
-    renderApp('/buscar/ajustes')
-    const block = await screen.findByRole('region', { name: 'Dónde y cómo' })
-    await userEvent.type(within(block).getByRole('textbox', { name: 'Añadir ubicación' }), 'Madrid{Enter}')
-    await userEvent.type(within(block).getByRole('textbox', { name: 'Añadir ubicación' }), 'Sevilla{Enter}')
-    await userEvent.selectOptions(within(block).getByRole('combobox', { name: 'Qué aceptas en Madrid' }), 'Solo híbrido o remoto')
-    // La fila no se vuelve a montar: el selector sigue con el foco.
-    expect(within(block).getByRole('combobox', { name: 'Qué aceptas en Madrid' })).toHaveFocus()
-    await userEvent.selectOptions(within(block).getByRole('combobox', { name: 'Qué aceptas en Sevilla' }), 'Descartar')
-    // Las filas no cambian de sitio al cambiar el selector.
-    const rows = within(within(block).getByRole('group', { name: /Ubicaciones/ }).querySelector('ul')!).getAllByRole('listitem')
-    expect(rows.map((r) => r.textContent?.split(/Cualquier|Solo|Descartar/)[0])).toEqual(['Vigo', 'Madrid', 'Sevilla'])
-    await userEvent.click(within(block).getByRole('button', { name: 'Guardar' }))
-    await waitFor(() => expect(calls.some((c) => c.method === 'PUT')).toBe(true))
-    const put = calls.find((c) => c.method === 'PUT')!
-    expect((put.body as { content: { locations: unknown } }).content.locations).toEqual({ preferred: ['Vigo'], allowed: ['Madrid'], excluded: ['Sevilla'] })
-  })
-
-  it('los idiomas se escriben por su nombre y se guardan como código', async () => {
-    const calls = mockApi({ ...BASE, 'PUT /profile/sections/preferences': saved('preferences', { dry_run: true, diff: '+ x' }) })
-    renderApp('/buscar/ajustes')
-    const block = await screen.findByRole('region', { name: 'Dónde y cómo' })
-    const tags = within(block).getByRole('list', { name: 'Idiomas de trabajo' })
-    expect(within(tags).getByText('español')).toBeInTheDocument()
-    const input = within(block).getByRole('combobox', { name: 'Idiomas de trabajo' })
-    await userEvent.type(input, 'klingon{Enter}')
-    expect(within(block).getByText('«klingon» no es un idioma de la lista.')).toBeInTheDocument()
-    await userEvent.clear(input)
-    await userEvent.type(input, 'Francés{Enter}')
-    expect(within(tags).getByText('francés')).toBeInTheDocument()
-    await userEvent.click(within(block).getByRole('button', { name: 'Guardar' }))
-    await waitFor(() => expect(calls.some((c) => c.method === 'PUT')).toBe(true))
-    const put = calls.find((c) => c.method === 'PUT')!
-    expect((put.body as { content: { languages_for_work: string[] } }).content.languages_for_work).toEqual(['es', 'en', 'fr'])
-  })
-
-  it('«no dice qué empresa contrata» se marca con los tipos de empresa', async () => {
-    const calls = mockApi({ ...BASE, 'PUT /profile/sections/preferences': saved('preferences', { dry_run: true, diff: '+ x' }) })
-    renderApp('/buscar/ajustes')
-    const block = await screen.findByRole('region', { name: 'Contrato y empresa' })
-    const kinds = within(block).getByRole('group', { name: 'Tipo de empresa' })
-    await userEvent.click(within(kinds).getByRole('checkbox', { name: 'Excluir las que no dicen qué empresa contrata' }))
-    await userEvent.click(within(block).getByRole('button', { name: 'Guardar' }))
-    await waitFor(() => expect(calls.some((c) => c.method === 'PUT')).toBe(true))
-    const put = calls.find((c) => c.method === 'PUT')!
-    expect((put.body as { content: { exclude_signals: string[] } }).content.exclude_signals).toEqual(['employer_hidden'])
-  })
-
-  it('los años mínimo y máximo se guardan como un rango', async () => {
-    const calls = mockApi({ ...BASE, 'PUT /profile/sections/preferences': saved('preferences', { dry_run: true, diff: '+  min_years_required: 2' }) })
-    renderApp('/buscar/ajustes')
-    const block = await screen.findByRole('region', { name: 'Experiencia y sueldo' })
-    await userEvent.type(within(block).getByRole('spinbutton', { name: 'Desde' }), '2')
-    await userEvent.type(within(block).getByRole('spinbutton', { name: 'Hasta' }), '5')
-    await userEvent.click(within(block).getByRole('button', { name: 'Guardar' }))
-    await waitFor(() => expect(calls.filter((c) => c.method === 'PUT')).toHaveLength(1))
-    expect((calls.find((c) => c.method === 'PUT')!.body as { content: unknown }).content).toMatchObject({
-      min_years_required: 2,
-      max_years_required: 5,
-      roles: ['Data Engineer'],
-    })
-  })
-
-  it('el sueldo mínimo va con candado, se guarda aparte y sin diff', async () => {
-    const calls = mockApi({
-      ...BASE,
-      'PUT /profile/salary-floor': { changed: true, file_hash: 'h2', profile_version_id: 4, rescore_queued: true },
-    })
-    renderApp('/buscar/ajustes')
-    const block = await screen.findByRole('region', { name: 'Experiencia y sueldo' })
-    const field = await within(block).findByRole('spinbutton', { name: 'Sueldo mínimo' })
-    await waitFor(() => expect(field).toHaveValue(30000))
-    expect(within(block).getByText(/Solo lo ve la app, nunca tu agente/)).toBeInTheDocument()
-    const button = within(block).getByRole('button', { name: 'Guardar sueldo' })
-    expect(button).toBeDisabled()
-
-    await userEvent.clear(field)
-    await userEvent.type(field, '-3')
-    expect(within(block).getByText(/número entero de euros mayor que 0/)).toBeInTheDocument()
-    expect(button).toBeDisabled()
-
-    await userEvent.clear(field)
-    await userEvent.type(field, '35000')
-    await userEvent.click(button)
-    expect(await within(block).findByText('Sueldo guardado')).toBeInTheDocument()
-    const put = calls.find((c) => c.method === 'PUT')!
-    expect(put.path).toBe('/profile/salary-floor')
-    expect(put.body).toEqual({ file_hash: 'h1', salary_floor_eur: 35000 })
-    expect(calls.some((c) => c.path === '/profile/sections/preferences')).toBe(false)
-  })
-
-  it('si el fichero cambió, el sueldo da conflicto y ofrece «Recargar»', async () => {
-    const calls = mockApi({
-      ...BASE,
-      'PUT /profile/salary-floor': {
-        status: 409,
-        body: { ok: false, error: { type: 'conflict', message: 'El fichero ha cambiado.', details: [] } },
-      },
-    })
-    renderApp('/buscar/ajustes')
-    const block = await screen.findByRole('region', { name: 'Experiencia y sueldo' })
-    const field = await within(block).findByRole('spinbutton', { name: 'Sueldo mínimo' })
-    await waitFor(() => expect(field).toHaveValue(30000))
-    await userEvent.clear(field)
-    await userEvent.type(field, '35000')
-    await userEvent.click(within(block).getByRole('button', { name: 'Guardar sueldo' }))
-    expect(await within(block).findByRole('alert')).toBeInTheDocument()
-    const editableReads = () => calls.filter((c) => c.path === '/profile/editable').length
-    const before = editableReads()
-    await userEvent.click(within(block).getByRole('button', { name: 'Recargar' }))
-    await waitFor(() => expect(editableReads()).toBeGreaterThan(before))
-    expect(within(block).queryByRole('alert')).not.toBeInTheDocument()
-  })
-
-  it('contrato y empresa: casillas, y «Temporal» de exclude_signals se guarda como contract_types', async () => {
-    const calls = mockApi({ ...BASE, 'PUT /profile/sections/preferences': saved('preferences', { dry_run: true, diff: 'x' }) })
-    renderApp('/buscar/ajustes')
-    const block = await screen.findByRole('region', { name: 'Contrato y empresa' })
-    // `exclude_signals: [fixed_term]` es no aceptar temporal: «Temporal» sale sin marcar.
-    expect(within(block).getByRole('checkbox', { name: 'Indefinido' })).toBeChecked()
-    expect(within(block).getByRole('checkbox', { name: 'Temporal' })).not.toBeChecked()
-    expect(within(block).getByRole('checkbox', { name: 'Autónomo / freelance' })).toBeChecked()
-    expect(within(block).getByRole('checkbox', { name: 'Parcial' })).not.toBeChecked()
-    expect(within(block).getAllByText(/Si no marcas ninguna opción, se aceptan todas/)).toHaveLength(1)
-
-    await userEvent.click(within(block).getByRole('checkbox', { name: 'Jornada completa' }))
-    await userEvent.click(within(block).getByRole('checkbox', { name: /Excluir consultoras/ }))
-    await userEvent.click(within(block).getByRole('checkbox', { name: /Excluir las que no dicen qué empresa contrata/ }))
-    await userEvent.click(within(block).getByRole('button', { name: 'Guardar' }))
-    await waitFor(() => expect(calls.filter((c) => c.method === 'PUT')).toHaveLength(1))
-    const content = (calls.find((c) => c.method === 'PUT')!.body as { content: Record<string, unknown> }).content
-    expect(content).toMatchObject({
-      contract_types: ['permanent', 'freelance'],
-      employment_types: ['full_time'],
-      excluded_employer_kinds: ['consultancy'],
-      exclude_signals: ['employer_hidden'],
-      roles: ['Data Engineer'],
-    })
   })
 
   it('el nivel de un idioma es un desplegable que conserva el valor libre que ya tenías', async () => {
@@ -613,6 +419,67 @@ describe('Mi perfil editable', () => {
     expect(free).toHaveValue('Alto medio')
   })
 
+  it('«Documentos» son tres tarjetas con filas plegadas que resumen lo elegido y abren su editor', async () => {
+    mockApi({
+      ...BASE,
+      'GET /profile/editable': {
+        ...EDITABLE,
+        profile: {
+          ...PROFILE,
+          preferences: {
+            ...PROFILE.preferences,
+            cv: { max_pages: 2, photo_policy: { default: true, by_country: { US: false } }, instructions: 'Datos primero.' },
+            cover_letter: { tone: 'cercano', max_words: 300, default_format: 'pdf' },
+          },
+        },
+      },
+      'GET /context/style-samples': [{ name: 'carta.txt', chars: 1200, risk_flags: [], excerpt: null }],
+    })
+    renderApp('/perfil')
+    await openTab('Documentos')
+    for (const name of ['Cómo quieres tus CVs y cartas', 'Notas para tu agente', 'Tus archivos']) {
+      expect(await screen.findByRole('region', { name })).toBeInTheDocument()
+    }
+    const cv = screen.getByRole('region', { name: 'CV' })
+    expect(within(cv).getByText(/^Plantilla de la app · hasta 2 páginas · con foto, salvo en .+ · con indicaciones$/)).toBeInTheDocument()
+    const letter = screen.getByRole('region', { name: 'Carta' })
+    expect(within(letter).getByText('Tono cercano · hasta 300 palabras · en PDF')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Plantilla por defecto')).not.toBeInTheDocument()
+
+    await userEvent.click(within(cv).getByRole('button', { name: 'Editar «CV»' }))
+    expect(within(cv).getByLabelText('Plantilla por defecto')).toBeVisible()
+    await userEvent.click(within(letter).getByRole('button', { name: 'Editar «Carta»' }))
+    expect(within(letter).getByLabelText('Tono')).toBeVisible()
+    for (const name of ['Estilo de redacción', 'Perfil conductual', 'Criterios', 'Narrativa']) {
+      const row = screen.getByRole('region', { name })
+      await userEvent.click(within(row).getByRole('button', { name: new RegExp(`^(Editar|Crear) «${name}»$`) }))
+      expect(await within(row).findByLabelText(`Texto de ${name}`)).toBeVisible()
+    }
+    const samples = screen.getByRole('region', { name: 'Muestras de estilo' })
+    expect(within(samples).getByText('1 muestra')).toBeInTheDocument()
+    await userEvent.click(within(samples).getByRole('button', { name: 'Ver «Muestras de estilo»' }))
+    expect(within(samples).getByText('carta.txt')).toBeVisible()
+    // Plegar no pierde nada: se oculta y sigue montado.
+    await userEvent.click(within(cv).getByRole('button', { name: 'Plegar «CV»' }))
+    expect(within(cv).getByLabelText('Plantilla por defecto')).not.toBeVisible()
+  })
+
+  it('con cambios sin guardar, la fila no se pliega y el aviso lleva hasta ella', async () => {
+    mockApi(BASE)
+    renderApp('/perfil')
+    await openTab('Documentos')
+    const row = await screen.findByRole('region', { name: 'Criterios' })
+    await userEvent.click(within(row).getByRole('button', { name: 'Editar «Criterios»' }))
+    await userEvent.type(await within(row).findByLabelText('Texto de Criterios'), 'Nada de viajes.')
+    expect(within(row).queryByRole('button', { name: 'Plegar «Criterios»' })).not.toBeInTheDocument()
+    expect(within(row).getByText(/guárdalos o descártalos para plegarlo/)).toBeInTheDocument()
+    await openTab('Sobre ti')
+    const notice = screen.getByText('Sin guardar:').parentElement!
+    await userEvent.click(within(notice).getByRole('button', { name: /Criterios/ }))
+    expect(screen.getByRole('tab', { name: 'Documentos' })).toHaveAttribute('aria-selected', 'true')
+    expect(within(row).getByLabelText('Texto de Criterios')).toBeVisible()
+  })
+
   it('edita un fichero de contexto con sus comentarios y lo enseña sin ellos en la vista previa', async () => {
     const calls = mockApi({
       ...BASE,
@@ -621,6 +488,7 @@ describe('Mi perfil editable', () => {
     renderApp('/perfil')
     await openTab('Documentos')
     const block = await screen.findByRole('region', { name: 'Criterios' })
+    await userEvent.click(within(block).getByRole('button', { name: 'Editar «Criterios»' }))
     const editor = await within(block).findByLabelText('Texto de Criterios')
     expect(editor).toHaveValue('# Criterios\n<!-- Qué no aceptas -->\nSin guardias.\n')
     await userEvent.type(editor, 'Nada de viajes.')
@@ -741,7 +609,7 @@ describe('Mi perfil editable', () => {
     // Sin perfil, «Mejorar el contenido de mi perfil» todavía no toca.
     expect(screen.queryByRole('button', { name: 'Mejorar el contenido de mi perfil' })).not.toBeInTheDocument()
     // Solo se suben el CV y LinkedIn; el resto de carpetas se rellenan a mano.
-    const folders = await screen.findByRole('region', { name: 'Documentos' })
+    const folders = await screen.findByRole('region', { name: 'Tus archivos' })
     expect(within(folders).getAllByRole('button', { name: /^Subir/ })).toHaveLength(1)
 
     await userEvent.upload(screen.getByLabelText('Tu CV'), new File(['%PDF-1.7'], 'CV Lucía.pdf', { type: 'application/pdf' }))
@@ -765,6 +633,7 @@ describe('Mi perfil editable', () => {
     renderApp('/perfil')
     await openTab('Documentos')
     const block = await screen.findByRole('region', { name: 'Criterios' })
+    await userEvent.click(within(block).getByRole('button', { name: 'Editar «Criterios»' }))
     await userEvent.click(await within(block).findByRole('tab', { name: 'Vista previa' }))
     const preview = within(block).getByTestId('markdown-preview')
     expect(preview.querySelector('script, img')).toBeNull()
@@ -772,23 +641,153 @@ describe('Mi perfil editable', () => {
     expect(within(preview).getByText('Sin guardias').tagName).toBe('STRONG')
   })
 
+  const withSkills = (skills: Array<{ name: string; level: string; category?: string | null }>) => ({
+    ...BASE,
+    'GET /profile/editable': { ...EDITABLE, profile: { ...PROFILE, skills } },
+  })
+
   it('filtra las skills por nivel y una nueva se ve aunque hubiera filtro', async () => {
-    mockApi(BASE)
+    mockApi(withSkills([{ name: 'Python', level: 'F' }, { name: 'Go', level: 'B' }]))
     renderApp('/perfil')
     await openTab('Experiencia y formación')
     const block = await screen.findByRole('region', { name: 'Skills' })
     const filters = within(block).getByRole('group', { name: 'Filtrar skills por nivel' })
     const rows = () => within(block).queryAllByRole('textbox', { name: 'Skill' })
-    expect(rows().length).toBeGreaterThan(0)
+    expect(rows()).toHaveLength(2)
+    // Un nivel sin skills no se puede elegir: dejaría la lista vacía.
+    expect(within(filters).getByRole('button', { name: /^C\+/ })).toBeDisabled()
     await userEvent.click(within(filters).getByRole('button', { name: /^B/ }))
     expect(within(filters).getByRole('button', { name: /^B/ })).toHaveAttribute('aria-pressed', 'true')
-    expect(rows()).toHaveLength(0)
-    expect(within(block).getByText('Ninguna skill con este nivel.')).toBeInTheDocument()
-    const before = within(filters).getByRole('button', { name: /^Todas/ }).textContent
+    expect(rows().map((r) => (r as HTMLInputElement).value)).toEqual(['Go'])
+    // La que editas con un filtro puesto no desaparece aunque deje de casar.
+    await userEvent.selectOptions(within(block).getByRole('group', { name: 'Go' }).querySelector('select')!, 'F')
+    expect(rows().map((r) => (r as HTMLInputElement).value)).toEqual(['Go'])
     await userEvent.click(within(block).getByRole('button', { name: 'Añadir skill' }))
     expect(within(filters).getByRole('button', { name: /^Todas/ })).toHaveAttribute('aria-pressed', 'true')
-    expect(rows().length).toBeGreaterThan(0)
-    expect(within(filters).getByRole('button', { name: /^Todas/ }).textContent).not.toBe(before)
+    expect(rows()).toHaveLength(3)
+    expect(within(filters).getByRole('button', { name: /^Todas/ })).toHaveTextContent('3')
+  })
+
+  it('combina el filtro de nivel con el de categoría, con recuentos, atenuados y «Quitar filtros»', async () => {
+    mockApi(
+      withSkills([
+        { name: 'Python', level: 'F', category: 'Lenguajes' },
+        { name: 'SQL', level: 'C', category: 'lenguajes ' },
+        { name: 'BigQuery', level: 'C', category: 'Cloud y DWH' },
+        { name: 'Excel', level: 'B' },
+      ]),
+    )
+    renderApp('/perfil')
+    await openTab('Experiencia y formación')
+    const block = await screen.findByRole('region', { name: 'Skills' })
+    const levels = within(block).getByRole('group', { name: 'Filtrar skills por nivel' })
+    const categories = within(block).getByRole('group', { name: 'Filtrar skills por categoría' })
+    const names = () => within(block).queryAllByRole('textbox', { name: 'Skill' }).map((r) => (r as HTMLInputElement).value)
+    const chip = (group: HTMLElement, name: RegExp) => within(group).getByRole('button', { name })
+    // En el orden en que aparecen, sin duplicar «Lenguajes» y con «Sin categoría» al final.
+    expect(within(categories).getAllByRole('button').map((b) => b.textContent)).toEqual([
+      'Todas4',
+      'Lenguajes2',
+      'Cloud y DWH1',
+      'Sin categoría1',
+    ])
+    expect(within(block).queryByRole('button', { name: /Quitar filtros/ })).not.toBeInTheDocument()
+
+    await userEvent.click(chip(categories, /^Lenguajes/))
+    expect(names()).toEqual(['Python', 'SQL'])
+    // Los recuentos de nivel ya son los de «Lenguajes»: B se queda en 0 y atenuado.
+    expect(chip(levels, /^Todas/)).toHaveTextContent('2')
+    expect(chip(levels, /^B/)).toHaveTextContent('0')
+    expect(chip(levels, /^B/)).toBeDisabled()
+
+    await userEvent.click(chip(levels, /^C\d/))
+    expect(names()).toEqual(['SQL'])
+    expect(chip(categories, /^Cloud/)).toHaveTextContent('1')
+    expect(chip(categories, /^Sin categoría/)).toBeDisabled()
+
+    await userEvent.click(within(block).getByRole('button', { name: /Quitar filtros/ }))
+    expect(names()).toEqual(['Python', 'SQL', 'BigQuery', 'Excel'])
+    expect(chip(levels, /^Todas/)).toHaveAttribute('aria-pressed', 'true')
+    expect(chip(categories, /^Todas/)).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('con muchas categorías, el filtro es un desplegable con búsqueda que atenúa las que vaciarían la lista', async () => {
+    const many = ['Lenguajes', 'Cloud', 'BI', 'ML', 'IA', 'Datos', 'DevOps', 'Gestión', 'Idiomas'].map((category, i) => ({
+      name: `S${i}`,
+      level: i === 0 ? 'F' : 'C',
+      category,
+    }))
+    mockApi(withSkills(many))
+    renderApp('/perfil')
+    await openTab('Experiencia y formación')
+    const block = await screen.findByRole('region', { name: 'Skills' })
+    const names = () => within(block).queryAllByRole('textbox', { name: 'Skill' }).map((r) => (r as HTMLInputElement).value)
+    expect(within(block).queryByRole('group', { name: 'Filtrar skills por categoría' })).not.toBeInTheDocument()
+    const picker = within(block).getByRole('button', { name: 'Filtrar skills por categoría' })
+    const levels = within(block).getByRole('group', { name: 'Filtrar skills por nivel' })
+    await userEvent.click(within(levels).getByRole('button', { name: /^F/ }))
+    await userEvent.click(picker)
+    expect(screen.getByRole('option', { name: /Lenguajes/ })).not.toHaveAttribute('aria-disabled')
+    expect(screen.getByRole('option', { name: /DevOps/ })).toHaveAttribute('aria-disabled', 'true')
+    await userEvent.click(screen.getByRole('option', { name: /DevOps/ }))
+    expect(names()).toEqual(['S0'])
+    await userEvent.click(within(levels).getByRole('button', { name: /^Todas/ }))
+    await userEvent.click(picker)
+    await userEvent.type(screen.getByRole('combobox', { name: 'Buscar una categoría' }), 'devo')
+    await userEvent.click(screen.getByRole('option', { name: /DevOps/ }))
+    expect(names()).toEqual(['S6'])
+    expect(within(block).getByRole('button', { name: /Quitar filtros/ })).toBeInTheDocument()
+  })
+
+  it('al renombrar la categoría filtrada, el filtro sigue y la fila no desaparece', async () => {
+    mockApi(
+      withSkills([
+        { name: 'Python', level: 'F', category: 'Lenguajes' },
+        { name: 'AWS', level: 'C', category: 'Cloud' },
+      ]),
+    )
+    renderApp('/perfil')
+    await openTab('Experiencia y formación')
+    const block = await screen.findByRole('region', { name: 'Skills' })
+    const categories = within(block).getByRole('group', { name: 'Filtrar skills por categoría' })
+    await userEvent.click(within(categories).getByRole('button', { name: /^Cloud/ }))
+    const field = within(within(block).getByRole('group', { name: 'AWS' })).getByRole('textbox', { name: 'Categoría' })
+    await userEvent.clear(field)
+    await userEvent.type(field, 'Nube')
+    expect(within(block).queryAllByRole('textbox', { name: 'Skill' }).map((r) => (r as HTMLInputElement).value)).toEqual(['AWS'])
+    expect(within(categories).getByRole('button', { name: /^Cloud/ })).toHaveAttribute('aria-pressed', 'true')
+    expect(within(categories).getByRole('button', { name: /^Nube/ })).toBeInTheDocument()
+  })
+
+  it('los idiomas van en una rejilla de Idioma y Nivel, sin «Dónde ponerlo»', async () => {
+    mockApi(BASE)
+    renderApp('/perfil')
+    await openTab('Experiencia y formación')
+    const block = await screen.findByRole('region', { name: 'Idiomas' })
+    const language = within(block).getByRole('group', { name: 'Inglés' })
+    expect(within(language).getByRole('textbox', { name: 'Idioma' })).toHaveValue('Inglés')
+    expect(within(language).getByRole('combobox', { name: 'Nivel' })).toBeInTheDocument()
+    expect(within(block).queryByText('Dónde ponerlo')).not.toBeInTheDocument()
+    expect(within(block).queryByText(/gallego en Galicia/)).not.toBeInTheDocument()
+  })
+
+  it('cambiar un idioma conserva «regional» del YAML aunque ya no se vea', async () => {
+    const calls = mockApi({
+      ...BASE,
+      'GET /profile/editable': { ...EDITABLE, profile: { ...PROFILE, languages: [{ language: 'Gallego', level: 'C1', regional: 'Galicia' }] } },
+      'PUT /profile/sections/languages': saved('languages', { dry_run: true, diff: 'Nivel: C1 → C2' }),
+    })
+    renderApp('/perfil')
+    await openTab('Experiencia y formación')
+    const block = await screen.findByRole('region', { name: 'Idiomas' })
+    const language = within(block).getByRole('group', { name: 'Gallego' })
+    await userEvent.type(within(language).getByRole('textbox', { name: 'Idioma' }), ' ')
+    expect(within(block).getByRole('textbox', { name: 'Idioma' })).toHaveFocus()
+    await userEvent.selectOptions(within(block).getByRole('combobox', { name: 'Nivel' }), 'C2')
+    await userEvent.click(within(block).getByRole('button', { name: 'Guardar' }))
+    await waitFor(() => expect(calls.some((c) => c.method === 'PUT')).toBe(true))
+    const body = calls.find((c) => c.method === 'PUT')?.body as { content: unknown[] }
+    expect(body.content[0]).toMatchObject({ level: 'C2', regional: 'Galicia' })
   })
 
   it('la foto es opcional: se encuadra, se sube, se cambia y se quita pidiendo confirmación', async () => {
@@ -1006,5 +1005,141 @@ describe('Mi perfil editable', () => {
     expect(confirm).toHaveBeenCalledWith(expect.stringContaining('cambios sin guardar'))
     expect(screen.getByRole('heading', { level: 1, name: 'Mi perfil' })).toBeInTheDocument()
     confirm.mockRestore()
+  })
+})
+
+describe('Mi perfil › Historial', () => {
+  const now = new Date()
+  const today = (h: number, m: number) => new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m).toISOString()
+  const hm = (h: number, m: number) => new Intl.DateTimeFormat('es-ES', { hour: '2-digit', minute: '2-digit' }).format(new Date(2026, 0, 1, h, m))
+  const version = (id: number, changes: Record<string, unknown>) => ({
+    id,
+    created_at: today(10, id),
+    origin: 'ui',
+    first: false,
+    current: false,
+    restorable: true,
+    summary: [],
+    ...changes,
+  })
+  const VERSIONS = {
+    versions: [
+      version(3, { current: true, restorable: false, summary: [{ block: 'experience', changes: 2 }, { block: 'private', changes: 1 }] }),
+      version(2, { origin: 'agent', summary: [{ block: 'skills', changes: 7 }] }),
+      version(1, { origin: null, first: true }),
+    ],
+    has_more: false,
+  }
+  const detail = (id: number, changes: unknown[], extra: Record<string, unknown> = {}) => ({
+    id,
+    previous_id: id - 1,
+    created_at: today(10, id),
+    origin: 'ui',
+    current: false,
+    restorable: true,
+    changes,
+    restore_blocks: [],
+    technical_diff: '--- versión 1\n+++ versión 2\n-headline: A\n+headline: B\n',
+    ...extra,
+  })
+  const LATEST = detail(
+    3,
+    [
+      { block: 'experience', kind: 'changed', label: 'Data Engineer · Norte Consulting', fields: [{ path: ['end'], before: 'present', after: '2026-03' }] },
+      {
+        block: 'experience',
+        kind: 'added',
+        label: 'Reduje la carga.',
+        parent: 'Data Engineer · Norte Consulting',
+        within: 'achievements',
+        fields: [
+          { path: ['text'], after: 'Reduje la carga.' },
+          { path: ['skills'], added: ['Snowflake'] },
+        ],
+      },
+      { block: 'private', kind: 'changed', hidden: true, fields: [] },
+    ],
+    { current: true, restorable: false },
+  )
+  const SKILLS = Array.from({ length: 7 }, (_, i) => ({ block: 'skills', kind: 'added', label: `Skill ${i + 1}`, fields: [{ path: ['level'], after: 'C' }] }))
+  const OLDER = detail(2, [{ block: 'skills', kind: 'moved', label: 'SQL', position: [3, 1], fields: [] }, ...SKILLS], {
+    restore_blocks: ['personal', 'skills'],
+  })
+  const routes = {
+    ...BASE,
+    'GET /profile/versions': VERSIONS,
+    'GET /profile/versions/3/changes': LATEST,
+    'GET /profile/versions/2/changes': OLDER,
+  }
+
+  it('lista las versiones con cuándo, de dónde y qué bloques cambiaron, y abre la actual en texto normal', async () => {
+    mockApi(routes)
+    renderApp('/perfil')
+    await openTab('Historial')
+    const list = await screen.findByRole('list', { name: 'Versiones de tu perfil' })
+    const rows = within(list).getAllByRole('listitem')
+    expect(rows).toHaveLength(3)
+    expect(within(rows[0]).getByText(`Hoy, ${hm(10, 3)}`)).toBeInTheDocument()
+    expect(within(rows[0]).getByText('Actual')).toBeInTheDocument()
+    expect(within(rows[0]).getByText('Experiencia (2 cambios) · Datos privados (ha cambiado)')).toBeInTheDocument()
+    expect(within(rows[0]).getByText('Desde la app')).toBeInTheDocument()
+    expect(within(rows[1]).getByText('Tu agente')).toBeInTheDocument()
+    expect(within(rows[2]).getByText('Tu primer perfil')).toBeInTheDocument()
+
+    // La actual, abierta: por bloques, «Antes → Ahora», con etiqueta además del color.
+    const experience = await within(rows[0]).findByRole('region', { name: 'Experiencia' })
+    expect(within(experience).getByText('Data Engineer · Norte Consulting')).toBeInTheDocument()
+    expect(within(experience).getByText('Fin')).toBeInTheDocument()
+    expect(within(experience).getByText('Actualidad').closest('del')).not.toBeNull()
+    expect(within(experience).getByText(/marzo de 2026/).closest('ins')).not.toBeNull()
+    expect(within(experience).getByText('Logro de Data Engineer · Norte Consulting')).toBeInTheDocument()
+    expect(within(experience).getByText('Añadido')).toBeInTheDocument()
+    expect(within(experience).getByText('Snowflake')).toBeInTheDocument()
+    const hidden = within(rows[0]).getByRole('region', { name: 'Datos privados' })
+    expect(within(hidden).getByText(/La cifra no se enseña/)).toBeInTheDocument()
+    // Nada de YAML a la vista: el cambio técnico, plegado al final.
+    expect(within(rows[0]).queryByText(/headline:/)).not.toBeInTheDocument()
+    expect(within(rows[0]).getByText('Es la versión actual')).toBeInTheDocument()
+    await userEvent.click(within(rows[0]).getByRole('button', { name: 'Ver el cambio técnico' }))
+    expect(within(rows[0]).getByLabelText('Cambio técnico de esta versión')).toHaveTextContent('+headline: B')
+  })
+
+  it('una versión con muchos cambios los pliega y se puede volver a ella tras confirmar', async () => {
+    const calls = mockApi({
+      ...routes,
+      'POST /profile/versions/2/restore': { file_hash: 'h2', profile_version_id: 4, blocks: ['personal', 'skills'], undo_available: 2 },
+    })
+    renderApp('/perfil')
+    await openTab('Historial')
+    const list = await screen.findByRole('list', { name: 'Versiones de tu perfil' })
+    const row = within(list).getAllByRole('listitem')[1]
+    await userEvent.click(within(row).getByRole('button', { name: new RegExp(`Hoy, ${hm(10, 2)}`) }))
+    const skills = await within(row).findByRole('region', { name: 'Skills' })
+    expect(within(skills).getByText('Movido')).toBeInTheDocument()
+    expect(within(skills).getByText('3.ª')).toBeInTheDocument()
+    expect(within(skills).queryByText('Skill 7')).not.toBeInTheDocument()
+    await userEvent.click(within(skills).getByRole('button', { name: 'Ver 3 más' }))
+    expect(within(skills).getByText('Skill 7')).toBeInTheDocument()
+
+    await userEvent.click(within(row).getByRole('button', { name: /^Volver a esta versión/ }))
+    const dialog = await screen.findByRole('dialog', { name: `¿Volver a la versión de hoy, ${hm(10, 2)}?` })
+    expect(within(dialog).getByText('Datos y resumen')).toBeInTheDocument()
+    expect(within(dialog).getByText('Skills')).toBeInTheDocument()
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Volver a esta versión' }))
+    expect(await screen.findByText(`Hecho: tu perfil ha vuelto a la versión de hoy, ${hm(10, 2)}.`)).toBeInTheDocument()
+    const post = calls.find((c) => c.method === 'POST' && c.path === '/profile/versions/2/restore')
+    expect(post?.body).toEqual({ file_hash: 'h1' })
+  })
+
+  it('con cambios sin guardar no deja volver a otra versión ni deshacer', async () => {
+    mockApi({ ...routes, 'PUT /profile/sections/headline': saved('headline') })
+    renderApp('/perfil')
+    await userEvent.type(await screen.findByLabelText('Titular'), ' senior')
+    await openTab('Historial')
+    expect(await screen.findByText('Guarda o descarta antes los bloques con cambios.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Deshacer el último cambio/ })).toBeDisabled()
+    const row = within(screen.getByRole('list', { name: 'Versiones de tu perfil' })).getAllByRole('listitem')[1]
+    await userEvent.click(within(row).getByRole('button', { name: new RegExp(`Hoy, ${hm(10, 2)}`) }))
+    expect(await within(row).findByRole('button', { name: /^Volver a esta versión/ })).toBeDisabled()
   })
 })

@@ -175,20 +175,20 @@ describe('Barra lateral (fase 23.3)', () => {
       scrolled.push(this.id)
     }
     try {
-      renderApp('/buscar/ajustes')
-      // Las tres secciones, en la misma página.
+      renderApp('/fuentes/correo')
+      // Las dos secciones, en la misma página; la configuración ya no es una sección aparte.
       expect(await screen.findByRole('heading', { level: 1, name: 'Buscar ofertas' })).toBeInTheDocument()
-      expect(screen.getByRole('heading', { level: 2, name: 'Configuración de tu búsqueda' })).toBeInTheDocument()
       expect(screen.getByRole('heading', { level: 2, name: 'Dónde buscar' })).toBeInTheDocument()
-      expect(await screen.findByRole('heading', { name: 'Portales de empleo' })).toBeInTheDocument()
-      await waitFor(() => expect(scrolled).toContain('ajustes'))
+      expect(screen.queryByRole('heading', { level: 2, name: 'Configuración de tu búsqueda' })).not.toBeInTheDocument()
+      await waitFor(() => expect(scrolled).toContain('donde'))
 
       const index = screen.getByRole('navigation', { name: 'Secciones de «Buscar ofertas»' })
-      expect(within(index).getByRole('link', { name: 'Configuración de tu búsqueda' })).toHaveAttribute('aria-current', 'location')
-      expect(within(index).queryByRole('tab')).not.toBeInTheDocument()
-      await userEvent.click(within(index).getByRole('link', { name: 'Dónde buscar' }))
-      await waitFor(() => expect(scrolled.at(-1)).toBe('donde'))
+      expect(within(index).getAllByRole('link').map((l) => l.textContent)).toEqual(['Buscar', 'Dónde buscar'])
       expect(within(index).getByRole('link', { name: 'Dónde buscar' })).toHaveAttribute('aria-current', 'location')
+      expect(within(index).queryByRole('tab')).not.toBeInTheDocument()
+      await userEvent.click(within(index).getByRole('link', { name: 'Buscar' }))
+      await waitFor(() => expect(scrolled.at(-1)).toBe('buscar'))
+      expect(within(index).getByRole('link', { name: 'Buscar' })).toHaveAttribute('aria-current', 'location')
     } finally {
       Element.prototype.scrollIntoView = original
     }

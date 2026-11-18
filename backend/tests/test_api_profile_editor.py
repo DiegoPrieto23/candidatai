@@ -145,6 +145,7 @@ def test_dry_run_shows_the_diff(client: TestClient) -> None:
     [
         ("PUT", "/profile/sections/headline", {"file_hash": None, "content": "X"}),
         ("POST", "/profile/undo", {"file_hash": None}),
+        ("POST", "/profile/versions/1/restore", {"file_hash": None}),
         ("POST", "/profile", MINIMAL),
         ("PUT", "/context/criterios", {"file_hash": None, "text": "# Criterios\n"}),
         ("POST", "/context/style-samples", {"filename": "a.txt", "content_base64": "YQ=="}),
@@ -164,7 +165,8 @@ def test_writes_are_only_for_the_ui(client: TestClient, method: str, url: str, b
     "url",
     [
         "/profile/editable",
-        "/profile/diff",
+        "/profile/versions",
+        "/profile/versions/1/changes",
         "/context/criterios",
         "/context/style-samples",
         "/context/style-samples/a.txt/text",

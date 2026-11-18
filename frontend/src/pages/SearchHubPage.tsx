@@ -1,26 +1,25 @@
 import { Suspense, useEffect, useRef, useState, type MouseEvent, type RefObject } from 'react'
-import { Link, Outlet, useLocation, useNavigationType, type Location } from 'react-router'
+import { Link, Outlet, useLocation, useNavigate, type Location } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { BuildingsIcon, CompassIcon, EnvelopeSimpleIcon, PuzzlePieceIcon } from '@phosphor-icons/react'
 import { Hint } from '@/components/Hint'
-import { blockAnchor } from '@/components/profile/editor'
-import type { SectionFocus } from '@/lib/searchFocus'
 import { PageErrorBoundary } from '@/components/PageErrorBoundary'
 import { PageTabs } from '@/components/PageTabs'
 import { Skeleton } from '@/components/ui/skeleton'
 import { pages } from '@/lib/pages'
 import { cn } from '@/lib/utils'
 import { SearchPage } from '@/pages/SearchPage'
-import { SearchSettingsPage } from '@/pages/SearchSettingsPage'
 
-type Section = 'search' | 'settings' | 'where'
+type Section = 'search' | 'where'
 
 /** Cada sección, su ancla y la ruta que lleva a ella (las de siempre siguen funcionando). */
 const SECTIONS: readonly { id: Section; anchor: string; to: string }[] = [
   { id: 'search', anchor: 'buscar', to: '/buscar' },
-  { id: 'settings', anchor: 'ajustes', to: '/buscar/ajustes' },
   { id: 'where', anchor: 'donde', to: '/fuentes/plataformas' },
 ]
+
+/** `/buscar/ajustes` es «Buscar» con «Más ajustes» desplegado. */
+const MORE = '/buscar/ajustes'
 
 /** Las vistas de «Dónde buscar», cada una con su URL de siempre. */
 const WHERE = [
@@ -31,7 +30,6 @@ const WHERE = [
 ] as const
 
 function sectionOf(pathname: string): Section {
-  if (pathname.startsWith('/buscar/ajustes')) return 'settings'
   if (pathname.startsWith('/buscar/donde') || pathname.startsWith('/fuentes')) return 'where'
   return 'search'
 }
@@ -40,47 +38,30 @@ function anchorOf(section: Section): string {
   return SECTIONS.find((s) => s.id === section)!.anchor
 }
 
-const FOCUS: Record<SectionFocus, string> = {
-  // La caja de «Puestos que buscas», en el primer bloque de la configuración.
-  roles: `#${blockAnchor('search-role')} input`,
-}
-
-function focusOf(state: unknown): string | null {
-  const focus = (state as { focus?: unknown } | null)?.focus
-  return typeof focus === 'string' && focus in FOCUS ? FOCUS[focus as SectionFocus] : null
-}
+/** Abrir o plegar «Más ajustes» cambia la ruta, pero no mueve la página (`state.stay`). */
+const stays = (state: unknown) => (state as { stay?: unknown } | null)?.stay === true
 
 /**
  * Lleva la sección de la URL arriba del todo. Lo de encima carga después (portales, perfil) y la
  * empujaría hacia abajo: mientras crece, se vuelve a alinear, hasta que tú mueves la página o pasan
  * unos segundos. Va por la clave de la navegación, no por la ruta: un enlace a la misma URL (estás en
- * `/buscar/ajustes` pero has subido) también baja. Con `state.focus`, deja además el cursor en ese
- * campo en cuanto aparece.
+ * `/fuentes/correo` pero has subido) también baja.
  */
 function useScrollToSection(location: Location, container: RefObject<HTMLElement | null>) {
   const { pathname, key, state } = location
-  // Atrás y Adelante traen el `state` de entonces: llevan a la sección, pero no vuelven a enfocar.
-  const navigation = useNavigationType()
   // La navegación de la vez anterior: en modo estricto el efecto corre dos veces con la misma.
   const previous = useRef<string | null>(null)
   useEffect(() => {
     const section = sectionOf(pathname)
     const unchanged = previous.current === null || previous.current === key
     previous.current = key
-    const focus = unchanged || navigation === 'POP' ? null : focusOf(state)
     // Al abrir «Buscar» desde otra página, AppShell ya ha subido arriba del todo.
-    if (section === 'search' && unchanged) return
+    if ((section === 'search' && unchanged) || stays(state)) return
     const target = () => document.getElementById(anchorOf(section))
     let active = true
-    let pending = focus
     const align = () => {
       if (!active) return
       target()?.scrollIntoView({ block: 'start' })
-      const field = pending ? document.querySelector<HTMLElement>(pending) : null
-      if (field) {
-        field.focus({ preventScroll: true })
-        pending = null
-      }
     }
     align()
     const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(align)
@@ -97,7 +78,7 @@ function useScrollToSection(location: Location, container: RefObject<HTMLElement
       window.clearTimeout(timer)
       for (const name of events) window.removeEventListener(name, stop)
     }
-    // `state` y el tipo de navegación van con `key`: cada navegación trae los suyos.
+    // `state` va con `key`: cada navegación trae el suyo.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, pathname, container])
 }
@@ -154,16 +135,27 @@ function WhereSection({ pathname }: { pathname: string }) {
 }
 
 /**
- * «Buscar ofertas», en una página: lanzar la búsqueda, su configuración y dónde se busca, con un
- * índice fijo arriba. Las rutas de antes (`/buscar/ajustes`, `/fuentes/…`) abren esta misma página en
- * su sección: van todas bajo una misma ruta de diseño, así que cambiar de sección no la vuelve a montar.
+ * «Buscar ofertas», en una página: lo que buscas y cómo lanzarlo (con «Más ajustes» desplegable) y
+ * dónde se busca, con un índice fijo arriba. Las rutas de antes (`/buscar/ajustes`, `/fuentes/…`) abren
+ * esta misma página en su sitio: van todas bajo una misma ruta de diseño, así que cambiar de sección no
+ * la vuelve a montar.
  */
 export function SearchHubPage() {
   const { t } = useTranslation('search')
   const location = useLocation()
   const { pathname } = location
   const container = useRef<HTMLDivElement>(null)
+  const navigate = useNavigate()
   const section = sectionOf(pathname)
+  // Fuera de «Buscar» (en `/fuentes/…`), «Más ajustes» se abre sin cambiar la dirección: así no te saca
+  // de la vista de «Dónde buscar» que tenías.
+  const [moreHere, setMoreHere] = useState(false)
+  const moreOpen = pathname.startsWith(MORE) || moreHere
+  const onMore = (open: boolean) => {
+    setMoreHere(section === 'where' && open)
+    if (section === 'search') navigate(open ? MORE : '/buscar', { replace: true, state: { stay: true } })
+    else if (!open && pathname.startsWith(MORE)) navigate('/buscar', { replace: true, state: { stay: true } })
+  }
   const visible = useVisibleSection(section)
   useScrollToSection(location, container)
   // «Dónde buscar» en el índice vuelve a la vista que tenías abierta.
@@ -180,8 +172,7 @@ export function SearchHubPage() {
     requestAnimationFrame(() => document.getElementById(anchorOf(id))?.focus({ preventScroll: true }))
   }
 
-  const label = (id: Section) =>
-    id === 'search' ? t('nav.search') : id === 'settings' ? t('nav.settings') : t('nav.where')
+  const label = (id: Section) => (id === 'search' ? t('nav.search') : t('nav.where'))
 
   return (
     <div ref={container} className="animate-in fade-in duration-300">
@@ -219,7 +210,7 @@ export function SearchHubPage() {
         </ul>
       </nav>
 
-      {/* Cada sección con su red: si una falla, las otras dos siguen. */}
+      {/* Cada sección con su red: si una falla, la otra sigue. */}
       <div className="grid gap-14">
         {/* Sin barra lateral, la cabecera de la app va fija arriba: las secciones paran por debajo. */}
         <section id="buscar" tabIndex={-1} aria-labelledby="buscar-title" className="outline-none scroll-mt-32 lg:scroll-mt-16">
@@ -227,15 +218,7 @@ export function SearchHubPage() {
             {t('nav.search')}
           </h2>
           <PageErrorBoundary path={pathname}>
-            <SearchPage />
-          </PageErrorBoundary>
-        </section>
-        <section id="ajustes" tabIndex={-1} aria-labelledby="ajustes-title" className="outline-none scroll-mt-32 lg:scroll-mt-16">
-          <h2 id="ajustes-title" className="text-xl font-semibold tracking-tight">
-            {t('nav.settings')}
-          </h2>
-          <PageErrorBoundary path={pathname}>
-            <SearchSettingsPage />
+            <SearchPage moreOpen={moreOpen} onMore={onMore} />
           </PageErrorBoundary>
         </section>
         <section id="donde" tabIndex={-1} aria-labelledby="donde-title" className="outline-none scroll-mt-32 lg:scroll-mt-16">

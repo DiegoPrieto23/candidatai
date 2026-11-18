@@ -706,7 +706,7 @@ def seed(
     with use_data_dir(target, embeddings=False):
         migrations.upgrade()
         with session_scope() as session:
-            profile.import_profile(session, target / "profile.yaml")
+            profile.import_profile(session, target / "profile.yaml", origin="demo")
             warnings = _populate(session, plans, now, catalog, lang)
             network.import_connections(session, linkedin / "Connections.csv")
             _add_cases(session, eval_cv, compat, compat_cases)

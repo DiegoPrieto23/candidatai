@@ -96,6 +96,28 @@ def _website(value: str) -> str:
 
 
 Website = Annotated[str, Field(max_length=200), AfterValidator(_website)]
+
+
+def _careers_url(value: str) -> str:
+    """Dirección de la web de empleo de una empresa, tal como la pega la persona."""
+    value = value.strip()
+    if "://" not in value:
+        value = f"https://{value}"
+    try:
+        parts = urlsplit(value)
+    except ValueError as exc:
+        raise ValueError(f"Dirección no válida: «{value}».") from exc
+    if parts.scheme not in {"http", "https"} or "." not in (parts.hostname or ""):
+        raise ValueError(f"Dirección no válida: «{value}». Pega la de su web de empleo.")
+    if parts.username or parts.password:
+        raise ValueError("La dirección no puede llevar usuario ni contraseña.")
+    return value
+
+
+CareersUrl = Annotated[str, Field(min_length=1, max_length=2000), AfterValidator(_careers_url)]
+# Lugares a los que se limita una empresa («Solo Madrid»): salen de su dirección o los pone la
+# persona. Se aplican a la ubicación de cada oferta, con las mismas reglas que tus zonas.
+Places = Annotated[list[Annotated[str, Field(min_length=1, max_length=80)]], Field(max_length=10)]
 Language = Annotated[str, Field(pattern=r"^[a-z]{2}$")]
 
 
@@ -107,6 +129,8 @@ class AtsConfig(_Strict):
     language: Language | None = None
     title_keywords: Keywords = []  # palabras extra que dejan pasar un título en el filtro previo
     website: Website | None = None  # web de la empresa, para su logo en la UI
+    careers_url: CareersUrl | None = None  # la dirección con la que se dio de alta
+    locations: Places = []  # solo las ofertas de estos lugares (vacío: todas)
 
 
 class InfoJobsConfig(_Strict):
@@ -156,9 +180,12 @@ def parse_config(kind: str, config: dict[str, Any]) -> SourceConfig:
 
 
 class SourceInput(_Strict):
-    """Alta de una fuente. En los ATS, `name` es la empresa tal como quieres verla."""
+    """Alta de una fuente. En los ATS, `name` es la empresa tal como quieres verla.
 
-    kind: ConnectorKind
+    Una empresa se puede dar de alta solo con `name` y `url` (la dirección de su web de empleo):
+    el servicio deduce el ATS, el slug y los lugares. Con `kind` y `slug`, se usan esos."""
+
+    kind: ConnectorKind | None = None
     name: Text
     slug: Slug | None = None
     region: Literal["global", "eu"] = "global"
@@ -171,13 +198,21 @@ class SourceInput(_Strict):
     remote_only: bool = False  # freehire: solo remotas
     title_keywords: Keywords = []
     website: Website | None = None  # ATS: web de la empresa, para su logo
+    url: CareersUrl | None = None  # ATS: dirección de su web de empleo
+    locations: Places | None = None  # ATS: lugares; sin valor, los de `url`
 
     @model_validator(mode="after")
     def _fields_for_kind(self) -> Self:
+        if self.kind is None:
+            if not self.url:
+                raise ValueError("Indica la dirección de su web de empleo (`url`) o el tipo.")
+            return self
         self.to_config()  # lanza ValueError con el campo que falta o sobra
         return self
 
     def to_config(self) -> SourceConfig:
+        if self.kind is None:
+            raise ValueError("Falta el tipo de la fuente: resuelve antes su dirección.")
         keywords = [k.strip() for k in self.title_keywords if k.strip()]
         if self.lang != "ES" and self.kind != "manfred":
             raise ValueError("El idioma de las ofertas (`lang`) solo se usa en Manfred.")
@@ -185,6 +220,10 @@ class SourceInput(_Strict):
             raise ValueError("«Solo remotas» (`remote_only`) solo se usa en freehire.")
         if self.website and self.kind not in ATS_KINDS:
             raise ValueError("La web (`website`) solo se usa en las empresas con portal propio.")
+        if (self.url or self.locations) and self.kind not in ATS_KINDS:
+            raise ValueError(
+                "La dirección y los lugares (`url`, `locations`) solo se usan en las empresas."
+            )
         if self.kind in ATS_KINDS:
             if not self.slug:
                 raise ValueError(f"Falta el slug del tablero de {KIND_LABELS[self.kind]}.")
@@ -198,6 +237,8 @@ class SourceInput(_Strict):
                 language=self.language,
                 title_keywords=keywords,
                 website=self.website,
+                careers_url=self.url,
+                locations=[" ".join(p.split()) for p in self.locations or [] if p.strip()],
             )
         if not self.query or not self.query.strip():
             raise ValueError(f"Falta la búsqueda (`query`) para {KIND_LABELS[self.kind]}.")
@@ -387,8 +428,30 @@ class PreviewJob(BaseModel):
     reason: str | None  # por qué no pasa el filtro previo
 
 
+ResolveMethod = Literal["url", "page", "search", "none"]
+
+
+class SourceResolution(BaseModel):
+    """Lo que la app ha deducido de la dirección de una web de empleo.
+
+    `how`: `url` (es la del ATS), `page` (la web enlaza su ATS), `search` (encontrado por el nombre
+    o el dominio) o `none` (no se reconoce: se guarda como plataforma que recorre el agente)."""
+
+    url: str
+    how: ResolveMethod
+    kind: str | None
+    kind_label: str | None
+    slug: str | None
+    region: Literal["global", "eu"] = "global"
+    locations: list[str]  # filtros de lugar que se aplicarán
+    website: str | None
+    issues: list[str]
+
+
 class SourceTestResult(BaseModel):
-    """Prueba de una fuente sin guardar nada: «12 ofertas encontradas, 3 tras filtros»."""
+    """Prueba de una fuente sin guardar nada: «12 ofertas encontradas, 3 tras filtros».
+
+    La UI enseña solo las que pasan (`after_filters`); los totales quedan para el diagnóstico."""
 
     kind: str
     name: str
@@ -398,6 +461,7 @@ class SourceTestResult(BaseModel):
     errors: list[Issue]
     filters_applied: bool  # sin perfil importado no se filtra
     message: str
+    resolution: SourceResolution | None = None  # en el alta por dirección
 
 
 class SourceRunResult(BaseModel):

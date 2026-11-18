@@ -38,7 +38,7 @@ export function useOptionalProfileState(): EditorState | null {
 }
 
 /** Avisa de los cambios sin guardar: al cerrar la pestaña y al pulsar un enlace de la app. */
-function useUnsavedGuard(dirty: boolean, message: string) {
+export function useUnsavedGuard(dirty: boolean, message: string) {
   useEffect(() => {
     if (!dirty) return
     const onUnload = (event: BeforeUnloadEvent) => {

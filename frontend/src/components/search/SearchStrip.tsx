@@ -1,35 +1,81 @@
-import { useState, type ReactNode } from 'react'
+import { useId, useState, type ReactNode } from 'react'
+import { useIsMutating } from '@tanstack/react-query'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
-import { BriefcaseIcon, CheckIcon, MapPinIcon, SlidersHorizontalIcon, StackIcon } from '@phosphor-icons/react'
-import { useEditableProfile, useRoleSuggestions, useSaveProfileSection } from '@/api/queries'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import type { Preferences } from '@/components/profile/types'
+import { BriefcaseIcon, CaretDownIcon, CheckIcon, HouseLineIcon, MapPinIcon, SlidersHorizontalIcon, StackIcon, StepsIcon } from '@phosphor-icons/react'
+import { useEditableProfile, useRoleSuggestions, useSalaryFloor, useSaveProfileSection } from '@/api/queries'
+import { REMOTE_MODES, SENIORITIES, type Preferences } from '@/components/profile/types'
 import { errorMessage } from '@/lib/errors'
-import { addPlace, hasItem, placesOf, removePlace } from '@/lib/searchStrip'
-import type { SectionFocus } from '@/lib/searchFocus'
+import { countMore } from '@/lib/moreSettings'
+import { addPlace, hasItem, PLACE_MODES, placesOf, removePlace, setPlaceMode, type PlaceMode } from '@/lib/searchStrip'
+import { cn } from '@/lib/utils'
+import { ChipChoices, StripRow } from './ChipChoices'
+import { MoreSettings } from './MoreSettings'
 import { TagRow } from './TagRow'
 
 const ICON = 'size-4 shrink-0'
 
 /** Lo que dice la línea de abajo tras un cambio: qué se guardó y cómo volver atrás. */
 type Notice =
-  | { kind: 'added' | 'removed'; item: string; before: Pick<Preferences, 'roles' | 'locations'> }
+  | { kind: 'added' | 'removed' | 'changed'; item: string; before: Partial<Preferences> }
   | { kind: 'undone' }
   | { kind: 'error'; message: string }
 
+/** El botón «Más ajustes · N», que despliega el resto de la configuración dentro de la franja. */
+function MoreButton({ count, open, controls, onToggle }: { count: number; open: boolean; controls: string; onToggle: () => void }) {
+  const { t } = useTranslation('search', { keyPrefix: 'more' })
+  return (
+    <button
+      type="button"
+      aria-expanded={open}
+      aria-controls={controls}
+      onClick={onToggle}
+      className={cn(
+        'inline-flex shrink-0 items-center gap-1.5 rounded-full border py-1 pr-2 pl-3 text-sm font-medium outline-none transition-colors',
+        'focus-visible:ring-2 focus-visible:ring-ring',
+        open ? 'border-primary/45 bg-accent text-accent-foreground' : 'border-input bg-card text-foreground hover:border-ring',
+      )}
+    >
+      <SlidersHorizontalIcon className="size-3.5" aria-hidden />
+      {t('button')}
+      {count > 0 && (
+        <span className="grid h-[1.125rem] min-w-[1.125rem] place-items-center rounded-full bg-primary px-1 text-[0.6875rem] font-semibold text-primary-foreground tabular-nums">
+          <span aria-hidden>{count}</span>
+          <span className="sr-only">{t('active', { count })}</span>
+        </span>
+      )}
+      <CaretDownIcon className={cn('size-3.5 transition-transform', open && 'rotate-180')} aria-hidden />
+    </button>
+  )
+}
+
 /**
- * Tus puestos y tus lugares, como etiquetas que se quitan y se añaden aquí mismo. Cada cambio se
- * guarda en tu perfil al momento (la sección `preferences`, como en «Configuración de tu búsqueda»),
- * con «Deshacer». Mientras se guarda y hasta que vuelve el perfil nuevo, no se puede tocar: así cada
- * cambio parte del fichero que hay.
+ * La franja de «Buscar»: lo que buscas, editable aquí mismo (puestos y lugares como etiquetas, modalidad
+ * y nivel como chips, y cuántas ofertas por portal), y a la derecha (`action`) la columna para empezar.
+ * Cada cambio de esas filas se guarda en tu perfil al momento (la sección `preferences`), con
+ * «Deshacer». Mientras se guarda y hasta que vuelve el perfil nuevo, no se puede tocar: así cada cambio
+ * parte del fichero que hay. «Más ajustes» se despliega debajo de las dos columnas, en la misma tarjeta,
+ * y guarda con su propio botón.
  */
-function SavedSearch({ count, links }: { count: ReactNode; links: ReactNode }) {
+export function SearchStrip({
+  count,
+  action,
+  moreOpen,
+  onMore,
+}: {
+  /** El control de ofertas por portal (va en la fila «Cuántas»). */
+  count: ReactNode
+  action: ReactNode
+  moreOpen: boolean
+  onMore: (open: boolean) => void
+}) {
   const { t } = useTranslation('search', { keyPrefix: 'strip' })
   const { t: tProfile } = useTranslation('profileEditor')
   const editable = useEditableProfile()
   const save = useSaveProfileSection()
+  const floor = useSalaryFloor()
+  const ids = useId()
+  const moreId = `${ids}-more`
   const [notice, setNotice] = useState<Notice | null>(null)
   // Lo que acabas de cambiar, a la vista mientras llega el perfil guardado (con otro `file_hash`).
   const [shown, setShown] = useState<{ hash: string | null; prefs: Preferences } | null>(null)
@@ -38,17 +84,33 @@ function SavedSearch({ count, links }: { count: ReactNode; links: ReactNode }) {
   const hash = state?.file_hash ?? null
   const pending = shown !== null && shown.hash === hash
   const suggestions = useRoleSuggestions(Boolean(prefs))
+  // Otro guardado en curso («Más ajustes», el número de ofertas…): cada uno parte del fichero que deja el anterior.
+  const mutating = useIsMutating() > 0
 
-  if (editable.isPending) {
-    return (
-      <>
-        <div className="h-28" />
-        {count}
-      </>
-    )
-  }
+  const countRow = (
+    <StripRow id={`${ids}-count`} icon={<StackIcon className={ICON} aria-hidden />} label={t('count')}>
+      <div className="min-w-0">{count}</div>
+    </StripRow>
+  )
+  const frame = (rows: ReactNode, more: ReactNode = null) => (
+    <section aria-label={t('label')} className="grid rounded-xl border bg-card lg:grid-cols-[minmax(0,1fr)_17rem]">
+      <div className="min-w-0 pt-1.5">{rows}</div>
+      <div
+        className={cn(
+          'grid border-t px-6 py-5 lg:border-t-0 lg:border-l',
+          'bg-accent/35 bg-[radial-gradient(140%_70%_at_100%_0%,color-mix(in_oklch,var(--primary)_16%,transparent),transparent_62%),radial-gradient(90%_60%_at_0%_100%,color-mix(in_oklch,var(--primary)_7%,transparent),transparent_70%)]',
+          moreOpen && more ? 'lg:rounded-tr-xl' : 'max-lg:rounded-b-xl lg:rounded-r-xl',
+        )}
+      >
+        {action}
+      </div>
+      {more}
+    </section>
+  )
+
+  if (editable.isPending) return frame(<><div className="h-52" />{countRow}</>)
   if (editable.isError || !state?.exists || !prefs) {
-    return (
+    return frame(
       <>
         <p className="px-5 py-4 text-sm text-muted-foreground">
           {editable.isError ? (
@@ -57,16 +119,18 @@ function SavedSearch({ count, links }: { count: ReactNode; links: ReactNode }) {
             <Trans t={t} i18nKey="noProfile" components={{ to: <Link to="/perfil" className="text-primary underline-offset-4 hover:underline" /> }} />
           )}
         </p>
-        {count}
-        <StripNote links={links}>{null}</StripNote>
-      </>
+        {countRow}
+      </>,
     )
   }
 
   const view = pending ? shown.prefs : prefs
-  const busy = save.isPending || pending || editable.isFetching
+  const busy = save.isPending || pending || editable.isFetching || mutating
 
-  const change = (next: Partial<Preferences>, done: Notice) => {
+  /** Guarda `next` sobre tu perfil. Lo que dice «Deshacer» son solo esas claves, con su valor de antes:
+   *  deshacer no pisa lo que hayas guardado después en «Más ajustes». */
+  const change = (next: Partial<Preferences>, done: Notice | ((before: Partial<Preferences>) => Notice)) => {
+    const before = Object.fromEntries(Object.keys(next).map((key) => [key, prefs[key]])) as Partial<Preferences>
     const content = { ...prefs, ...next }
     setShown({ hash, prefs: content })
     setNotice(null)
@@ -76,7 +140,7 @@ function SavedSearch({ count, links }: { count: ReactNode; links: ReactNode }) {
         onSuccess: (result) => {
           // Si el fichero no cambió, su `file_hash` tampoco: no hay perfil nuevo que esperar.
           if (!result.changed) setShown(null)
-          setNotice(done)
+          setNotice(typeof done === 'function' ? done(before) : done)
         },
         onError: (error) => {
           setShown(null)
@@ -85,9 +149,10 @@ function SavedSearch({ count, links }: { count: ReactNode; links: ReactNode }) {
       },
     )
   }
-  const before = { roles: prefs.roles, locations: prefs.locations }
+  const placeModes = PLACE_MODES.map((mode) => ({ value: mode, label: tProfile(`fields.locations.${mode}`) }))
+  const issues = state.issues.length > 0
 
-  return (
+  return frame(
     <>
       <TagRow
         label={t('roles')}
@@ -99,182 +164,86 @@ function SavedSearch({ count, links }: { count: ReactNode; links: ReactNode }) {
         suggestions={suggestions.data ?? []}
         suggestionsTitle={t('suggestions')}
         busy={busy}
-        onAdd={(item) => change({ roles: [...prefs.roles, item] }, { kind: 'added', item, before })}
-        onRemove={(item) => change({ roles: prefs.roles.filter((r) => !hasItem([r], item)) }, { kind: 'removed', item, before })}
+        onAdd={(item) => change({ roles: [...prefs.roles, item] }, (before) => ({ kind: 'added', item, before }))}
+        onRemove={(item) => change({ roles: prefs.roles.filter((r) => !hasItem([r], item)) }, (before) => ({ kind: 'removed', item, before }))}
       />
       <TagRow
         label={t('places')}
         icon={<MapPinIcon className={ICON} aria-hidden />}
-        tags={placesOf(view.locations).map(({ place, onlyRemote }) => ({
+        tags={placesOf(view.locations).map(({ place, mode }) => ({
           value: place,
-          note: onlyRemote ? tProfile('fields.locations.allowed').toLocaleLowerCase() : undefined,
+          note: mode === 'preferred' ? undefined : tProfile(`fields.locations.${mode}`).toLocaleLowerCase(),
+          struck: mode === 'excluded',
+          choice: {
+            label: tProfile('fields.locations.modeFor', { place }),
+            value: mode,
+            options: placeModes,
+            onChange: (value: string) => {
+              const next = value as PlaceMode
+              change(
+                { locations: setPlaceMode(prefs.locations, place, next) },
+                (before) => ({ kind: 'changed', item: `${place}: ${tProfile(`fields.locations.${next}`).toLocaleLowerCase()}`, before }),
+              )
+            },
+          },
         }))}
         empty={t('noPlaces')}
         addLabel={t('addPlace')}
         placeholder={t('placePlaceholder')}
         busy={busy}
-        onAdd={(item) => change({ locations: addPlace(prefs.locations, item) }, { kind: 'added', item, before })}
-        onRemove={(item) => change({ locations: removePlace(prefs.locations, item) }, { kind: 'removed', item, before })}
+        onAdd={(item) => change({ locations: addPlace(prefs.locations, item) }, (before) => ({ kind: 'added', item, before }))}
+        onRemove={(item) => change({ locations: removePlace(prefs.locations, item) }, (before) => ({ kind: 'removed', item, before }))}
       />
-      {count}
-      <StripNote links={links}>
-        {notice?.kind === 'error' ? (
-          <span role="alert" className="text-destructive">
-            {notice.message}
-          </span>
-        ) : notice && notice.kind !== 'undone' ? (
-          <span className="inline-flex flex-wrap items-center gap-x-2 text-primary">
-            <CheckIcon className="size-3.5" aria-hidden />
-            {t(notice.kind, { item: notice.item })}
-            <button
-              type="button"
-              disabled={busy}
-              className="underline-offset-4 hover:underline disabled:opacity-50"
-              onClick={() => change(notice.before, { kind: 'undone' })}
-            >
-              {t('undo')}
-            </button>
-          </span>
-        ) : (
-          <span>{notice?.kind === 'undone' ? t('undone') : t('savesTo')}</span>
-        )}
-      </StripNote>
-    </>
-  )
-}
-
-/** La línea de abajo de la franja: a la izquierda lo que toque, a la derecha los enlaces. */
-function StripNote({ children, links }: { children: ReactNode; links: ReactNode }) {
-  return (
-    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-t px-5 py-2.5 text-xs text-muted-foreground">
-      {/* Lo que se guarda o falla se anuncia al momento. */}
-      <span className="min-w-0" aria-live="polite">
-        {children}
-      </span>
-      {links}
-    </div>
-  )
-}
-
-/** «Solo esta vez»: un puesto y un lugar que tu agente usa en vez de los de tu perfil, sin cambiarlo. */
-function OneOffSearch({
-  role,
-  location,
-  invalid,
-  onRole,
-  onLocation,
-}: {
-  role: string
-  location: string
-  invalid: { role: boolean; location: boolean }
-  onRole: (value: string) => void
-  onLocation: (value: string) => void
-}) {
-  const { t } = useTranslation('search', { keyPrefix: 'refine' })
-  const row = 'grid items-center gap-x-4 gap-y-1.5 px-5 py-3 sm:grid-cols-[7rem_minmax(0,1fr)]'
-  return (
-    <>
-      <div className={row}>
-        <Label htmlFor="search-role" className="flex items-center gap-2 font-normal text-muted-foreground">
-          <BriefcaseIcon className={ICON} aria-hidden />
-          {t('role')}
-        </Label>
-        <Input id="search-role" autoFocus value={role} maxLength={80} aria-invalid={invalid.role} placeholder={t('rolePlaceholder')} className="max-w-sm" onChange={(e) => onRole(e.target.value)} />
-      </div>
-      <div className={row}>
-        <Label htmlFor="search-location" className="flex items-center gap-2 font-normal text-muted-foreground">
-          <MapPinIcon className={ICON} aria-hidden />
-          {t('location')}
-        </Label>
-        <Input id="search-location" value={location} maxLength={80} aria-invalid={invalid.location} placeholder={t('locationPlaceholder')} className="max-w-sm" onChange={(e) => onLocation(e.target.value)} />
-      </div>
-      {(invalid.role || invalid.location) && (
-        <p role="alert" className="px-5 pb-2 text-xs text-destructive">
-          {t('badText')}
-        </p>
-      )}
-    </>
-  )
-}
-
-/**
- * La franja de «Buscar»: qué buscas, dónde y cuántas, cada cosa con su forma de cambiarla, y a la
- * derecha (`action`) el botón para empezar. Con `oneOff`, los puestos y lugares de tu perfil dejan
- * sitio a un puesto y un lugar solo para esta vez.
- */
-export function SearchStrip({
-  oneOff,
-  onOneOff,
-  role,
-  location,
-  invalid,
-  onRole,
-  onLocation,
-  count,
-  action,
-}: {
-  oneOff: boolean
-  onOneOff: (on: boolean) => void
-  role: string
-  location: string
-  invalid: { role: boolean; location: boolean }
-  onRole: (value: string) => void
-  onLocation: (value: string) => void
-  /** La fila «Cuántas» (el control de ofertas por portal). */
-  count: ReactNode
-  action: ReactNode
-}) {
-  const { t } = useTranslation('search', { keyPrefix: 'strip' })
-  const countRow = (
-    <div className="grid items-center gap-x-4 gap-y-1.5 px-5 py-3 sm:grid-cols-[7rem_minmax(0,1fr)]">
-      <span className="flex items-center gap-2 text-sm text-muted-foreground">
-        <StackIcon className={ICON} aria-hidden />
-        {t('count')}
-      </span>
-      <div className="min-w-0">{count}</div>
-    </div>
-  )
-  const links = (
-    <span className="flex flex-wrap items-center gap-x-4 gap-y-1">
-      {!oneOff && (
-        <button type="button" className="text-primary underline-offset-4 hover:underline" onClick={() => onOneOff(true)}>
-          {t('oneOff')}
-        </button>
-      )}
-      <Link
-        to="/buscar/ajustes"
-        state={{ focus: 'roles' } satisfies { focus: SectionFocus }}
-        className="inline-flex items-center gap-1 text-primary underline-offset-4 hover:underline"
-      >
-        <SlidersHorizontalIcon className="size-3.5" aria-hidden />
-        {t('moreFilters')}
-      </Link>
-    </span>
-  )
-  return (
-    <section aria-label={t('label')} className="grid rounded-xl border bg-card lg:grid-cols-[minmax(0,1fr)_16rem] data-[one-off=true]:border-primary/50" data-one-off={oneOff}>
-      <div className="min-w-0 py-1.5">
-        {oneOff ? (
-          <>
-            <div className="-mt-1.5 flex flex-wrap items-center justify-between gap-2 rounded-tl-xl bg-accent px-5 py-2.5 text-sm text-accent-foreground max-lg:rounded-tr-xl">
-              <span>
-                <strong className="font-semibold">{t('oneOffTitle')}</strong> · {t('oneOffNote')}
-              </span>
-              <button type="button" className="text-primary underline-offset-4 hover:underline" onClick={() => onOneOff(false)}>
-                {t('back')}
+      <StripRow id={`${ids}-modes`} icon={<HouseLineIcon className={ICON} aria-hidden />} label={t('modes')}>
+        <ChipChoices
+          labelledBy={`${ids}-modes`}
+          value={view.remote_modes}
+          disabled={busy}
+          options={REMOTE_MODES.map((m) => ({ value: m, label: tProfile(`remote.${m}`) }))}
+          onChange={(next, { label, checked }) => change({ remote_modes: next }, (before) => ({ kind: checked ? 'added' : 'removed', item: label, before }))}
+        />
+      </StripRow>
+      <StripRow id={`${ids}-levels`} icon={<StepsIcon className={ICON} aria-hidden />} label={t('levels')}>
+        <ChipChoices
+          labelledBy={`${ids}-levels`}
+          value={view.seniority_target}
+          disabled={busy}
+          options={SENIORITIES.map((s) => ({ value: s, label: tProfile(`seniority.${s}`) }))}
+          onChange={(next, { label, checked }) => change({ seniority_target: next }, (before) => ({ kind: checked ? 'added' : 'removed', item: label, before }))}
+        />
+      </StripRow>
+      {countRow}
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t px-5 py-2.5 text-xs text-muted-foreground">
+        {/* Lo que se guarda o falla se anuncia al momento. */}
+        <span className="min-w-0" aria-live="polite">
+          {notice?.kind === 'error' ? (
+            <span role="alert" className="text-destructive">
+              {notice.message}
+            </span>
+          ) : notice && notice.kind !== 'undone' ? (
+            <span className="inline-flex flex-wrap items-center gap-x-2 text-primary">
+              <CheckIcon className="size-3.5" aria-hidden />
+              {t(notice.kind, { item: notice.item })}
+              <button
+                type="button"
+                disabled={busy}
+                className="underline-offset-4 hover:underline disabled:opacity-50"
+                onClick={() => change(notice.before, { kind: 'undone' })}
+              >
+                {t('undo')}
               </button>
-            </div>
-            <OneOffSearch role={role} location={location} invalid={invalid} onRole={onRole} onLocation={onLocation} />
-            {countRow}
-            <StripNote links={links}>{t('oneOffHint')}</StripNote>
-          </>
-        ) : (
-          <SavedSearch count={countRow} links={links} />
-        )}
+            </span>
+          ) : issues ? (
+            <span role="alert" className="text-warning-foreground">
+              <Trans t={t} i18nKey="issues" components={{ to: <Link to="/perfil" className="underline underline-offset-4" /> }} />
+            </span>
+          ) : (
+            <span>{notice?.kind === 'undone' ? t('undone') : t('savesTo')}</span>
+          )}
+        </span>
+        <MoreButton count={countMore(prefs, floor.data?.salary_floor_eur ?? null)} open={moreOpen} controls={moreId} onToggle={() => onMore(!moreOpen)} />
       </div>
-      <div className="grid content-center gap-2 border-t bg-accent/45 px-6 py-5 max-lg:rounded-b-xl lg:rounded-r-xl lg:border-t-0 lg:border-l">
-        {action}
-      </div>
-    </section>
+    </>,
+    <MoreSettings id={moreId} state={state} prefs={prefs} hidden={!moreOpen} reload={() => void editable.refetch()} />,
   )
 }

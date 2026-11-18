@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { keepPreviousData, useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useInfiniteQuery, useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { ApiError, api, unwrap, type CvEditInput, type CvRenderOptions, type ReferralStatus, type Schemas, type Stage } from './client'
 import type { operations } from './schema'
 
@@ -48,7 +48,9 @@ export const keys = {
   editableProfile: ['profile', 'editable'] as const,
   // Bajo `profile`: al guardar tus puestos se vuelven a pedir (los que añades dejan de sugerirse).
   roleSuggestions: ['profile', 'roleSuggestions'] as const,
-  profileDiff: ['profile', 'diff'] as const,
+  // Fase 44.6: el historial. Bajo `profile`: cada guardado lo refresca.
+  profileVersions: ['profile', 'versions'] as const,
+  profileVersion: (id: number) => ['profile', 'versions', id] as const,
   // Fase 27.5: el sueldo mínimo (`private`), solo para la UI. Bajo `profile`: guardar lo refresca.
   salaryFloor: ['profile', 'salary-floor'] as const,
   salaryGap: (id: number) => ['profile', 'salary-gap', id] as const,
@@ -687,6 +689,20 @@ export function useSetSourceWebsite() {
         api.POST('/sources/{source_id}/website', {
           params: { path: { source_id: sourceId } },
           body: { website },
+        }),
+      ),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.sources }),
+  })
+}
+
+export function useSetSourceLocations() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: ({ sourceId, locations }: { sourceId: number; locations: string[] }) =>
+      unwrap(
+        api.POST('/sources/{source_id}/locations', {
+          params: { path: { source_id: sourceId } },
+          body: { locations },
         }),
       ),
     onSuccess: () => client.invalidateQueries({ queryKey: keys.sources }),
@@ -1617,9 +1633,36 @@ export function useUndoProfile() {
   })
 }
 
-/** Diff de las dos últimas versiones importadas («Ver cambios»). */
-export function useProfileDiff(enabled: boolean) {
-  return useQuery({ queryKey: keys.profileDiff, queryFn: () => unwrap(api.GET('/profile/diff')), enabled })
+/** Las versiones del perfil, de la más reciente a la más antigua, por páginas («Historial»). */
+export function useProfileVersions() {
+  return useInfiniteQuery({
+    queryKey: keys.profileVersions,
+    queryFn: ({ pageParam }) => unwrap(api.GET('/profile/versions', { params: { query: { offset: pageParam } } })),
+    initialPageParam: 0,
+    getNextPageParam: (last, pages) => (last.has_more ? pages.reduce((n, page) => n + page.versions.length, 0) : undefined),
+  })
+}
+
+/** Lo que cambió una versión, por bloques, y lo que cambiaría volver a ella. */
+export function useProfileVersionChanges(id: number, enabled: boolean) {
+  return useQuery({
+    queryKey: keys.profileVersion(id),
+    queryFn: () => unwrap(api.GET('/profile/versions/{version_id}/changes', { params: { path: { version_id: id } } })),
+    enabled,
+  })
+}
+
+/** «Volver a esta versión»: una versión nueva, que se puede deshacer. */
+export function useRestoreProfileVersion() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, fileHash }: { id: number; fileHash: string | null }) =>
+      unwrap(api.POST('/profile/versions/{version_id}/restore', { params: { path: { version_id: id } }, body: { file_hash: fileHash } })),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: keys.profile })
+      void client.invalidateQueries({ queryKey: keys.defaultTemplate })
+    },
+  })
 }
 
 export function useContextDocument(section: ContextSectionName) {

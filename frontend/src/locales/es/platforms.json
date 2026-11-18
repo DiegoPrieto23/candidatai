@@ -28,9 +28,10 @@
     "found_other": "{{count}} encontradas",
     "new_one": "{{count}} nueva",
     "new_other": "{{count}} nuevas",
+    "newForYou_one": "{{count}} nueva para ti",
+    "newForYou_other": "{{count}} nuevas para ti",
     "known_one": "{{count}} ya conocida",
     "known_other": "{{count}} ya conocidas",
-    "afterFilters": "{{count}} tras filtros",
     "offers_one": "{{count}} oferta",
     "offers_other": "{{count}} ofertas",
     "pages_one": "{{count}} página",
@@ -145,8 +146,8 @@
     "submit": "Añadir",
     "button": "Añadir portal",
     "fromProfile": "Rellenar desde mi perfil",
-    "urlsHintGenerated": "Salen de los puestos y las ubicaciones de tu perfil («Buscar ofertas → Configuración de tu búsqueda»). Puedes quitar o añadir líneas: una dirección por búsqueda.",
-    "urlsHintNoRoles": "Añade en «Buscar ofertas → Configuración de tu búsqueda» los puestos que buscas y se rellenan solas. O haz la búsqueda en el portal y copia aquí la dirección de los resultados.",
+    "urlsHintGenerated": "Salen de los puestos y las ubicaciones de tu perfil (los cambias en «Buscar ofertas»). Puedes quitar o añadir líneas: una dirección por búsqueda.",
+    "urlsHintNoRoles": "Añade en «Buscar ofertas» los puestos que buscas y se rellenan solas. O haz la búsqueda en el portal y copia aquí la dirección de los resultados.",
     "willSearch": "Buscará:"
   },
   "edit": {

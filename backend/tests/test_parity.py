@@ -563,7 +563,7 @@ CASES = [
     Case("url-existing", "add_job_from_url", {"url": URL}, ["jobs", "add-url", URL]),
     Case("url-linkedin", "add_job_from_url", {"url": "https://www.linkedin.com/jobs/view/1"},
          ["jobs", "add-url", "https://www.linkedin.com/jobs/view/1"],
-         expect_error="invalid_request"),
+         expect_error="linkedin_url"),
     Case("url-missing", "add_job_from_url", {}, ["jobs", "add-url"],
          expect_error="validation_error"),
     Case("text", "add_job_from_text",

@@ -171,8 +171,38 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 - **Navegar con teclado:** el primer Tab de cada página enseña **Saltar al contenido**, que se
   salta el menú y te deja en la página: la acción principal queda a unos pocos Tab (en Inicio, 6 en
   vez de 23).
+- **Skills por categoría:** en «Mi perfil», además de por nivel, filtras tus skills por categoría
+  (Lenguajes, Cloud…, o «Sin categoría»), y los dos filtros se combinan. Cada filtro dice cuántas
+  quedarían, los que dejarían la lista vacía se ven atenuados y **Quitar filtros** vuelve a todas. Con
+  muchas categorías, eliges la tuya en una lista con buscador. Una skill que cambias con un filtro
+  puesto ya no desaparece mientras la editas.
 
 ### Cambiado
+- **«Buscar ofertas»: buscar y configurar en un solo panel.** En la franja de arriba, además de tus
+  puestos y lugares, marcas la **modalidad** y el **nivel** con un clic, y al pulsar un lugar eliges
+  qué aceptas en él (cualquier modalidad, solo híbrido o remoto, o descartarlo). Cada cambio se guarda
+  al momento, con **Deshacer**. **Más ajustes** (con el número de grupos que tienen algo puesto) se
+  despliega en el mismo panel con los años de experiencia, el sueldo mínimo, los idiomas, el contrato y
+  la jornada, y las ofertas que no quieres. Esos se guardan juntos con **Guardar cambios**, y tienes
+  **Restablecer**, **Descartar cambios** y **Deshacer**. A la derecha, una columna nueva dice en qué
+  portales buscará tu agente (con sus logos) y cuántas ofertas como mucho, junto a **Buscar ahora**.
+  Desaparecen la sección aparte «Configuración de tu búsqueda» (su dirección abre ahora el panel con
+  «Más ajustes» desplegado) y «Buscar otra cosa solo esta vez».
+- **Añadir una empresa es pegar su web de empleo:** en «Empresas con portal propio», su nombre y la
+  dirección de su web de empleo tal como la ves (`https://careers.acme.com/madrid/`), sin saber qué
+  sistema usa ni qué es un «slug». La app lo detecta, respeta la ciudad de la dirección («Solo
+  Madrid», que cambias en su tarjeta) y pone su logo. Si no reconoce la web, la añade a tus portales
+  para que tu agente la recorra al buscar. Lo de antes (sistema y nombre en la dirección) sigue en
+  **Más opciones**. En la terminal, `cai sources add --name … --url …`.
+- **Solo lo que encaja contigo:** «Probar» y cada empresa enseñan solo las ofertas que pasan tus
+  filtros («Encontrada: usa Greenhouse · 3 ofertas para ti», «Hoy: 2 ofertas nuevas para ti»), sin
+  «encontradas», «tras filtros» ni «Ver también las filtradas». Igual en la búsqueda pública de
+  LinkedIn. Los totales siguen en `cai sources list` y `cai sources test`.
+- **Una oferta de LinkedIn en «Nueva oferta» te guía en vez de dar un error:** si pegas su
+  enlace, la app te da dos caminos. El primero, **Abrir la oferta** y pulsar allí el botón
+  «Enviar a CandidatAI» (si aún no lo tienes, un enlace te lleva a instalarlo; si ya está
+  conectado, te lo dice). El segundo, **Pegar texto**, con el enlace ya rellenado. **Ver cómo se
+  hace** enseña el gesto en una animación corta, que también está en «Botón del navegador».
 - **«Buscar ofertas», más visual y más fácil de cambiar:** arriba, una franja con tus puestos y
   lugares como etiquetas. Las quitas con su ✕ y añades más con **+ Añadir puesto** o **+ Añadir
   lugar**. Cada cambio se guarda en tu perfil al momento, con **Deshacer**, y al añadir un puesto te
@@ -180,7 +210,7 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   **Buscar ahora** con los portales y el total de ofertas. Tus portales pasan a tarjetas que se marcan
   con un clic, con su estado y lo que dieron la última vez (vistas, las que pasan tus filtros y
   nuevas); los que no se pueden usar dicen por qué. Al pie, la última búsqueda con enlace a la
-  bandeja. **Afinar esta búsqueda** pasa a ser **Buscar otra cosa solo esta vez**.
+  bandeja. **Afinar esta búsqueda** desaparece: lo que buscas se cambia en la misma franja.
 - **«Buscar ofertas», número de ofertas en un solo sitio:** junto a «Buscar ahora», «Hasta N ofertas
   por portal» cambia a la vez el límite de todos los portales elegidos y el de los que añadas
   después. Si cada portal tiene el suyo, lo dice («varía») y elegir un número los iguala. El de un
@@ -218,9 +248,9 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 - **La regla de los datos que faltan, una sola vez:** la cabecera de la configuración de tu búsqueda
   dice que cada filtro se aplica solo cuando la oferta indica ese dato, con un ejemplo en su ayuda.
 - **El encaje se vuelve a calcular** una vez al actualizar, por las equivalencias de puestos.
-- **«Buscar ofertas» es una sola página** con tres secciones y un índice fijo arriba: **Buscar**,
-  **Configuración de tu búsqueda** (antes, la pestaña «Qué buscas») y **Dónde buscar**. Los enlaces de
-  siempre llevan a su sección.
+- **«Buscar ofertas» es una sola página** con dos secciones y un índice fijo arriba: **Buscar** (con
+  lo que buscas y **Más ajustes**, que sustituye a la pestaña «Qué buscas») y **Dónde buscar**. Los
+  enlaces de siempre llevan a su sitio.
 - **Seleccionar los portales:** una casilla encima de la lista los selecciona o los quita todos.
 - **Qué ofertas entran:** junto a «Hasta N ofertas» se dice cuáles: las más recientes que encajan
   con tu perfil, en cada portal. Tu agente sigue ese orden.
@@ -303,8 +333,8 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 - **Investigar empresa:** ya no pregunta nada, ni antes ni después. Busca menos (8 búsquedas y 10 páginas
   como mucho), guarda el dosier, avisa y lo ves en la ficha, en **Empresa**.
 - **«Qué cambió»** sale siempre plegado en el historial de versiones del CV.
-- **«Qué buscas» se muda a «Buscar ofertas»:** puestos, sueldo, lugar y contrato se editan ahora en su
-  propia pestaña de esa página, no en «Mi perfil». Se siguen guardando en tu perfil.
+- **«Qué buscas» se muda a «Buscar ofertas»:** puestos, sueldo, lugar y contrato se editan ahora en esa
+  página, no en «Mi perfil». Se siguen guardando en tu perfil.
 - **Los botones ya no se mueven:** el aviso de los botones de tu agente («Se ha abierto…») flota debajo
   en vez de empujarlos, y los que cambian de texto («Guardando…») mantienen su ancho.
 - **Buscar ofertas, más útil:** portales en tarjetas con su logo, cuántas búsquedas y ofertas implica
@@ -392,14 +422,27 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   resto, y los iconos pesan un tercio menos. Con una conexión lenta, Inicio se ve un 20 % antes.
 - **El embudo va más rápido con muchas ofertas:** «Por semana» y «Por puesto» se calculan sin
   leer cada oferta una a una.
+- **«Mi perfil › Documentos», mucho más ligero:** tres tarjetas en lugar de nueve bloques. En
+  **Cómo quieres tus CVs y cartas**, cada una resume en una línea lo que elegiste (plantilla, páginas,
+  foto, tono…) y se despliega para cambiarlo. En **Notas para tu agente**, tus notas de estilo,
+  perfil conductual, criterios y narrativa, y tus muestras de estilo, cada una con su estado y su
+  editor debajo al pulsar. En **Tus archivos**, tus carpetas con su botón para subir. Las
+  explicaciones largas están en el icono ⓘ, y lo que tiene cambios sin guardar se queda abierto.
+- **El historial de «Mi perfil» se entiende sin saber programar:** en vez de un diff del fichero,
+  una lista de versiones con cuándo se hizo cada una («Hoy, 18:05»), de dónde viene (la app, tu
+  agente, al deshacer) y qué bloques cambió. Al abrir una ves sus cambios por bloques, como
+  «Antes → Ahora», con lo añadido en verde y lo quitado tachado, cada uno con su etiqueta. Con
+  **Volver a esta versión** recuperas cualquiera: antes te dice qué bloques cambiarán, y se guarda
+  como una versión nueva que también puedes deshacer. El cambio técnico sigue ahí, plegado al final.
+  Las versiones de antes de esta actualización salen sin origen.
+- **Idiomas más claros en «Mi perfil»:** «Idioma» y «Nivel» van en columnas alineadas, también con
+  un nivel escrito a mano, y sale de la pantalla «Dónde ponerlo». Si ya lo tenías relleno, se
+  conserva en tu perfil y tus CVs lo siguen teniendo en cuenta.
 
 ### Corregido
 - **Asistente: la respuesta de tu agente sale en cuanto vuelves a él.** Si tu agente contestaba
   desde su ventana una petición que esperaba a tu próxima sesión, al volver al Asistente podía
   tardar hasta 20 segundos en verse. Ahora se pide al momento cada vez que lo abres.
-- **«Cambiar» en «Buscas: …» de «Buscar ofertas»** no hacía nada si ya habías entrado por
-  «Configuración de tu búsqueda» y habías vuelto arriba. Ahora siempre baja a tus puestos y deja el
-  cursor en la caja para escribir uno.
 - **Cerrar una candidatura con la fecha en que pasó:** si después habías anotado algo que no encaja
   con el cierre (un seguimiento, o cerrarla y reabrirla para probar), la app ya no da un error
   confuso. Te enseña qué es y te propone quitarlo, si lo anotaste por error, o anotar el cierre

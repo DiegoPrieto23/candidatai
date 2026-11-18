@@ -56,5 +56,10 @@
     "send": "Abre una oferta (por ejemplo, en LinkedIn con tu sesión iniciada) y pulsa el botón. Te dice si es <strong>nueva</strong>, si ha <strong>completado</strong> un resumen o si <strong>ya estaba</strong>, con un enlace a su ficha.",
     "selection": "Si no encuentra la descripción, selecciona con el ratón el texto de la oferta, con la empresa, y vuelve a pulsar."
   },
-  "privacy": "Solo actúa cuando pulsas su botón, en la pestaña que tienes delante: no recorre páginas, no lee tus cookies y solo se comunica con CandidatAI en tu equipo. Las condiciones de LinkedIn prohíben las extensiones que copian su contenido; esta guarda solo la oferta que le pides, como si la copiaras y la pegaras, pero esa prohibición sigue en sus condiciones."
+  "privacy": "Solo actúa cuando pulsas su botón, en la pestaña que tienes delante: no recorre páginas, no lee tus cookies y solo se comunica con CandidatAI en tu equipo. Las condiciones de LinkedIn prohíben las extensiones que copian su contenido; esta guarda solo la oferta que le pides, como si la copiaras y la pegaras, pero esa prohibición sigue en sus condiciones.",
+  "demo": {
+    "show": "Ver cómo se hace",
+    "alt": "Animación: una oferta abierta en LinkedIn, un clic en el botón «Enviar a CandidatAI» de la barra del navegador, el aviso de oferta nueva y la oferta ya en la Bandeja de CandidatAI.",
+    "play": "Reproducir la animación"
+  }
 }

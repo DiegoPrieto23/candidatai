@@ -383,7 +383,8 @@ describe('Búsqueda pública de LinkedIn', () => {
     renderApp('/plataformas')
     expect(await screen.findByText(/LinkedIn cortó la última búsqueda/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Buscar ahora' })).toBeDisabled()
-    expect(screen.getByText(/5 encontradas,\s+2 tras filtros, 2 nuevas/)).toBeInTheDocument()
+    expect(screen.getByText(/2 nuevas para ti, 0 ya conocidas/)).toBeInTheDocument()
+    expect(screen.queryByText(/tras filtros/)).not.toBeInTheDocument()
   })
 
   it('«Buscar ahora» la ejecuta y enseña el resultado', async () => {
@@ -412,7 +413,7 @@ describe('Búsqueda pública de LinkedIn', () => {
     })
     renderApp('/plataformas')
     await userEvent.click(await screen.findByRole('button', { name: 'Buscar ahora' }))
-    expect(await screen.findByText(/3 tras filtros, 3 nuevas/)).toBeInTheDocument()
+    expect(await screen.findByText('3 nuevas para ti')).toBeInTheDocument()
     expect(calls.find((c) => c.path === '/sources/linkedin-public/run')?.body).toEqual({})
   })
 })

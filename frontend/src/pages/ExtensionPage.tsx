@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { Trans, useTranslation } from 'react-i18next'
 import { CheckCircleIcon, CircleNotchIcon, PlugsConnectedIcon, WarningIcon } from '@phosphor-icons/react'
 import { useExtensionStatus, usePairExtension, type ExtensionStatus } from '@/api/queries'
@@ -11,7 +11,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { errorMessage } from '@/lib/errors'
 import { BrowserPicker } from '@/components/BrowserPicker'
 import { supportsExtension, useBrowserChoice, type BrowserId } from '@/lib/browser'
-import { askExtension, compareVersions, desktopOs, type ExtensionReply } from '@/lib/extension'
+import { ExtensionDemo } from '@/components/ExtensionDemo'
+import { askExtension, compareVersions, desktopOs, useExtensionReply, type ExtensionReply } from '@/lib/extension'
 import { cn } from '@/lib/utils'
 
 const strong = { strong: <strong className="font-medium text-foreground" /> }
@@ -32,20 +33,6 @@ function Step({ n, done, title, children }: { n: number; done: boolean; title: s
       </div>
     </li>
   )
-}
-
-/**
- * Lo que dice la extensión, preguntado cada 2 s hasta que está conectada: así la página avanza sola
- * mientras la cargas en el navegador. `null`: no responde (sin instalar o de una versión antigua).
- */
-function useExtensionReply(extensionId: string | undefined) {
-  return useQuery({
-    queryKey: ['extension', 'reply', extensionId],
-    queryFn: () => askExtension(extensionId ?? '', { type: 'ping' }),
-    enabled: Boolean(extensionId),
-    refetchInterval: (query) => (query.state.data?.connected ? false : 2000),
-    refetchOnWindowFocus: true,
-  })
 }
 
 /** La página de extensiones de cada navegador compatible. */
@@ -245,6 +232,7 @@ export function ExtensionPage() {
               </li>
               <li>{t('use.selection')}</li>
             </ul>
+            <ExtensionDemo />
           </Step>
         </ol>
         )}

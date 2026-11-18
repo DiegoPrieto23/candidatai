@@ -24,9 +24,11 @@ del agente o la búsqueda pública sin sesión que hace la propia app (abajo).
 
 ## APIs de ATS y portales (fases 09 y 25.1)
 
-- **Empresas con portal propio:** nombre + ATS + slug del tablero, en «Dónde buscar → Empresas con portal propio» o con
-  `cai sources add`. Solo APIs y feeds públicos, sin autenticación ni scraping de HTML.
-  La tabla de abajo dice qué usa cada uno.
+- **Empresas con portal propio:** el nombre de la empresa y la dirección de su web de empleo, tal
+  como la ves (`https://careers.acme.com/madrid/`), en «Dónde buscar → Empresas con portal propio»
+  o con `cai sources add --name N --url U`. La app deduce el ATS, el slug y los lugares (ver
+  «Alta por la dirección», abajo). Las ofertas se leen solo de APIs y feeds públicos, sin
+  autenticación ni scraping de HTML; la tabla de abajo dice qué usa cada uno.
 - **Portales con API:** búsquedas por palabras clave, no por empresa. InfoJobs y Adzuna necesitan
   claves en `.env` (sin ellas, esas fuentes se omiten con un aviso); Manfred y freehire, no.
 
@@ -68,9 +70,42 @@ Notas:
 - **Fuera:** Workday, iCIMS, Taleo y otros ATS que solo ofrecen HTML o exigen sesión. Siguen
   entrando por el alta manual, el botón del navegador o las alertas por correo.
 
+### Alta por la dirección de su web de empleo (fase 44)
+
+`services/ingestion/resolve.py`, sin agente ni modelos, en este orden:
+
+1. **La dirección es la de un ATS** (las de la tabla de abajo, también `job-boards.greenhouse.io`,
+   `jobs.eu.lever.co` o `careers.smartrecruiters.com`): el tipo y el slug salen de ella.
+2. **Es la web de la empresa:** se descarga esa única página, con las mismas reglas que el alta de
+   ofertas por URL (nada local ni de red privada, también tras una redirección; como mucho 2 MB y
+   el tiempo de `connectors.timeout_seconds`). En su HTML se buscan solo direcciones de los ATS
+   conocidos (enlaces a ofertas, `iframe` o script de *embed*, `for=<slug>`); si hay varias, gana la
+   que más aparece. Si la web redirige a su ATS, vale esa dirección. El HTML no es confiable: no se
+   interpreta nada más.
+3. **Sin huella:** se prueban las APIs públicas con slugs sacados del nombre y del dominio
+   (`datadoghq` en `careers.datadoghq.com`), como `cai sources discover`. Vale un tablero con
+   ofertas cuyo slug sea el del dominio o que no sea dudoso (el nombre casa o el slug sale del nombre
+   completo). Un enlace `?gh_jid=` sin tablero acota la prueba a Greenhouse.
+4. **Nada reconocible:** la web se guarda como plataforma que tu agente recorre con el navegador al
+   buscar (`agent_browse`, con esa dirección como búsqueda), igual que un portal añadido a mano.
+
+**Lugares de la dirección.** Los parámetros de ubicación (`office=Madrid`, `location=`, `city=`…) se
+guardan tal cual. Un segmento de la ruta (`/madrid/`) solo cuenta si casa con la ubicación de alguna
+oferta del tablero o con tus lugares del perfil; así `/engineering/` no se toma por un sitio. El
+departamento se ignora: los conectores no lo traen. Quedan en `config.locations` y se aplican a cada
+oferta antes del filtro previo (también sin perfil). Una oferta sin ubicación pasa. Se cambian en la
+tarjeta de la empresa («Solo Madrid · Cambiar», `POST /sources/{id}/locations`) o con
+`--locations` al darla de alta.
+
+**Solo lo que encaja.** «Probar» enseña «Encontrada: usa Greenhouse · 3 ofertas para ti» y esas
+ofertas; la última revisión, «Hoy: 2 ofertas nuevas para ti». Los totales (encontradas, tras
+filtros) siguen en `cai sources test|list|run` y en `source_runs`, para el diagnóstico.
+
+Si la detección falla, «Más opciones» deja elegir el ATS y el slug, como antes.
+
 ### Cómo encontrar el slug
 
-Abre la página de empleo de la empresa (el enlace «Careers» o «Trabaja con nosotros») y mira la URL
+Solo hace falta si la detección automática falla. Abre la página de empleo de la empresa (el enlace «Careers» o «Trabaja con nosotros») y mira la URL
 de una oferta:
 
 | Si la URL es… | ATS | Slug |
@@ -88,12 +123,12 @@ Si la página de empleo tiene dominio propio (`careers.acme.com`), busca en su c
 enlace de «Aplicar» uno de esos dominios.
 
 **Logo de la empresa.** La UI lo carga de la web de la empresa (`website` en la configuración, solo
-el origen: `https://acme.com`). La pones al añadirla (`--website acme.com`) o después en su fila
-(`POST /sources/{id}/website`). Sin ella, la app usa la de sus ofertas más recientes si no están en
+el origen: `https://acme.com`). Al darla de alta por su dirección sale del dominio de su web de
+empleo, sin `careers.` ni `jobs.` delante (nada si es el dominio del ATS). También se pone con
+`--website acme.com` o después en su fila (`POST /sources/{id}/website`). Sin ella, la app usa la de sus ofertas más recientes si no están en
 el dominio del ATS (Teamtailor, p. ej., las publica en el dominio de la empresa); si tampoco, pone
 la inicial. `cai sources discover` lo prueba solo para una lista de
-empresas (abajo). Antes de guardar, «Probar» enseña cuántas ofertas tiene y cuántas pasan tus
-filtros.
+empresas (abajo). Antes de guardar, «Probar» enseña las ofertas que pasan tus filtros.
 - **Filtro previo** antes de guardar (`ingestion/prefilter.py`): el título debe contener todas las
   palabras de alguno de tus `preferences.roles` (o una `title_keywords` de la fuente) y ninguna
   palabra de descarte (las de `preferences.discard_title_keywords` del perfil más las de
@@ -234,6 +269,12 @@ found ─► pending_detail ─(detail_captured)─► pending_extraction ─►
 - **Resultado** en el popup del botón: «Nueva», «Completada» (tenía un resumen de una alerta),
   «Ya estaba» o un error con lo que hay que hacer, y «Abrir ficha». El icono queda marcado en esa
   pestaña (✓, = o !). Instalación y uso: `extension/README.md`.
+- **Una URL de LinkedIn en «Nueva oferta»** no se descarga (error `linkedin_url`): en vez de un
+  error, la UI enseña los dos caminos, primero «Abrir la oferta» para pulsar el botón desde ella
+  (con el enlace a «Botón del navegador» si aún no está conectado, o una línea que dice que sí lo
+  está) y después «Pegar texto» con la URL ya rellena. «Ver cómo se hace» enseña una animación
+  corta del gesto (`docs/img/<idioma>/anim/extension.webp`, con un fotograma fijo para quien
+  prefiere menos movimiento), la misma que la página «Botón del navegador».
 - Honestidad: las condiciones de LinkedIn prohíben extensiones que copien su contenido. Aquí la
   acción es tuya, oferta a oferta, equivalente a copiar y pegar: no recorre páginas ni busca por
   su cuenta. Es la misma práctica que las herramientas de seguimiento de candidaturas conocidas.

@@ -1,7 +1,8 @@
 """Animaciones cortas de la demo para el README (fase 28.3b): WebP animado con leyenda.
 
 Uso (desde backend/, con ffmpeg): uv run --with imageio-ffmpeg python recordings.py OUT_DIR ESCENA IDIOMA
-  ESCENA: tour, triage, discard, mailbox, cv, profile, apply o start. IDIOMA: en o es.
+  ESCENA: tour, triage, discard, mailbox, cv, profile, apply, start o extension.
+  IDIOMA: en o es.
 UI en 5181 y API en 8010; la app real sigue en 5173/8000 sin tocarse.
 
 Cada escena dura menos de 20 s, salvo `tour` (el recorrido de la portada, unos 50 s y más nítido:
@@ -18,10 +19,20 @@ otro CV y deja preparada la candidatura de `CV_JOB` (sin enviarla). Usa una demo
 Greenhouse de los tests, servido en 127.0.0.1:8030, con la oferta `CV_JOB` apuntando a él y el
 worker de la demo con `CAI_APPLIER_ALLOW_LOOPBACK=1` (ver README.md). Se para antes de enviar.
 
+`extension` enseña el botón «Enviar a CandidatAI» con una oferta pública real de LinkedIn
+(`LINKEDIN_URL`, sin sesión iniciada): el vídeo de Playwright solo graba la página, así que la
+barra del navegador y el cursor se dibujan en un escenario local; la página de la oferta es una
+captura suya y el popup es el `popup.html` de verdad de la extensión. La oferta se da de alta en
+la demo por la API y la escena acaba en la Bandeja. Deja también `extension-still.webp`, el
+fotograma fijo que la UI enseña a quien prefiere menos movimiento. Menos de 10 s y de 1 MB.
+Es solo para grabar este material, a mano y de vez en cuando: abre una sola página pública, sin
+cuenta ni cookies guardadas, y no forma parte de la app (que nunca descarga LinkedIn).
+
 `start` reproduce en un terminal la salida real de `cai start` (la que lee de START_LOG) y abre
 la app que sirve ese `cai start` en START_URL (otro puerto, con la UI compilada).
 """
 
+import base64
 import html
 import json
 import os
@@ -29,9 +40,10 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import urllib.request
 from pathlib import Path
 
-from playwright.sync_api import Browser, BrowserContext, Locator, Page, sync_playwright
+from playwright.sync_api import Browser, BrowserContext, Locator, Page, Route, sync_playwright
 
 UI = "http://127.0.0.1:5181"
 API = "http://127.0.0.1:8010"
@@ -40,13 +52,17 @@ START_LOG = os.environ.get("START_LOG", "")
 OUT = Path(sys.argv[1])
 SCENE = sys.argv[2]
 LANG = sys.argv[3]
-LOCALES = Path(__file__).resolve().parents[2] / "frontend" / "src" / "locales" / LANG
+ROOT = Path(__file__).resolve().parents[2]
+LOCALES = ROOT / "frontend" / "src" / "locales" / LANG
+EXTENSION = ROOT / "extension"
+LINKEDIN_URL = os.environ.get("LINKEDIN_URL", "")
 CV_JOB = 1
 SIZE = {"width": 1600, "height": 1000}
 # Ancho, fotogramas por segundo y calidad del WebP: unos 300 KB por escena.
 WIDTH, FPS, QUALITY = 900, 6, 50
-# El recorrido de la portada (fase 28.4), más nítido: unos 3 MB.
-SHARP = {"tour": (1280, 10, 70)}
+# El recorrido de la portada, más nítido: unos 3 MB. La del botón del navegador va dentro de la
+# UI, en un aviso estrecho: más pequeña y por debajo de 1 MB.
+SHARP = {"tour": (1280, 10, 70), "extension": (900, 8, 55)}
 OUT.mkdir(parents=True, exist_ok=True)
 assert LANG in ("en", "es"), "IDIOMA: en o es"
 
@@ -84,6 +100,11 @@ CAPTIONS = {
             "Solo se envía si escribes el nombre de la empresa",
         ],
         "start": ["Una orden arranca la app y abre el navegador"],
+        "extension": [
+            "Abre la oferta en LinkedIn y pulsa el botón de CandidatAI",
+            "La oferta se envía a tu CandidatAI",
+            "Ya está en tu Bandeja, lista para leer",
+        ],
         "tour": [
             "Inicio: lo que te espera hoy",
             "Por revisar: cada oferta con su score explicado",
@@ -130,6 +151,11 @@ CAPTIONS = {
             "It only sends once you type the company name",
         ],
         "start": ["One command starts the app and opens the browser"],
+        "extension": [
+            "Open the job on LinkedIn and click the CandidatAI button",
+            "The job is sent to your CandidatAI",
+            "It's in your Inbox, ready to read",
+        ],
         "tour": [
             "Home: what's waiting for you today",
             "To review: every job with its explained score",
@@ -421,9 +447,6 @@ def scene_tour(page: Page) -> None:
     pause(page, 3200)
 
 
-SETUP = {"tour": prepare_application}
-
-
 TERMINAL = """<!doctype html><meta charset="utf-8"><style>
 body{{margin:0;height:100vh;display:grid;place-items:center;background:#e9eef0;font:16px Consolas,monospace}}
 .win{{width:1100px;border-radius:12px;overflow:hidden;box-shadow:0 20px 60px #0003;background:#0c1416}}
@@ -456,6 +479,228 @@ def scene_start(page: Page) -> None:
     goto(page, "/", 2500, base=START_URL)
     caption(page, 0)
     pause(page, 1500)
+
+
+# --- El botón del navegador --------------------------------------------------------------------
+
+STAGE = "http://stage.local"
+# Lo que `prepare_extension` saca de la oferta de LinkedIn antes de grabar.
+POSTING: dict[str, str] = {}
+CHROME_H = 88  # alto de las pestañas y la barra de direcciones dibujadas
+
+STAGE_HTML = """<!doctype html><meta charset="utf-8"><style>
+*{{box-sizing:border-box}}
+body{{margin:0;height:100vh;overflow:hidden;background:#dee3e7;font:14px system-ui,sans-serif}}
+.tabs{{height:40px;display:flex;align-items:flex-end;gap:2px;padding:0 10px}}
+.tab{{height:32px;width:250px;display:flex;align-items:center;gap:8px;padding:0 12px;
+  border-radius:10px 10px 0 0;color:#3c4043;white-space:nowrap;overflow:hidden;font-size:13px}}
+.tab.on{{background:#fff}}
+.tab img{{width:16px;height:16px}}
+.bar{{height:48px;background:#fff;display:flex;align-items:center;gap:12px;padding:0 14px;
+  border-bottom:1px solid #d6dadd}}
+.url{{flex:1;height:34px;border-radius:17px;background:#f1f3f4;display:flex;align-items:center;
+  padding:0 16px;color:#3c4043;overflow:hidden;white-space:nowrap}}
+.ext{{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;
+  transition:background .2s}}
+.ext.hot{{background:#e3e7ea}}
+.ext img{{width:20px;height:20px}}
+.view{{position:absolute;top:{chrome}px;left:0;right:0;bottom:0;background:#fff;overflow:hidden}}
+.view img{{width:100%;display:block}}
+.view iframe{{width:100%;height:100%;border:0}}
+.popup{{position:absolute;top:{popup_top}px;right:14px;width:340px;height:230px;border:0;
+  border-radius:8px;box-shadow:0 10px 30px #0004;background:#fff;display:none}}
+.popup.on{{display:block}}
+.cursor{{position:absolute;left:900px;top:520px;width:26px;z-index:9;
+  transition:left .9s ease,top .9s ease,transform .12s}}
+.cursor.down{{transform:scale(.85)}}
+</style>
+<div class="tabs">
+  <div class="tab on" id="tab-job"><img src="{favicon}" alt="">{tab_title}</div>
+  <div class="tab" id="tab-app"><img src="{icon}" alt="">CandidatAI</div>
+</div>
+<div class="bar"><div class="url" id="url">{url}</div>
+  <div class="ext" id="ext"><img src="{icon}" alt=""></div></div>
+<div class="view" id="view"><img src="{shot}" alt=""></div>
+<iframe class="popup" id="popup"></iframe>
+<svg class="cursor" id="cursor" viewBox="0 0 24 24"><path d="M3 2l7 19 2.6-7.4L20 11z"
+  fill="#111" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg>
+"""
+
+# En el popup, el `chrome` que espera `popup.js`: responde con la oferta ya dada de alta.
+POPUP_STUB = """(() => {
+  if (location.origin !== '%s' || !location.pathname.endsWith('/popup.html')) return;
+  const outcome = %s;
+  window.chrome = {
+    tabs: { query: (_q, cb) => cb([{ id: 1 }]), create: () => {} },
+    runtime: {
+      sendMessage: (_m, cb) => setTimeout(() => cb(outcome), 700),
+      openOptionsPage: () => {},
+    },
+  };
+})()"""
+
+
+def data_uri(path: Path, kind: str) -> str:
+    return f"data:{kind};base64," + base64.b64encode(path.read_bytes()).decode()
+
+
+def api_post(path: str, body: dict[str, object]) -> dict[str, object]:
+    request = urllib.request.Request(
+        API + path,
+        data=json.dumps(body).encode(),
+        headers={"content-type": "application/json", "origin": "http://127.0.0.1:5173"},
+    )
+    with urllib.request.urlopen(request, timeout=30) as response:
+        return json.loads(response.read())
+
+
+def prepare_extension(page: Page) -> None:
+    """Captura la oferta de LinkedIn (sin sesión ni avisos encima) y la da de alta en la demo."""
+    assert LINKEDIN_URL, "LINKEDIN_URL: la URL de una oferta pública de LinkedIn"
+    page.set_viewport_size({"width": SIZE["width"], "height": SIZE["height"] - CHROME_H})
+    # LinkedIn no deja nunca la red en reposo (`networkidle` no llega): se espera al título.
+    page.goto(LINKEDIN_URL, wait_until="domcontentloaded", timeout=45_000)
+    page.locator("h1").first.wait_for(timeout=20_000)
+    pause(page, 2500)
+    # Las cookies (rechazadas) y el aviso de iniciar sesión, fuera de la captura.
+    for name in ("Rechazar", "Reject"):
+        button = page.get_by_role("button", name=name)
+        if button.count():
+            button.first.click()
+            break
+    page.keyboard.press("Escape")
+    page.evaluate(
+        "() => document.querySelectorAll("
+        "'.modal__overlay, .contextual-sign-in-modal, [role=dialog]').forEach(e => e.remove())"
+    )
+    # Ni fotos ni nombres de personas reales: fuera «Descubre a quién ha contratado…» y cualquier
+    # bloque con caras (la animación se publica en el repositorio).
+    page.evaluate(
+        """() => {
+          const faces = document.querySelectorAll('[class*="face-pile"], [class*="facepile"]');
+          faces.forEach(e => (e.closest('a, div') || e).remove());
+          for (const e of document.querySelectorAll('a, div, p, span')) {
+            const text = (e.textContent || '').trim();
+            if (/^(Descubre a quién|See who|Discover who)/.test(text) && text.length < 160) {
+              (e.closest('a') || e).remove();
+            }
+          }
+        }"""
+    )
+    pause(page, 600)
+    title = page.locator("h1").first.inner_text().strip()
+    company = page.locator(".topcard__org-name-link, .topcard__flavor").first.inner_text().strip()
+    description = page.locator(".description__text, .show-more-less-html").first.inner_text()
+    shot = Path(tempfile.mkdtemp(prefix="cai-li-")) / "posting.png"
+    page.screenshot(path=str(shot))
+    added = api_post(
+        "/jobs/text",
+        {"title": title, "company": company, "text": description.strip(), "url": LINKEDIN_URL},
+    )
+    POSTING.update(
+        title=title,
+        company=company,
+        shot=str(shot),
+        job_id=str(added["job_id"]),
+        page_title=page.title(),
+    )
+
+
+def move_cursor(page: Page, x: float, y: float, ms: int = 950) -> None:
+    page.evaluate(
+        "([x, y]) => { const c = document.getElementById('cursor');"
+        " c.style.left = x + 'px'; c.style.top = y + 'px' }",
+        [x, y],
+    )
+    pause(page, ms)
+
+
+def click_cursor(page: Page) -> None:
+    page.evaluate("() => document.getElementById('cursor').classList.add('down')")
+    pause(page, 140)
+    page.evaluate("() => document.getElementById('cursor').classList.remove('down')")
+
+
+def serve_stage(route: Route) -> None:
+    """El escenario y, para el popup, los ficheros de la extensión tal cual."""
+    path = route.request.url.removeprefix(STAGE + "/")
+    if path != "stage":
+        route.fulfill(path=str(EXTENSION / path))
+        return
+    body = STAGE_HTML.format(
+        chrome=CHROME_H,
+        popup_top=CHROME_H - 6,
+        icon=data_uri(EXTENSION / "icons" / "icon32.png", "image/png"),
+        favicon=data_uri(EXTENSION / "icons" / "icon16.png", "image/png"),
+        tab_title=html.escape(POSTING["page_title"][:40]),
+        url=html.escape(LINKEDIN_URL),
+        shot=data_uri(Path(POSTING["shot"]), "image/png"),
+    )
+    route.fulfill(body=body, content_type="text/html")
+
+
+def scene_extension(page: Page) -> None:
+    outcome = {
+        "ok": True,
+        "kind": "new",
+        "label": "Nueva",
+        "title": POSTING["title"],
+        "company": POSTING["company"],
+        "jobUrl": f"{UI}/jobs/{POSTING['job_id']}",
+    }
+    page.context.add_init_script(POPUP_STUB % (STAGE, json.dumps(outcome)))
+    page.route(f"{STAGE}/**", serve_stage)
+    page.goto(f"{STAGE}/stage")
+    pause(page, 1300)
+    caption(page, 0)
+    pause(page, 700)
+    ext = page.locator("#ext").bounding_box()
+    assert ext is not None
+    move_cursor(page, ext["x"] + ext["width"] / 2 - 4, ext["y"] + ext["height"] / 2 - 2)
+    page.evaluate("() => document.getElementById('ext').classList.add('hot')")
+    click_cursor(page)
+    page.evaluate(
+        "src => { const p = document.getElementById('popup'); p.src = src; p.classList.add('on') }",
+        f"{STAGE}/popup.html",
+    )
+    caption(page, 1)
+    page.frame_locator("#popup").locator(".status").wait_for(timeout=10_000)
+    pause(page, 1500)
+    page.screenshot(path=str(OUT / "extension-still.png"))
+    # A la pestaña de CandidatAI: la Bandeja, con la oferta recién llegada resaltada.
+    page.evaluate(
+        "url => { document.getElementById('popup').classList.remove('on');"
+        " document.getElementById('ext').classList.remove('hot');"
+        " document.getElementById('tab-job').classList.remove('on');"
+        " document.getElementById('tab-app').classList.add('on');"
+        " document.getElementById('url').textContent = url;"
+        " document.getElementById('view').innerHTML = `<iframe src='${url}'></iframe>` }",
+        f"{UI}/bandeja",
+    )
+    caption(page, 2)
+    row = page.frame_locator("#view iframe").get_by_text(POSTING["title"]).first
+    row.wait_for(timeout=15_000)
+    row.evaluate(
+        "e => { const r = e.closest('li, tr, article') || e;"
+        " r.style.outline = '3px solid #0f766e'; r.style.outlineOffset = '3px';"
+        " r.style.borderRadius = '10px' }"
+    )
+    box = row.bounding_box()
+    if box:
+        move_cursor(page, box["x"] + 40, box["y"] + box["height"] / 2, 700)
+    pause(page, 1600)
+
+
+def still_to_webp(png: Path, target: Path, width: int) -> None:
+    """El fotograma fijo para quien prefiere menos movimiento."""
+    subprocess.run(
+        [
+            ffmpeg(), "-y", "-loglevel", "error", "-i", str(png),
+            "-vf", f"scale={width}:-1:flags=lanczos", "-c:v", "libwebp", "-q:v", "75", str(target),
+        ],
+        check=True,
+    )
+    png.unlink()
 
 
 def ffmpeg() -> str:
@@ -496,7 +741,10 @@ SCENES = {
     "apply": scene_apply,
     "start": scene_start,
     "tour": scene_tour,
+    "extension": scene_extension,
 }
+# Lo que se prepara antes de grabar, sin vídeo.
+SETUP = {"tour": prepare_application, "extension": prepare_extension}
 
 
 def new_context(browser: Browser, video_dir: Path | None) -> BrowserContext:
@@ -539,6 +787,10 @@ def main() -> None:
     target = OUT / f"{SCENE}.webp"
     to_webp(webm, target, *SHARP.get(SCENE, (WIDTH, FPS, QUALITY)))
     print("ok", target, f"{target.stat().st_size // 1024} KB", "· webm:", webm)
+    still = OUT / f"{SCENE}-still.png"
+    if still.exists():
+        width = SHARP.get(SCENE, (WIDTH, FPS, QUALITY))[0]
+        still_to_webp(still, OUT / f"{SCENE}-still.webp", width)
 
 
 main()

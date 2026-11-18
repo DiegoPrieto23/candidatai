@@ -184,7 +184,7 @@ own in **My profile**: carry on with step 3.
 With no agent (or no CV), click **Start by hand** in **My profile**: write your name, your headline,
 the role you're looking for and the levels you accept, and click **Create my profile**. The editor
 opens so you can carry on block by block; what it didn't ask (work mode, locations, photo on the CV)
-starts open to anything and you change it in **Search jobs → Your search settings** and in **My profile**.
+starts open to anything and you change it in **Search jobs** and in **My profile**.
 
 If you'd rather do it from your agent:
 
@@ -202,11 +202,11 @@ If you'd rather do it from your agent:
    `update-profile` skill: it reads your CV, asks you for what's missing and saves it, without
    making anything up.
 3. Then review it block by block in **My profile**: experience and achievements (with numbers if you
-   have them), skills and languages; and in **Search jobs → Your search settings**, what you're looking for: roles, locations,
-   remote work and your salary minimum. Each block saves on its own and can be undone.
+   have them), skills and languages; and in **Search jobs**, what you're looking for: roles, locations and work mode at the
+   top, and under **More settings** your salary minimum, years of experience and contract. Each change can be undone.
 
 <!-- media:provisional -->
-<img src="img/en/search-settings.webp" alt="“Your search settings”, in Search jobs" width="88%">
+<img src="img/en/search-settings.webp" alt="“Search jobs” with “More settings” open" width="88%">
 
 Your salary minimum is used to discard jobs below it and to compare offers, but **your agent never
 sees the figure**.

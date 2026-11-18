@@ -16,7 +16,7 @@ Origen de ofertas.
 | id | int PK | |
 | kind | str | `manual_url`, `manual_text`, `greenhouse`, `lever`, `ashby`, `infojobs`, `adzuna`; desde la fase 25.1, también `personio`, `teamtailor`, `workable`, `smartrecruiters`, `recruitee`, `manfred` y `freehire`; desde la fase 09b, también `email_alerts`, `browser_capture` y `agent_browse`; desde la fase 22, `linkedin_public` (una sola fila, se crea al activarla) |
 | name | str | Etiqueta legible |
-| config | JSON | Parámetros del conector, validados por tipo (`app/schemas/sources.py`): ATS `{slug, region, title_keywords, website?}` (`website`: origen de la web de la empresa, solo para su logo) (`region: eu` solo en Lever; Personio, además, `language` si se fija); InfoJobs `{query, province, since, title_keywords}`; Adzuna `{query, where, country, max_days_old, title_keywords}`; Manfred `{query, lang, title_keywords}`; freehire `{query, country, remote_only, title_keywords}`; plataforma `agent_browse` `{platform, search_urls, priority, access, allow_agent_browsing, max_offers, notes}` (el nombre va en `name`; `priority` es un puesto único 1…N, sin empates, desde la fase 27.3); `linkedin_public` `{enabled, fetch_detail, enabled_at, blocked_at}` (fase 22: las búsquedas salen de la plataforma LinkedIn). Nunca claves: van en `.env` |
+| config | JSON | Parámetros del conector, validados por tipo (`app/schemas/sources.py`): ATS `{slug, region, title_keywords, website?, careers_url?, locations?}` (`website`: origen de la web de la empresa, solo para su logo; `careers_url`: la dirección de su web de empleo con la que se dio de alta; `locations`: lugares a los que se limita, «Solo Madrid», desde la fase 44, sin migración por ir en el JSON) (`region: eu` solo en Lever; Personio, además, `language` si se fija); InfoJobs `{query, province, since, title_keywords}`; Adzuna `{query, where, country, max_days_old, title_keywords}`; Manfred `{query, lang, title_keywords}`; freehire `{query, country, remote_only, title_keywords}`; plataforma `agent_browse` `{platform, search_urls, priority, access, allow_agent_browsing, max_offers, notes}` (el nombre va en `name`; `priority` es un puesto único 1…N, sin empates, desde la fase 27.3); `linkedin_public` `{enabled, fetch_detail, enabled_at, blocked_at}` (fase 22: las búsquedas salen de la plataforma LinkedIn). Nunca claves: van en `.env` |
 | active | bool | Las activas con conector entran en la ingesta diaria del worker |
 | last_run_at | datetime? | Última ejecución del conector que no falló entera. Si falla, no avanza: el worker la vuelve a encolar al arrancar (el fallo queda en `source_runs`) |
 
@@ -116,6 +116,7 @@ Una fila por extracción; la vigente es la más reciente.
 | id | int PK | |
 | data | JSON | Validado con `CandidateProfile`, importado desde `data/profile.yaml`. Desde la fase 27.5, `preferences` admite `min_years_required`, `discard_title_keywords`, `contract_types` (`permanent`, `fixed_term`, `freelance`), `employment_types` (`full_time`, `part_time`, `internship`) y `excluded_employer_kinds` (`consultancy`, `agency`), que vacíos no se vuelcan (mismo hash); `private.salary_floor_eur` es un entero > 0 o `null`. La extracción gana `employer_kind` (`direct`, `consultancy`, `agency`, `unknown`), opcional |
 | content_hash | str | sha256 del JSON canónico. Importar un contenido igual al de la versión vigente no crea versión; volver a uno anterior sí (índice, no único) |
+| origin | str, null | De dónde viene (migración 0040): `ui` (guardado en «Mi perfil»), `agent` (`cai profile import`), `undo`, `restore` («Volver a esta versión») o `demo`. Las versiones anteriores a la migración, `null` |
 | created_at | datetime | |
 
 ### `matches`
@@ -594,7 +595,7 @@ Sin el contenido: solo qué, cuándo y el sha256 del fichero.
 | id | int PK | |
 | target | str | `profile`, `context`, `style_sample` o `document` (CV o exportación de LinkedIn) |
 | section | str? | La sección del perfil, el fichero de contexto, el nombre de la muestra o `<carpeta>/<nombre>` del documento; `null` al deshacer |
-| action | str | `save`, `undo`, `upload` o `delete` |
+| action | str | `save`, `undo`, `restore`, `upload` o `delete` |
 | hash_before / hash_after | str? | sha256 de los bytes del fichero antes y después (`null` si no existía) |
 | created_at | datetime | |
 

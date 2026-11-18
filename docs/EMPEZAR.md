@@ -184,7 +184,7 @@ perfil aparece solo en **Mi perfil**: sigue en el paso 3.
 Sin agente (o sin CV), pulsa **Empezar a mano** en **Mi perfil**: escribe tu nombre, tu titular, el
 puesto que buscas y los niveles que aceptas, y pulsa **Crear mi perfil**. Se abre el editor para que
 sigas bloque a bloque; lo que no te ha preguntado (modalidad, ubicaciones, foto en el CV) empieza
-abierto a todo y lo cambias en **Buscar ofertas → Configuración de tu búsqueda** y en **Mi perfil**.
+abierto a todo y lo cambias en **Buscar ofertas** y en **Mi perfil**.
 
 Si prefieres hacerlo desde tu agente:
 
@@ -201,11 +201,11 @@ Si prefieres hacerlo desde tu agente:
 2. Pídele: *«Crea mi perfil a partir de mi CV»* y dile dónde está tu CV (Word o PDF). Usa el skill
    `update-profile`: lee tu CV, te pregunta lo que falta y lo guarda, sin inventarse nada.
 3. Luego revísalo bloque a bloque en **Mi perfil**: experiencia y logros (con cifras si las tienes),
-   skills e idiomas; y en **Buscar ofertas → Configuración de tu búsqueda**, lo que buscas: puestos, ubicaciones, teletrabajo y tu mínimo
-   salarial. Cada bloque se guarda solo y se puede deshacer.
+   skills e idiomas; y en **Buscar ofertas**, lo que buscas: puestos, ubicaciones y modalidad arriba, y en «Más ajustes»
+   tu mínimo salarial, los años de experiencia y el contrato. Cada cambio se puede deshacer.
 
 <!-- media:provisional -->
-<img src="img/es/search-settings.webp" alt="«Configuración de tu búsqueda», en Buscar ofertas" width="88%">
+<img src="img/es/search-settings.webp" alt="«Buscar ofertas» con «Más ajustes» desplegado" width="88%">
 
 Tu mínimo salarial sirve para descartar ofertas que pagan menos y para comparar ofertas recibidas,
 pero **tu agente nunca ve la cifra**.

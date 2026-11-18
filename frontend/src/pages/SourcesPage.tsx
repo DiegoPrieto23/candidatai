@@ -4,9 +4,10 @@ import { Link } from 'react-router'
 import {
   ArrowSquareOutIcon,
   BuildingsIcon,
+  CaretDownIcon,
   CheckCircleIcon,
   ClockIcon,
-  MinusCircleIcon,
+  MapPinIcon,
   PauseIcon,
   PlayIcon,
   WarningCircleIcon,
@@ -24,6 +25,7 @@ import {
   usePreviewSource,
   useRunSource,
   useSetSourceActive,
+  useSetSourceLocations,
   useSetSourceWebsite,
   useSources,
 } from '@/api/queries'
@@ -37,12 +39,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton'
 import { errorMessage } from '@/lib/errors'
 import { i18n } from '@/lib/i18n'
-import { dateFormatter, SOURCE_KIND_LABEL } from '@/lib/labels'
+import { formatRelative, SOURCE_KIND_LABEL } from '@/lib/labels'
 import { platformHome } from '@/lib/searches'
 import { cn } from '@/lib/utils'
 import { BusyLabel } from '@/components/StableLabel'
 
 type Portal = 'infojobs' | 'adzuna' | 'manfred' | 'freehire'
+/** «Detectarla sola»: la app deduce el ATS de la dirección de su web de empleo. */
+type FormKind = ConnectorKind | 'auto'
 
 /** Las búsquedas (portales) toman su nombre y su pista de los textos: `kinds.*`. */
 const KINDS: { value: ConnectorKind; label: string | null; hint: string | null }[] = [
@@ -80,8 +84,15 @@ function fieldErrors(error: unknown): Record<string, string> {
   return Object.fromEntries(error.details.map((d) => [d.field || 'form', d.reason]))
 }
 
-function formatWhen(iso: string): string {
-  return dateFormatter({ day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(iso))
+/** «Hoy», «Ayer», «Hace 3 días»… al principio de una línea. */
+function whenLabel(iso: string): string {
+  const text = formatRelative(iso)
+  return text.charAt(0).toLocaleUpperCase() + text.slice(1)
+}
+
+function placesOf(source: SourceView): string[] {
+  const places = source.config.locations
+  return Array.isArray(places) ? places.map(String) : []
 }
 
 // --- Resultado de una prueba o de una ejecución ---------------------------------------------------
@@ -112,7 +123,7 @@ function Notice({ tone, children }: { tone: 'ok' | 'warn' | 'error'; children: R
   )
 }
 
-function Issues({ issues }: { issues: SourceTestResult['errors'] }) {
+function Issues({ issues }: { issues: { message: string }[] }) {
   const { t } = useTranslation('sources')
   if (issues.length === 0) return null
   return (
@@ -127,70 +138,77 @@ function Issues({ issues }: { issues: SourceTestResult['errors'] }) {
   )
 }
 
+/** Lo que encaja contigo y nada más: los recuentos totales quedan en el registro y en la CLI. */
 function PreviewResult({ result }: { result: SourceTestResult }) {
   const { t } = useTranslation('sources')
-  const [showAll, setShowAll] = useState(false)
-  const failed = result.found === 0 && result.errors.length > 0
-  const jobs = showAll ? result.jobs : result.jobs.filter((j) => j.passed)
+  const found = result.resolution
+  if (found?.how === 'none') {
+    return (
+      <Notice tone="warn">
+        <p>{t('resolve.none')}</p>
+        <Issues issues={found.issues.map((message) => ({ message }))} />
+      </Notice>
+    )
+  }
+  if (result.found === 0 && result.errors.length > 0) {
+    return (
+      <Notice tone="error">
+        <InlineCode text={result.message} />
+      </Notice>
+    )
+  }
+  const jobs = result.jobs.filter((j) => j.passed)
+  const forYou = t('forYou', { count: result.after_filters })
+  const places = found?.locations ?? []
   return (
     <div className="grid gap-3">
-      <Notice tone={failed ? 'error' : result.after_filters ? 'ok' : 'warn'}>
+      <Notice tone={result.after_filters ? 'ok' : 'warn'}>
         <p className="font-medium">
-          <InlineCode text={result.message} />
+          {found?.kind_label ? `${t('resolve.found', { ats: found.kind_label })} · ${forYou}` : forYou}
         </p>
-        {!failed && <Issues issues={result.errors} />}
+        {places.length > 0 && (
+          <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+            <MapPinIcon className="size-3.5" aria-hidden />
+            {t('onlyIn', { places: places.join(', ') })}
+          </p>
+        )}
+        {found?.kind_label && found.slug && (
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {t('resolve.detail', { board: `${found.kind_label} · ${found.slug}`, how: t(`resolve.how.${found.how}`) })}
+          </p>
+        )}
+        <Issues issues={result.errors} />
       </Notice>
-      {result.jobs.length > 0 && (
-        <div className="rounded-lg border">
-          <ul className="max-h-72 divide-y overflow-y-auto text-sm">
-            {jobs.map((job) => (
-              <li key={job.external_id} className="flex items-start gap-2.5 px-3.5 py-2.5">
-                {job.passed ? (
-                  <CheckCircleIcon className="mt-0.5 size-4 shrink-0 text-primary" weight="fill" aria-label={t('pass')} />
-                ) : (
-                  <MinusCircleIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-label={t('filtered')} />
-                )}
-                <div className="min-w-0 flex-1">
-                  <a
-                    href={job.url}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    className={cn('font-medium hover:underline', !job.passed && 'text-muted-foreground')}
-                  >
-                    {job.title}
-                  </a>
-                  <p className="text-xs text-muted-foreground">
-                    {[job.location, job.reason].filter(Boolean).join(' · ')}
-                  </p>
-                </div>
-              </li>
-            ))}
-            {jobs.length === 0 && (
-              <li className="px-3.5 py-2.5 text-muted-foreground">{t('nonePass')}</li>
-            )}
-          </ul>
-          {result.found > result.after_filters && (
-            <button
-              type="button"
-              onClick={() => setShowAll((v) => !v)}
-              className="w-full border-t px-3.5 py-2 text-left text-xs font-medium text-primary hover:bg-muted/50"
-            >
-              {showAll ? t('onlyPassing') : t('alsoFiltered', { count: result.found - result.after_filters })}
-            </button>
-          )}
-        </div>
-      )}
+      <div className="rounded-lg border">
+        <ul className="max-h-72 divide-y overflow-y-auto text-sm">
+          {jobs.map((job) => (
+            <li key={job.external_id} className="px-3.5 py-2.5">
+              <a href={job.url} target="_blank" rel="noreferrer noopener" className="font-medium hover:underline">
+                {job.title}
+              </a>
+              {job.location && <p className="text-xs text-muted-foreground">{job.location}</p>}
+            </li>
+          ))}
+          {jobs.length === 0 && <li className="px-3.5 py-2.5 text-muted-foreground">{t('nonePass')}</li>}
+        </ul>
+      </div>
     </div>
   )
 }
 
 function RunResult({ result }: { result: SourceRunResult }) {
   const { t } = useTranslation('sources')
-  const tone = result.skipped || (result.errors.length > 0 && result.found === 0) ? 'error' : 'ok'
+  const failed = !!result.skipped || (result.errors.length > 0 && result.found === 0)
   return (
-    <Notice tone={tone}>
+    <Notice tone={failed ? 'error' : 'ok'}>
       <p>
-        <InlineCode text={result.message} />
+        {failed ? (
+          <InlineCode text={result.message} />
+        ) : result.created ? (
+          t('run.created', { count: result.created })
+        ) : (
+          t('run.none')
+        )}
       </p>
       {result.job_ids.length > 0 && (
         <p className="mt-1 text-xs text-muted-foreground">
@@ -200,7 +218,7 @@ function RunResult({ result }: { result: SourceRunResult }) {
           </Link>
         </p>
       )}
-      {result.found > 0 && <Issues issues={result.errors} />}
+      {!failed && <Issues issues={result.errors} />}
     </Notice>
   )
 }
@@ -222,8 +240,9 @@ function Field({ id, label, error, hint, children }: { id: string; label: string
 }
 
 const EMPTY = {
-  kind: 'greenhouse' as ConnectorKind,
+  kind: 'auto' as FormKind,
   name: '',
+  url: '',
   slug: '',
   region: 'global' as 'global' | 'eu',
   query: '',
@@ -233,54 +252,102 @@ const EMPTY = {
   lang: 'ES' as 'ES' | 'EN',
   country: 'es',
   remoteOnly: false,
-  website: '',
 }
-type TextKey = 'name' | 'slug' | 'query' | 'where' | 'province' | 'language' | 'country' | 'website'
+type TextKey = 'name' | 'url' | 'slug' | 'query' | 'where' | 'province' | 'language' | 'country'
+/** Los valores por defecto de `SourceInput`, que el cliente generado pide siempre. */
+const DEFAULTS = { region: 'global', country: 'es', lang: 'ES', remote_only: false, title_keywords: [] } as const satisfies Partial<SourceInput>
 
+/** Lo normal: el nombre de la empresa y la dirección de su web de empleo, y la app hace el resto.
+ * «Más opciones» deja elegir el ATS y su slug (si la detección falla) o una búsqueda en un portal. */
 function AddSourceForm({ onAdded }: { onAdded?: () => void }) {
   const { t } = useTranslation('sources', { keyPrefix: 'form' })
   const [form, setForm] = useState(EMPTY)
+  const [more, setMore] = useState(false)
   const preview = usePreviewSource()
   const add = useAddSource()
-  const isAts = ATS.includes(form.kind)
-  const kind = KINDS.find((k) => k.value === form.kind)!
+  const auto = form.kind === 'auto'
+  const isAts = auto || ATS.includes(form.kind as ConnectorKind)
+  const kind = KINDS.find((k) => k.value === form.kind)
   const errors = { ...fieldErrors(preview.error), ...fieldErrors(add.error) }
+  // Cambiar un campo descarta la prueba: lo detectado siempre corresponde a lo que se ve.
+  const detected = preview.data?.resolution ?? null
   const update = (patch: Partial<typeof EMPTY>) => {
     setForm((prev) => ({ ...prev, ...patch }))
     preview.reset()
   }
-  const set = (key: TextKey) => (e: { target: { value: string } }) => update({ [key]: e.target.value })
-  const ready = form.name.trim() && (isAts ? form.slug.trim() : form.query.trim())
+  const set = (key: TextKey) => (e: { target: { value: string } }) =>
+    // Otra dirección es otra empresa: lo que se trajo de la detección anterior ya no vale.
+    update(key === 'url' && auto ? { url: e.target.value, slug: '', region: 'global' } : { [key]: e.target.value })
+  const ready = form.name.trim() && (auto ? form.url.trim() : isAts ? form.slug.trim() : form.query.trim())
 
-  const body = (): SourceInput => ({
-    kind: form.kind,
-    name: form.name.trim(),
-    slug: isAts ? form.slug.trim() : null,
-    region: form.kind === 'lever' ? form.region : 'global',
-    query: isAts ? null : form.query.trim(),
-    where: form.kind === 'adzuna' ? form.where.trim() || null : null,
-    province: form.kind === 'infojobs' ? form.province.trim() || null : null,
-    country: form.kind === 'freehire' ? form.country.trim().toLowerCase() || 'es' : 'es',
-    language: form.kind === 'personio' ? form.language.trim().toLowerCase() || null : null,
-    lang: form.kind === 'manfred' ? form.lang : 'ES',
-    remote_only: form.kind === 'freehire' && form.remoteOnly,
-    title_keywords: [],
-    website: isAts ? form.website.trim() || null : null,
-  })
+  const body = (): SourceInput => {
+    const name = form.name.trim()
+    const url = form.url.trim() || null
+    if (auto) {
+      // Tras «Probar», lo detectado: así «Añadir» no vuelve a buscar su web de empleo.
+      if (detected?.kind && detected.slug) {
+        return {
+          ...DEFAULTS,
+          kind: detected.kind as ConnectorKind,
+          name,
+          slug: detected.slug,
+          region: detected.region,
+          url: detected.url,
+          locations: detected.locations,
+          website: detected.website,
+        }
+      }
+      return { ...DEFAULTS, name, url }
+    }
+    const ck = form.kind as ConnectorKind
+    if (isAts) {
+      return {
+        ...DEFAULTS,
+        kind: ck,
+        name,
+        slug: form.slug.trim(),
+        region: ck === 'lever' ? form.region : 'global',
+        language: ck === 'personio' ? form.language.trim().toLowerCase() || null : null,
+        url,
+      }
+    }
+    return {
+      ...DEFAULTS,
+      kind: ck,
+      name,
+      slug: null,
+      query: form.query.trim(),
+      where: ck === 'adzuna' ? form.where.trim() || null : null,
+      province: ck === 'infojobs' ? form.province.trim() || null : null,
+      country: ck === 'freehire' ? form.country.trim().toLowerCase() || 'es' : 'es',
+      lang: ck === 'manfred' ? form.lang : 'ES',
+      remote_only: ck === 'freehire' && form.remoteOnly,
+    }
+  }
 
   const test = () => {
     add.reset()
-    preview.mutate(body())
+    preview.mutate(auto ? { ...DEFAULTS, name: form.name.trim(), url: form.url.trim() } : body())
   }
   const save = (e: FormEvent) => {
     e.preventDefault()
     add.mutate(body(), {
       onSuccess: () => {
         setForm(EMPTY)
+        setMore(false)
         preview.reset()
         onAdded?.()
       },
     })
+  }
+  const toggleMore = () => {
+    if (more) {
+      update({ kind: 'auto' })
+    } else if (detected?.kind && detected.slug) {
+      // Lo detectado, ya puesto, para corregirlo si no es.
+      update({ kind: detected.kind as ConnectorKind, slug: detected.slug, region: detected.region })
+    }
+    setMore(!more)
   }
   const formError = [preview.error, add.error].find(
     (error) => error && !(error instanceof ApiError && error.details.length > 0),
@@ -289,115 +356,133 @@ function AddSourceForm({ onAdded }: { onAdded?: () => void }) {
   return (
     <form onSubmit={save} className="grid gap-5" noValidate aria-label={t('label')}>
       <div className="grid gap-5 sm:grid-cols-2">
-        <Field id="source-kind" label={t('origin')}>
-          <Select
-            value={form.kind}
-            onValueChange={(value) => update({ kind: value as ConnectorKind })}
-          >
-            <SelectTrigger id="source-kind" className="h-10 w-full bg-background">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {KINDS.map((k) => (
-                <SelectItem key={k.value} value={k.value}>
-                  {kindLabel(k)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </Field>
         <Field id="source-name" label={isAts ? t('company') : t('searchName')} error={errors.name}>
           <Input id="source-name" value={form.name} onChange={set('name')} className="h-10 bg-background" />
         </Field>
-        {isAts ? (
-          <>
-            <Field
-              id="source-slug"
-              label={t('slug')}
-              error={errors.slug ?? errors.form}
-              hint={
-                <>
-                  {t('slugHint')} <span className="font-mono">{kindHint(kind)}</span>.{' '}
-                  <a href={SLUG_HELP_URL} target="_blank" rel="noreferrer noopener" className="font-medium text-primary hover:underline">
-                    {t('slugHelp')}
-                  </a>
-                </>
-              }
-            >
-              <Input id="source-slug" value={form.slug} onChange={set('slug')} spellCheck={false} className="h-10 bg-background font-mono" />
+        {isAts && (
+          <Field id="source-url" label={t('url')} error={errors.url ?? (auto ? errors.form : undefined)} hint={t('urlHint')}>
+            <Input
+              id="source-url"
+              type="url"
+              value={form.url}
+              onChange={set('url')}
+              placeholder="https://careers.acme.com/madrid/"
+              spellCheck={false}
+              className="h-10 bg-background"
+            />
+          </Field>
+        )}
+      </div>
+
+      <div className="grid gap-5">
+        <button
+          type="button"
+          onClick={toggleMore}
+          aria-expanded={more}
+          className="inline-flex w-fit items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground"
+        >
+          <CaretDownIcon className={cn('size-3.5 transition-transform', more && 'rotate-180')} aria-hidden />
+          {t('more')}
+        </button>
+        {more && (
+          <div className="grid gap-5 sm:grid-cols-2">
+            <Field id="source-kind" label={t('origin')}>
+              <Select value={form.kind} onValueChange={(value) => update({ kind: value as FormKind })}>
+                <SelectTrigger id="source-kind" className="h-10 w-full bg-background">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="auto">{t('auto')}</SelectItem>
+                  {KINDS.map((k) => (
+                    <SelectItem key={k.value} value={k.value}>
+                      {kindLabel(k)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </Field>
-            <Field id="source-website" label={t('website')} error={errors.website} hint={t('websiteHint')}>
-              <Input
-                id="source-website"
-                value={form.website}
-                onChange={set('website')}
-                placeholder="acme.com"
-                spellCheck={false}
-                className="h-10 bg-background"
-              />
-            </Field>
-            {form.kind === 'personio' && (
-              <Field id="source-language" label={t('language')} error={errors.language} hint={t('languageHint')}>
-                <CodeInput id="source-language" kind="language" value={form.language} invalid={!!errors.language} onChange={(language) => update({ language })} />
-              </Field>
+            {kind && isAts && (
+              <>
+                <Field
+                  id="source-slug"
+                  label={t('slug')}
+                  error={errors.slug ?? errors.form}
+                  hint={
+                    <>
+                      {t('slugHint')} <span className="font-mono">{kindHint(kind)}</span>.{' '}
+                      <a href={SLUG_HELP_URL} target="_blank" rel="noreferrer noopener" className="font-medium text-primary hover:underline">
+                        {t('slugHelp')}
+                      </a>
+                    </>
+                  }
+                >
+                  <Input id="source-slug" value={form.slug} onChange={set('slug')} spellCheck={false} className="h-10 bg-background font-mono" />
+                </Field>
+                {form.kind === 'personio' && (
+                  <Field id="source-language" label={t('language')} error={errors.language} hint={t('languageHint')}>
+                    <CodeInput id="source-language" kind="language" value={form.language} invalid={!!errors.language} onChange={(language) => update({ language })} />
+                  </Field>
+                )}
+                {form.kind === 'lever' && (
+                  <Field id="source-region" label={t('region')}>
+                    <Select value={form.region} onValueChange={(value) => update({ region: value as 'global' | 'eu' })}>
+                      <SelectTrigger id="source-region" className="h-10 w-full bg-background">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="global">{t('global')}</SelectItem>
+                        <SelectItem value="eu">{t('eu')}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                )}
+              </>
             )}
-            {form.kind === 'lever' && (
-              <Field id="source-region" label={t('region')}>
-                <Select value={form.region} onValueChange={(value) => update({ region: value as 'global' | 'eu' })}>
-                  <SelectTrigger id="source-region" className="h-10 w-full bg-background">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="global">{t('global')}</SelectItem>
-                    <SelectItem value="eu">{t('eu')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </Field>
+            {kind && !isAts && (
+              <>
+                <Field id="source-query" label={t('query')} error={errors.query ?? errors.form} hint={kindHint(kind)}>
+                  <Input id="source-query" value={form.query} onChange={set('query')} className="h-10 bg-background" />
+                </Field>
+                {form.kind === 'adzuna' && (
+                  <Field id="source-where" label={t('where')}>
+                    <Input id="source-where" value={form.where} onChange={set('where')} className="h-10 bg-background" />
+                  </Field>
+                )}
+                {form.kind === 'infojobs' && (
+                  <Field id="source-province" label={t('province')} hint={t('provinceHint')}>
+                    <Input id="source-province" value={form.province} onChange={set('province')} className="h-10 bg-background" />
+                  </Field>
+                )}
+                {form.kind === 'manfred' && (
+                  <Field id="source-lang" label={t('lang')}>
+                    <Select value={form.lang} onValueChange={(value) => update({ lang: value as 'ES' | 'EN' })}>
+                      <SelectTrigger id="source-lang" className="h-10 w-full bg-background">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ES">{t('langEs')}</SelectItem>
+                        <SelectItem value="EN">{t('langEn')}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                )}
+                {form.kind === 'freehire' && (
+                  <Field id="source-country" label={t('country')} error={errors.country}>
+                    <CodeInput id="source-country" kind="region" value={form.country.toUpperCase()} invalid={!!errors.country} onChange={(country) => update({ country })} />
+                    <label className="flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={form.remoteOnly}
+                        onChange={(e) => update({ remoteOnly: e.target.checked })}
+                        className="size-4 accent-primary"
+                      />
+                      {t('remoteOnly')}
+                    </label>
+                  </Field>
+                )}
+              </>
             )}
-          </>
-        ) : (
-          <>
-            <Field id="source-query" label={t('query')} error={errors.query ?? errors.form} hint={kindHint(kind)}>
-              <Input id="source-query" value={form.query} onChange={set('query')} className="h-10 bg-background" />
-            </Field>
-            {form.kind === 'adzuna' && (
-              <Field id="source-where" label={t('where')}>
-                <Input id="source-where" value={form.where} onChange={set('where')} className="h-10 bg-background" />
-              </Field>
-            )}
-            {form.kind === 'infojobs' && (
-              <Field id="source-province" label={t('province')} hint={t('provinceHint')}>
-                <Input id="source-province" value={form.province} onChange={set('province')} className="h-10 bg-background" />
-              </Field>
-            )}
-            {form.kind === 'manfred' && (
-              <Field id="source-lang" label={t('lang')}>
-                <Select value={form.lang} onValueChange={(value) => update({ lang: value as 'ES' | 'EN' })}>
-                  <SelectTrigger id="source-lang" className="h-10 w-full bg-background">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ES">{t('langEs')}</SelectItem>
-                    <SelectItem value="EN">{t('langEn')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </Field>
-            )}
-            {form.kind === 'freehire' && (
-              <Field id="source-country" label={t('country')} error={errors.country}>
-                <CodeInput id="source-country" kind="region" value={form.country.toUpperCase()} invalid={!!errors.country} onChange={(country) => update({ country })} />
-                <label className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={form.remoteOnly}
-                    onChange={(e) => update({ remoteOnly: e.target.checked })}
-                    className="size-4 accent-primary"
-                  />
-                  {t('remoteOnly')}
-                </label>
-              </Field>
-            )}
-          </>
+          </div>
         )}
       </div>
 
@@ -409,7 +494,7 @@ function AddSourceForm({ onAdded }: { onAdded?: () => void }) {
       )}
       {add.isSuccess && (
         <Notice tone="ok">
-          {t('added', { name: add.data.name })}
+          {add.data.kind === 'agent_browse' ? t('addedBrowse', { name: add.data.name }) : t('added', { name: add.data.name })}
         </Notice>
       )}
 
@@ -427,68 +512,147 @@ function AddSourceForm({ onAdded }: { onAdded?: () => void }) {
 
 // --- Lista de fuentes ----------------------------------------------------------------------------
 
-/** La web de una empresa con portal propio, para su logo: enlace y, al pulsar «Cambiar», un campo. */
-function Website({ source }: { source: SourceView }) {
+/** Un campo de una línea que se abre al pulsar «Cambiar» en la tarjeta de una empresa. */
+function InlineEdit({
+  label,
+  hint,
+  initial,
+  placeholder,
+  pending,
+  error,
+  onSave,
+  onCancel,
+}: {
+  label: string
+  hint: string
+  initial: string
+  placeholder: string
+  pending: boolean
+  error: unknown
+  onSave: (value: string) => void
+  onCancel: () => void
+}) {
   const { t } = useTranslation('sources', { keyPrefix: 'row' })
-  const save = useSetSourceWebsite()
-  const [editing, setEditing] = useState(false)
-  const [value, setValue] = useState('')
-  const home = source.website ? platformHome([source.website]) : null
-  const editable = ATS.includes(source.kind as ConnectorKind)
-
-  if (editing) {
-    const submit = (e: FormEvent) => {
-      e.preventDefault()
-      save.mutate({ sourceId: source.id, website: value.trim() || null }, { onSuccess: () => setEditing(false) })
-    }
-    return (
-      <form onSubmit={submit} className="mt-1.5 grid gap-1.5" aria-label={t('websiteLabel', { name: source.name })}>
-        <div className="flex flex-wrap items-center gap-1.5">
-          <Input
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            placeholder="acme.com"
-            spellCheck={false}
-            autoFocus
-            aria-label={t('websiteLabel', { name: source.name })}
-            className="h-8 w-56 bg-background text-sm"
-          />
-          <Button type="submit" size="sm" disabled={save.isPending}>
-            <BusyLabel busy={save.isPending} busyText={t('saving')} text={t('save')} />
-          </Button>
-          <Button type="button" size="sm" variant="ghost" onClick={() => setEditing(false)}>
-            {t('cancel')}
-          </Button>
-        </div>
-        <p className="text-xs text-muted-foreground">{t('websiteHint')}</p>
-        {save.error && <p className="text-xs text-destructive">{errorMessage(save.error)}</p>}
-      </form>
-    )
-  }
-  const edit = () => {
-    setValue(home?.host ?? '')
-    save.reset()
-    setEditing(true)
+  const [value, setValue] = useState(initial)
+  const submit = (e: FormEvent) => {
+    e.preventDefault()
+    onSave(value.trim())
   }
   return (
-    <p className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
-      {home && (
-        <a
-          href={home.origin}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-foreground/80 underline-offset-2 hover:text-foreground hover:underline"
-        >
-          {home.host}
-          <ArrowSquareOutIcon className="size-3" aria-hidden />
-        </a>
+    <form onSubmit={submit} className="mt-1.5 grid gap-1.5" aria-label={label}>
+      <div className="flex flex-wrap items-center gap-1.5">
+        <Input
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder={placeholder}
+          spellCheck={false}
+          autoFocus
+          aria-label={label}
+          className="h-8 w-56 bg-background text-sm"
+        />
+        <Button type="submit" size="sm" disabled={pending}>
+          <BusyLabel busy={pending} busyText={t('saving')} text={t('save')} />
+        </Button>
+        <Button type="button" size="sm" variant="ghost" onClick={onCancel}>
+          {t('cancel')}
+        </Button>
+      </div>
+      <p className="text-xs text-muted-foreground">{hint}</p>
+      {!!error && <p className="text-xs text-destructive">{errorMessage(error)}</p>}
+    </form>
+  )
+}
+
+/** La web de una empresa con portal propio, para su logo, y los lugares a los que se limita
+ * («Solo Madrid», que suele salir de la dirección de su web de empleo). */
+function CompanyDetails({ source }: { source: SourceView }) {
+  const { t } = useTranslation('sources', { keyPrefix: 'row' })
+  const { t: tRoot } = useTranslation('sources')
+  const saveWebsite = useSetSourceWebsite()
+  const savePlaces = useSetSourceLocations()
+  const [editing, setEditing] = useState<'website' | 'places' | null>(null)
+  const home = source.website ? platformHome([source.website]) : null
+  const editable = ATS.includes(source.kind as ConnectorKind)
+  const places = placesOf(source)
+
+  if (editing === 'website') {
+    return (
+      <InlineEdit
+        label={t('websiteLabel', { name: source.name })}
+        hint={t('websiteHint')}
+        initial={home?.host ?? ''}
+        placeholder="acme.com"
+        pending={saveWebsite.isPending}
+        error={saveWebsite.error}
+        onCancel={() => setEditing(null)}
+        onSave={(website) =>
+          saveWebsite.mutate({ sourceId: source.id, website: website || null }, { onSuccess: () => setEditing(null) })
+        }
+      />
+    )
+  }
+  if (editing === 'places') {
+    return (
+      <InlineEdit
+        label={t('placesLabel', { name: source.name })}
+        hint={t('placesHint')}
+        initial={places.join(', ')}
+        placeholder="Madrid"
+        pending={savePlaces.isPending}
+        error={savePlaces.error}
+        onCancel={() => setEditing(null)}
+        onSave={(value) =>
+          savePlaces.mutate(
+            { sourceId: source.id, locations: value.split(',').map((p) => p.trim()).filter(Boolean) },
+            { onSuccess: () => setEditing(null) },
+          )
+        }
+      />
+    )
+  }
+  const open = (what: 'website' | 'places') => {
+    saveWebsite.reset()
+    savePlaces.reset()
+    setEditing(what)
+  }
+  const link = 'underline-offset-2 hover:text-foreground hover:underline'
+  return (
+    <>
+      {places.length > 0 && (
+        <p className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1 text-foreground/80">
+            <MapPinIcon className="size-3.5" aria-hidden />
+            {tRoot('onlyIn', { places: places.join(', ') })}
+          </span>
+          <button type="button" onClick={() => open('places')} className={link}>
+            {t('changePlaces')}
+          </button>
+        </p>
       )}
-      {editable && (
-        <button type="button" onClick={edit} className="underline-offset-2 hover:text-foreground hover:underline">
-          {home ? t('changeWebsite') : t('addWebsite')}
-        </button>
-      )}
-    </p>
+      <p className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
+        {home && (
+          <a
+            href={home.origin}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-foreground/80 underline-offset-2 hover:text-foreground hover:underline"
+          >
+            {home.host}
+            <ArrowSquareOutIcon className="size-3" aria-hidden />
+          </a>
+        )}
+        {editable && (
+          <button type="button" onClick={() => open('website')} className={link}>
+            {home ? t('changeWebsite') : t('addWebsite')}
+          </button>
+        )}
+        {editable && places.length === 0 && (
+          <button type="button" onClick={() => open('places')} className={link}>
+            {t('addPlaces')}
+          </button>
+        )}
+      </p>
+    </>
   )
 }
 
@@ -526,17 +690,12 @@ function SourceRow({ source }: { source: SourceView }) {
             )}
           </div>
           {query && <p className="mt-0.5 text-xs text-muted-foreground">«{query}»</p>}
-          <Website source={source} />
+          <CompanyDetails source={source} />
           <p className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
             <ClockIcon className="size-3.5" />
             {last ? (
               <span>
-                {t('last', {
-                  when: formatWhen(last.started_at),
-                  found: last.found,
-                  after: last.after_filters,
-                  created: last.created,
-                })}
+                {t('last', { when: whenLabel(last.started_at), count: last.created })}
                 {last.errors.length > 0 && last.found === 0 && (
                   <span className="text-destructive"> · {last.errors[0]!.message}</span>
                 )}

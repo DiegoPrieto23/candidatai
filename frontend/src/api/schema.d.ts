@@ -802,7 +802,9 @@ export interface paths {
         put?: never;
         /**
          * Add Source
-         * @description Añade una empresa con portal propio (ATS + slug) o una búsqueda en un portal con API.
+         * @description Añade una empresa con portal propio (nombre y dirección de su web de empleo, o ATS + slug)
+         *     o una búsqueda en un portal con API. Una web sin ATS reconocible queda como plataforma que el
+         *     agente recorre con el navegador (`kind: agent_browse`).
          */
         post: operations["add_source"];
         delete?: never;
@@ -1079,6 +1081,26 @@ export interface paths {
          *     LinkedIn exige `confirm_risk: true`.
          */
         post: operations["update_browse_settings"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/sources/{source_id}/locations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Set Source Locations
+         * @description Cambia los lugares a los que se limita una empresa («Solo Madrid»); vacía, todos.
+         */
+        post: operations["set_source_locations"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2929,7 +2951,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/profile/diff": {
+    "/profile/versions": {
         parameters: {
             query?: never;
             header?: never;
@@ -2937,13 +2959,52 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get Profile Diff
-         * @description Diff de las dos últimas versiones importadas, como `cai profile diff`: `private` oculto,
-         *     pero con tu contacto, así que solo para la UI.
+         * List Profile Versions
+         * @description Las versiones del perfil, de la más reciente a la más antigua, con lo que cambió.
          */
-        get: operations["get_profile_diff"];
+        get: operations["list_profile_versions"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/profile/versions/{version_id}/changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Profile Version Changes
+         * @description Lo que cambió esa versión, por bloques, y lo que cambiaría volver a ella.
+         */
+        get: operations["get_profile_version_changes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/profile/versions/{version_id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Restore Profile Version
+         * @description Vuelve a esa versión como una versión nueva, que se puede deshacer.
+         */
+        post: operations["restore_profile_version"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4317,6 +4378,16 @@ export interface components {
             /** Suggested Name */
             suggested_name?: string | null;
         };
+        /** BlockCount */
+        BlockCount: {
+            /**
+             * Block
+             * @enum {string}
+             */
+            block: "personal" | "experience" | "projects" | "education" | "certifications" | "extra" | "languages" | "skills" | "stories" | "cv" | "letter" | "search" | "private";
+            /** Changes */
+            changes: number;
+        };
         /** Board */
         Board: {
             /** Columns */
@@ -5668,6 +5739,28 @@ export interface components {
             data: components["schemas"]["JobExtraction"];
         };
         /**
+         * FieldChange
+         * @description Un campo dentro de un elemento. En listas de textos, lo que entra y lo que sale.
+         */
+        FieldChange: {
+            /** Path */
+            path: string[];
+            /** Before */
+            before?: unknown;
+            /** After */
+            after?: unknown;
+            /**
+             * Added
+             * @default []
+             */
+            added: string[];
+            /**
+             * Removed
+             * @default []
+             */
+            removed: string[];
+        };
+        /**
          * FieldReport
          * @description Una fila de la tabla de revisión.
          */
@@ -6120,6 +6213,40 @@ export interface components {
             message: string;
             /** Item */
             item?: string | null;
+        };
+        /** ItemChange */
+        ItemChange: {
+            /**
+             * Block
+             * @enum {string}
+             */
+            block: "personal" | "experience" | "projects" | "education" | "certifications" | "extra" | "languages" | "skills" | "stories" | "cv" | "letter" | "search" | "private";
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "added" | "removed" | "changed" | "moved";
+            /** Label */
+            label?: string | null;
+            /** Parent */
+            parent?: string | null;
+            /** Within */
+            within?: string | null;
+            /**
+             * Fields
+             * @default []
+             */
+            fields: components["schemas"]["FieldChange"][];
+            /** Position */
+            position?: [
+                number,
+                number
+            ] | null;
+            /**
+             * Hidden
+             * @default false
+             */
+            hidden: boolean;
         };
         /** JobCost */
         JobCost: {
@@ -7738,15 +7865,6 @@ export interface components {
              */
             offer_received: boolean;
         };
-        /** ProfileDiff */
-        ProfileDiff: {
-            /** From Version */
-            from_version: number | null;
-            /** To Version */
-            to_version: number;
-            /** Diff */
-            diff: string;
-        };
         /** ProfileIssue */
         ProfileIssue: {
             /** Field */
@@ -8436,6 +8554,17 @@ export interface components {
             /** Closed Without Reply */
             closed_without_reply: number;
         };
+        /** RestoreResult */
+        RestoreResult: {
+            /** File Hash */
+            file_hash: string;
+            /** Profile Version Id */
+            profile_version_id: number;
+            /** Blocks */
+            blocks: string[];
+            /** Undo Available */
+            undo_available: number;
+        };
         /** RestoreTemplateResult */
         RestoreTemplateResult: {
             /** Template Id */
@@ -8794,6 +8923,11 @@ export interface components {
             /** Active */
             active: boolean;
         };
+        /** SetLocationsBody */
+        SetLocationsBody: {
+            /** Locations */
+            locations: string[];
+        };
         /** SetWebsiteBody */
         SetWebsiteBody: {
             /** Website */
@@ -8909,13 +9043,13 @@ export interface components {
         /**
          * SourceInput
          * @description Alta de una fuente. En los ATS, `name` es la empresa tal como quieres verla.
+         *
+         *     Una empresa se puede dar de alta solo con `name` y `url` (la dirección de su web de empleo):
+         *     el servicio deduce el ATS, el slug y los lugares. Con `kind` y `slug`, se usan esos.
          */
         SourceInput: {
-            /**
-             * Kind
-             * @enum {string}
-             */
-            kind: "greenhouse" | "lever" | "ashby" | "personio" | "teamtailor" | "workable" | "smartrecruiters" | "recruitee" | "infojobs" | "adzuna" | "manfred" | "freehire";
+            /** Kind */
+            kind?: ("greenhouse" | "lever" | "ashby" | "personio" | "teamtailor" | "workable" | "smartrecruiters" | "recruitee" | "infojobs" | "adzuna" | "manfred" | "freehire") | null;
             /** Name */
             name: string;
             /** Slug */
@@ -8957,12 +9091,50 @@ export interface components {
             title_keywords: string[];
             /** Website */
             website?: string | null;
+            /** Url */
+            url?: string | null;
+            /** Locations */
+            locations?: string[] | null;
         };
         /** SourceList */
         SourceList: {
             /** Sources */
             sources: components["schemas"]["SourceView"][];
             agent_browse: components["schemas"]["AgentBrowseLimits"];
+        };
+        /**
+         * SourceResolution
+         * @description Lo que la app ha deducido de la dirección de una web de empleo.
+         *
+         *     `how`: `url` (es la del ATS), `page` (la web enlaza su ATS), `search` (encontrado por el nombre
+         *     o el dominio) o `none` (no se reconoce: se guarda como plataforma que recorre el agente).
+         */
+        SourceResolution: {
+            /** Url */
+            url: string;
+            /**
+             * How
+             * @enum {string}
+             */
+            how: "url" | "page" | "search" | "none";
+            /** Kind */
+            kind: string | null;
+            /** Kind Label */
+            kind_label: string | null;
+            /** Slug */
+            slug: string | null;
+            /**
+             * Region
+             * @default global
+             * @enum {string}
+             */
+            region: "global" | "eu";
+            /** Locations */
+            locations: string[];
+            /** Website */
+            website: string | null;
+            /** Issues */
+            issues: string[];
         };
         /** SourceRunResult */
         SourceRunResult: {
@@ -9018,6 +9190,8 @@ export interface components {
         /**
          * SourceTestResult
          * @description Prueba de una fuente sin guardar nada: «12 ofertas encontradas, 3 tras filtros».
+         *
+         *     La UI enseña solo las que pasan (`after_filters`); los totales quedan para el diagnóstico.
          */
         SourceTestResult: {
             /** Kind */
@@ -9036,6 +9210,7 @@ export interface components {
             filters_applied: boolean;
             /** Message */
             message: string;
+            resolution?: components["schemas"]["SourceResolution"] | null;
         };
         /** SourceView */
         SourceView: {
@@ -9433,6 +9608,57 @@ export interface components {
              * @default
              */
             suggestion: string;
+        };
+        /** VersionChanges */
+        VersionChanges: {
+            /** Id */
+            id: number;
+            /** Previous Id */
+            previous_id: number | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Origin */
+            origin: ("ui" | "agent" | "undo" | "restore" | "demo") | null;
+            /** Current */
+            current: boolean;
+            /** Restorable */
+            restorable: boolean;
+            /** Changes */
+            changes: components["schemas"]["ItemChange"][];
+            /** Restore Blocks */
+            restore_blocks: ("personal" | "experience" | "projects" | "education" | "certifications" | "extra" | "languages" | "skills" | "stories" | "cv" | "letter" | "search" | "private")[];
+            /** Technical Diff */
+            technical_diff: string;
+        };
+        /** VersionEntry */
+        VersionEntry: {
+            /** Id */
+            id: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Origin */
+            origin: ("ui" | "agent" | "undo" | "restore" | "demo") | null;
+            /** First */
+            first: boolean;
+            /** Current */
+            current: boolean;
+            /** Restorable */
+            restorable: boolean;
+            /** Summary */
+            summary: components["schemas"]["BlockCount"][];
+        };
+        /** VersionPage */
+        VersionPage: {
+            /** Versions */
+            versions: components["schemas"]["VersionEntry"][];
+            /** Has More */
+            has_more: boolean;
         };
         /** WeekFunnel */
         WeekFunnel: {
@@ -14814,6 +15040,104 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["BrowseSettingsBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    set_source_locations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetLocationsBody"];
             };
         };
         responses: {
@@ -24602,9 +24926,12 @@ export interface operations {
             };
         };
     };
-    get_profile_diff: {
+    list_profile_versions: {
         parameters: {
-            query?: never;
+            query?: {
+                offset?: number;
+                limit?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -24617,7 +24944,199 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProfileDiff"];
+                    "application/json": components["schemas"]["VersionPage"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_profile_version_changes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                version_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VersionChanges"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    restore_profile_version: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                version_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UndoBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RestoreResult"];
                 };
             };
             /** @description Unauthorized */

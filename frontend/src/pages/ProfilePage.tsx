@@ -1,229 +1,29 @@
-import { useRef, useState } from 'react'
-import { FileTextIcon, FolderIcon, UploadSimpleIcon, UserCircleIcon, WarningIcon } from '@phosphor-icons/react'
+import { useState } from 'react'
+import { UserCircleIcon } from '@phosphor-icons/react'
 import { Trans, useTranslation } from 'react-i18next'
-import type { ContextFileInfo, ContextStatus } from '@/api/client'
-import {
-  useContextStatus,
-  useEditableProfile,
-  useUploadSourceDocument,
-  type ContextSectionName,
-  type SourceDocumentFolder,
-} from '@/api/queries'
+import { useEditableProfile, type ContextSectionName } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
-import { OpenFolderButton } from '@/components/OpenFolderButton'
 import { EmptyState, ErrorState } from '@/components/States'
-import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { CONTEXT_SECTIONS, ContextFileEditor, StyleSamplesBlock } from '@/components/profile/ContextBlocks'
-import { ProfileEditorProvider, useProfileState } from '@/components/profile/editor'
+import { DocumentsTab, FilesCard, NotesCard } from '@/components/profile/DocumentsTab'
+import { ProfileEditorProvider, blockAnchor, useProfileState } from '@/components/profile/editor'
 import { ExperienceBlock } from '@/components/profile/ExperienceBlock'
-import { HistoryBlock } from '@/components/profile/HistoryBlock'
-import { blockAnchor } from '@/components/profile/editor'
+import { HistoryTab } from '@/components/profile/HistoryTab'
 import { CertificationsBlock, EducationBlock, ExtraSectionsBlock, ProjectsBlock } from '@/components/profile/ItemsBlocks'
 import { PersonalBlock } from '@/components/profile/PersonalBlock'
 import { PhotoBlock } from '@/components/profile/PhotoBlock'
-import { CvPreferencesBlock, LetterPreferencesBlock } from '@/components/profile/PreferencesBlocks'
 import { LanguagesBlock, SkillsBlock } from '@/components/profile/SkillsBlock'
 import { StartByHand } from '@/components/profile/StartByHand'
 import { ImportFromCv } from '@/components/profile/ImportFromCv'
 import { StartFromCv } from '@/components/profile/StartFromCv'
 import { StoriesBlock } from '@/components/profile/StoriesBlock'
-import { errorMessage } from '@/lib/errors'
 import { focusArrival } from '@/lib/focus'
-import { dateFormatter, formatNumber } from '@/lib/labels'
 import { cn } from '@/lib/utils'
-import { BusyLabel } from '@/components/StableLabel'
-
-function formatSize(bytes: number): string {
-  return bytes < 1024 ? `${bytes} B` : `${formatNumber(bytes / 1024, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} KB`
-}
-
-function formatWhen(iso: string): string {
-  return dateFormatter({ day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(iso))
-}
-
-function FileState({ file }: { file: ContextFileInfo }) {
-  const { t } = useTranslation('profile', { keyPrefix: 'state' })
-  const [label, tone] = !file.exists
-    ? [t('missing'), 'text-muted-foreground']
-    : file.empty
-      ? [t('empty'), 'text-amber-700 dark:text-amber-400']
-      : [t('filled'), 'text-emerald-700 dark:text-emerald-400']
-  return <span className={cn('text-xs font-medium', tone)}>{label}</span>
-}
-
-/** Lleva al bloque del fichero (en «Documentos», con perfil) y le da el foco. */
-function goToEditor(section: ContextSectionName) {
-  const block = document.getElementById(blockAnchor(`context-${section}`))
-  block?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  focusArrival(block)
-}
-
-/**
- * Los cuatro ficheros de contexto. Con perfil, sus editores están más arriba y cada fila lleva hasta
- * el suyo; sin perfil, se crean y se editan aquí mismo, desplegados bajo su fila.
- */
-function ContextFiles({ files, editorsAbove }: { files: ContextFileInfo[]; editorsAbove: boolean }) {
-  const { t } = useTranslation('profile')
-  const [open, setOpen] = useState<ContextSectionName | null>(null)
-  return (
-    <ul className="divide-y rounded-xl border bg-card">
-      {files.map((file) => {
-        const name = t(`sections.${file.section}.title`)
-        const expanded = open === file.section
-        // Sin perfil, se crea o se edita aquí; con perfil, lleva a su bloque.
-        const action = expanded ? 'close' : editorsAbove || file.exists ? 'edit' : 'create'
-        return (
-          <li key={file.section} className="grid gap-1 px-4 py-3">
-            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-              <span className="flex items-center gap-2 font-medium">
-                <FileTextIcon className="size-4 text-muted-foreground" aria-hidden />
-                {name}
-              </span>
-              <span className="flex items-center gap-3">
-                <FileState file={file} />
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={editorsAbove ? 'ghost' : 'outline'}
-                  aria-label={t(`contextFile.${action}Named`, { name })}
-                  aria-expanded={editorsAbove ? undefined : expanded}
-                  onClick={() => (editorsAbove ? goToEditor(file.section) : setOpen(expanded ? null : file.section))}
-                >
-                  {t(`contextFile.${action}`)}
-                </Button>
-              </span>
-            </div>
-            <p className="text-sm text-muted-foreground">{t(`sections.${file.section}.hint`)}</p>
-            {file.exists && (
-              <p className="text-xs text-muted-foreground">
-                {formatSize(file.size_bytes)}
-                {file.modified_at && ` · ${formatWhen(file.modified_at)}`}
-              </p>
-            )}
-            {file.warnings.map((warning) => (
-              <p key={warning} className="flex items-start gap-1.5 text-xs text-amber-700 dark:text-amber-400">
-                <WarningIcon className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-                {warning.replace(/^[a-z_]+: /, '')}
-              </p>
-            ))}
-            {!editorsAbove && expanded && (
-              <div className="mt-2">
-                <ContextFileEditor section={file.section} />
-              </div>
-            )}
-          </li>
-        )
-      })}
-    </ul>
-  )
-}
-
-const UPLOADS: Record<SourceDocumentFolder, string> = { cv: '.pdf,.docx,.txt,.md', linkedin: '.pdf,.zip,.csv' }
-
-/** Tu CV y tu exportación de LinkedIn se suben desde aquí, a su carpeta, para que tu agente los lea. */
-function UploadDocument({ folder }: { folder: SourceDocumentFolder }) {
-  const { t } = useTranslation('profile')
-  const upload = useUploadSourceDocument(folder)
-  const input = useRef<HTMLInputElement>(null)
-  const [error, setError] = useState<string | null>(null)
-  return (
-    <>
-      <input
-        ref={input}
-        type="file"
-        accept={UPLOADS[folder]}
-        className="sr-only"
-        aria-label={t(`upload.fileLabel.${folder}`)}
-        onChange={(e) => {
-          const file = e.target.files?.[0]
-          e.target.value = ''
-          if (!file) return
-          setError(null)
-          upload.mutate(file, { onError: (err) => setError(errorMessage(err)) })
-        }}
-      />
-      <Button type="button" size="sm" variant="outline" disabled={upload.isPending} onClick={() => input.current?.click()}>
-        <UploadSimpleIcon /> <BusyLabel busy={upload.isPending} busyText={t('upload.uploading')} text={t(`upload.${folder}`)} />
-      </Button>
-      {error && (
-        <p role="alert" className="basis-full text-sm text-destructive">
-          {error}
-        </p>
-      )}
-    </>
-  )
-}
-
-function DocumentFolders({ folders }: { folders: ContextStatus['folders'] }) {
-  const { t } = useTranslation('profile')
-  return (
-    <ul className="divide-y rounded-xl border bg-card">
-      {folders.map((folder) => (
-        <li key={folder.name} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
-          <span className="grid gap-0.5">
-            <span className="flex items-center gap-2 text-sm font-medium">
-              <FolderIcon className="size-4 text-muted-foreground" aria-hidden />
-              {t(`folderNames.${folder.name}`)}
-            </span>
-            <span className="text-sm text-muted-foreground">{t(`folders.${folder.name}`)}</span>
-          </span>
-          <span className="flex flex-wrap items-center gap-3">
-            <span className="text-xs text-muted-foreground">{t('files', { count: folder.files })}</span>
-            {(folder.name === 'cv' || folder.name === 'linkedin') && <UploadDocument folder={folder.name} />}
-          </span>
-        </li>
-      ))}
-    </ul>
-  )
-}
 
 /** El estilo de `InlineCode`, como componente para `Trans`. */
 function InlineCodeTag({ children }: { children?: React.ReactNode }) {
   return <code className="rounded bg-muted px-1 py-0.5 font-mono text-[0.85em] text-foreground">{children}</code>
-}
-
-/** Estado de los ficheros de contexto y de las carpetas de documentos (fase 13). `editorsAbove`:
- * con perfil, los editores de contexto van en sus bloques, más arriba. */
-function FilesOverview({ editorsAbove = false }: { editorsAbove?: boolean }) {
-  const { t } = useTranslation('profile')
-  const status = useContextStatus()
-  const code = <InlineCodeTag />
-  if (status.isPending) return <Skeleton className="h-48" />
-  if (status.isError) return <ErrorState error={status.error} onRetry={() => status.refetch()} />
-  return (
-    <div className="grid gap-10">
-      <section aria-labelledby="contexto" className="grid gap-3">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2 id="contexto" className="text-lg font-semibold tracking-tight">
-              {t('context')}
-            </h2>
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              <Trans t={t} i18nKey={editorsAbove ? 'contextIntro' : 'contextIntroHere'} components={{ strong: <strong className="font-medium text-foreground" />, code }} />
-            </p>
-          </div>
-          <OpenFolderButton folder="contexto" ariaLabel={t('openContext')} />
-        </div>
-        <ContextFiles files={status.data.files} editorsAbove={editorsAbove} />
-      </section>
-      <section aria-labelledby="documentos" className="grid gap-3">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2 id="documentos" className="text-lg font-semibold tracking-tight">
-              {t('documents')}
-            </h2>
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              <Trans t={t} i18nKey="documentsIntro" components={{ code }} />
-            </p>
-          </div>
-          <OpenFolderButton folder="documentos" ariaLabel={t('openDocuments')} />
-        </div>
-        <DocumentFolders folders={status.data.folders} />
-      </section>
-    </div>
-  )
 }
 
 /** Cuatro pestañas en una fila: lo del CV junto, lo que orienta al agente y el historial. */
@@ -399,16 +199,11 @@ function Editor() {
         <StoriesBlock />
       </TabsContent>
       <TabsContent value="documents" forceMount className={cn('grid gap-6', hidden)}>
-        <CvPreferencesBlock />
-        <LetterPreferencesBlock />
-        {CONTEXT_SECTIONS.map((section) => (
-          <ContextFileEditor key={section} section={section} />
-        ))}
-        <StyleSamplesBlock />
-        <FilesOverview editorsAbove />
+        <DocumentsTab />
       </TabsContent>
-      <TabsContent value="history" forceMount className={hidden}>
-        <HistoryBlock />
+      <TabsContent value="history">
+        {/* Sin `forceMount`: no guarda nada a medias, y así las versiones se piden al abrirla. */}
+        <HistoryTab />
       </TabsContent>
     </Tabs>
   )
@@ -437,7 +232,8 @@ export function ProfilePage() {
           <StartFromCv />
           <StartByHand />
         </div>
-        <FilesOverview />
+        <NotesCard />
+        <FilesCard />
       </div>
     )
   } else if (editable.data.profile === null) {
@@ -446,7 +242,8 @@ export function ProfilePage() {
         <EmptyState icon={<UserCircleIcon className="size-7" weight="duotone" />} title={te('noProfile.title')}>
           <Trans t={te} i18nKey="noProfile.unreadable" components={{ code }} />
         </EmptyState>
-        <FilesOverview />
+        <NotesCard />
+        <FilesCard />
       </div>
     )
   } else {

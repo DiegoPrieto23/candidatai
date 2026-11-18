@@ -33,6 +33,7 @@ from app.schemas.sources import (
     SourceConfig,
     SourceInput,
     SourceList,
+    SourceResolution,
     SourceRunResult,
     SourceRunView,
     SourceTestResult,
@@ -40,8 +41,9 @@ from app.schemas.sources import (
     Website,
     parse_config,
 )
-from app.services import ingest, reposts
+from app.services import ingest, platforms, reposts
 from app.services import profile as profile_service
+from app.services.ingestion import resolve
 from app.services.ingestion.adzuna import AdzunaConnector
 from app.services.ingestion.ashby import AshbyConnector
 from app.services.ingestion.base import (
@@ -64,7 +66,8 @@ from app.services.ingestion.recruitee import RecruiteeConnector
 from app.services.ingestion.smartrecruiters import SmartRecruitersConnector
 from app.services.ingestion.teamtailor import TeamtailorConnector
 from app.services.ingestion.workable import WorkableConnector
-from app.services.normalize import fingerprint, normalize_company
+from app.services.matching.hard_filters import location_matches
+from app.services.normalize import fingerprint, fold, normalize_company
 
 logger = logging.getLogger(__name__)
 
@@ -272,7 +275,22 @@ def _same_target(kind: str, a: SourceConfig, b: dict[str, object]) -> bool:
 
 
 def add_source(session: Session, data: SourceInput) -> SourceView:
-    """Da de alta una fuente activa. En un ATS, además marca la empresa como objetivo."""
+    """Da de alta una fuente activa. En un ATS, además marca la empresa como objetivo.
+
+    Con solo `name` y `url`, deduce antes el ATS (`resolve.py`). Si no reconoce ninguno, la web se
+    guarda como plataforma que el agente recorre con el navegador."""
+    if data.kind is None:
+        resolved, resolution, _ = _resolve_input(session, data)
+        if resolved is None:
+            return _add_browse_page(session, data, resolution)
+        data = resolved
+    elif data.url and data.kind in ATS_KINDS:
+        changes: dict[str, object] = {}
+        if not data.website:
+            changes["website"] = resolve.company_website(data.url)
+        if data.locations is None:  # los lugares firmes de la dirección (`office=Madrid`)
+            changes["locations"] = resolve.url_filters(data.url)[0]
+        data = _validated(data, **changes)
     config = data.to_config()
     for existing in session.scalars(select(Source).where(Source.kind == data.kind)):
         if _same_target(data.kind, config, existing.config or {}):
@@ -284,9 +302,11 @@ def add_source(session: Session, data: SourceInput) -> SourceView:
     if data.kind in ATS_KINDS and not normalize_company(name):
         raise ValueError(f"Nombre de empresa no válido: «{name}».")
     stored = config.model_dump()
-    for optional in ("language", "website"):  # el idioma solo lo usa Personio
+    for optional in ("language", "website", "careers_url"):  # el idioma solo lo usa Personio
         if optional in stored and stored[optional] is None:
             del stored[optional]
+    if stored.get("locations") == []:
+        del stored["locations"]
     source = Source(kind=data.kind, name=name, config=stored, active=True)
     session.add(source)
     if data.kind in ATS_KINDS:
@@ -295,6 +315,117 @@ def add_source(session: Session, data: SourceInput) -> SourceView:
         if not company.ats_kind:  # no pisa el ATS de otra fuente de la misma empresa
             company.ats_kind = data.kind
             company.ats_slug = config.slug  # type: ignore[union-attr]
+    session.flush()
+    return _view(session, source)
+
+
+def _validated(data: SourceInput, **changes: object) -> SourceInput:
+    return SourceInput.model_validate({**data.model_dump(), **changes})
+
+
+def _profile_places(session: Session) -> list[str]:
+    preferences = _preferences(session)
+    if preferences is None:
+        return []
+    return [*preferences.locations.preferred, *preferences.locations.allowed]
+
+
+def _resolve_input(
+    session: Session, data: SourceInput
+) -> tuple[SourceInput | None, SourceResolution, FetchResult | None]:
+    """Del nombre y la dirección, la fuente completa (o `None` si no hay ATS reconocible), lo
+    deducido para enseñarlo y, si hizo falta descargar el tablero, lo descargado.
+
+    Los lugares de la ruta (`/madrid/`) solo cuentan si casan con alguna oferta del tablero o con
+    tus lugares: así `/engineering/` no se toma por un sitio."""
+    assert data.url is not None
+    name = " ".join(data.name.split())
+    found = resolve.resolve(name, data.url)
+    view = SourceResolution(
+        url=found.url,
+        how=found.how,
+        kind=found.board.kind if found.board else None,
+        kind_label=found.kind_label,
+        slug=found.board.slug if found.board else None,
+        region="eu" if found.board and found.board.region == "eu" else "global",
+        locations=list(data.locations) if data.locations is not None else list(found.locations),
+        website=data.website or found.website,
+        issues=found.issues,
+    )
+    if found.board is None:
+        return None, view, None
+    resolved = _validated(
+        data,
+        kind=found.board.kind,
+        slug=found.board.slug,
+        region=view.region,
+        url=found.url,
+        website=view.website,
+        locations=view.locations,
+    )
+    fetched = None
+    # Los de la ruta que ya están en los parámetros no hace falta confirmarlos.
+    found.place_candidates = [
+        c for c in found.place_candidates if not any(fold(c) == fold(p) for p in view.locations)
+    ]
+    if data.locations is None and found.place_candidates:
+        try:
+            with _client() as client:
+                fetched = _fetch(found.board.kind, name, resolved.to_config(), client)
+        except ConnectorError:
+            fetched = None  # la prueba o la ejecución darán el error
+        places = _profile_places(session)
+        jobs = [j.location for j in fetched.jobs if j.location] if fetched else []
+        for candidate in found.place_candidates:
+            if any(location_matches(loc, [candidate]) for loc in jobs) or any(
+                location_matches(place, [candidate]) for place in places
+            ):
+                label = _place_label(candidate, jobs)
+                if not any(fold(label) == fold(p) for p in view.locations):
+                    view.locations.append(label)
+        resolved = _validated(resolved, locations=view.locations)
+    return resolved, view, fetched
+
+
+def _place_label(candidate: str, locations: list[str]) -> str:
+    """«madrid» de la dirección se enseña como lo escribe el tablero: «Madrid»."""
+    for location in locations:
+        for part in location.replace(";", ",").split(","):
+            if location_matches(part, [candidate]) and len(part.split()) == len(candidate.split()):
+                return part.strip()
+    return candidate.title()
+
+
+def _add_browse_page(session: Session, data: SourceInput, found: SourceResolution) -> SourceView:
+    """Una web de empleo sin ATS reconocible: plataforma que el agente recorre con el navegador
+    al buscar, como un portal más. La empresa queda como objetivo."""
+    from app.services.ingestion import browse
+
+    name = " ".join(data.name.split())
+    host = urlsplit(found.url).hostname
+    platform = platforms.platform_of_host(host) or resolve.platform_id(found.url)
+    saved = browse.add_platform(
+        session, AgentBrowseSource(name=name, platform=platform, search_urls=[found.url])
+    )
+    if normalize_company(name):
+        ingest.get_or_create_company(session, name).watchlist = True
+    session.flush()
+    return get_source(session, saved.source_id)
+
+
+def set_locations(session: Session, source_id: int, places: list[str]) -> SourceView:
+    """Cambia los lugares a los que se limita una empresa («Solo Madrid»); vacío, todos."""
+    source = _source(session, source_id)
+    if source.kind not in ATS_KINDS:
+        raise NotAConnectorError("Solo las empresas con portal propio (ATS) tienen lugares.")
+    config = dict(source.config or {})
+    cleaned = list(dict.fromkeys(" ".join(p.split()) for p in places if p.strip()))
+    if cleaned:
+        config["locations"] = cleaned
+    else:
+        config.pop("locations", None)
+    parse_config(source.kind, config)
+    source.config = config
     session.flush()
     return _view(session, source)
 
@@ -380,19 +511,33 @@ def _summary(found: int, after: int, created: int | None = None, existing: int =
     return text
 
 
+def _places(config: SourceConfig) -> list[str]:
+    return list(getattr(config, "locations", []) or [])
+
+
 def preview_source(session: Session, data: SourceInput | int) -> SourceTestResult:
-    """Descarga y filtra una fuente (guardada o no) sin guardar nada."""
+    """Descarga y filtra una fuente (guardada o no) sin guardar nada. Con solo nombre y dirección,
+    deduce antes el ATS y lo devuelve en `resolution`."""
+    resolution: SourceResolution | None = None
+    fetched: FetchResult | None = None
     if isinstance(data, int):
         source = _source(session, data)
         if source.kind not in CONNECTORS:
             raise NotAConnectorError("Esa fuente no tiene conector que probar.")
         kind, name, config = source.kind, source.name, parse_config(source.kind, source.config)
     else:
+        if data.kind is None:
+            resolved, resolution, fetched = _resolve_input(session, data)
+            if resolved is None:
+                return _unrecognized(session, data, resolution)
+            data = resolved
+        assert data.kind is not None
         kind, name, config = data.kind, " ".join(data.name.split()), data.to_config()
-    prefilter = Prefilter(_preferences(session), config.title_keywords)
+    prefilter = Prefilter(_preferences(session), config.title_keywords, _places(config))
     try:
-        with _client() as client:
-            fetched = _fetch(kind, name, config, client)
+        if fetched is None:
+            with _client() as client:
+                fetched = _fetch(kind, name, config, client)
     except ConnectorError as exc:
         return SourceTestResult(
             kind=kind,
@@ -403,6 +548,7 @@ def preview_source(session: Session, data: SourceInput | int) -> SourceTestResul
             errors=[Issue(code=exc.code, message=exc.message)],
             filters_applied=prefilter.active,
             message=exc.message,
+            resolution=resolution,
         )
     previews = []
     for raw in fetched.jobs:
@@ -431,6 +577,27 @@ def preview_source(session: Session, data: SourceInput | int) -> SourceTestResul
         errors=fetched.issues,
         filters_applied=prefilter.active,
         message=message,
+        resolution=resolution,
+    )
+
+
+def _unrecognized(
+    session: Session, data: SourceInput, resolution: SourceResolution
+) -> SourceTestResult:
+    """Prueba de una web sin ATS reconocible: no hay nada que descargar sin navegador."""
+    return SourceTestResult(
+        kind="agent_browse",
+        name=" ".join(data.name.split()),
+        found=0,
+        after_filters=0,
+        jobs=[],
+        errors=[],
+        filters_applied=_preferences(session) is not None,
+        message=(
+            "No se reconoce ninguna web de empleo conocida en esa dirección: se guardará como "
+            "plataforma que tu agente recorre con el navegador al buscar."
+        ),
+        resolution=resolution,
     )
 
 
@@ -481,7 +648,7 @@ def _collect(
     Devuelve lo nuevo y lo ya visto (con su oferta), para anotar luego si es otra publicación."""
     connector = CONNECTORS[source.kind]
     fetched = _fetch(source.kind, source.name, config, client)
-    prefilter = Prefilter(_preferences(session), config.title_keywords)
+    prefilter = Prefilter(_preferences(session), config.title_keywords, _places(config))
     result.found = len(fetched.jobs)
     result.errors.extend(fetched.issues)
     pending: list[RawJob] = []

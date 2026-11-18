@@ -41,7 +41,7 @@ function routes(sources: unknown[], extra: Record<string, unknown> = {}) {
 
 const launched = { label: 'Buscar ofertas', prompt: 'x', agent: 'Claude Code', job_id: null }
 
-/** La franja de arriba: qué buscas, dónde y cuántas, y el botón. */
+/** La franja de arriba: lo que buscas, la columna de «Buscar ahora» y «Más ajustes». */
 const strip = () => screen.getByRole('region', { name: 'Lo que vas a buscar' })
 const findStrip = () => screen.findByRole('region', { name: 'Lo que vas a buscar' })
 
@@ -65,7 +65,8 @@ describe('Buscar ofertas', () => {
     expect(within(list).getByRole('checkbox', { name: /InfoJobs/ })).toBeChecked()
     expect(within(list).getByText('4 nuevas')).toBeInTheDocument()
     expect(within(list).getByText('de 9', { exact: false })).toBeInTheDocument()
-    expect(strip()).toHaveTextContent('2 portales · hasta 20 ofertas')
+    expect(strip()).toHaveTextContent('2 portales')
+    expect(strip()).toHaveTextContent('hasta 20 ofertas')
     // LinkedIn sin permiso no se ofrece: se ve aparte, con lo que le pasa y dónde se cambia.
     expect(within(list).queryByText('LinkedIn')).not.toBeInTheDocument()
     const off = screen.getByRole('list', { name: 'Portales en los que ahora no se busca' })
@@ -82,38 +83,33 @@ describe('Buscar ofertas', () => {
     expect(body.search).toEqual({ platform_ids: [] })
   })
 
-  it('manda los portales elegidos y la búsqueda puntual', async () => {
+  it('manda solo los portales elegidos, y sin «solo esta vez»', async () => {
     const calls = mockApi(
       routes([platform(1, 'InfoJobs'), platform(2, 'Tecnoempleo')], { 'POST /agent/launch': { status: 202, body: launched } }),
     )
     renderApp('/buscar')
     await userEvent.click(await screen.findByRole('checkbox', { name: /Tecnoempleo/ }))
-    await userEvent.click(screen.getByRole('button', { name: 'Buscar otra cosa solo esta vez' }))
-    expect(strip()).toHaveTextContent('Solo esta vez · tu perfil no cambia')
-    await userEvent.type(screen.getByLabelText('Puesto'), 'Data Engineer')
-    await userEvent.type(screen.getByLabelText('Dónde'), 'Madrid')
+    expect(strip()).toHaveTextContent('1 portal')
+    expect(screen.queryByRole('button', { name: 'Buscar otra cosa solo esta vez' })).not.toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: /^Buscar ahora/ }))
     await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true))
     const body = calls.find((c) => c.method === 'POST')?.body as { search: unknown }
-    expect(body.search).toEqual({ platform_ids: [1], role: 'Data Engineer', location: 'Madrid' })
+    expect(body.search).toEqual({ platform_ids: [1] })
   })
 
-  it('no deja lanzar sin portales ni con caracteres que no se admiten', async () => {
+  it('no deja lanzar sin portales elegidos, y «Cambiar» baja a ellos', async () => {
     mockApi(routes([platform(1, 'InfoJobs')]))
     renderApp('/buscar')
     const box = await screen.findByRole('checkbox', { name: /InfoJobs/ })
+    await userEvent.click(within(strip()).getByRole('button', { name: 'Cambiar' }))
+    expect(screen.getByRole('heading', { level: 3, name: /^Portales ·/ })).toHaveFocus()
     await userEvent.click(box)
     expect(screen.getByText('Elige al menos un portal.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /^Buscar ahora/ })).toBeDisabled()
     await userEvent.click(box)
-    await userEvent.click(screen.getByRole('button', { name: 'Buscar otra cosa solo esta vez' }))
-    await userEvent.type(screen.getByLabelText('Puesto'), 'x"; rm')
-    expect(within(strip()).getByRole('alert')).toHaveTextContent(/solo letras/i)
-    expect(screen.getByRole('button', { name: /^Buscar ahora/ })).toBeDisabled()
-    // Al volver a tu búsqueda, lo de esta vez deja de contar.
-    await userEvent.click(screen.getByRole('button', { name: 'Volver a tu búsqueda' }))
-    expect(screen.queryByLabelText('Puesto')).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: /^Buscar ahora/ })).toBeEnabled()
+    const portals = screen.getByRole('region', { name: /^Portales ·/ })
+    expect(within(portals).getByRole('link', { name: 'Empresas con portal propio' })).toHaveAttribute('href', '/fuentes/empresas')
   })
 
   it('una casilla encima de la lista selecciona o quita todos los portales', async () => {
@@ -146,7 +142,7 @@ describe('Buscar ofertas', () => {
     )
     renderApp('/buscar')
     const list = await screen.findByRole('list', { name: 'Portales en los que buscar' })
-    expect(strip()).toHaveTextContent('2 portales · hasta 25 ofertas')
+    expect(strip()).toHaveTextContent('hasta 25 ofertas')
     expect(within(list).getByText('2 búsquedas guardadas')).toBeInTheDocument()
     expect(within(list).getByText('1 búsqueda guardada')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Qué ofertas cuentan' })).toBeInTheDocument()
@@ -166,7 +162,8 @@ describe('Buscar ofertas', () => {
       }),
     )
     renderApp('/buscar')
-    const control = await screen.findByRole('combobox', { name: /ofertas por portal/i })
+    await screen.findByRole('list', { name: 'Portales en los que buscar' })
+    const control = screen.getByRole('combobox', { name: /ofertas por portal/i })
     expect(control).toHaveTextContent('10')
     expect(control).toHaveAccessibleName('Hasta 10 ofertas por portal')
     // Glassdoor fuera: solo cambian los elegidos.
@@ -185,7 +182,8 @@ describe('Buscar ofertas', () => {
       }),
     )
     renderApp('/buscar')
-    const control = await screen.findByRole('combobox', { name: /ofertas por portal/i })
+    await screen.findByRole('list', { name: 'Portales en los que buscar' })
+    const control = screen.getByRole('combobox', { name: /ofertas por portal/i })
     expect(control).toHaveTextContent('varía')
     expect(screen.getByText('Cada portal tiene el suyo (de 5 a 40): elige un número para igualarlos.')).toBeInTheDocument()
     await userEvent.click(control)
@@ -211,11 +209,12 @@ describe('Buscar ofertas', () => {
     expect(calls.filter((c) => c.method === 'POST').map((c) => c.path)).toEqual(['/sources/7/run', '/sources/8/run'])
   })
 
-  it('sin portales, lleva a elegirlos', async () => {
+  it('sin portales, lleva a elegirlos y la franja sigue a mano', async () => {
     mockApi(routes([]))
     renderApp('/buscar')
-    expect(await screen.findByText('Aún no hay portales en los que buscar')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Aún no hay portales en los que buscar' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Ir a «Dónde buscar»' })).toHaveAttribute('href', '/fuentes/plataformas')
+    expect(within(strip()).getByText('Aún no hay portales en los que buscar')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /^Buscar ahora/ })).not.toBeInTheDocument()
   })
 })
@@ -377,5 +376,267 @@ describe('Buscar ofertas: tus puestos y lugares en la franja', () => {
     await userEvent.click(within(roles).getByRole('button', { name: 'Quitar Data Analyst' }))
     expect(await within(strip()).findByRole('alert')).toHaveTextContent('Tu perfil ha cambiado')
     expect(within(roles).getByText('Data Analyst')).toBeInTheDocument()
+  })
+
+  it('marca la modalidad y el nivel con chips que se guardan al momento', async () => {
+    const puts = withProfile()
+    renderApp('/buscar')
+    const modes = await within(await findStrip()).findByRole('group', { name: 'Modalidad' })
+    const remote = within(modes).getByRole('checkbox', { name: 'Remoto' })
+    expect(remote).not.toBeChecked()
+    await userEvent.click(remote)
+    await waitFor(() => expect(puts()).toHaveLength(1))
+    expect(puts()[0].body.content.remote_modes).toEqual(['remote'])
+    expect(await within(strip()).findByText('Añadido «Remoto»: guardado en tu perfil.')).toBeInTheDocument()
+    await waitFor(() => expect(within(modes).getByRole('checkbox', { name: 'Remoto' })).toBeChecked())
+
+    const levels = within(strip()).getByRole('group', { name: 'Nivel' })
+    await waitFor(() => expect(within(levels).getByRole('checkbox', { name: 'Senior' })).toBeEnabled())
+    await userEvent.click(within(levels).getByRole('checkbox', { name: 'Senior' }))
+    await waitFor(() => expect(puts()).toHaveLength(2))
+    // Cada cambio parte del perfil que acaba de guardarse.
+    expect(puts()[1].body.file_hash).toBe('h2')
+    expect(puts()[1].body.content).toMatchObject({ remote_modes: ['remote'], seniority_target: ['senior'] })
+  })
+
+  it('cada lugar se pulsa para elegir qué aceptas en él', async () => {
+    const puts = withProfile()
+    renderApp('/buscar')
+    const places = await within(await findStrip()).findByRole('group', { name: 'Dónde' })
+    await userEvent.click(within(places).getByRole('button', { name: 'Qué aceptas en Vigo' }))
+    await userEvent.click(await screen.findByRole('menuitemradio', { name: 'Descartar' }))
+    await waitFor(() => expect(puts()).toHaveLength(1))
+    expect(puts()[0].body.content.locations).toEqual({ preferred: [], allowed: ['Madrid'], excluded: ['Vigo'] })
+    expect(await within(strip()).findByText('Cambiado «Vigo: descartar»: guardado en tu perfil.')).toBeInTheDocument()
+    // Lo descartado se sigue viendo, con su nota.
+    expect(await within(places).findByText('descartar')).toBeInTheDocument()
+  })
+})
+
+describe('Buscar ofertas: «Más ajustes»', () => {
+  const preferences = {
+    roles: ['Data Engineer'],
+    seniority_target: [],
+    remote_modes: [],
+    locations: { preferred: ['Vigo'] },
+    languages_for_work: ['es'],
+    cv: { photo_policy: { default: true } },
+    exclude_signals: ['fixed_term'],
+    discard_title_keywords: ['Prácticas'],
+  }
+  const editable = (prefs: unknown, hash: string) => ({
+    exists: true,
+    file_hash: hash,
+    profile: { personal: { name: 'Demo' }, preferences: prefs },
+    issues: [],
+    profile_version_id: 3,
+    undo_available: 0,
+    policy_discard_title_keywords: ['sales'],
+    policy_years_tolerance: 1,
+  })
+
+  /** Como el servidor: cada guardado (de la sección o del sueldo), un `file_hash` nuevo. */
+  function withProfile(salary: number | null = 30000) {
+    let current = editable(preferences, 'h1')
+    let floor = salary
+    let saves = 1
+    const next = () => {
+      saves += 1
+      return `h${saves}`
+    }
+    const calls = mockApi(
+      routes([platform(1, 'InfoJobs')], {
+        'GET /profile/editable': () => current,
+        'GET /profile/role-suggestions': [],
+        'GET /profile/salary-floor': () => ({ salary_floor_eur: floor, file_hash: current.file_hash }),
+        'PUT /profile/sections/preferences': (request: Request) =>
+          request
+            .clone()
+            .json()
+            .then((body: { content: unknown }) => {
+              const hash = next()
+              current = editable(body.content, hash)
+              return { section: 'preferences', dry_run: false, changed: true, diff: '', file_hash: hash, profile_version_id: 4, version_created: true, rescore_queued: true, generated_ids: [], warnings: [] }
+            }),
+        'PUT /profile/salary-floor': (request: Request) =>
+          request
+            .clone()
+            .json()
+            .then((body: { salary_floor_eur: number | null }) => {
+              const hash = next()
+              floor = body.salary_floor_eur
+              current = { ...current, file_hash: hash }
+              return { changed: true, file_hash: hash, profile_version_id: 5, rescore_queued: true }
+            }),
+      }),
+    )
+    return () => calls.filter((c) => c.method === 'PUT') as unknown as { path: string; body: Record<string, unknown> & { file_hash: string } }[]
+  }
+  /** El panel que despliega el botón (plegado, sigue en la página: se busca por `aria-controls`). */
+  const more = () => {
+    const button = within(strip()).getByRole('button', { name: /Más ajustes/ })
+    return document.getElementById(button.getAttribute('aria-controls')!)!
+  }
+  const findMore = async () => {
+    await findStrip()
+    await waitFor(() => expect(within(strip()).getByRole('button', { name: /Más ajustes/ })).toBeInTheDocument())
+    return more()
+  }
+
+  it('el botón cuenta los grupos con algo puesto y despliega los ajustes en la franja', async () => {
+    withProfile()
+    renderApp('/buscar')
+    const button = await within(await findStrip()).findByRole('button', { name: /Más ajustes/ })
+    // Sueldo, idiomas, contrato (sin temporal) y una palabra que descarta: los cuatro grupos.
+    await waitFor(() => expect(button).toHaveAccessibleName(/4 grupos con ajustes/))
+    expect(button).toHaveAttribute('aria-expanded', 'false')
+    expect(more()).not.toBeVisible()
+    await userEvent.click(button)
+    expect(button).toHaveAttribute('aria-expanded', 'true')
+    expect(more()).toBeVisible()
+    expect(within(more()).getByRole('heading', { name: 'Contrato y jornada' })).toBeInTheDocument()
+    // «Temporal» de `exclude_signals` sale sin marcar; el resto, marcado.
+    expect(within(more()).getByRole('checkbox', { name: 'Indefinido' })).toBeChecked()
+    expect(within(more()).getByRole('checkbox', { name: 'Temporal' })).not.toBeChecked()
+    // La explicación de las palabras va en su globo, con las de la configuración de la app.
+    await userEvent.hover(within(more()).getByRole('button', { name: 'Qué palabras descartan' }))
+    expect((await screen.findAllByText(/También descartan las de la configuración de la app: sales/)).length).toBeGreaterThan(0)
+    expect(screen.getByRole('spinbutton', { name: 'Sueldo mínimo' })).toHaveValue(30000)
+  })
+
+  it('en /buscar/ajustes llega ya desplegado', async () => {
+    withProfile()
+    renderApp('/buscar/ajustes')
+    await findMore()
+    await waitFor(() => expect(more()).toBeVisible())
+    expect(within(strip()).getByRole('button', { name: /Más ajustes/ })).toHaveAttribute('aria-expanded', 'true')
+  })
+
+  it('guarda de una vez lo de tu perfil y el sueldo, y se puede deshacer', async () => {
+    const puts = withProfile()
+    renderApp('/buscar/ajustes')
+    await findMore()
+    await waitFor(() => expect(screen.getByRole('spinbutton', { name: 'Sueldo mínimo' })).toHaveValue(30000))
+    const save = within(more()).getByRole('button', { name: 'Guardar cambios' })
+    expect(save).toBeDisabled()
+    await userEvent.type(within(more()).getByRole('spinbutton', { name: 'Desde' }), '2')
+    await userEvent.click(within(more()).getByRole('checkbox', { name: 'Jornada completa' }))
+    await userEvent.click(within(more()).getByRole('checkbox', { name: 'Ofertas que no dicen qué empresa contrata' }))
+    const salary = within(more()).getByRole('spinbutton', { name: 'Sueldo mínimo' })
+    await userEvent.clear(salary)
+    await userEvent.type(salary, '35000')
+    expect(within(more()).getByText('Al guardar se recalcula el encaje de tus ofertas abiertas.')).toBeInTheDocument()
+    await userEvent.click(save)
+
+    await waitFor(() => expect(puts()).toHaveLength(2))
+    expect(puts()[0].path).toBe('/profile/sections/preferences')
+    expect(puts()[0].body.file_hash).toBe('h1')
+    expect(puts()[0].body.content).toMatchObject({
+      min_years_required: 2,
+      employment_types: ['full_time'],
+      contract_types: ['permanent', 'freelance'],
+      exclude_signals: ['employer_hidden'],
+      roles: ['Data Engineer'], // lo de la franja, tal cual
+    })
+    // El sueldo va después, con el `file_hash` que dejó lo anterior.
+    expect(puts()[1]).toMatchObject({ path: '/profile/salary-floor', body: { file_hash: 'h2', salary_floor_eur: 35000 } })
+    expect(await within(more()).findByText('Guardado en tu perfil.')).toBeInTheDocument()
+
+    await waitFor(() => expect(within(more()).getByRole('button', { name: 'Deshacer' })).toBeEnabled())
+    await userEvent.click(within(more()).getByRole('button', { name: 'Deshacer' }))
+    await waitFor(() => expect(puts()).toHaveLength(4))
+    expect(puts()[2].body.file_hash).toBe('h3')
+    expect(puts()[2].body.content).toMatchObject({ min_years_required: null, employment_types: [] })
+    expect(puts()[3].body).toEqual({ file_hash: 'h4', salary_floor_eur: 30000 })
+    expect(await within(more()).findByText('Deshecho: tus ajustes vuelven a estar como antes.')).toBeInTheDocument()
+  })
+
+  it('el «Deshacer» de la franja solo devuelve lo que cambió en ella, no lo guardado después en «Más ajustes»', async () => {
+    const puts = withProfile()
+    renderApp('/buscar/ajustes')
+    await findMore()
+    const modes = within(strip()).getByRole('group', { name: 'Modalidad' })
+    await userEvent.click(within(modes).getByRole('checkbox', { name: 'Remoto' }))
+    await waitFor(() => expect(puts()).toHaveLength(1))
+    const from = within(more()).getByRole('spinbutton', { name: 'Desde' })
+    await waitFor(() => expect(from).toBeEnabled())
+    await userEvent.type(from, '2')
+    await userEvent.click(within(more()).getByRole('button', { name: 'Guardar cambios' }))
+    await waitFor(() => expect(puts()).toHaveLength(2))
+    // El primer «Deshacer» es el de la franja (el de «Más ajustes» va después).
+    const undo = () => within(strip()).getAllByRole('button', { name: 'Deshacer' })[0]
+    await waitFor(() => expect(undo()).toBeEnabled())
+    await userEvent.click(undo())
+    await waitFor(() => expect(puts()).toHaveLength(3))
+    expect(puts()[2].body.content).toMatchObject({ remote_modes: [], min_years_required: 2 })
+  })
+
+  it('«Restablecer» lo deja todo vacío y «Descartar cambios» vuelve a lo guardado', async () => {
+    const puts = withProfile()
+    renderApp('/buscar/ajustes')
+    await findMore()
+    await waitFor(() => expect(screen.getByRole('spinbutton', { name: 'Sueldo mínimo' })).toHaveValue(30000))
+    await userEvent.click(within(more()).getByRole('button', { name: 'Restablecer' }))
+    expect(within(more()).getByRole('spinbutton', { name: 'Sueldo mínimo' })).toHaveValue(null)
+    expect(within(more()).getByRole('checkbox', { name: 'Indefinido' })).not.toBeChecked()
+    expect(within(more()).queryByRole('list', { name: 'Palabras en el título' })).not.toBeInTheDocument()
+    await userEvent.click(within(more()).getByRole('button', { name: 'Descartar cambios' }))
+    expect(within(more()).getByRole('spinbutton', { name: 'Sueldo mínimo' })).toHaveValue(30000)
+    expect(within(more()).getByRole('checkbox', { name: 'Indefinido' })).toBeChecked()
+
+    await userEvent.click(within(more()).getByRole('button', { name: 'Restablecer' }))
+    await userEvent.click(within(more()).getByRole('button', { name: 'Guardar cambios' }))
+    await waitFor(() => expect(puts()).toHaveLength(2))
+    expect(puts()[0].body.content).toMatchObject({ contract_types: [], languages_for_work: [], discard_title_keywords: [], exclude_signals: [] })
+    expect(puts()[1].body).toEqual({ file_hash: 'h2', salary_floor_eur: null })
+  })
+
+  it('no guarda un sueldo que no es un número entero positivo, y un conflicto ofrece «Recargar»', async () => {
+    const calls = mockApi(
+      routes([platform(1, 'InfoJobs')], {
+        'GET /profile/editable': editable(preferences, 'h1'),
+        'GET /profile/role-suggestions': [],
+        'GET /profile/salary-floor': { salary_floor_eur: 30000, file_hash: 'h1' },
+        'PUT /profile/salary-floor': {
+          status: 409,
+          body: { ok: false, error: { type: 'conflict', message: 'El fichero ha cambiado.', details: [] } },
+        },
+      }),
+    )
+    renderApp('/buscar/ajustes')
+    await findMore()
+    const salary = await within(more()).findByRole('spinbutton', { name: 'Sueldo mínimo' })
+    await waitFor(() => expect(salary).toHaveValue(30000))
+    await userEvent.clear(salary)
+    await userEvent.type(salary, '-3')
+    expect(within(more()).getByText(/número entero de euros mayor que 0/)).toBeInTheDocument()
+    expect(within(more()).getByRole('button', { name: 'Guardar cambios' })).toBeDisabled()
+    await userEvent.clear(salary)
+    await userEvent.type(salary, '35000')
+    await userEvent.click(within(more()).getByRole('button', { name: 'Guardar cambios' }))
+    expect(await within(more()).findByRole('alert')).toHaveTextContent('Tu perfil ha cambiado')
+    // Solo el sueldo cambió: no se toca la sección.
+    expect(calls.some((c) => c.path === '/profile/sections/preferences')).toBe(false)
+    const reads = () => calls.filter((c) => c.path === '/profile/editable').length
+    const before = reads()
+    await userEvent.click(within(more()).getByRole('button', { name: 'Recargar' }))
+    await waitFor(() => expect(reads()).toBeGreaterThan(before))
+    expect(within(more()).queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  it('los idiomas se escriben por su nombre y se guardan como código', async () => {
+    const puts = withProfile()
+    renderApp('/buscar/ajustes')
+    await findMore()
+    const tags = await within(more()).findByRole('list', { name: 'Idiomas de trabajo' })
+    expect(within(tags).getByText('español')).toBeInTheDocument()
+    const input = within(more()).getByRole('combobox', { name: 'Idiomas de trabajo' })
+    await userEvent.type(input, 'klingon{Enter}')
+    expect(within(more()).getByText('«klingon» no es un idioma de la lista.')).toBeInTheDocument()
+    await userEvent.clear(input)
+    await userEvent.type(input, 'Francés{Enter}')
+    await userEvent.click(within(more()).getByRole('button', { name: 'Guardar cambios' }))
+    await waitFor(() => expect(puts()).toHaveLength(1))
+    expect(puts()[0].body.content).toMatchObject({ languages_for_work: ['es', 'fr'] })
   })
 })

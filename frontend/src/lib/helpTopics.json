@@ -27,6 +27,7 @@
     { "id": "firstSteps", "group": "start", "screen": "home" },
     { "id": "createProfile", "group": "start", "screen": "profile" },
     { "id": "profileByHand", "group": "start", "screen": "profile" },
+    { "id": "profileHistory", "group": "start", "screen": "profile" },
     { "id": "withoutAgent", "group": "start", "screen": "agent" },
     { "id": "language", "group": "start", "screen": null },
 
@@ -42,6 +43,7 @@
 
     { "id": "addJob", "group": "jobs", "screen": "newJob" },
     { "id": "sources", "group": "jobs", "screen": "sources" },
+    { "id": "companyUrl", "group": "jobs", "screen": "companies" },
     { "id": "searchNow", "group": "jobs", "screen": "search" },
     { "id": "emailAlerts", "group": "jobs", "screen": "email" },
     { "id": "browserButton", "group": "jobs", "screen": "extension" },

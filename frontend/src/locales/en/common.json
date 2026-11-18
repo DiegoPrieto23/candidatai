@@ -60,7 +60,8 @@
       "internal_error": "Internal error",
       "conflict": "The file has changed",
       "referenced": "Something else in the profile cites it",
-      "page_unavailable": "Page unavailable"
+      "page_unavailable": "Page unavailable",
+      "linkedin_url": "LinkedIn job"
     }
   },
   "close": "Close",

@@ -9,7 +9,7 @@ import base64
 import binascii
 from typing import Any
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -17,7 +17,7 @@ from app.agent_interface.errors import ToolError
 from app.api.deps import EmptyBody, SessionDep, require_ui, require_ui_read
 from app.core.config import get_settings
 from app.services import profile as profiles
-from app.services import profile_editor, search_titles
+from app.services import profile_editor, profile_history, search_titles
 from app.services import profile_suggestions as suggestions
 from app.services.documents import photo
 from app.services.profile import ProfileSection
@@ -110,13 +110,43 @@ def undo_profile(session: SessionDep, body: UndoBody) -> profile_editor.UndoResu
     return profile_editor.undo_last(session, body.file_hash)
 
 
+# El historial lleva tu contacto (`private`, oculto): solo para la UI, como `cai profile diff`.
 @router.get(
-    "/profile/diff", operation_id="get_profile_diff", dependencies=[Depends(require_ui_read)]
+    "/profile/versions",
+    operation_id="list_profile_versions",
+    dependencies=[Depends(require_ui_read)],
 )
-def get_profile_diff(session: SessionDep) -> profiles.ProfileDiff:
-    """Diff de las dos últimas versiones importadas, como `cai profile diff`: `private` oculto,
-    pero con tu contacto, así que solo para la UI."""
-    return profiles.diff_last_two(session)
+def list_profile_versions(
+    session: SessionDep,
+    offset: int = Query(default=0, ge=0),
+    limit: int = Query(default=profile_history.PAGE_SIZE, ge=1, le=100),
+) -> profile_history.VersionPage:
+    """Las versiones del perfil, de la más reciente a la más antigua, con lo que cambió."""
+    return profile_history.list_versions(session, offset, limit)
+
+
+@router.get(
+    "/profile/versions/{version_id}/changes",
+    operation_id="get_profile_version_changes",
+    dependencies=[Depends(require_ui_read)],
+)
+def get_profile_version_changes(
+    session: SessionDep, version_id: int
+) -> profile_history.VersionChanges:
+    """Lo que cambió esa versión, por bloques, y lo que cambiaría volver a ella."""
+    return profile_history.version_changes(session, version_id)
+
+
+@router.post(
+    "/profile/versions/{version_id}/restore",
+    operation_id="restore_profile_version",
+    dependencies=[Depends(require_ui)],
+)
+def restore_profile_version(
+    session: SessionDep, version_id: int, body: UndoBody
+) -> profile_editor.RestoreResult:
+    """Vuelve a esa versión como una versión nueva, que se puede deshacer."""
+    return profile_editor.restore_version(session, version_id, body.file_hash)
 
 
 # --- Foto del CV ---------------------------------------------------------------------------------

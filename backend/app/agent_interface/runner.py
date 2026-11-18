@@ -42,7 +42,7 @@ from app.services.documents.uploads import InvalidUploadError, UploadTooLargeErr
 from app.services.drafts import DraftNotAllowedError, DraftNotFoundError
 from app.services.events import JobNotFoundError, LaterEventsConflictError
 from app.services.extractions import ExtractionNotFoundError
-from app.services.ingest import PageUnavailableError
+from app.services.ingest import LinkedInUrlError, PageUnavailableError
 from app.services.ingestion.browse import BrowsingNotAllowedError, PriorityConflictError
 from app.services.ingestion.service import SourceExistsError, SourceNotFoundError
 from app.services.interviews import InterviewNotAllowedError
@@ -119,6 +119,7 @@ _ERROR_TYPES: tuple[tuple[type[Exception], str], ...] = (
     (migrations.DatabaseNotReadyError, "database_not_ready"),
     (LaterEventsConflictError, "later_events"),  # antes que su base, `InvalidTransitionError`
     (InvalidTransitionError, "invalid_transition"),
+    (LinkedInUrlError, "linkedin_url"),
     (PageUnavailableError, "page_unavailable"),
     # IngestError, InvalidQueryError, UnknownEventTypeError, ReservedEventError…
     (ValueError, "invalid_request"),

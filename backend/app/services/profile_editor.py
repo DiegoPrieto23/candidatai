@@ -27,6 +27,7 @@ Cada guardado:
 quita de la lista, así que deshacer otra vez va un paso más atrás.
 """
 
+import copy
 import difflib
 import hashlib
 import io
@@ -53,9 +54,10 @@ from sqlalchemy.orm import Session
 
 from app.core import policies
 from app.core.config import get_settings
-from app.models import Document, Job, ProfileEdit
+from app.models import Document, Job, ProfileEdit, ProfileVersion
 from app.schemas.profile import SALARY_FLOOR_KEY, CandidateProfile
 from app.services import profile as profiles
+from app.services import profile_history
 from app.services.profile import ProfileIssue, ProfileSection, ProfileValidationError
 
 # Leer, cambiar y escribir el fichero es una sección crítica: dos guardados seguidos (rutas
@@ -635,7 +637,7 @@ def save_section(
         atomic_write(path, out)
         _backup(raw)  # después: si la escritura falla, no queda una copia que no deshace nada
         # Dentro del lock: `import_profile` vuelve a leer el fichero.
-        imported = profiles.import_profile(session, path)
+        imported = profiles.import_profile(session, path, origin="ui")
     after = file_hash(out.encode("utf-8"))
     record_edit(session, "profile", section, "save", current, after)
     return SaveResult(
@@ -670,7 +672,7 @@ def create_profile(
             raw = _read(path)
             raise ProfileConflictError(file_hash(raw) if raw is not None else None) from None
         try:
-            imported = profiles.import_profile(session, path)
+            imported = profiles.import_profile(session, path, origin="ui")
         except Exception:
             path.unlink(missing_ok=True)  # sin versión importada, mejor sin fichero: se reintenta
             raise
@@ -696,7 +698,7 @@ def undo_last(session: Session, expected_hash: str | None, path: Path | None = N
         restored = backup.decode("utf-8-sig")  # sin BOM, como escribe `save_section`
         atomic_write(path, restored)
         latest.unlink()
-        imported = profiles.import_profile(session, path)
+        imported = profiles.import_profile(session, path, origin="undo")
     after = file_hash(restored.encode("utf-8"))  # el de los bytes que se han escrito
     record_edit(session, "profile", None, "undo", current, after)
     return UndoResult(
@@ -704,6 +706,98 @@ def undo_last(session: Session, expected_hash: str | None, path: Path | None = N
         file_hash=after,
         profile_version_id=imported.profile_version_id,
         version_created=imported.created,
+        undo_available=len(_history()),
+    )
+
+
+class RestoreResult(BaseModel):
+    file_hash: str
+    profile_version_id: int
+    blocks: list[str]  # los bloques del historial que han cambiado
+    undo_available: int
+
+
+def _plain_yaml(value: Any) -> Any:
+    """Como `_to_yaml`, pero sin dejar fuera nada: lo que se restaura tiene que quedar igual."""
+    if isinstance(value, dict):
+        node = CommentedMap()
+        for key, item in value.items():
+            if item is not None:
+                node[key] = _plain_yaml(item)
+        return node
+    if isinstance(value, list):
+        return CommentedSeq([_plain_yaml(v) for v in value])
+    return value
+
+
+def restore_version(
+    session: Session, version_id: int, expected_hash: str | None, path: Path | None = None
+) -> RestoreResult:
+    """Vuelve a una versión anterior: reescribe solo las secciones que cambian (lo demás conserva
+    sus comentarios), deja una copia para «Deshacer» y crea una versión nueva."""
+    target_version = session.get(ProfileVersion, version_id)
+    if target_version is None:
+        raise profiles.ProfileNotFoundError(f"No existe la versión de perfil {version_id}.")
+    try:
+        target = CandidateProfile.model_validate(target_version.data).model_dump(mode="json")
+    except ValidationError as exc:
+        raise ProfileValidationError(
+            path or profiles.default_path(), profiles.issues_of(exc)
+        ) from exc
+    path = path or profiles.default_path()
+    with _LOCK:
+        raw = _read(path)
+        if raw is None:
+            raise profiles.ProfileNotFoundError(f"No existe {path}.")
+        current = file_hash(raw)
+        if expected_hash != current:
+            raise ProfileConflictError(current)
+        newline = "\r\n" if b"\r\n" in raw else "\n"
+        old_text = _text(raw)
+        now = _validate(old_text, path).model_dump(mode="json")
+        if now == target:
+            raise NothingToUndoError("Tu perfil ya está como en esa versión.")
+        yaml = round_trip_yaml()
+        data = yaml.load(old_text)
+        if not isinstance(data, CommentedMap):
+            raise ValueError("data/profile.yaml no es un objeto YAML: arréglalo en tu editor.")
+        sections = [k for k in dict.fromkeys([*target, *now]) if now.get(k) != target.get(k)]
+        for key in sections:
+            value = target.get(key)
+            if value is None:
+                data.pop(key, None)
+            else:
+                data[key] = _merge(data.get(key), copy.deepcopy(value))
+
+        def dump() -> str:
+            buffer = io.StringIO()
+            yaml.dump(data, buffer)
+            return buffer.getvalue()
+
+        new_text = dump()
+        result = _validate(new_text, path).model_dump(mode="json")
+        # `_merge` no escribe `false` ni listas vacías en claves que no estaban: si eso deja una
+        # sección distinta (un valor por defecto que no coincide), se escribe entera.
+        unequal = [k for k in sections if result.get(k) != target.get(k)]
+        if unequal:
+            for key in unequal:
+                data[key] = _plain_yaml(target[key])
+            new_text = dump()
+            _validate(new_text, path)
+        out = new_text.replace("\n", newline)
+        atomic_write(path, out)
+        _backup(raw)
+        imported = profiles.import_profile(session, path, origin="restore")
+        version = session.get(ProfileVersion, imported.profile_version_id)
+    after = file_hash(out.encode("utf-8"))
+    record_edit(session, "profile", None, "restore", current, after)
+    if version is None:  # no pasa: `import_profile` acaba de devolver su id
+        raise profiles.ProfileNotFoundError("No se encuentra la versión restaurada.")
+    blocks = profile_history.blocks_of(profile_history.compare(now, version.data))
+    return RestoreResult(
+        file_hash=after,
+        profile_version_id=imported.profile_version_id,
+        blocks=list(blocks),
         undo_available=len(_history()),
     )
 
@@ -788,7 +882,7 @@ def save_salary_floor(
         out = new_text.replace("\n", newline)
         atomic_write(path, out)
         _backup(raw)
-        imported = profiles.import_profile(session, path)
+        imported = profiles.import_profile(session, path, origin="ui")
     after = file_hash(out.encode("utf-8"))
     record_edit(session, "profile", "private", "save", current, after)
     return SalaryFloorResult(

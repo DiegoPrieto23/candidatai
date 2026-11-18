@@ -19,7 +19,7 @@
     "min": "mín.",
     "max": "máx.",
     "floor": "Tu mínimo: {{amount}} brutos al año. ",
-    "noFloor": "Añade tu sueldo mínimo en «Buscar ofertas → Configuración de tu búsqueda» para compararla con él. ",
+    "noFloor": "Añade tu sueldo mínimo en «Buscar ofertas → Más ajustes» para compararla con él. ",
     "private": "Solo lo ves tú: tu agente no recibe tu mínimo ni estas diferencias. Son cuentas, no una recomendación."
   },
   "received": {

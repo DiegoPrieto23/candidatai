@@ -380,12 +380,18 @@ def _discover_one(
     company: str,
     forced: list[str],
     existing: dict[tuple[str, str], int],
+    *,
+    slugs: list[tuple[str, bool]] | None = None,
+    kinds: tuple[str, ...] = DISCOVER_KINDS,
 ) -> CompanyDiscovery:
-    slugs = [(s, True) for s in forced] if forced else candidate_slugs(company)
+    """`slugs` (slug, sale del nombre completo) y `kinds` acotan la prueba: los usa el alta por
+    URL (`resolve.py`), que añade el slug del dominio."""
+    if slugs is None:
+        slugs = [(s, True) for s in forced] if forced else candidate_slugs(company)
     result = CompanyDiscovery(
         company=company, tried=[s for s, _ in slugs], hits=[], errors=[], added_source_ids=[]
     )
-    for kind in DISCOVER_KINDS:
+    for kind in kinds:
         for slug, full_name in slugs:
             try:
                 found = _probe_kind(probe, kind, slug, company, full_name)
@@ -412,6 +418,21 @@ def _discover_one(
             )
             break  # un tablero por ATS basta
     return result
+
+
+def find_boards(
+    company: str,
+    slugs: list[tuple[str, bool]],
+    kinds: tuple[str, ...] = DISCOVER_KINDS,
+    *,
+    sleep: Callable[[float], None] = time.sleep,
+    transport: httpx.BaseTransport | None = None,
+) -> list[BoardHit]:
+    """Los tableros de una empresa con esos slugs (y si salen de su nombre completo), sin dar nada
+    de alta. Lo usa el alta por la dirección de su web de empleo (`resolve.py`)."""
+    with make_client(get_policies().connectors.timeout_seconds, transport) as client:
+        probe = _Probe(client, sleep)
+        return _discover_one(probe, company, [], {}, slugs=slugs, kinds=kinds).hits
 
 
 def discover(

@@ -68,8 +68,9 @@ def test_add_url_linkedin_error() -> None:
     assert result.exit_code == 1
     data = json.loads(result.stdout)
     assert data["ok"] is False
-    assert data["error"]["type"] == "invalid_request"
+    assert data["error"]["type"] == "linkedin_url"
     assert "add-text" in data["error"]["message"]
+    assert "Enviar a CandidatAI" in data["error"]["message"]
 
 
 def test_add_text_and_list() -> None:

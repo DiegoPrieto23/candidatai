@@ -60,7 +60,8 @@
       "internal_error": "Error interno",
       "conflict": "El fichero ha cambiado",
       "referenced": "Lo cita otra parte del perfil",
-      "page_unavailable": "Página no disponible"
+      "page_unavailable": "Página no disponible",
+      "linkedin_url": "Oferta de LinkedIn"
     }
   },
   "close": "Cerrar",

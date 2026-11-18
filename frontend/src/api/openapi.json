@@ -5039,7 +5039,7 @@
           "sources"
         ],
         "summary": "Add Source",
-        "description": "Añade una empresa con portal propio (ATS + slug) o una búsqueda en un portal con API.",
+        "description": "Añade una empresa con portal propio (nombre y dirección de su web de empleo, o ATS + slug)\no una búsqueda en un portal con API. Una web sin ATS reconocible queda como plataforma que el\nagente recorre con el navegador (`kind: agent_browse`).",
         "operationId": "add_source",
         "requestBody": {
           "required": true,
@@ -6540,6 +6540,129 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/BrowseSettingsBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceView"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/sources/{source_id}/locations": {
+      "post": {
+        "tags": [
+          "sources"
+        ],
+        "summary": "Set Source Locations",
+        "description": "Cambia los lugares a los que se limita una empresa («Solo Madrid»); vacía, todos.",
+        "operationId": "set_source_locations",
+        "parameters": [
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Source Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetLocationsBody"
               }
             }
           }
@@ -18377,104 +18500,365 @@
         }
       }
     },
-    "/profile/diff": {
+    "/profile/versions": {
       "get": {
         "tags": [
           "profile"
         ],
-        "summary": "Get Profile Diff",
-        "description": "Diff de las dos últimas versiones importadas, como `cai profile diff`: `private` oculto,\npero con tu contacto, así que solo para la UI.",
-        "operationId": "get_profile_diff",
+        "summary": "List Profile Versions",
+        "description": "Las versiones del perfil, de la más reciente a la más antigua, con lo que cambió.",
+        "operationId": "list_profile_versions",
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProfileDiff"
+                  "$ref": "#/components/schemas/VersionPage"
                 }
               }
             }
           },
           "401": {
-            "description": "Unauthorized",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
-            }
+            },
+            "description": "Unauthorized"
           },
           "403": {
-            "description": "Forbidden",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
-            }
+            },
+            "description": "Forbidden"
           },
           "404": {
-            "description": "Not Found",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
-            }
+            },
+            "description": "Not Found"
           },
           "409": {
-            "description": "Conflict",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
-            }
+            },
+            "description": "Conflict"
           },
           "413": {
-            "description": "Request Entity Too Large",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
-            }
+            },
+            "description": "Request Entity Too Large"
           },
           "422": {
-            "description": "Unprocessable Entity",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
-            }
+            },
+            "description": "Unprocessable Entity"
           },
           "500": {
-            "description": "Internal Server Error",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/profile/versions/{version_id}/changes": {
+      "get": {
+        "tags": [
+          "profile"
+        ],
+        "summary": "Get Profile Version Changes",
+        "description": "Lo que cambió esa versión, por bloques, y lo que cambiaría volver a ella.",
+        "operationId": "get_profile_version_changes",
+        "parameters": [
+          {
+            "name": "version_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Version Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionChanges"
                 }
               }
             }
           },
-          "503": {
-            "description": "Service Unavailable",
+          "401": {
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/profile/versions/{version_id}/restore": {
+      "post": {
+        "tags": [
+          "profile"
+        ],
+        "summary": "Restore Profile Version",
+        "description": "Vuelve a esa versión como una versión nueva, que se puede deshacer.",
+        "operationId": "restore_profile_version",
+        "parameters": [
+          {
+            "name": "version_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Version Id"
             }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UndoBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestoreResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
           }
         }
       }
@@ -24588,6 +24972,39 @@
         "title": "BackgroundInfo",
         "description": "Si los botones pueden lanzar en segundo plano, con qué agente o por qué no."
       },
+      "BlockCount": {
+        "properties": {
+          "block": {
+            "type": "string",
+            "enum": [
+              "personal",
+              "experience",
+              "projects",
+              "education",
+              "certifications",
+              "extra",
+              "languages",
+              "skills",
+              "stories",
+              "cv",
+              "letter",
+              "search",
+              "private"
+            ],
+            "title": "Block"
+          },
+          "changes": {
+            "type": "integer",
+            "title": "Changes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "block",
+          "changes"
+        ],
+        "title": "BlockCount"
+      },
       "Board": {
         "properties": {
           "columns": {
@@ -28359,6 +28776,45 @@
         ],
         "title": "ExtractionView"
       },
+      "FieldChange": {
+        "properties": {
+          "path": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Path"
+          },
+          "before": {
+            "title": "Before"
+          },
+          "after": {
+            "title": "After"
+          },
+          "added": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Added",
+            "default": []
+          },
+          "removed": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Removed",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "path"
+        ],
+        "title": "FieldChange",
+        "description": "Un campo dentro de un elemento. En listas de textos, lo que entra y lo que sale."
+      },
       "FieldReport": {
         "properties": {
           "marker": {
@@ -29636,6 +30092,112 @@
         ],
         "title": "Issue",
         "description": "Un problema de una ejecución. `item` identifica la oferta si es de una sola."
+      },
+      "ItemChange": {
+        "properties": {
+          "block": {
+            "type": "string",
+            "enum": [
+              "personal",
+              "experience",
+              "projects",
+              "education",
+              "certifications",
+              "extra",
+              "languages",
+              "skills",
+              "stories",
+              "cv",
+              "letter",
+              "search",
+              "private"
+            ],
+            "title": "Block"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "added",
+              "removed",
+              "changed",
+              "moved"
+            ],
+            "title": "Kind"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "parent": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent"
+          },
+          "within": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Within"
+          },
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/FieldChange"
+            },
+            "type": "array",
+            "title": "Fields",
+            "default": []
+          },
+          "position": {
+            "anyOf": [
+              {
+                "prefixItems": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ],
+                "type": "array",
+                "maxItems": 2,
+                "minItems": 2
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Position"
+          },
+          "hidden": {
+            "type": "boolean",
+            "title": "Hidden",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "block",
+          "kind"
+        ],
+        "title": "ItemChange"
       },
       "JobCost": {
         "properties": {
@@ -34798,36 +35360,6 @@
         ],
         "title": "ProcessView"
       },
-      "ProfileDiff": {
-        "properties": {
-          "from_version": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "From Version"
-          },
-          "to_version": {
-            "type": "integer",
-            "title": "To Version"
-          },
-          "diff": {
-            "type": "string",
-            "title": "Diff"
-          }
-        },
-        "type": "object",
-        "required": [
-          "from_version",
-          "to_version",
-          "diff"
-        ],
-        "title": "ProfileDiff"
-      },
       "ProfileIssue": {
         "properties": {
           "field": {
@@ -36889,6 +37421,37 @@
         ],
         "title": "ResponseTime"
       },
+      "RestoreResult": {
+        "properties": {
+          "file_hash": {
+            "type": "string",
+            "title": "File Hash"
+          },
+          "profile_version_id": {
+            "type": "integer",
+            "title": "Profile Version Id"
+          },
+          "blocks": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Blocks"
+          },
+          "undo_available": {
+            "type": "integer",
+            "title": "Undo Available"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file_hash",
+          "profile_version_id",
+          "blocks",
+          "undo_available"
+        ],
+        "title": "RestoreResult"
+      },
       "RestoreTemplateResult": {
         "properties": {
           "template_id": {
@@ -37951,6 +38514,26 @@
         ],
         "title": "SetActiveBody"
       },
+      "SetLocationsBody": {
+        "properties": {
+          "locations": {
+            "items": {
+              "type": "string",
+              "maxLength": 80,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 10,
+            "title": "Locations"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "locations"
+        ],
+        "title": "SetLocationsBody"
+      },
       "SetWebsiteBody": {
         "properties": {
           "website": {
@@ -38275,20 +38858,27 @@
       "SourceInput": {
         "properties": {
           "kind": {
-            "type": "string",
-            "enum": [
-              "greenhouse",
-              "lever",
-              "ashby",
-              "personio",
-              "teamtailor",
-              "workable",
-              "smartrecruiters",
-              "recruitee",
-              "infojobs",
-              "adzuna",
-              "manfred",
-              "freehire"
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "greenhouse",
+                  "lever",
+                  "ashby",
+                  "personio",
+                  "teamtailor",
+                  "workable",
+                  "smartrecruiters",
+                  "recruitee",
+                  "infojobs",
+                  "adzuna",
+                  "manfred",
+                  "freehire"
+                ]
+              },
+              {
+                "type": "null"
+              }
             ],
             "title": "Kind"
           },
@@ -38408,16 +38998,45 @@
               }
             ],
             "title": "Website"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "locations": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "maxLength": 80,
+                  "minLength": 1
+                },
+                "type": "array",
+                "maxItems": 10
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Locations"
           }
         },
         "additionalProperties": false,
         "type": "object",
         "required": [
-          "kind",
           "name"
         ],
         "title": "SourceInput",
-        "description": "Alta de una fuente. En los ATS, `name` es la empresa tal como quieres verla."
+        "description": "Alta de una fuente. En los ATS, `name` es la empresa tal como quieres verla.\n\nUna empresa se puede dar de alta solo con `name` y `url` (la dirección de su web de empleo):\nel servicio deduce el ATS, el slug y los lugares. Con `kind` y `slug`, se usan esos."
       },
       "SourceList": {
         "properties": {
@@ -38438,6 +39057,104 @@
           "agent_browse"
         ],
         "title": "SourceList"
+      },
+      "SourceResolution": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "how": {
+            "type": "string",
+            "enum": [
+              "url",
+              "page",
+              "search",
+              "none"
+            ],
+            "title": "How"
+          },
+          "kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kind"
+          },
+          "kind_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kind Label"
+          },
+          "slug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Slug"
+          },
+          "region": {
+            "type": "string",
+            "enum": [
+              "global",
+              "eu"
+            ],
+            "title": "Region",
+            "default": "global"
+          },
+          "locations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Locations"
+          },
+          "website": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Website"
+          },
+          "issues": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Issues"
+          }
+        },
+        "type": "object",
+        "required": [
+          "url",
+          "how",
+          "kind",
+          "kind_label",
+          "slug",
+          "locations",
+          "website",
+          "issues"
+        ],
+        "title": "SourceResolution",
+        "description": "Lo que la app ha deducido de la dirección de una web de empleo.\n\n`how`: `url` (es la del ATS), `page` (la web enlaza su ATS), `search` (encontrado por el nombre\no el dominio) o `none` (no se reconoce: se guarda como plataforma que recorre el agente)."
       },
       "SourceRunResult": {
         "properties": {
@@ -38631,6 +39348,16 @@
           "message": {
             "type": "string",
             "title": "Message"
+          },
+          "resolution": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SourceResolution"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -38645,7 +39372,7 @@
           "message"
         ],
         "title": "SourceTestResult",
-        "description": "Prueba de una fuente sin guardar nada: «12 ofertas encontradas, 3 tras filtros»."
+        "description": "Prueba de una fuente sin guardar nada: «12 ofertas encontradas, 3 tras filtros».\n\nLa UI enseña solo las que pasan (`after_filters`); los totales quedan para el diagnóstico."
       },
       "SourceView": {
         "properties": {
@@ -39861,6 +40588,184 @@
           "problem"
         ],
         "title": "VerificationIssue"
+      },
+      "VersionChanges": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "previous_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "origin": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "ui",
+                  "agent",
+                  "undo",
+                  "restore",
+                  "demo"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Origin"
+          },
+          "current": {
+            "type": "boolean",
+            "title": "Current"
+          },
+          "restorable": {
+            "type": "boolean",
+            "title": "Restorable"
+          },
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/ItemChange"
+            },
+            "type": "array",
+            "title": "Changes"
+          },
+          "restore_blocks": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "personal",
+                "experience",
+                "projects",
+                "education",
+                "certifications",
+                "extra",
+                "languages",
+                "skills",
+                "stories",
+                "cv",
+                "letter",
+                "search",
+                "private"
+              ]
+            },
+            "type": "array",
+            "title": "Restore Blocks"
+          },
+          "technical_diff": {
+            "type": "string",
+            "title": "Technical Diff"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "previous_id",
+          "created_at",
+          "origin",
+          "current",
+          "restorable",
+          "changes",
+          "restore_blocks",
+          "technical_diff"
+        ],
+        "title": "VersionChanges"
+      },
+      "VersionEntry": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "origin": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "ui",
+                  "agent",
+                  "undo",
+                  "restore",
+                  "demo"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Origin"
+          },
+          "first": {
+            "type": "boolean",
+            "title": "First"
+          },
+          "current": {
+            "type": "boolean",
+            "title": "Current"
+          },
+          "restorable": {
+            "type": "boolean",
+            "title": "Restorable"
+          },
+          "summary": {
+            "items": {
+              "$ref": "#/components/schemas/BlockCount"
+            },
+            "type": "array",
+            "title": "Summary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "created_at",
+          "origin",
+          "first",
+          "current",
+          "restorable",
+          "summary"
+        ],
+        "title": "VersionEntry"
+      },
+      "VersionPage": {
+        "properties": {
+          "versions": {
+            "items": {
+              "$ref": "#/components/schemas/VersionEntry"
+            },
+            "type": "array",
+            "title": "Versions"
+          },
+          "has_more": {
+            "type": "boolean",
+            "title": "Has More"
+          }
+        },
+        "type": "object",
+        "required": [
+          "versions",
+          "has_more"
+        ],
+        "title": "VersionPage"
       },
       "WeekFunnel": {
         "properties": {

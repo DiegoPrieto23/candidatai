@@ -8,38 +8,40 @@ import { fold } from '@/lib/text'
 
 type Locations = NonNullable<Preferences['locations']>
 
+/** Qué aceptas en un lugar: cualquier modalidad, solo híbrido o remoto, o nada (descartado). */
+export const PLACE_MODES = ['preferred', 'allowed', 'excluded'] as const
+export type PlaceMode = (typeof PLACE_MODES)[number]
+
 export interface Place {
   place: string
-  /** `allowed`: solo en híbrido o remoto. */
-  onlyRemote: boolean
+  mode: PlaceMode
 }
 
 const same = (a: string, b: string) => fold(a) === fold(b)
 
-/** Los lugares donde buscas: los de cualquier modalidad y los de solo híbrido o remoto, sin repetir. */
+/** Tus lugares, uno por sitio y en el orden de las tres listas (si uno está en dos, manda la primera). */
 export function placesOf(locations: Locations | undefined): Place[] {
-  const rows = [
-    ...(locations?.preferred ?? []).map((place) => ({ place, onlyRemote: false })),
-    ...(locations?.allowed ?? []).map((place) => ({ place, onlyRemote: true })),
-  ]
+  const rows = PLACE_MODES.flatMap((mode) => (locations?.[mode] ?? []).map((place) => ({ place, mode })))
   return rows.filter((row, i) => rows.findIndex((r) => same(r.place, row.place)) === i)
 }
 
-function without(locations: Locations, place: string): Locations {
-  const drop = (list: string[] | undefined) => list?.filter((p) => !same(p, place))
-  return { ...locations, preferred: drop(locations.preferred), allowed: drop(locations.allowed), excluded: drop(locations.excluded) }
-}
-
-/** Quita un lugar de tu búsqueda (de cualquier modalidad o de solo remoto). Lo descartado no se toca. */
+/** Quita un lugar de tus tres listas. Las demás claves de `locations` van tal cual. */
 export function removePlace(locations: Locations | undefined, place: string): Locations {
   const drop = (list: string[] | undefined) => list?.filter((p) => !same(p, place))
-  return { ...locations, preferred: drop(locations?.preferred), allowed: drop(locations?.allowed) }
+  return { ...locations, preferred: drop(locations?.preferred), allowed: drop(locations?.allowed), excluded: drop(locations?.excluded) }
 }
 
-/** Añade un lugar en cualquier modalidad. Si lo tenías descartado, deja de estarlo. */
-export function addPlace(locations: Locations | undefined, place: string): Locations {
-  const rest = without(locations ?? {}, place)
-  return { ...rest, preferred: [...(rest.preferred ?? []), place] }
+/** Pone un lugar en una modalidad (por defecto, cualquiera), al final de esa lista. */
+export function addPlace(locations: Locations | undefined, place: string, mode: PlaceMode = 'preferred'): Locations {
+  const rest = removePlace(locations ?? {}, place)
+  return { ...rest, [mode]: [...(rest[mode] ?? []), place] }
+}
+
+/** Cambia qué aceptas en un lugar sin moverlo de sitio en la franja si ya estaba en esa lista. */
+export function setPlaceMode(locations: Locations | undefined, place: string, mode: PlaceMode): Locations {
+  const current = placesOf(locations).find((p) => same(p.place, place))
+  if (current?.mode === mode) return locations ?? {}
+  return addPlace(locations, current?.place ?? place, mode)
 }
 
 export const hasItem = (list: readonly string[], item: string) => list.some((x) => same(x, item))

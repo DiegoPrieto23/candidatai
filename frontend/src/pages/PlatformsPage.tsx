@@ -91,7 +91,7 @@ function Searches({ urls, name }: { urls: string[]; name: string }) {
   )
 }
 
-type CountKey = 'found' | 'new' | 'known' | 'problems' | 'notes' | 'offers' | 'pages' | 'afterFilters'
+type CountKey = 'found' | 'new' | 'newForYou' | 'known' | 'problems' | 'notes' | 'offers' | 'pages'
 
 function plural(key: CountKey, count: number): string {
   return i18n.t(`platforms:counts.${key}`, { count })
@@ -215,8 +215,7 @@ function PublicLastRun({ view }: { view: LinkedInPublicView }) {
       <p className="flex items-center gap-1.5">
         <ClockIcon className="size-3.5" />
         <span>
-          {formatWhen(last.finished_at ?? last.started_at)}: {plural('found', last.found)},{' '}
-          {plural('afterFilters', last.after_filters)}, {plural('new', last.created)}, {plural('known', existing)}
+          {formatWhen(last.finished_at ?? last.started_at)}: {plural('newForYou', last.created)}, {plural('known', existing)}
         </span>
       </p>
       {warnings.length > 0 && (
@@ -346,7 +345,14 @@ function LinkedInPublicPanel() {
               {t('daily', { date: formatWhen(view.next_run_at) })}
             </span>
           )}
-          {runNow.data && <span className="text-xs text-muted-foreground">{runNow.data.message}</span>}
+          {runNow.data && (
+            <span className="text-xs text-muted-foreground">
+              {/* Solo lo nuevo para ti; los totales, en el registro. Si no se ejecutó o falló, su motivo. */}
+              {runNow.data.skipped || runNow.data.blocked || (runNow.data.found === 0 && runNow.data.errors.length > 0)
+                ? runNow.data.message
+                : plural('newForYou', runNow.data.created)}
+            </span>
+          )}
         </div>
       )}
       {(update.error || runNow.error) && (

@@ -1,6 +1,14 @@
 import { useId, useRef, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { PlusIcon, XIcon } from '@phosphor-icons/react'
+import { CaretDownIcon, PlusIcon, XIcon } from '@phosphor-icons/react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { matchesQuery } from '@/lib/text'
 import { hasItem } from '@/lib/searchStrip'
 import { cn } from '@/lib/utils'
@@ -9,6 +17,18 @@ export interface Tag {
   value: string
   /** Una nota pequeña tras el texto (p. ej. «solo híbrido o remoto»). */
   note?: string
+  /** Tachada (un lugar que descartas). */
+  struck?: boolean
+  /** Lo que se elige al pulsar la etiqueta, en un menú (p. ej. qué aceptas en un lugar). */
+  choice?: TagChoice
+}
+
+export interface TagChoice {
+  /** El título del menú y el nombre del botón. */
+  label: string
+  value: string
+  options: { value: string; label: string }[]
+  onChange: (value: string) => void
 }
 
 export interface Suggestion {
@@ -97,9 +117,18 @@ export function TagRow({
       <div className="flex min-h-8 flex-wrap items-center gap-1.5">
         {tags.length === 0 && !adding && <span className="text-sm text-muted-foreground">{empty}</span>}
         {tags.map((tag) => (
-          <span key={tag.value} className="inline-flex max-w-full items-center gap-0.5 rounded-full border bg-muted py-0.5 pr-1 pl-3 text-sm font-medium">
-            <span className="truncate">{tag.value}</span>
-            {tag.note && <span className="ml-1 shrink-0 text-xs font-normal text-muted-foreground">{tag.note}</span>}
+          <span
+            key={tag.value}
+            className={cn(
+              'inline-flex max-w-full items-center gap-0.5 rounded-full border bg-muted py-0.5 pr-1 text-sm font-medium',
+              tag.choice ? 'pl-1' : 'pl-3',
+            )}
+          >
+            {tag.choice ? (
+              <TagMenu tag={tag} choice={tag.choice} busy={busy} />
+            ) : (
+              <TagText tag={tag} />
+            )}
             <button
               type="button"
               aria-disabled={busy}
@@ -200,5 +229,41 @@ export function TagRow({
         )}
       </div>
     </div>
+  )
+}
+
+function TagText({ tag }: { tag: Tag }) {
+  return (
+    <>
+      <span className={cn('truncate', tag.struck && 'text-muted-foreground line-through decoration-destructive/70')}>{tag.value}</span>
+      {tag.note && <span className="ml-1 shrink-0 text-xs font-normal text-muted-foreground">{tag.note}</span>}
+    </>
+  )
+}
+
+/** Una etiqueta que se pulsa para elegir algo de ella (sin salir de la franja). */
+function TagMenu({ tag, choice, busy }: { tag: Tag; choice: TagChoice; busy: boolean }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        aria-label={choice.label}
+        aria-disabled={busy}
+        disabled={busy}
+        className="inline-flex min-w-0 items-center gap-0.5 rounded-full py-px pr-1 pl-2 outline-none hover:bg-foreground/5 focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-100"
+      >
+        <TagText tag={tag} />
+        <CaretDownIcon className="size-3 shrink-0 text-muted-foreground" aria-hidden />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="min-w-[13rem]">
+        <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">{choice.label}</DropdownMenuLabel>
+        <DropdownMenuRadioGroup value={choice.value} onValueChange={choice.onChange}>
+          {choice.options.map((option) => (
+            <DropdownMenuRadioItem key={option.value} value={option.value}>
+              {option.label}
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

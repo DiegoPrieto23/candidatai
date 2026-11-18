@@ -14,14 +14,31 @@ export const ICON_RETRY_MS = 6000
  * La primera vez la app responde sin icono mientras lo descarga: se vuelve a pedir una sola vez, al
  * rato. Si tampoco llega, se queda la inicial.
  */
-export function SiteIcon({ name, sourceId, host }: { name: string; sourceId: number; host: string | null }) {
+export function SiteIcon({
+  name,
+  sourceId,
+  host,
+  size = 'md',
+  className,
+}: {
+  name: string
+  sourceId: number
+  host: string | null
+  /** `sm`: más pequeño (los portales apilados de «Buscar ahora»). */
+  size?: 'sm' | 'md'
+  className?: string
+}) {
   const [state, setState] = useState<'first' | 'waiting' | 'retry' | 'failed'>('first')
   useEffect(() => {
     if (state !== 'waiting') return
     const timer = window.setTimeout(() => setState('retry'), ICON_RETRY_MS)
     return () => window.clearTimeout(timer)
   }, [state])
-  const box = 'grid size-9 shrink-0 place-items-center rounded-lg border bg-white dark:bg-white/95'
+  const box = cn(
+    'grid shrink-0 place-items-center border bg-white dark:bg-white/95',
+    size === 'sm' ? 'size-7 rounded-md text-xs' : 'size-9 rounded-lg',
+    className,
+  )
   if (!host || state === 'waiting' || state === 'failed') {
     return (
       <span className={cn(box, 'bg-muted font-semibold text-muted-foreground dark:bg-muted')} aria-hidden>
@@ -36,11 +53,11 @@ export function SiteIcon({ name, sourceId, host }: { name: string; sourceId: num
         key={state}
         src={state === 'retry' ? `${src}&retry=1` : src}
         alt=""
-        width={20}
-        height={20}
+        width={size === 'sm' ? 16 : 20}
+        height={size === 'sm' ? 16 : 20}
         loading="lazy"
         onError={() => setState(state === 'first' ? 'waiting' : 'failed')}
-        className="size-5 object-contain"
+        className={size === 'sm' ? 'size-4 object-contain' : 'size-5 object-contain'}
       />
     </span>
   )

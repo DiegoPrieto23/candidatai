@@ -32,6 +32,12 @@ Yes. In “My profile”, “Start by hand” creates a profile with your name, 
 
 Where: “My profile”.
 
+### Can I see what changed in my profile and go back?
+
+Yes. In My profile, the History tab shows when each version was made, who made it and what changed, block by block. Go back to this version restores it as a new version, which you can also undo.
+
+Where: “My profile”.
+
 ### What can I do without an agent?
 
 Add, approve and discard jobs, track your processes, use the calendar and the results, edit your profile and change the design of a CV you already have. Reading jobs and writing CVs, letters and interview guides requires the agent.
@@ -106,6 +112,12 @@ In “Where to search” you choose where they come from: job boards, company ca
 
 Where: “Where to search”.
 
+### How do I follow a specific company's jobs?
+
+In “Where to search → Company career sites”, press “Add company” and paste its name and the address of its careers site as you see it. “Test” tells you which system it uses and which jobs fit you; if the address filters by city, that's kept. From then on it's checked every day. If the site isn't recognized, it's added to your job sites and your agent browses it when searching.
+
+Where: “Company career sites”.
+
 ### How do I search for jobs on the job boards?
 
 In “Search jobs”, press “Search now”: your agent goes through the job boards you have chosen with your browser and adds what it finds. A notice tells you when it finishes.
@@ -144,9 +156,9 @@ Where: “Quick review”.
 
 ### Where do I say which jobs I want and which are discarded?
 
-In “Your search settings”: roles, work mode, areas, years of experience, contract type, words that discard a job and your minimum salary. Your agent never sees that figure.
+In “Search jobs”. In the strip at the top, your roles, your places (click one to choose what you accept there), work mode and level. In “More settings”, years of experience, your minimum salary, languages, contract type and what you rule out. Your agent never sees your minimum salary.
 
-Where: “Your search settings”.
+Where: “More settings for your search”.
 
 ### What are the jobs “To complete”?
 
@@ -254,7 +266,7 @@ Where: “Email alerts”.
 
 ### And LinkedIn?
 
-Its jobs arrive through your email alerts or with the browser button, and applications on LinkedIn are always sent by you. Searching LinkedIn is optional: you turn it on in its card in “Where to search”, under your responsibility.
+Its jobs arrive through your email alerts or with the browser button, and applications on LinkedIn are always sent by you. If you paste a job's link into “New job”, the app guides you: open it and click the browser button, or paste its text. Searching LinkedIn is optional: you turn it on in its card in “Where to search”, under your responsibility.
 
 Where: “Where to search”.
 

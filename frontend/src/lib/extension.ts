@@ -4,6 +4,8 @@
  * instalada y conectada, y le pasa el token al pulsar «Conectar» sin que nadie lo copie.
  */
 
+import { useQuery } from '@tanstack/react-query'
+
 /** Lo que responde la extensión (`service_worker.js`, `answerApp`). */
 export interface ExtensionReply {
   version: string
@@ -62,6 +64,21 @@ export function askExtension(
       clearTimeout(timer)
       resolve(null)
     }
+  })
+}
+
+/**
+ * Lo que dice la extensión, preguntado cada 2 s hasta que está conectada: así una página avanza sola
+ * mientras la cargas en el navegador (`poll: false`, solo al montar y al volver a la ventana).
+ * `null`: no responde (sin instalar o de una versión antigua).
+ */
+export function useExtensionReply(extensionId: string | undefined, { poll = true }: { poll?: boolean } = {}) {
+  return useQuery({
+    queryKey: ['extension', 'reply', extensionId],
+    queryFn: () => askExtension(extensionId ?? '', { type: 'ping' }),
+    enabled: Boolean(extensionId),
+    refetchInterval: (query) => (poll && !query.state.data?.connected ? 2000 : false),
+    refetchOnWindowFocus: true,
   })
 }
 
