@@ -41,11 +41,7 @@
   },
   "files_one": "{{count}} file",
   "files_other": "{{count}} files",
-  "context": "Context",
-  "contextIntro": "Guides your agent: the tone of your CVs and letters, a job's risks and interview prep. <strong>It never backs a fact</strong>: whatever a CV or letter says must be in your profile. Edit them in their blocks, above, or ask your agent.",
   "openContext": "Open the context folder",
-  "documents": "Documents",
-  "documentsIntro": "Your source documents. Your agent can read them to create or expand your profile, always asking you before writing.",
   "openDocuments": "Open the documents folder",
   "expand": "Improve my profile content",
   "import": {
@@ -57,7 +53,6 @@
   },
   "title": "My profile",
   "intro": "Everything a CV, letter or answer says comes from here. Each block is saved separately and can be undone.",
-  "contextIntroHere": "Guides your agent: the tone of your CVs and letters, a job's risks and interview prep. <strong>It never backs a fact</strong>: whatever a CV or letter says must be in your profile. Create and edit them right here (each comes with a few guiding questions) or ask your agent.",
   "contextFile": {
     "create": "Create",
     "edit": "Edit",
@@ -73,5 +68,59 @@
     "referencias": "References",
     "candidaturas": "Applications",
     "estilo": "Writing style"
+  },
+  "docs": {
+    "lead": "How you want your CVs and letters, and what your agent reads to write them. Nothing here counts as a fact: facts come from your profile.",
+    "prefsTitle": "How you want your CVs and letters",
+    "cv": "CV",
+    "letter": "Letter",
+    "notesTitle": "Notes for your agent",
+    "notesLead": "They guide the tone, interviews and the risks of a job.",
+    "notesHint": "They never back a fact: anything a CV or letter says has to be in your profile. Each note comes with a few guiding questions; you can also ask your agent to write it.",
+    "filesTitle": "Your files",
+    "filesLead": "What your agent can read to create or extend your profile.",
+    "filesHint": "Your source documents. Your agent reads them and always asks you before writing to your profile.",
+    "about": "What “{{name}}” is",
+    "fold": "Collapse",
+    "foldNamed": "Collapse “{{name}}”",
+    "view": "View",
+    "viewNamed": "View “{{name}}”",
+    "unsavedOpen": "It has unsaved changes: save or discard them to collapse it.",
+    "samples_one": "{{count}} sample",
+    "samples_other": "{{count}} samples",
+    "noSamples": "None yet",
+    "emptyFolder": "Empty"
+  },
+  "summary": {
+    "cv": {
+      "template": "{{name}} template",
+      "templateAuto": "The app’s template",
+      "pages_one": "up to {{count}} page",
+      "pages_other": "up to {{count}} pages",
+      "photoOn": "with photo",
+      "photoOff": "no photo",
+      "photoExcept": "{{photo}}, except in {{places}}",
+      "instructions": "with instructions",
+      "avoid_one": "{{count}} thing not to say",
+      "avoid_other": "{{count}} things not to say"
+    },
+    "letter": {
+      "tone": "{{tone}} tone",
+      "words": "up to {{count}} words",
+      "pdf": "as PDF",
+      "text": "as text",
+      "signOff": "signed “{{text}}”",
+      "instructions": "with what to always mention",
+      "avoid_one": "{{count}} thing not to say",
+      "avoid_other": "{{count}} things not to say",
+      "none": "No preferences: your agent uses the app’s"
+    }
+  },
+  "short": {
+    "estilo-redaccion": "Tone, structure, words you use and avoid",
+    "perfil-conductual": "How you work and your strengths, for interviews",
+    "criterios": "What you would not accept and your preferences",
+    "narrativa": "Your story and how you explain your moves",
+    "samples": "Letters, emails or posts of yours, to pick up your tone"
   }
 }

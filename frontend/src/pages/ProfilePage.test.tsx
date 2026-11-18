@@ -44,30 +44,31 @@ const NO_PROFILE = { exists: false, file_hash: null, profile: null, issues: [], 
 const UNREADABLE = { ...NO_PROFILE, exists: true, file_hash: 'h1', profile_version_id: 1 }
 
 describe('Mi perfil', () => {
-  it('enseña el estado de cada fichero de contexto y las carpetas de documentos', async () => {
-    mockApi({ 'GET /status': status(), 'GET /context': contextStatus(), 'GET /profile/editable': NO_PROFILE })
+  it('enseña el estado de cada nota para tu agente y las carpetas de tus archivos', async () => {
+    mockApi({ 'GET /status': status(), 'GET /context': contextStatus(), 'GET /profile/editable': NO_PROFILE, 'GET /context/style-samples': [] })
     renderApp('/perfil')
-    const contexto = await screen.findByRole('region', { name: 'Contexto' })
-    const items = within(contexto).getAllByRole('listitem')
-    expect(items).toHaveLength(4)
-    expect(within(items[0]).getByText('Estilo de redacción')).toBeInTheDocument()
-    expect(within(items[0]).getByText('Con contenido')).toBeInTheDocument()
-    expect(within(items[0]).getByText(/2,1 KB/)).toBeInTheDocument()
-    expect(within(items[1]).getByText('Vacío')).toBeInTheDocument()
-    expect(within(items[2]).getByText(/pasa de 20 KB/)).toBeInTheDocument()
-    expect(within(items[3]).getByText('No existe')).toBeInTheDocument()
-    expect(within(contexto).getByText(/Nunca respalda un hecho/)).toBeInTheDocument()
+    const notes = await screen.findByRole('region', { name: 'Notas para tu agente' })
+    await within(notes).findByRole('region', { name: 'Estilo de redacción' })
+    const row = (name: string) => within(notes).getByRole('region', { name })
+    expect(await within(row('Estilo de redacción')).findByText('Con contenido')).toBeInTheDocument()
+    expect(within(row('Perfil conductual')).getByText('Vacío')).toBeInTheDocument()
+    expect(within(row('Criterios')).getByText(/pasa de 20 KB/)).toBeInTheDocument()
+    expect(within(row('Narrativa')).getByText('No existe')).toBeInTheDocument()
+    expect(within(row('Narrativa')).getByRole('button', { name: 'Crear «Narrativa»' })).toBeInTheDocument()
+    // La explicación larga va en la ayuda de la tarjeta, no a la vista.
+    expect(within(notes).queryByText(/Nunca respaldan un hecho/)).not.toBeInTheDocument()
+    expect(within(notes).getByRole('button', { name: 'Qué es «Notas para tu agente»' })).toBeInTheDocument()
 
-    const documentos = screen.getByRole('region', { name: 'Documentos' })
+    const files = screen.getByRole('region', { name: 'Tus archivos' })
     // Con su nombre legible, no el de la carpeta en disco.
-    expect(within(documentos).getByText('CV')).toBeInTheDocument()
-    expect(within(documentos).getByText('Títulos')).toBeInTheDocument()
-    expect(within(documentos).queryByText('titulos')).not.toBeInTheDocument()
-    expect(within(documentos).getByText('2 ficheros')).toBeInTheDocument()
-    expect(within(documentos).getByText('1 fichero')).toBeInTheDocument()
+    expect(within(files).getByText('CV')).toBeInTheDocument()
+    expect(within(files).getByText('Títulos')).toBeInTheDocument()
+    expect(within(files).queryByText('titulos')).not.toBeInTheDocument()
+    expect(within(files).getByText('2 ficheros')).toBeInTheDocument()
+    expect(within(files).getByText('1 fichero')).toBeInTheDocument()
+    expect(within(files).getAllByText('Vacía')).toHaveLength(3)
     // Los editores se despliegan bajo su fila, al pulsar.
-    expect(within(contexto).queryByRole('textbox')).not.toBeInTheDocument()
-    expect(within(contexto).queryByText(/Edítalos en sus bloques, más arriba/)).not.toBeInTheDocument()
+    expect(within(notes).queryByRole('textbox')).not.toBeInTheDocument()
   })
 
   it('sin perfil, un fichero de contexto que no existe se crea desde su plantilla', async () => {

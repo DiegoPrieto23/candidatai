@@ -422,6 +422,12 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   resto, y los iconos pesan un tercio menos. Con una conexión lenta, Inicio se ve un 20 % antes.
 - **El embudo va más rápido con muchas ofertas:** «Por semana» y «Por puesto» se calculan sin
   leer cada oferta una a una.
+- **«Mi perfil › Documentos», mucho más ligero:** tres tarjetas en lugar de nueve bloques. En
+  **Cómo quieres tus CVs y cartas**, cada una resume en una línea lo que elegiste (plantilla, páginas,
+  foto, tono…) y se despliega para cambiarlo. En **Notas para tu agente**, tus notas de estilo,
+  perfil conductual, criterios y narrativa, y tus muestras de estilo, cada una con su estado y su
+  editor debajo al pulsar. En **Tus archivos**, tus carpetas con su botón para subir. Las
+  explicaciones largas están en el icono ⓘ, y lo que tiene cambios sin guardar se queda abierto.
 - **Idiomas más claros en «Mi perfil»:** «Idioma» y «Nivel» van en columnas alineadas, también con
   un nivel escrito a mano, y sale de la pantalla «Dónde ponerlo». Si ya lo tenías relleno, se
   conserva en tu perfil y tus CVs lo siguen teniendo en cuenta.

@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { codeName, codeOptions, findCode, type CodeKind } from '@/lib/codes'
 import { cn } from '@/lib/utils'
 import { blockAnchor, type BlockEditor } from './editor'
-import { BlockHeadingLevel } from './headingLevel'
+import { BlockHeadingLevel, BlockInRow } from './headingLevel'
 import { PRESENT } from './types'
 
 const SELECT = 'h-9 w-full rounded-md border border-input bg-background px-3 text-sm'
@@ -479,6 +479,16 @@ export function Block({
   children: ReactNode
 }) {
   const Heading = useContext(BlockHeadingLevel) === 3 ? 'h3' : 'h2'
+  // Dentro de una fila plegable (`DocRow`), la fila ya pone el título, la pista y el ancla.
+  const inRow = useContext(BlockInRow)
+  if (inRow) {
+    return (
+      <div className="grid gap-4">
+        {actions && <div className="flex flex-wrap justify-end gap-2">{actions}</div>}
+        {children}
+      </div>
+    )
+  }
   return (
     <section
       id={id && blockAnchor(id)}

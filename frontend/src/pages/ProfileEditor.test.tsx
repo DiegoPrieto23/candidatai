@@ -419,6 +419,67 @@ describe('Mi perfil editable', () => {
     expect(free).toHaveValue('Alto medio')
   })
 
+  it('«Documentos» son tres tarjetas con filas plegadas que resumen lo elegido y abren su editor', async () => {
+    mockApi({
+      ...BASE,
+      'GET /profile/editable': {
+        ...EDITABLE,
+        profile: {
+          ...PROFILE,
+          preferences: {
+            ...PROFILE.preferences,
+            cv: { max_pages: 2, photo_policy: { default: true, by_country: { US: false } }, instructions: 'Datos primero.' },
+            cover_letter: { tone: 'cercano', max_words: 300, default_format: 'pdf' },
+          },
+        },
+      },
+      'GET /context/style-samples': [{ name: 'carta.txt', chars: 1200, risk_flags: [], excerpt: null }],
+    })
+    renderApp('/perfil')
+    await openTab('Documentos')
+    for (const name of ['Cómo quieres tus CVs y cartas', 'Notas para tu agente', 'Tus archivos']) {
+      expect(await screen.findByRole('region', { name })).toBeInTheDocument()
+    }
+    const cv = screen.getByRole('region', { name: 'CV' })
+    expect(within(cv).getByText(/^Plantilla de la app · hasta 2 páginas · con foto, salvo en .+ · con indicaciones$/)).toBeInTheDocument()
+    const letter = screen.getByRole('region', { name: 'Carta' })
+    expect(within(letter).getByText('Tono cercano · hasta 300 palabras · en PDF')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Plantilla por defecto')).not.toBeInTheDocument()
+
+    await userEvent.click(within(cv).getByRole('button', { name: 'Editar «CV»' }))
+    expect(within(cv).getByLabelText('Plantilla por defecto')).toBeVisible()
+    await userEvent.click(within(letter).getByRole('button', { name: 'Editar «Carta»' }))
+    expect(within(letter).getByLabelText('Tono')).toBeVisible()
+    for (const name of ['Estilo de redacción', 'Perfil conductual', 'Criterios', 'Narrativa']) {
+      const row = screen.getByRole('region', { name })
+      await userEvent.click(within(row).getByRole('button', { name: new RegExp(`^(Editar|Crear) «${name}»$`) }))
+      expect(await within(row).findByLabelText(`Texto de ${name}`)).toBeVisible()
+    }
+    const samples = screen.getByRole('region', { name: 'Muestras de estilo' })
+    expect(within(samples).getByText('1 muestra')).toBeInTheDocument()
+    await userEvent.click(within(samples).getByRole('button', { name: 'Ver «Muestras de estilo»' }))
+    expect(within(samples).getByText('carta.txt')).toBeVisible()
+    // Plegar no pierde nada: se oculta y sigue montado.
+    await userEvent.click(within(cv).getByRole('button', { name: 'Plegar «CV»' }))
+    expect(within(cv).getByLabelText('Plantilla por defecto')).not.toBeVisible()
+  })
+
+  it('con cambios sin guardar, la fila no se pliega y el aviso lleva hasta ella', async () => {
+    mockApi(BASE)
+    renderApp('/perfil')
+    await openTab('Documentos')
+    const row = await screen.findByRole('region', { name: 'Criterios' })
+    await userEvent.click(within(row).getByRole('button', { name: 'Editar «Criterios»' }))
+    await userEvent.type(await within(row).findByLabelText('Texto de Criterios'), 'Nada de viajes.')
+    expect(within(row).queryByRole('button', { name: 'Plegar «Criterios»' })).not.toBeInTheDocument()
+    expect(within(row).getByText(/guárdalos o descártalos para plegarlo/)).toBeInTheDocument()
+    await openTab('Sobre ti')
+    const notice = screen.getByText('Sin guardar:').parentElement!
+    await userEvent.click(within(notice).getByRole('button', { name: /Criterios/ }))
+    expect(screen.getByRole('tab', { name: 'Documentos' })).toHaveAttribute('aria-selected', 'true')
+    expect(within(row).getByLabelText('Texto de Criterios')).toBeVisible()
+  })
+
   it('edita un fichero de contexto con sus comentarios y lo enseña sin ellos en la vista previa', async () => {
     const calls = mockApi({
       ...BASE,
@@ -427,6 +488,7 @@ describe('Mi perfil editable', () => {
     renderApp('/perfil')
     await openTab('Documentos')
     const block = await screen.findByRole('region', { name: 'Criterios' })
+    await userEvent.click(within(block).getByRole('button', { name: 'Editar «Criterios»' }))
     const editor = await within(block).findByLabelText('Texto de Criterios')
     expect(editor).toHaveValue('# Criterios\n<!-- Qué no aceptas -->\nSin guardias.\n')
     await userEvent.type(editor, 'Nada de viajes.')
@@ -547,7 +609,7 @@ describe('Mi perfil editable', () => {
     // Sin perfil, «Mejorar el contenido de mi perfil» todavía no toca.
     expect(screen.queryByRole('button', { name: 'Mejorar el contenido de mi perfil' })).not.toBeInTheDocument()
     // Solo se suben el CV y LinkedIn; el resto de carpetas se rellenan a mano.
-    const folders = await screen.findByRole('region', { name: 'Documentos' })
+    const folders = await screen.findByRole('region', { name: 'Tus archivos' })
     expect(within(folders).getAllByRole('button', { name: /^Subir/ })).toHaveLength(1)
 
     await userEvent.upload(screen.getByLabelText('Tu CV'), new File(['%PDF-1.7'], 'CV Lucía.pdf', { type: 'application/pdf' }))
@@ -571,6 +633,7 @@ describe('Mi perfil editable', () => {
     renderApp('/perfil')
     await openTab('Documentos')
     const block = await screen.findByRole('region', { name: 'Criterios' })
+    await userEvent.click(within(block).getByRole('button', { name: 'Editar «Criterios»' }))
     await userEvent.click(await within(block).findByRole('tab', { name: 'Vista previa' }))
     const preview = within(block).getByTestId('markdown-preview')
     expect(preview.querySelector('script, img')).toBeNull()
