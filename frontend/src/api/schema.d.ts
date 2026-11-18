@@ -2951,7 +2951,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/profile/diff": {
+    "/profile/versions": {
         parameters: {
             query?: never;
             header?: never;
@@ -2959,13 +2959,52 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get Profile Diff
-         * @description Diff de las dos últimas versiones importadas, como `cai profile diff`: `private` oculto,
-         *     pero con tu contacto, así que solo para la UI.
+         * List Profile Versions
+         * @description Las versiones del perfil, de la más reciente a la más antigua, con lo que cambió.
          */
-        get: operations["get_profile_diff"];
+        get: operations["list_profile_versions"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/profile/versions/{version_id}/changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Profile Version Changes
+         * @description Lo que cambió esa versión, por bloques, y lo que cambiaría volver a ella.
+         */
+        get: operations["get_profile_version_changes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/profile/versions/{version_id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Restore Profile Version
+         * @description Vuelve a esa versión como una versión nueva, que se puede deshacer.
+         */
+        post: operations["restore_profile_version"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4339,6 +4378,16 @@ export interface components {
             /** Suggested Name */
             suggested_name?: string | null;
         };
+        /** BlockCount */
+        BlockCount: {
+            /**
+             * Block
+             * @enum {string}
+             */
+            block: "personal" | "experience" | "projects" | "education" | "certifications" | "extra" | "languages" | "skills" | "stories" | "cv" | "letter" | "search" | "private";
+            /** Changes */
+            changes: number;
+        };
         /** Board */
         Board: {
             /** Columns */
@@ -5690,6 +5739,28 @@ export interface components {
             data: components["schemas"]["JobExtraction"];
         };
         /**
+         * FieldChange
+         * @description Un campo dentro de un elemento. En listas de textos, lo que entra y lo que sale.
+         */
+        FieldChange: {
+            /** Path */
+            path: string[];
+            /** Before */
+            before?: unknown;
+            /** After */
+            after?: unknown;
+            /**
+             * Added
+             * @default []
+             */
+            added: string[];
+            /**
+             * Removed
+             * @default []
+             */
+            removed: string[];
+        };
+        /**
          * FieldReport
          * @description Una fila de la tabla de revisión.
          */
@@ -6142,6 +6213,40 @@ export interface components {
             message: string;
             /** Item */
             item?: string | null;
+        };
+        /** ItemChange */
+        ItemChange: {
+            /**
+             * Block
+             * @enum {string}
+             */
+            block: "personal" | "experience" | "projects" | "education" | "certifications" | "extra" | "languages" | "skills" | "stories" | "cv" | "letter" | "search" | "private";
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "added" | "removed" | "changed" | "moved";
+            /** Label */
+            label?: string | null;
+            /** Parent */
+            parent?: string | null;
+            /** Within */
+            within?: string | null;
+            /**
+             * Fields
+             * @default []
+             */
+            fields: components["schemas"]["FieldChange"][];
+            /** Position */
+            position?: [
+                number,
+                number
+            ] | null;
+            /**
+             * Hidden
+             * @default false
+             */
+            hidden: boolean;
         };
         /** JobCost */
         JobCost: {
@@ -7760,15 +7865,6 @@ export interface components {
              */
             offer_received: boolean;
         };
-        /** ProfileDiff */
-        ProfileDiff: {
-            /** From Version */
-            from_version: number | null;
-            /** To Version */
-            to_version: number;
-            /** Diff */
-            diff: string;
-        };
         /** ProfileIssue */
         ProfileIssue: {
             /** Field */
@@ -8457,6 +8553,17 @@ export interface components {
             awaiting_reply: number;
             /** Closed Without Reply */
             closed_without_reply: number;
+        };
+        /** RestoreResult */
+        RestoreResult: {
+            /** File Hash */
+            file_hash: string;
+            /** Profile Version Id */
+            profile_version_id: number;
+            /** Blocks */
+            blocks: string[];
+            /** Undo Available */
+            undo_available: number;
         };
         /** RestoreTemplateResult */
         RestoreTemplateResult: {
@@ -9501,6 +9608,57 @@ export interface components {
              * @default
              */
             suggestion: string;
+        };
+        /** VersionChanges */
+        VersionChanges: {
+            /** Id */
+            id: number;
+            /** Previous Id */
+            previous_id: number | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Origin */
+            origin: ("ui" | "agent" | "undo" | "restore" | "demo") | null;
+            /** Current */
+            current: boolean;
+            /** Restorable */
+            restorable: boolean;
+            /** Changes */
+            changes: components["schemas"]["ItemChange"][];
+            /** Restore Blocks */
+            restore_blocks: ("personal" | "experience" | "projects" | "education" | "certifications" | "extra" | "languages" | "skills" | "stories" | "cv" | "letter" | "search" | "private")[];
+            /** Technical Diff */
+            technical_diff: string;
+        };
+        /** VersionEntry */
+        VersionEntry: {
+            /** Id */
+            id: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Origin */
+            origin: ("ui" | "agent" | "undo" | "restore" | "demo") | null;
+            /** First */
+            first: boolean;
+            /** Current */
+            current: boolean;
+            /** Restorable */
+            restorable: boolean;
+            /** Summary */
+            summary: components["schemas"]["BlockCount"][];
+        };
+        /** VersionPage */
+        VersionPage: {
+            /** Versions */
+            versions: components["schemas"]["VersionEntry"][];
+            /** Has More */
+            has_more: boolean;
         };
         /** WeekFunnel */
         WeekFunnel: {
@@ -24768,9 +24926,12 @@ export interface operations {
             };
         };
     };
-    get_profile_diff: {
+    list_profile_versions: {
         parameters: {
-            query?: never;
+            query?: {
+                offset?: number;
+                limit?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -24783,7 +24944,199 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProfileDiff"];
+                    "application/json": components["schemas"]["VersionPage"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_profile_version_changes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                version_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VersionChanges"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    restore_profile_version: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                version_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UndoBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RestoreResult"];
                 };
             };
             /** @description Unauthorized */

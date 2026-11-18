@@ -27,6 +27,7 @@
     { "id": "firstSteps", "group": "start", "screen": "home" },
     { "id": "createProfile", "group": "start", "screen": "profile" },
     { "id": "profileByHand", "group": "start", "screen": "profile" },
+    { "id": "profileHistory", "group": "start", "screen": "profile" },
     { "id": "withoutAgent", "group": "start", "screen": "agent" },
     { "id": "language", "group": "start", "screen": null },
 

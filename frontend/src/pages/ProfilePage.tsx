@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { DocumentsTab, FilesCard, NotesCard } from '@/components/profile/DocumentsTab'
 import { ProfileEditorProvider, blockAnchor, useProfileState } from '@/components/profile/editor'
 import { ExperienceBlock } from '@/components/profile/ExperienceBlock'
-import { HistoryBlock } from '@/components/profile/HistoryBlock'
+import { HistoryTab } from '@/components/profile/HistoryTab'
 import { CertificationsBlock, EducationBlock, ExtraSectionsBlock, ProjectsBlock } from '@/components/profile/ItemsBlocks'
 import { PersonalBlock } from '@/components/profile/PersonalBlock'
 import { PhotoBlock } from '@/components/profile/PhotoBlock'
@@ -201,8 +201,9 @@ function Editor() {
       <TabsContent value="documents" forceMount className={cn('grid gap-6', hidden)}>
         <DocumentsTab />
       </TabsContent>
-      <TabsContent value="history" forceMount className={hidden}>
-        <HistoryBlock />
+      <TabsContent value="history">
+        {/* Sin `forceMount`: no guarda nada a medias, y así las versiones se piden al abrirla. */}
+        <HistoryTab />
       </TabsContent>
     </Tabs>
   )

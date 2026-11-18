@@ -116,6 +116,7 @@ Una fila por extracción; la vigente es la más reciente.
 | id | int PK | |
 | data | JSON | Validado con `CandidateProfile`, importado desde `data/profile.yaml`. Desde la fase 27.5, `preferences` admite `min_years_required`, `discard_title_keywords`, `contract_types` (`permanent`, `fixed_term`, `freelance`), `employment_types` (`full_time`, `part_time`, `internship`) y `excluded_employer_kinds` (`consultancy`, `agency`), que vacíos no se vuelcan (mismo hash); `private.salary_floor_eur` es un entero > 0 o `null`. La extracción gana `employer_kind` (`direct`, `consultancy`, `agency`, `unknown`), opcional |
 | content_hash | str | sha256 del JSON canónico. Importar un contenido igual al de la versión vigente no crea versión; volver a uno anterior sí (índice, no único) |
+| origin | str, null | De dónde viene (migración 0040): `ui` (guardado en «Mi perfil»), `agent` (`cai profile import`), `undo`, `restore` («Volver a esta versión») o `demo`. Las versiones anteriores a la migración, `null` |
 | created_at | datetime | |
 
 ### `matches`
@@ -594,7 +595,7 @@ Sin el contenido: solo qué, cuándo y el sha256 del fichero.
 | id | int PK | |
 | target | str | `profile`, `context`, `style_sample` o `document` (CV o exportación de LinkedIn) |
 | section | str? | La sección del perfil, el fichero de contexto, el nombre de la muestra o `<carpeta>/<nombre>` del documento; `null` al deshacer |
-| action | str | `save`, `undo`, `upload` o `delete` |
+| action | str | `save`, `undo`, `restore`, `upload` o `delete` |
 | hash_before / hash_after | str? | sha256 de los bytes del fichero antes y después (`null` si no existía) |
 | created_at | datetime | |
 

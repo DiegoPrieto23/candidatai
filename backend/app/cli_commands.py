@@ -884,7 +884,7 @@ def profile_import(path: Path | None = PROFILE_PATH_ARG, as_json: bool = JSON_OP
     try:
         migrations.ensure_current()
         with session_scope() as session:
-            result = profile.import_profile(session, resolved)
+            result = profile.import_profile(session, resolved, origin="agent")
     except Exception as exc:
         _profile_fail(exc, as_json)
     if as_json:

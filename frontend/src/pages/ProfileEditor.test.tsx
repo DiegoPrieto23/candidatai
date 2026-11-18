@@ -1007,3 +1007,139 @@ describe('Mi perfil editable', () => {
     confirm.mockRestore()
   })
 })
+
+describe('Mi perfil › Historial', () => {
+  const now = new Date()
+  const today = (h: number, m: number) => new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m).toISOString()
+  const hm = (h: number, m: number) => new Intl.DateTimeFormat('es-ES', { hour: '2-digit', minute: '2-digit' }).format(new Date(2026, 0, 1, h, m))
+  const version = (id: number, changes: Record<string, unknown>) => ({
+    id,
+    created_at: today(10, id),
+    origin: 'ui',
+    first: false,
+    current: false,
+    restorable: true,
+    summary: [],
+    ...changes,
+  })
+  const VERSIONS = {
+    versions: [
+      version(3, { current: true, restorable: false, summary: [{ block: 'experience', changes: 2 }, { block: 'private', changes: 1 }] }),
+      version(2, { origin: 'agent', summary: [{ block: 'skills', changes: 7 }] }),
+      version(1, { origin: null, first: true }),
+    ],
+    has_more: false,
+  }
+  const detail = (id: number, changes: unknown[], extra: Record<string, unknown> = {}) => ({
+    id,
+    previous_id: id - 1,
+    created_at: today(10, id),
+    origin: 'ui',
+    current: false,
+    restorable: true,
+    changes,
+    restore_blocks: [],
+    technical_diff: '--- versión 1\n+++ versión 2\n-headline: A\n+headline: B\n',
+    ...extra,
+  })
+  const LATEST = detail(
+    3,
+    [
+      { block: 'experience', kind: 'changed', label: 'Data Engineer · Norte Consulting', fields: [{ path: ['end'], before: 'present', after: '2026-03' }] },
+      {
+        block: 'experience',
+        kind: 'added',
+        label: 'Reduje la carga.',
+        parent: 'Data Engineer · Norte Consulting',
+        within: 'achievements',
+        fields: [
+          { path: ['text'], after: 'Reduje la carga.' },
+          { path: ['skills'], added: ['Snowflake'] },
+        ],
+      },
+      { block: 'private', kind: 'changed', hidden: true, fields: [] },
+    ],
+    { current: true, restorable: false },
+  )
+  const SKILLS = Array.from({ length: 7 }, (_, i) => ({ block: 'skills', kind: 'added', label: `Skill ${i + 1}`, fields: [{ path: ['level'], after: 'C' }] }))
+  const OLDER = detail(2, [{ block: 'skills', kind: 'moved', label: 'SQL', position: [3, 1], fields: [] }, ...SKILLS], {
+    restore_blocks: ['personal', 'skills'],
+  })
+  const routes = {
+    ...BASE,
+    'GET /profile/versions': VERSIONS,
+    'GET /profile/versions/3/changes': LATEST,
+    'GET /profile/versions/2/changes': OLDER,
+  }
+
+  it('lista las versiones con cuándo, de dónde y qué bloques cambiaron, y abre la actual en texto normal', async () => {
+    mockApi(routes)
+    renderApp('/perfil')
+    await openTab('Historial')
+    const list = await screen.findByRole('list', { name: 'Versiones de tu perfil' })
+    const rows = within(list).getAllByRole('listitem')
+    expect(rows).toHaveLength(3)
+    expect(within(rows[0]).getByText(`Hoy, ${hm(10, 3)}`)).toBeInTheDocument()
+    expect(within(rows[0]).getByText('Actual')).toBeInTheDocument()
+    expect(within(rows[0]).getByText('Experiencia (2 cambios) · Datos privados (ha cambiado)')).toBeInTheDocument()
+    expect(within(rows[0]).getByText('Desde la app')).toBeInTheDocument()
+    expect(within(rows[1]).getByText('Tu agente')).toBeInTheDocument()
+    expect(within(rows[2]).getByText('Tu primer perfil')).toBeInTheDocument()
+
+    // La actual, abierta: por bloques, «Antes → Ahora», con etiqueta además del color.
+    const experience = await within(rows[0]).findByRole('region', { name: 'Experiencia' })
+    expect(within(experience).getByText('Data Engineer · Norte Consulting')).toBeInTheDocument()
+    expect(within(experience).getByText('Fin')).toBeInTheDocument()
+    expect(within(experience).getByText('Actualidad').closest('del')).not.toBeNull()
+    expect(within(experience).getByText(/marzo de 2026/).closest('ins')).not.toBeNull()
+    expect(within(experience).getByText('Logro de Data Engineer · Norte Consulting')).toBeInTheDocument()
+    expect(within(experience).getByText('Añadido')).toBeInTheDocument()
+    expect(within(experience).getByText('Snowflake')).toBeInTheDocument()
+    const hidden = within(rows[0]).getByRole('region', { name: 'Datos privados' })
+    expect(within(hidden).getByText(/La cifra no se enseña/)).toBeInTheDocument()
+    // Nada de YAML a la vista: el cambio técnico, plegado al final.
+    expect(within(rows[0]).queryByText(/headline:/)).not.toBeInTheDocument()
+    expect(within(rows[0]).getByText('Es la versión actual')).toBeInTheDocument()
+    await userEvent.click(within(rows[0]).getByRole('button', { name: 'Ver el cambio técnico' }))
+    expect(within(rows[0]).getByLabelText('Cambio técnico de esta versión')).toHaveTextContent('+headline: B')
+  })
+
+  it('una versión con muchos cambios los pliega y se puede volver a ella tras confirmar', async () => {
+    const calls = mockApi({
+      ...routes,
+      'POST /profile/versions/2/restore': { file_hash: 'h2', profile_version_id: 4, blocks: ['personal', 'skills'], undo_available: 2 },
+    })
+    renderApp('/perfil')
+    await openTab('Historial')
+    const list = await screen.findByRole('list', { name: 'Versiones de tu perfil' })
+    const row = within(list).getAllByRole('listitem')[1]
+    await userEvent.click(within(row).getByRole('button', { name: new RegExp(`Hoy, ${hm(10, 2)}`) }))
+    const skills = await within(row).findByRole('region', { name: 'Skills' })
+    expect(within(skills).getByText('Movido')).toBeInTheDocument()
+    expect(within(skills).getByText('3.ª')).toBeInTheDocument()
+    expect(within(skills).queryByText('Skill 7')).not.toBeInTheDocument()
+    await userEvent.click(within(skills).getByRole('button', { name: 'Ver 3 más' }))
+    expect(within(skills).getByText('Skill 7')).toBeInTheDocument()
+
+    await userEvent.click(within(row).getByRole('button', { name: /^Volver a esta versión/ }))
+    const dialog = await screen.findByRole('dialog', { name: `¿Volver a la versión de hoy, ${hm(10, 2)}?` })
+    expect(within(dialog).getByText('Datos y resumen')).toBeInTheDocument()
+    expect(within(dialog).getByText('Skills')).toBeInTheDocument()
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Volver a esta versión' }))
+    expect(await screen.findByText(`Hecho: tu perfil ha vuelto a la versión de hoy, ${hm(10, 2)}.`)).toBeInTheDocument()
+    const post = calls.find((c) => c.method === 'POST' && c.path === '/profile/versions/2/restore')
+    expect(post?.body).toEqual({ file_hash: 'h1' })
+  })
+
+  it('con cambios sin guardar no deja volver a otra versión ni deshacer', async () => {
+    mockApi({ ...routes, 'PUT /profile/sections/headline': saved('headline') })
+    renderApp('/perfil')
+    await userEvent.type(await screen.findByLabelText('Titular'), ' senior')
+    await openTab('Historial')
+    expect(await screen.findByText('Guarda o descarta antes los bloques con cambios.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Deshacer el último cambio/ })).toBeDisabled()
+    const row = within(screen.getByRole('list', { name: 'Versiones de tu perfil' })).getAllByRole('listitem')[1]
+    await userEvent.click(within(row).getByRole('button', { name: new RegExp(`Hoy, ${hm(10, 2)}`) }))
+    expect(await within(row).findByRole('button', { name: /^Volver a esta versión/ })).toBeDisabled()
+  })
+})

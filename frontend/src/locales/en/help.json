@@ -124,6 +124,11 @@
       "a": "Yes. In “My profile”, “Start by hand” creates a profile with your name, your headline and the role you are after, and opens the editor to complete the rest.",
       "keywords": "manual by hand fill in myself without ai editor"
     },
+    "profileHistory": {
+      "q": "Can I see what changed in my profile and go back?",
+      "a": "Yes. In My profile, the History tab shows when each version was made, who made it and what changed, block by block. Go back to this version restores it as a new version, which you can also undo.",
+      "keywords": "history versions changes undo restore go back profile previous"
+    },
     "withoutAgent": {
       "q": "What can I do without an agent?",
       "a": "Add, approve and discard jobs, track your processes, use the calendar and the results, edit your profile and change the design of a CV you already have. Reading jobs and writing CVs, letters and interview guides requires the agent.",

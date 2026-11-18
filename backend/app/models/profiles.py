@@ -13,6 +13,8 @@ class ProfileVersion(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     data: Mapped[dict[str, Any]] = mapped_column(JSON)
     content_hash: Mapped[str] = mapped_column(String(64), index=True)
+    # De dónde viene: `ui`, `agent`, `undo`, `restore` o `demo`. Las de antes de guardarlo, sin él.
+    origin: Mapped[str | None] = mapped_column(String(16))
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
 
 

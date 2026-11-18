@@ -32,6 +32,12 @@ Yes. In “My profile”, “Start by hand” creates a profile with your name, 
 
 Where: “My profile”.
 
+### Can I see what changed in my profile and go back?
+
+Yes. In My profile, the History tab shows when each version was made, who made it and what changed, block by block. Go back to this version restores it as a new version, which you can also undo.
+
+Where: “My profile”.
+
 ### What can I do without an agent?
 
 Add, approve and discard jobs, track your processes, use the calendar and the results, edit your profile and change the design of a CV you already have. Reading jobs and writing CVs, letters and interview guides requires the agent.

@@ -428,6 +428,13 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   perfil conductual, criterios y narrativa, y tus muestras de estilo, cada una con su estado y su
   editor debajo al pulsar. En **Tus archivos**, tus carpetas con su botón para subir. Las
   explicaciones largas están en el icono ⓘ, y lo que tiene cambios sin guardar se queda abierto.
+- **El historial de «Mi perfil» se entiende sin saber programar:** en vez de un diff del fichero,
+  una lista de versiones con cuándo se hizo cada una («Hoy, 18:05»), de dónde viene (la app, tu
+  agente, al deshacer) y qué bloques cambió. Al abrir una ves sus cambios por bloques, como
+  «Antes → Ahora», con lo añadido en verde y lo quitado tachado, cada uno con su etiqueta. Con
+  **Volver a esta versión** recuperas cualquiera: antes te dice qué bloques cambiarán, y se guarda
+  como una versión nueva que también puedes deshacer. El cambio técnico sigue ahí, plegado al final.
+  Las versiones de antes de esta actualización salen sin origen.
 - **Idiomas más claros en «Mi perfil»:** «Idioma» y «Nivel» van en columnas alineadas, también con
   un nivel escrito a mano, y sale de la pantalla «Dónde ponerlo». Si ya lo tenías relleno, se
   conserva en tu perfil y tus CVs lo siguen teniendo en cuenta.

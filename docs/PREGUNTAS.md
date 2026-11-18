@@ -32,6 +32,12 @@ Sí. En «Mi perfil», «Empezar a mano» crea un perfil con tu nombre, tu titul
 
 Dónde: «Mi perfil».
 
+### ¿Puedo ver qué ha cambiado en mi perfil y volver atrás?
+
+Sí. En «Mi perfil», pestaña «Historial», cada versión dice cuándo se hizo, quién la hizo y qué cambió, bloque a bloque. «Volver a esta versión» la recupera como una versión nueva, que también puedes deshacer.
+
+Dónde: «Mi perfil».
+
 ### ¿Qué puedo hacer sin agente?
 
 Añadir, aprobar y descartar ofertas, seguir tus procesos, usar el calendario y los resultados, editar tu perfil y cambiar el diseño de un CV ya generado. Leer ofertas y redactar CVs, cartas y guías de entrevista requiere el agente.

@@ -609,3 +609,30 @@ def test_0039_puts_each_assistant_request_in_its_own_conversation_and_back(db_ur
             assert conn.exec_driver_sql("SELECT count(*) FROM assistant_requests").scalar() == 2
     finally:
         engine.dispose()
+
+
+def test_0040_adds_the_origin_of_each_profile_version_and_back(db_url: str) -> None:
+    """Las versiones de antes quedan sin origen; al bajar, la columna se va y las versiones no."""
+    migrations.upgrade(db_url, "0039")
+    engine = create_engine(db_url)
+    try:
+        with engine.begin() as conn:
+            conn.exec_driver_sql(
+                "INSERT INTO profile_versions (id, data, content_hash, created_at) "
+                "VALUES (1, '{}', 'abc', '2026-11-18 10:00:00')"
+            )
+        engine.dispose()
+
+        migrations.upgrade(db_url)
+        with engine.connect() as conn:
+            rows = conn.exec_driver_sql("SELECT id, origin FROM profile_versions").all()
+        assert [tuple(r) for r in rows] == [(1, None)]
+        engine.dispose()
+
+        migrations.downgrade(db_url, "0039")
+        columns = {c["name"] for c in inspect(engine).get_columns("profile_versions")}
+        assert "origin" not in columns
+        with engine.connect() as conn:
+            assert conn.exec_driver_sql("SELECT count(*) FROM profile_versions").scalar() == 1
+    finally:
+        engine.dispose()

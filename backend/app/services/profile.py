@@ -105,6 +105,11 @@ class PublicProfile(BaseModel):
     profile: dict[str, Any]
 
 
+# De dónde viene una versión: guardada en la app, importada con `cai profile import` (lo que usa el
+# agente), al deshacer, al volver a una versión anterior o al crear la demo.
+VersionOrigin = Literal["ui", "agent", "undo", "restore", "demo"]
+
+
 class ProfileDiff(BaseModel):
     from_version: int | None  # None si solo hay una versión
     to_version: int
@@ -178,17 +183,22 @@ def _latest(session: Session, limit: int = 1) -> list[ProfileVersion]:
     return list(session.scalars(stmt))
 
 
-def import_profile(session: Session, path: Path) -> ImportResult:
+def import_profile(
+    session: Session, path: Path, origin: VersionOrigin | None = None
+) -> ImportResult:
     """Valida el fichero y crea una versión nueva, salvo que sea igual a la actual.
 
-    Una versión nueva encola `rescore_all`: el worker recalcula los matches de las ofertas abiertas.
+    `origin` dice de dónde viene (lo enseña el historial). Una versión nueva encola `rescore_all`:
+    el worker recalcula los matches de las ofertas abiertas.
     """
     profile = load_from_yaml(path)
     digest = content_hash(profile)
     latest = _latest(session)
     if latest and latest[0].content_hash == digest:
         return ImportResult(profile_version_id=latest[0].id, created=False, content_hash=digest)
-    version = ProfileVersion(data=profile.model_dump(mode="json"), content_hash=digest)
+    version = ProfileVersion(
+        data=profile.model_dump(mode="json"), content_hash=digest, origin=origin
+    )
     session.add(version)
     session.flush()
     tasks.enqueue(session, "rescore_all")
@@ -259,13 +269,18 @@ def diff_last_two(session: Session) -> ProfileDiff:
     if len(versions) == 1:
         return ProfileDiff(from_version=None, to_version=new.id, diff="")
     old = versions[1]
+    return ProfileDiff(from_version=old.id, to_version=new.id, diff=diff_versions(old, new))
+
+
+def diff_versions(old: ProfileVersion, new: ProfileVersion) -> str:
+    """Diff unificado del YAML de dos versiones. `private` sale como `<oculto>`."""
     old_lines, new_lines = _diffable_yaml(old.data), _diffable_yaml(new.data)
     if old.data.get("private") != new.data.get("private"):
         new_lines = [*new_lines, "# private: ha cambiado\n"]
     diff = difflib.unified_diff(
         old_lines, new_lines, fromfile=f"versión {old.id}", tofile=f"versión {new.id}"
     )
-    return ProfileDiff(from_version=old.id, to_version=new.id, diff="".join(diff))
+    return "".join(diff)
 
 
 class MinimalProfile(BaseModel):
