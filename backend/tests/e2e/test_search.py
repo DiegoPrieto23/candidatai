@@ -28,8 +28,11 @@ def test_the_agent_button_stays_put_when_it_shows_its_notice(
 
     page.route("**/agent/launch", launched)
     page.goto("/buscar")
-    button = page.get_by_role("button", name=t("search.searchNow"), exact=False).first
-    expect(button).to_be_enabled()
+    locator = page.get_by_role("button", name=t("search.searchNow"), exact=False).first
+    expect(locator).to_be_enabled()
+    # El mismo botón, aunque al lanzar cambie su texto (pasa a decir que está buscando).
+    button = locator.element_handle()
+    assert button is not None
     before = button.bounding_box()
     button.click()
     expect(page.get_by_role("status").filter(has_text="Claude Code")).to_be_visible()
@@ -37,27 +40,30 @@ def test_the_agent_button_stays_put_when_it_shows_its_notice(
     assert launches[0]["action"] == "search-jobs"
 
 
-def test_search_jobs_is_one_page_with_an_index(page: Page, demo_app: AppServer) -> None:
-    # Una ruta de antes abre la página en su sección, ya a la vista.
+def test_search_jobs_has_two_tabs_with_their_own_address(page: Page, demo_app: AppServer) -> None:
+    # Una ruta de antes abre su pestaña, arriba del todo y sin la otra.
     page.goto("/fuentes/correo")
-    expect(page.get_by_role("heading", level=1, name=t("search.title"))).to_be_attached()
-    expect(page.get_by_role("heading", level=2, name=t("search.nav.where"))).to_be_in_viewport()
+    expect(page.get_by_role("heading", level=1, name=t("search.title"))).to_be_in_viewport()
     expect(page.get_by_role("heading", level=3, name=t("alerts.email.title"))).to_be_attached()
+    expect(page.get_by_role("region", name=t("search.strip.label"))).to_have_count(0)
+    assert page.evaluate("window.scrollY") == 0
 
-    # El índice lleva a cada sección sin salir de la página, y la URL dice dónde estás.
-    index = page.get_by_role("navigation", name=t("search.nav.label"))
-    expect(index.get_by_role("link")).to_have_count(2)
-    index.get_by_role("link", name=t("search.nav.search"), exact=True).click()
+    tabs = page.get_by_role("navigation", name=t("search.nav.label"))
+    expect(tabs.get_by_role("link")).to_have_count(2)
+    expect(tabs.get_by_role("link", name=t("search.nav.where"))).to_have_attribute(
+        "aria-current", "page"
+    )
+    tabs.get_by_role("link", name=t("search.nav.search"), exact=True).click()
     expect(page).to_have_url(f"{demo_app.url}/buscar")
-    # La URL cambia antes de que acabe de pintarse la página (la vista de portales se carga aparte):
-    # se espera a que «Dónde buscar» deje de enseñar el correo.
     expect(page.get_by_role("heading", level=3, name=t("alerts.email.title"))).to_have_count(0)
-    expect(
-        page.get_by_role("button", name=t("search.searchNow"), exact=False).first
-    ).to_be_in_viewport()
-    # «Dónde buscar» vuelve a la vista que tenías abierta.
-    index.get_by_role("link", name=t("search.nav.where")).click()
-    expect(page).to_have_url(f"{demo_app.url}/fuentes/correo")
+    expect(page.get_by_role("region", name=t("search.strip.label"))).to_be_in_viewport()
+    expect(tabs.get_by_role("link", name=t("search.nav.search"), exact=True)).to_have_attribute(
+        "aria-current", "page"
+    )
+    # «Dónde buscar» abre en su primera subpestaña, los portales.
+    tabs.get_by_role("link", name=t("search.nav.where")).click()
+    expect(page).to_have_url(f"{demo_app.url}/fuentes/plataformas")
+    expect(page.get_by_role("region", name=t("search.strip.label"))).to_have_count(0)
 
 
 def test_more_settings_open_in_the_strip_and_the_address_says_so(

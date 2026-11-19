@@ -119,23 +119,27 @@ function SkipLink() {
 /**
  * Al ir a otra página se empieza por arriba: `BrowserRouter` deja el scroll de la anterior. Atrás y
  * Adelante, no, que ahí el navegador recuerda dónde estabas; ni lo que solo cambia la consulta (un
- * filtro de la Bandeja). En `useLayoutEffect`, antes de pintar y antes de los `useEffect` de la página
+ * filtro de la Bandeja); ni lo que pide quedarse (`state.stay`: desplegar «Más ajustes» cambia la
+ * dirección, no la página). Cambiar de pestaña sí: es otra página, como en «Mi perfil». En `useLayoutEffect`, antes de pintar y antes de los `useEffect` de la página
  * que llevan a un bloque concreto, que tienen la última palabra.
  */
-function useScrollToTop(pathname: string) {
+function useScrollToTop(pathname: string, state: unknown) {
   const navigation = useNavigationType()
   const previous = useRef(pathname)
+  // Va con la navegación que cambia `pathname`: se lee al cambiar esta, no dispara el efecto.
+  const stay = useRef(false)
+  stay.current = (state as { stay?: unknown } | null)?.stay === true
   useLayoutEffect(() => {
     if (previous.current === pathname) return
     previous.current = pathname
-    if (navigation !== 'POP') window.scrollTo(0, 0)
+    if (navigation !== 'POP' && !stay.current) window.scrollTo(0, 0)
   }, [pathname, navigation])
 }
 
 export function AppShell() {
   const { t } = useTranslation('nav')
-  const { pathname } = useLocation()
-  useScrollToTop(pathname)
+  const { pathname, state } = useLocation()
+  useScrollToTop(pathname, state)
   return (
     <div className="flex min-h-[100dvh]">
       <BrowserRemindersWatcher />

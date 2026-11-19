@@ -17,7 +17,7 @@ import { COMPANY_KINDS } from '@/lib/sourceKinds'
 const PORTALS_ID = 'search-where'
 
 /**
- * La sección «Buscar» de «Buscar ofertas». Arriba, una franja con lo que buscas (cada cosa se cambia ahí
+ * La pestaña «Buscar» de «Buscar ofertas». Arriba, una franja con lo que buscas (cada cosa se cambia ahí
  * mismo, y el resto en «Más ajustes») y la columna para empezar; debajo, tus portales como tarjetas que
  * se marcan y lo que dio cada uno la última vez; al pie, la última búsqueda y lo que se consulta sin
  * navegador. Tu agente busca con tu navegador y en su ventana. El título y la intro son de la página;

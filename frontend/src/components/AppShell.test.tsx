@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockApi, renderApp, status } from '@/test/utils'
@@ -167,7 +167,7 @@ describe('Barra lateral (fase 23.3)', () => {
     ])
   })
 
-  it('«Buscar ofertas» es una página: las rutas de antes llevan a su sección y el índice, a las demás', async () => {
+  it('«Buscar ofertas» tiene dos pestañas con su URL: cada una pinta solo lo suyo y sin mover la página', async () => {
     mockApi({ ...routes(), 'GET /sources': { sources: [], agent_browse: { max_result_pages: 5, delay_seconds: 5, default_max_offers: 15, stop_after_known: 5 } } })
     const scrolled: string[] = []
     const original = Element.prototype.scrollIntoView
@@ -176,22 +176,37 @@ describe('Barra lateral (fase 23.3)', () => {
     }
     try {
       renderApp('/fuentes/correo')
-      // Las dos secciones, en la misma página; la configuración ya no es una sección aparte.
       expect(await screen.findByRole('heading', { level: 1, name: 'Buscar ofertas' })).toBeInTheDocument()
-      expect(screen.getByRole('heading', { level: 2, name: 'Dónde buscar' })).toBeInTheDocument()
-      expect(screen.queryByRole('heading', { level: 2, name: 'Configuración de tu búsqueda' })).not.toBeInTheDocument()
-      await waitFor(() => expect(scrolled).toContain('donde'))
+      const tabs = screen.getByRole('navigation', { name: 'Secciones de «Buscar ofertas»' })
+      expect(within(tabs).getAllByRole('link').map((l) => l.textContent)).toEqual(['Buscar', 'Dónde buscar'])
+      expect(within(tabs).getByRole('link', { name: 'Dónde buscar' })).toHaveAttribute('aria-current', 'page')
+      expect(within(tabs).getByRole('link', { name: 'Dónde buscar' })).toHaveAttribute('href', '/fuentes')
+      // Solo la pestaña abierta: el correo sí, la búsqueda no.
+      expect(await screen.findByRole('heading', { level: 3, name: 'Alertas por correo' })).toBeInTheDocument()
+      expect(screen.queryByRole('region', { name: 'Lo que vas a buscar' })).not.toBeInTheDocument()
 
-      const index = screen.getByRole('navigation', { name: 'Secciones de «Buscar ofertas»' })
-      expect(within(index).getAllByRole('link').map((l) => l.textContent)).toEqual(['Buscar', 'Dónde buscar'])
-      expect(within(index).getByRole('link', { name: 'Dónde buscar' })).toHaveAttribute('aria-current', 'location')
-      expect(within(index).queryByRole('tab')).not.toBeInTheDocument()
-      await userEvent.click(within(index).getByRole('link', { name: 'Buscar' }))
-      await waitFor(() => expect(scrolled.at(-1)).toBe('buscar'))
-      expect(within(index).getByRole('link', { name: 'Buscar' })).toHaveAttribute('aria-current', 'location')
+      await userEvent.click(within(tabs).getByRole('link', { name: 'Buscar' }))
+      expect(await screen.findByRole('region', { name: 'Lo que vas a buscar' })).toBeInTheDocument()
+      expect(within(tabs).getByRole('link', { name: 'Buscar' })).toHaveAttribute('aria-current', 'page')
+      expect(screen.queryByRole('navigation', { name: 'Dónde buscar' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('heading', { level: 3, name: 'Alertas por correo' })).not.toBeInTheDocument()
+      // Ni índice fijo ni anclas a las que bajar.
+      expect(scrolled).toEqual([])
     } finally {
       Element.prototype.scrollIntoView = original
     }
+  })
+
+  it('«Buscar» sigue activa con «Más ajustes» abierto y /buscar/donde lleva a «Dónde buscar»', async () => {
+    mockApi({ ...routes(), 'GET /sources': { sources: [], agent_browse: { max_result_pages: 5, delay_seconds: 5, default_max_offers: 15, stop_after_known: 5 } } })
+    const { unmount } = renderApp('/buscar/ajustes')
+    const tabs = await screen.findByRole('navigation', { name: 'Secciones de «Buscar ofertas»' })
+    expect(within(tabs).getByRole('link', { name: 'Buscar' })).toHaveAttribute('aria-current', 'page')
+    unmount()
+    renderApp('/buscar/donde')
+    expect(await screen.findByRole('heading', { name: 'Portales de empleo' })).toBeInTheDocument()
+    const again = screen.getByRole('navigation', { name: 'Secciones de «Buscar ofertas»' })
+    expect(within(again).getByRole('link', { name: 'Dónde buscar' })).toHaveAttribute('aria-current', 'page')
   })
 })
 

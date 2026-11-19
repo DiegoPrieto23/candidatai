@@ -55,7 +55,7 @@ def test_the_entries_and_each_section_opens_its_tabs(page: Page, demo_app: AppSe
     expect(page.get_by_role("dialog")).to_be_visible()
     page.keyboard.press("Escape")
 
-    # Dónde buscar es una sección de Buscar ofertas, con sus propias pestañas: los buzones.
+    # Dónde buscar es una pestaña de Buscar ofertas, con sus propias subpestañas: los buzones.
     nav.get_by_role("link", name=t("nav.entries.search")).click()
     page.get_by_role("navigation", name=t("search.nav.label")).get_by_role(
         "link", name=t("search.nav.where")

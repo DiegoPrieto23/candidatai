@@ -140,7 +140,8 @@ describe('Plataformas', () => {
     })
     const { container } = renderApp('/plataformas')
     await where().findAllByRole('heading', { level: 4 })
-    const icons = [...container.querySelectorAll('#donde img')].map((img) => img.getAttribute('src'))
+    // Solo está montada la pestaña «Dónde buscar»: los logos de la página son los de sus portales.
+    const icons = [...container.querySelectorAll('main img')].map((img) => img.getAttribute('src'))
     expect(icons).toEqual([
       `http://127.0.0.1:8000/sources/${linkedin.id}/icon?v=linkedin.com`,
       `http://127.0.0.1:8000/sources/${tecno.id}/icon?v=tecnoempleo.com`,

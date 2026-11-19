@@ -369,9 +369,9 @@ Sin agente instalado, la pestaña lo dice y la ayuda sigue funcionando. El panel
 El menú tiene nueve entradas: **Inicio** y **Mi perfil**; en Búsqueda, **Buscar ofertas** y
 **Bandeja de ofertas**; en Procesos, **Tablero**, **Calendario**, **Respuestas** y **Resultados**; y
 **Agente**. Lo demás son pestañas dentro de ellas: la Bandeja tiene **Revisión rápida** y **Por
-completar**, y Mi perfil, **Habilidades por desarrollar** y **Plantillas de CV**. Buscar ofertas es
-una sola página con dos secciones, con un índice arriba: **Buscar** (lo que buscas, con «Más
-ajustes», y tus portales) y **Dónde buscar**.
+completar**, y Mi perfil, **Habilidades por desarrollar** y **Plantillas de CV**. Buscar ofertas tiene
+dos pestañas, cada una con su dirección: **Buscar** (lo que buscas, con «Más ajustes», y tus
+portales) y **Dónde buscar** (portales, empresas, correo y botón del navegador).
 
 Un día normal:
 
@@ -386,7 +386,7 @@ Un día normal:
 | Fuente | Cómo se configura |
 |---|---|
 | **Alta manual** | «Nueva oferta» en la UI (URL o texto pegado; con texto, el puesto y la empresa son obligatorios porque con ellos se detectan duplicados, y el botón dice qué falta). Con una URL de LinkedIn, la app te guía: «Abrir la oferta» para pulsar allí el botón del navegador, o «Pegar texto» con el enlace ya rellenado |
-| **Empresas con portal propio** (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee) | En «Buscar ofertas», sección «Dónde buscar → Empresas con portal propio»: «Añadir empresa», su nombre y la dirección de su web de empleo tal como la ves (`https://careers.acme.com/madrid/`). La app deduce qué sistema usa y los lugares de la dirección («Solo Madrid»), y solo te enseña las ofertas que encajan contigo. Si no reconoce la web, la añade a tus portales para que tu agente la recorra. Por terminal, `cai sources add --name "Acme" --url https://careers.acme.com/`; `cai sources discover --file empresas.txt` busca el tablero de cada empresa de una lista. Si la detección falla, «Más opciones» deja poner el sistema y su nombre en la dirección: [`FUENTES_OFERTAS.md`](FUENTES_OFERTAS.md#cómo-encontrar-el-slug) |
+| **Empresas con portal propio** (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee) | En «Buscar ofertas», pestaña «Dónde buscar → Empresas con portal propio»: «Añadir empresa», su nombre y la dirección de su web de empleo tal como la ves (`https://careers.acme.com/madrid/`). La app deduce qué sistema usa y los lugares de la dirección («Solo Madrid»), y solo te enseña las ofertas que encajan contigo. Si no reconoce la web, la añade a tus portales para que tu agente la recorra. Por terminal, `cai sources add --name "Acme" --url https://careers.acme.com/`; `cai sources discover --file empresas.txt` busca el tablero de cada empresa de una lista. Si la detección falla, «Más opciones» deja poner el sistema y su nombre en la dirección: [`FUENTES_OFERTAS.md`](FUENTES_OFERTAS.md#cómo-encontrar-el-slug) |
 | **InfoJobs y Adzuna** | Sus claves en `.env` (`CAI_INFOJOBS_CLIENT_ID`/`_SECRET`, `CAI_ADZUNA_APP_ID`/`_KEY`) y una búsqueda con `cai sources add` |
 | **Manfred y freehire.me** | Sin claves: una búsqueda en la misma página o con `cai sources add --kind manfred --name Manfred --query "data engineer"` (en freehire, también `--country` y `--remote-only`) |
 | **Alertas por correo** | Crea alertas en LinkedIn, InfoJobs, Indeed… y que lleguen a una etiqueta de tu correo. En «Dónde buscar → Alertas por correo → Añadir buzón» conecta uno o varios buzones (Gmail, Outlook, Yahoo, iCloud u otro IMAP, siempre en solo lectura) o una carpeta de `.eml`; el asistente explica cada proveedor y prueba la conexión antes de guardar. La contraseña se guarda cifrada en el llavero del sistema (Administrador de credenciales en Windows, Llavero en macOS) y no vuelve a salir. Paso a paso en [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md). Lo que llega aparece en la **Bandeja de ofertas**; las que solo traen título y enlace esperan en su pestaña «Por completar» |

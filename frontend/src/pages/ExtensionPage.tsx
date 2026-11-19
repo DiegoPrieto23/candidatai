@@ -28,7 +28,7 @@ function Step({ n, done, title, children }: { n: number; done: boolean; title: s
         </span>
       )}
       <div className="min-w-0 flex-1 space-y-3 pt-0.5">
-        <h2 className={cn('font-medium', done && 'text-muted-foreground')}>{title}</h2>
+        <h4 className={cn('font-medium', done && 'text-muted-foreground')}>{title}</h4>
         {children}
       </div>
     </li>

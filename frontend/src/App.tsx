@@ -15,20 +15,26 @@ const {
   agent: { Page: AgentPage },
   alerts: { Page: AlertsPage },
   calendar: { Page: CalendarPage },
+  emailAlerts: { Page: EmailAlertsPage },
+  extension: { Page: ExtensionPage },
   funnel: { Page: FunnelPage },
   howItWorks: { Page: HowItWorksPage },
   inbox: { Page: InboxPage },
   inboxHub: { Page: InboxHubPage },
   job: { Page: JobPage },
   newJob: { Page: NewJobPage },
+  platforms: { Page: PlatformsPage },
   processes: { Page: ProcessesPage },
   profile: { Page: ProfilePage },
   profileHub: { Page: ProfileHubPage },
   replies: { Page: RepliesPage },
   searchHub: { Page: SearchHubPage },
+  searchSection: { Page: SearchSection },
   skills: { Page: SkillsPage },
+  sources: { Page: SourcesPage },
   templates: { Page: TemplatesPage },
   triage: { Page: TriagePage },
+  whereSection: { Page: WhereSection },
 } = pages
 
 function NotFound() {
@@ -65,20 +71,24 @@ export function AppRoutes() {
         </Route>
         <Route path="jobs/:id" element={<JobPage />} />
         <Route path="nueva" element={<NewJobPage />} />
-        {/* «Buscar ofertas» es una página con tres secciones: cada ruta lleva a la suya, sin volver a montarla. */}
+        {/* «Buscar ofertas», con dos pestañas: «Buscar» y «Dónde buscar» (esta, con sus subpestañas). */}
         <Route element={<SearchHubPage />}>
-          <Route path="buscar">
+          {/* «Más ajustes» desplegado es otra dirección de la misma pestaña: no la vuelve a montar. */}
+          <Route path="buscar" element={<SearchSection />}>
             <Route index element={null} />
             <Route path="ajustes" element={null} />
-            <Route path="donde" element={<Navigate to="/fuentes/plataformas" replace />} />
           </Route>
-          <Route path="fuentes">
+          <Route path="fuentes" element={<WhereSection />}>
             <Route index element={<Navigate to="/fuentes/plataformas" replace />} />
-            <Route path="plataformas" element={null} />
-            <Route path="empresas" element={null} />
-            <Route path="correo" element={null} />
-            <Route path="extension" element={null} />
+            <Route path="plataformas" element={<PlatformsPage />} />
+            <Route path="empresas" element={<SourcesPage />} />
+            <Route path="correo" element={<EmailAlertsPage />} />
+            <Route path="extension" element={<ExtensionPage />} />
           </Route>
+        </Route>
+        {/* La dirección de «Dónde buscar» cuando era una sección de esta misma página. */}
+        <Route path="buscar">
+          <Route path="donde" element={<Navigate to="/fuentes/plataformas" replace />} />
         </Route>
         <Route path="procesos" element={<ProcessesPage />} />
         <Route path="calendario" element={<CalendarPage />} />

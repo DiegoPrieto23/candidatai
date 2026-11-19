@@ -36,8 +36,10 @@ export const pages = {
   triage: lazyPage(() => import('@/pages/TriagePage').then((m) => m.TriagePage)),
   processes: lazyPage(() => import('@/pages/ProcessesPage').then((m) => m.ProcessesPage)),
   replies: lazyPage(() => import('@/pages/RepliesPage').then((m) => m.RepliesPage)),
-  // «Buscar ofertas» trae dentro su búsqueda y su configuración; las vistas de «Dónde buscar», aparte.
+  // «Buscar ofertas» y sus dos pestañas van en un chunk (con la búsqueda); las vistas de «Dónde buscar», aparte.
   searchHub: lazyPage(() => import('@/pages/SearchHubPage').then((m) => m.SearchHubPage)),
+  searchSection: lazyPage(() => import('@/pages/SearchHubPage').then((m) => m.SearchSection)),
+  whereSection: lazyPage(() => import('@/pages/SearchHubPage').then((m) => m.WhereSection)),
   calendar: lazyPage(() => import('@/pages/CalendarPage').then((m) => m.CalendarPage)),
   // Recharts pesa: va en el chunk de «Resultados».
   funnel: lazyPage(() => import('@/pages/FunnelPage').then((m) => m.FunnelPage)),
@@ -54,7 +56,7 @@ export const pages = {
 
 type PageKey = keyof typeof pages
 
-/** Las páginas que pinta cada ruta (`/buscar` y `/fuentes` pintan «Buscar ofertas» con la vista de portales u otra de «Dónde buscar»; la más larga, antes). */
+/** Las páginas que pinta cada ruta (`/buscar` y `/fuentes` son las dos pestañas de «Buscar ofertas»; la más larga, antes). */
 const ROUTES: [prefix: string, keys: PageKey[]][] = [
   ['/como-funciona', ['howItWorks']],
   ['/bandeja/revision', ['inboxHub', 'triage']],
@@ -62,7 +64,7 @@ const ROUTES: [prefix: string, keys: PageKey[]][] = [
   ['/bandeja', ['inboxHub', 'inbox']],
   ['/jobs/', ['job']],
   ['/nueva', ['newJob']],
-  ['/buscar', ['searchHub', 'platforms']],
+  ['/buscar', ['searchHub', 'searchSection']],
   ['/procesos/calendario', ['calendar']],
   ['/procesos', ['processes']],
   ['/calendario', ['calendar']],
@@ -71,10 +73,10 @@ const ROUTES: [prefix: string, keys: PageKey[]][] = [
   ['/perfil/skills', ['profileHub', 'skills']],
   ['/perfil/plantillas', ['profileHub', 'templates']],
   ['/perfil', ['profileHub', 'profile']],
-  ['/fuentes/empresas', ['searchHub', 'sources']],
-  ['/fuentes/correo', ['searchHub', 'emailAlerts']],
-  ['/fuentes/extension', ['searchHub', 'extension']],
-  ['/fuentes', ['searchHub', 'platforms']],
+  ['/fuentes/empresas', ['searchHub', 'whereSection', 'sources']],
+  ['/fuentes/correo', ['searchHub', 'whereSection', 'emailAlerts']],
+  ['/fuentes/extension', ['searchHub', 'whereSection', 'extension']],
+  ['/fuentes', ['searchHub', 'whereSection', 'platforms']],
   ['/agente', ['agent']],
 ]
 

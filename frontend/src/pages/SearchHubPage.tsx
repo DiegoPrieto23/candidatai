@@ -1,122 +1,57 @@
-import { Suspense, useEffect, useRef, useState, type MouseEvent, type RefObject } from 'react'
-import { Link, Outlet, useLocation, useNavigate, type Location } from 'react-router'
+import { Suspense, useId } from 'react'
+import { Outlet, useLocation, useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { BuildingsIcon, CompassIcon, EnvelopeSimpleIcon, PuzzlePieceIcon } from '@phosphor-icons/react'
+import {
+  BuildingsIcon,
+  CompassIcon,
+  EnvelopeSimpleIcon,
+  MagnifyingGlassIcon,
+  MapTrifoldIcon,
+  PuzzlePieceIcon,
+} from '@phosphor-icons/react'
 import { Hint } from '@/components/Hint'
 import { PageErrorBoundary } from '@/components/PageErrorBoundary'
 import { PageTabs } from '@/components/PageTabs'
 import { Skeleton } from '@/components/ui/skeleton'
-import { pages } from '@/lib/pages'
-import { cn } from '@/lib/utils'
 import { SearchPage } from '@/pages/SearchPage'
-
-type Section = 'search' | 'where'
-
-/** Cada sección, su ancla y la ruta que lleva a ella (las de siempre siguen funcionando). */
-const SECTIONS: readonly { id: Section; anchor: string; to: string }[] = [
-  { id: 'search', anchor: 'buscar', to: '/buscar' },
-  { id: 'where', anchor: 'donde', to: '/fuentes/plataformas' },
-]
 
 /** `/buscar/ajustes` es «Buscar» con «Más ajustes» desplegado. */
 const MORE = '/buscar/ajustes'
 
-/** Las vistas de «Dónde buscar», cada una con su URL de siempre. */
-const WHERE = [
-  { to: '/fuentes/plataformas', page: pages.platforms.Page },
-  { to: '/fuentes/empresas', page: pages.sources.Page },
-  { to: '/fuentes/correo', page: pages.emailAlerts.Page },
-  { to: '/fuentes/extension', page: pages.extension.Page },
-] as const
-
-function sectionOf(pathname: string): Section {
-  if (pathname.startsWith('/buscar/donde') || pathname.startsWith('/fuentes')) return 'where'
-  return 'search'
-}
-
-function anchorOf(section: Section): string {
-  return SECTIONS.find((s) => s.id === section)!.anchor
-}
-
-/** Abrir o plegar «Más ajustes» cambia la ruta, pero no mueve la página (`state.stay`). */
-const stays = (state: unknown) => (state as { stay?: unknown } | null)?.stay === true
-
 /**
- * Lleva la sección de la URL arriba del todo. Lo de encima carga después (portales, perfil) y la
- * empujaría hacia abajo: mientras crece, se vuelve a alinear, hasta que tú mueves la página o pasan
- * unos segundos. Va por la clave de la navegación, no por la ruta: un enlace a la misma URL (estás en
- * `/fuentes/correo` pero has subido) también baja.
+ * La pestaña «Buscar»: lo que buscas y cómo lanzarlo. Si «Más ajustes» está abierto lo dice la ruta;
+ * abrirlo o plegarlo la cambia sin mover la página (`state.stay`) ni volver a montarla (las dos rutas
+ * cuelgan de esta).
  */
-function useScrollToSection(location: Location, container: RefObject<HTMLElement | null>) {
-  const { pathname, key, state } = location
-  // La navegación de la vez anterior: en modo estricto el efecto corre dos veces con la misma.
-  const previous = useRef<string | null>(null)
-  useEffect(() => {
-    const section = sectionOf(pathname)
-    const unchanged = previous.current === null || previous.current === key
-    previous.current = key
-    // Al abrir «Buscar» desde otra página, AppShell ya ha subido arriba del todo.
-    if ((section === 'search' && unchanged) || stays(state)) return
-    const target = () => document.getElementById(anchorOf(section))
-    let active = true
-    const align = () => {
-      if (!active) return
-      target()?.scrollIntoView({ block: 'start' })
-    }
-    align()
-    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(align)
-    if (container.current) observer?.observe(container.current)
-    const stop = () => {
-      active = false
-      observer?.disconnect()
-    }
-    const timer = window.setTimeout(stop, 3000)
-    const events = ['wheel', 'touchstart', 'keydown', 'pointerdown'] as const
-    for (const name of events) window.addEventListener(name, stop, { once: true, passive: true })
-    return () => {
-      stop()
-      window.clearTimeout(timer)
-      for (const name of events) window.removeEventListener(name, stop)
-    }
-    // `state` va con `key`: cada navegación trae el suyo.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, pathname, container])
+export function SearchSection() {
+  const { pathname } = useLocation()
+  const navigate = useNavigate()
+  const { t } = useTranslation('search')
+  const title = useId()
+  const onMore = (open: boolean) => navigate(open ? MORE : '/buscar', { replace: true, state: { stay: true } })
+  return (
+    <section aria-labelledby={title}>
+      {/* Los encabezados de la pestaña cuelgan de este (la búsqueda usa `h3`). */}
+      <h2 id={title} className="sr-only">
+        {t('nav.search')}
+      </h2>
+      <SearchPage moreOpen={pathname.startsWith(MORE)} onMore={onMore} />
+    </section>
+  )
 }
 
-/** La sección que tienes delante: la última cuyo principio ya ha pasado por debajo del índice. */
-function useVisibleSection(initial: Section): Section {
-  const [visible, setVisible] = useState(initial)
-  // Al cambiar la URL, manda la sección de la URL (ajuste durante el render, sin efecto).
-  const [from, setFrom] = useState(initial)
-  if (from !== initial) {
-    setFrom(initial)
-    setVisible(initial)
-  }
-  useEffect(() => {
-    const onScroll = () => {
-      let current: Section = 'search'
-      for (const { id, anchor } of SECTIONS) {
-        const top = document.getElementById(anchor)?.getBoundingClientRect().top
-        if (top !== undefined && top <= 120) current = id
-      }
-      // Al final de la página, la última, aunque su principio no llegue arriba.
-      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) current = 'where'
-      setVisible(current)
-    }
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-  return visible
-}
-
-/** «Dónde buscar»: portales, empresas, correo y extensión, cada uno en su vista con su URL. */
-function WhereSection({ pathname }: { pathname: string }) {
+/** La pestaña «Dónde buscar»: portales, empresas, correo y extensión, cada uno en su subpestaña con su URL. */
+export function WhereSection() {
   const { t } = useTranslation('platforms', { keyPrefix: 'hub' })
   const { t: tNav } = useTranslation('nav')
-  const current = WHERE.find((w) => pathname.startsWith(w.to)) ?? WHERE[0]
-  const Page = current.page
+  const { t: tSearch } = useTranslation('search')
+  const title = useId()
   return (
-    <div className="grid gap-5">
+    <section aria-labelledby={title} className="grid grid-cols-[minmax(0,1fr)] gap-5">
+      {/* Cada vista se titula con un `h3`: cuelga de este. */}
+      <h2 id={title} className="sr-only">
+        {tSearch('nav.where')}
+      </h2>
       <PageTabs
         label={t('label')}
         level="sub"
@@ -127,111 +62,46 @@ function WhereSection({ pathname }: { pathname: string }) {
           { to: '/fuentes/extension', label: t('extension'), icon: PuzzlePieceIcon },
         ]}
       />
-      <Suspense fallback={<Skeleton className="h-64" />}>
-        <Page />
-      </Suspense>
-    </div>
+      <div className="min-w-0">
+        <Suspense fallback={<Skeleton className="h-64" />}>
+          <Outlet />
+        </Suspense>
+      </div>
+    </section>
   )
 }
 
 /**
- * «Buscar ofertas», en una página: lo que buscas y cómo lanzarlo (con «Más ajustes» desplegable) y
- * dónde se busca, con un índice fijo arriba. Las rutas de antes (`/buscar/ajustes`, `/fuentes/…`) abren
- * esta misma página en su sitio: van todas bajo una misma ruta de diseño, así que cambiar de sección no
- * la vuelve a montar.
+ * «Buscar ofertas», como «Mi perfil»: el título y dos pestañas, cada una con su URL. «Buscar» (lo que
+ * buscas y cómo lanzarlo) y «Dónde buscar» (portales, empresas, correo y extensión). Las rutas de antes
+ * (`/buscar/ajustes`, `/fuentes/…`) siguen llevando a su pestaña.
  */
 export function SearchHubPage() {
   const { t } = useTranslation('search')
-  const location = useLocation()
-  const { pathname } = location
-  const container = useRef<HTMLDivElement>(null)
-  const navigate = useNavigate()
-  const section = sectionOf(pathname)
-  // Fuera de «Buscar» (en `/fuentes/…`), «Más ajustes» se abre sin cambiar la dirección: así no te saca
-  // de la vista de «Dónde buscar» que tenías.
-  const [moreHere, setMoreHere] = useState(false)
-  const moreOpen = pathname.startsWith(MORE) || moreHere
-  const onMore = (open: boolean) => {
-    setMoreHere(section === 'where' && open)
-    if (section === 'search') navigate(open ? MORE : '/buscar', { replace: true, state: { stay: true } })
-    else if (!open && pathname.startsWith(MORE)) navigate('/buscar', { replace: true, state: { stay: true } })
-  }
-  const visible = useVisibleSection(section)
-  useScrollToSection(location, container)
-  // «Dónde buscar» en el índice vuelve a la vista que tenías abierta.
-  const [lastWhere, setLastWhere] = useState('/fuentes/plataformas')
-  if (pathname.startsWith('/fuentes/') && pathname !== lastWhere) setLastWhere(pathname)
-
-  const jump = (event: MouseEvent, id: Section) => {
-    // Ya en esa URL, el enlace no cambia nada: se baja a mano.
-    if (sectionOf(pathname) === id) {
-      event.preventDefault()
-      document.getElementById(anchorOf(id))?.scrollIntoView({ block: 'start' })
-    }
-    // Con el teclado, el siguiente Tab sigue en la sección elegida, no en el índice.
-    requestAnimationFrame(() => document.getElementById(anchorOf(id))?.focus({ preventScroll: true }))
-  }
-
-  const label = (id: Section) => (id === 'search' ? t('nav.search') : t('nav.where'))
-
+  const { pathname } = useLocation()
   return (
-    <div ref={container} className="animate-in fade-in duration-300">
-      <div className="mb-4">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-6 animate-in fade-in duration-300">
+      <div>
         <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
         <p className="mt-1.5 text-sm text-muted-foreground">
           {t('intro')} <Hint text={t('introHint')} label={t('introHintLabel')} />
         </p>
       </div>
-
-      <nav
-        aria-label={t('nav.label')}
-        className="z-10 -mx-4 mb-6 border-b bg-background/85 px-4 backdrop-blur-md supports-[backdrop-filter]:bg-background/70 sm:-mx-8 sm:px-8 lg:sticky lg:top-0"
-      >
-        <ul className="scroll-row -mb-px flex max-w-full gap-5">
-          {SECTIONS.map(({ id, to }) => (
-            <li key={id} className="flex-none">
-              <Link
-                to={id === 'where' ? lastWhere : to}
-                replace
-                onClick={(event) => jump(event, id)}
-                aria-current={visible === id ? 'location' : undefined}
-                className={cn(
-                  'block border-b-2 pt-3 pb-2.5 text-sm whitespace-nowrap transition-colors outline-none',
-                  'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset',
-                  visible === id
-                    ? 'border-primary font-medium text-foreground'
-                    : 'border-transparent text-muted-foreground hover:border-foreground/20 hover:text-foreground',
-                )}
-              >
-                {label(id)}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
-
-      {/* Cada sección con su red: si una falla, la otra sigue. */}
-      <div className="grid gap-14">
-        {/* Sin barra lateral, la cabecera de la app va fija arriba: las secciones paran por debajo. */}
-        <section id="buscar" tabIndex={-1} aria-labelledby="buscar-title" className="outline-none scroll-mt-32 lg:scroll-mt-16">
-          <h2 id="buscar-title" className="sr-only">
-            {t('nav.search')}
-          </h2>
-          <PageErrorBoundary path={pathname}>
-            <SearchPage moreOpen={moreOpen} onMore={onMore} />
-          </PageErrorBoundary>
-        </section>
-        <section id="donde" tabIndex={-1} aria-labelledby="donde-title" className="outline-none scroll-mt-32 lg:scroll-mt-16">
-          <h2 id="donde-title" className="mb-4 text-xl font-semibold tracking-tight">
-            {t('nav.where')}
-          </h2>
-          <PageErrorBoundary path={pathname}>
-            <WhereSection pathname={pathname} />
-          </PageErrorBoundary>
-        </section>
+      <PageTabs
+        label={t('nav.label')}
+        tabs={[
+          { to: '/buscar', label: t('nav.search'), icon: MagnifyingGlassIcon },
+          { to: '/fuentes', label: t('nav.where'), icon: MapTrifoldIcon },
+        ]}
+      />
+      {/* Si la pestaña falla, el título y las pestañas siguen: puedes ir a la otra. */}
+      <div className="min-w-0">
+        <PageErrorBoundary path={pathname}>
+          <Suspense fallback={<Skeleton className="h-64" />}>
+            <Outlet />
+          </Suspense>
+        </PageErrorBoundary>
       </div>
-      {/* Las rutas hijas no pintan nada: solo dicen la sección (y `/fuentes` lleva a la primera vista). */}
-      <Outlet />
     </div>
   )
 }

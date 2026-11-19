@@ -270,9 +270,10 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 - **La regla de los datos que faltan, una sola vez:** la cabecera de la configuración de tu búsqueda
   dice que cada filtro se aplica solo cuando la oferta indica ese dato, con un ejemplo en su ayuda.
 - **El encaje se vuelve a calcular** una vez al actualizar, por las equivalencias de puestos.
-- **«Buscar ofertas» es una sola página** con dos secciones y un índice fijo arriba: **Buscar** (con
-  lo que buscas y **Más ajustes**, que sustituye a la pestaña «Qué buscas») y **Dónde buscar**. Los
-  enlaces de siempre llevan a su sitio.
+- **«Buscar ofertas» tiene dos pestañas**, como «Mi perfil», cada una con su dirección y sin saltos de
+  la página: **Buscar** (con lo que buscas y **Más ajustes**, que sustituye a la pestaña «Qué buscas»)
+  y **Dónde buscar** (portales, empresas, correo y botón del navegador). Abrir o plegar «Más ajustes» no
+  te mueve de donde estás. Los enlaces de siempre llevan a su sitio.
 - **Seleccionar los portales:** una casilla encima de la lista los selecciona o los quita todos.
 - **Qué ofertas entran:** junto a «Hasta N ofertas» se dice cuáles: las más recientes que encajan
   con tu perfil, en cada portal. Tu agente sigue ese orden.

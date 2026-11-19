@@ -36,7 +36,7 @@ ROUTES = [
     Route("/procesos", "processes.title"),
     Route("/calendario", "calendar.title"),
     Route("/respuestas", "replies.page.title"),
-    # «Buscar ofertas» es una página: sus secciones y las vistas de «Dónde buscar» comparten `h1`.
+    # «Buscar ofertas» tiene dos pestañas (y «Dónde buscar», sus vistas): todas comparten `h1`.
     Route("/buscar", "search.title"),
     Route("/buscar/ajustes", "search.title"),
     Route("/resultados", "funnel.title"),

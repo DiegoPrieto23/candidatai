@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { mockApi, renderApp, status } from '@/test/utils'
 
 const page = (items: unknown[]) => ({ items, total: items.length, limit: 50, offset: 0 })
@@ -555,6 +555,26 @@ describe('Buscar ofertas: «Más ajustes»', () => {
     await findMore()
     await waitFor(() => expect(more()).toBeVisible())
     expect(within(strip()).getByRole('button', { name: /Más ajustes/ })).toHaveAttribute('aria-expanded', 'true')
+  })
+
+  it('plegar y desplegar «Más ajustes» cambia la dirección sin mover ni volver a montar la página', async () => {
+    withProfile()
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
+    try {
+      renderApp('/buscar')
+      const before = await findStrip()
+      scrollTo.mockClear()
+      const button = await within(before).findByRole('button', { name: /Más ajustes/ })
+      await userEvent.click(button)
+      await waitFor(() => expect(button).toHaveAttribute('aria-expanded', 'true'))
+      await userEvent.click(button)
+      await waitFor(() => expect(button).toHaveAttribute('aria-expanded', 'false'))
+      // El mismo nodo: la franja no se ha vuelto a montar (y no ha perdido lo que tuvieras a medias).
+      expect(strip()).toBe(before)
+      expect(scrollTo).not.toHaveBeenCalled()
+    } finally {
+      scrollTo.mockRestore()
+    }
   })
 
   it('guarda de una vez lo de tu perfil y el sueldo, y se puede deshacer', async () => {
