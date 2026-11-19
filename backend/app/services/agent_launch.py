@@ -120,6 +120,8 @@ class Headless:
     # Fase 24.5: `config` = el techo va en una configuración propia de la ejecución (`config`).
     ceiling: Literal["args", "config"] = "args"
     config: RunConfigSpec | None = None
+    # Fase 46: las únicas acciones que lanza en segundo plano (`None`: todas).
+    actions: tuple[str, ...] | None = None
 
 
 @dataclass(frozen=True)
@@ -290,6 +292,7 @@ def _headless(spec: agent_registry.AgentSpec) -> Headless | None:
         spec.mcp_prefix,
         headless.ceiling,
         headless.config,
+        tuple(headless.actions) if headless.actions is not None else None,
     )
 
 
@@ -391,6 +394,12 @@ def _no_background(launcher: _Launcher, res: Resolution, action: str | None) -> 
         return (
             f"Tu agente ({res.display_name}) no tiene `launch.headless` en "
             ".agents/manifest.yaml: usa «En terminal»."
+        )
+    allowed = launcher.headless.actions
+    if action in ACTIONS and allowed is not None and action not in allowed:
+        return (
+            f"Con {res.display_name}, «{ACTIONS[action].label}» todavía no va en segundo plano "  # type: ignore[index]
+            "(solo lo comprobado): usa «En terminal» u otro agente."
         )
     if launcher.headless.ceiling == "config" and action in ACTIONS:
         return agent_run_config.ceiling_problem(action)  # type: ignore[arg-type]
@@ -657,6 +666,23 @@ def launch(
         search_runs.start(session, search.platform_ids if search else [])
     agent_tasks.start(session, action, job_id, milestone_id)
     return result
+
+
+def launch_assistant(
+    session: Session,
+    assistant_id: int,
+    *,
+    agent: str | None = None,
+    model: str | None = None,
+    preset: str | None = None,
+) -> LaunchResult:
+    """Fase 46: abre el agente en una terminal con la orden del asistente para una petición ya
+    guardada. Para los agentes sin segundo plano: la ventana está a la vista y la respuesta llega
+    al panel con `save_assistant_answer`."""
+    spec = ACTIONS["assistant"]
+    prompt = prompt_for("assistant", assistant_id=assistant_id)
+    picked = pick(session, "assistant", prompt, agent=agent, model=model, preset=preset)
+    return _open(spec.label, prompt, picked, picked.command, prompt)
 
 
 def model_label(model: str | None, preset: str | None) -> str | None:

@@ -10,6 +10,13 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **El Asistente funciona con Codex y con Antigravity CLI:** con Codex, lo que escribes en
+  «Asistente» se contesta en segundo plano, como con Claude Code u OpenCode, con solo las
+  herramientas de consulta del asistente (sin terminal, ficheros ni web). Con Antigravity CLI (y Qwen
+  Code), que no pueden trabajar en segundo plano con garantías, se abre tu agente en una terminal a
+  la vista y la respuesta aparece igual en el panel; puedes cancelarla desde ahí (la ventana la cierras
+  tú) y, si en 2 horas no contesta, deja de esperar. Solo queda como
+  encargo para tu próxima sesión si no hay terminal que abrir.
 - **Ofertas que vuelven a publicarse:** si una vacante que cerró la empresa (te rechazaron, caducó o
   la descartaste porque la habían cerrado) se publica otra vez pasados 30 días, entra como oferta
   nueva con la etiqueta **Reabierta**, y su ficha dice de qué oferta viene y cómo acabó. Si la cerraste

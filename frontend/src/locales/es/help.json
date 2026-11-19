@@ -49,6 +49,7 @@
     "status": {
       "queued": "En cola",
       "running": "Tu agente está trabajando",
+      "terminal": "Tu agente está trabajando en la terminal que se ha abierto: la respuesta aparecerá aquí",
       "asking": "Tu agente espera tu respuesta en el aviso",
       "waiting": "Se lo pasaré a tu agente en tu próxima sesión",
       "done": "Hecho",
@@ -176,7 +177,7 @@
     },
     "askAgent": {
       "q": "¿Puedo pedirle algo a mi agente desde el portal?",
-      "a": "Sí. Pulsa «Asistente», abajo a la derecha, escribe lo que necesitas y pulsa Intro o la flecha. Si tu agente trabaja en segundo plano desde la app, la respuesta aparece en el mismo panel, con enlaces a lo que haya cambiado; si no, se guarda como encargo para tu próxima sesión. Cada vez que lo abres empiezas una conversación nueva; las anteriores siguen en «Conversaciones anteriores», y en una misma conversación tu agente recuerda lo que ya le preguntaste.",
+      "a": "Sí. Pulsa «Asistente», abajo a la derecha, escribe lo que necesitas y pulsa Intro o la flecha. Si tu agente trabaja en segundo plano desde la app, la respuesta aparece en el mismo panel, con enlaces a lo que haya cambiado; si no, se abre tu agente en una terminal a la vista y la respuesta llega igual al panel; y si no hay terminal que abrir, se guarda como encargo para tu próxima sesión. Cada vez que lo abres empiezas una conversación nueva; las anteriores siguen en «Conversaciones anteriores», y en una misma conversación tu agente recuerda lo que ya le preguntaste.",
       "keywords": "asistente chat preguntar pedir agente caja texto portal conversación historial"
     },
     "askAgentLimits": {

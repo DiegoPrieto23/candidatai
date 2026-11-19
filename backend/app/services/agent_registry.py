@@ -39,10 +39,12 @@ DENIED_PLACEHOLDER = "{denied_tools}"
 SKILL_PLACEHOLDER = "{skill}"
 SESSION_PLACEHOLDER = "{session_id}"
 MODEL_PLACEHOLDER = "{model}"
+# Fase 46: el id de la ejecución, para nombrar su configuración (un perfil de Codex por ejecución).
+RUN_ID_PLACEHOLDER = "{run_id}"
 # Formatos de salida en segundo plano que sabe leer `agent_output.py`.
-HEADLESS_OUTPUTS = frozenset({"claude-stream-json", "opencode-json"})
+HEADLESS_OUTPUTS = frozenset({"claude-stream-json", "opencode-json", "codex-json"})
 # Configuraciones de una ejecución que sabe escribir `agent_run_config.py` (fase 24.5).
-RUN_CONFIG_FORMATS = frozenset({"opencode"})
+RUN_CONFIG_FORMATS = frozenset({"opencode", "codex"})
 # Banderas de los agentes que aprueban solas lo que pida permiso o quitan el sandbox: una orden en
 # segundo plano que lleve alguna no tiene techo (fase 24.5).
 APPROVE_ALL_FLAGS = frozenset(
@@ -148,13 +150,29 @@ class RunConfigSpec(_Strict):
     """`launch.headless.config` (fase 24.5): la configuración propia de cada ejecución, para los
     agentes que limitan las herramientas por configuración y no por argumentos."""
 
-    format: str  # quién la escribe en `agent_run_config.py` (`opencode`)
-    env: str  # la variable de entorno con que se le pasa al agente
-    value: Literal["content", "path"] = "content"  # el contenido del fichero o su ruta
-    agent: str  # el agente que define la configuración; la orden lo nombra
+    format: str  # quién la escribe en `agent_run_config.py` (`opencode`, `codex`)
+    # Con `content` o `path`, la variable de entorno con que se le pasa al agente el contenido o la
+    # ruta del fichero. Con `profile` (fase 46, Codex), la que dice dónde está la carpeta de
+    # configuración del agente (`CODEX_HOME`); sin ella, `home`.
+    env: str
+    value: Literal["content", "path", "profile"] = "content"
+    home: str | None = None  # con `profile`: la carpeta por defecto (`~/.codex`)
+    # El agente (OpenCode) o el perfil (Codex) que define la configuración; la orden lo nombra. Con
+    # `{run_id}`, uno por ejecución.
+    agent: str
     # Variables que se quitan del entorno solo en segundo plano: las que podrían cargar otra
     # configuración o cambiar permisos por debajo de la de la ejecución.
     clear_env: list[str] = []
+
+    @model_validator(mode="after")
+    def _profile_has_home(self) -> "RunConfigSpec":
+        if self.value == "profile" and not self.home:
+            raise ValueError("con `value: profile` hace falta `home`")
+        return self
+
+    def name_for(self, run_id: int) -> str:
+        """El nombre del agente o del perfil de la ejecución `run_id`."""
+        return self.agent.replace(RUN_ID_PLACEHOLDER, str(run_id))
 
 
 class HeadlessSpec(_Strict):
@@ -170,6 +188,9 @@ class HeadlessSpec(_Strict):
     skill_rule: str = ""
     output: str = ""
     config: RunConfigSpec | None = None
+    # Fase 46: las únicas acciones que lanza en segundo plano (`None`: todas las que admiten
+    # segundo plano). Para empezar con poco un agente nuevo.
+    actions: list[str] | None = None
 
     @property
     def complete(self) -> bool:

@@ -25068,6 +25068,7 @@
             "type": "string",
             "enum": [
               "background",
+              "terminal",
               "session"
             ],
             "title": "Mode"
@@ -25091,7 +25092,7 @@
           "mode"
         ],
         "title": "AssistantBody",
-        "description": "Lo que escribes en la caja. `background`: ahora, en segundo plano; `session`: como encargo\npara tu próxima sesión. Solo texto, sin adjuntos. Sin `conversation_id`, empieza una\nconversación nueva; con él, sigue en esa."
+        "description": "Lo que escribes en la caja. `background`: ahora, en segundo plano; `terminal`: ahora, en una\nterminal a la vista (agentes sin segundo plano); `session`: como encargo para tu próxima\nsesión. Solo texto, sin adjuntos. Sin `conversation_id`, empieza una\nconversación nueva; con él, sigue en esa."
       },
       "AssistantList": {
         "properties": {
@@ -25127,6 +25128,7 @@
             "type": "string",
             "enum": [
               "background",
+              "terminal",
               "session"
             ],
             "title": "Mode"
@@ -25136,6 +25138,7 @@
             "enum": [
               "queued",
               "running",
+              "terminal",
               "waiting",
               "done",
               "failed",

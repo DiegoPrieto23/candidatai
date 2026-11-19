@@ -49,6 +49,7 @@
     "status": {
       "queued": "Queued",
       "running": "Your agent is working",
+      "terminal": "Your agent is working in the terminal that just opened: the answer will show up here",
       "asking": "Your agent is waiting for your answer in the notice",
       "waiting": "I'll pass it to your agent in your next session",
       "done": "Done",
@@ -176,7 +177,7 @@
     },
     "askAgent": {
       "q": "Can I ask my agent for something from the portal?",
-      "a": "Yes. Click “Assistant”, at the bottom right, write what you need and press Enter or the arrow. If your agent runs in the background from the app, the answer appears in the same panel, with links to whatever changed; if not, it is saved as a request for your next session. Each time you open it you start a new conversation; earlier ones stay in “Previous conversations”, and within a conversation your agent remembers what you already asked.",
+      "a": "Yes. Click “Assistant”, at the bottom right, write what you need and press Enter or the arrow. If your agent runs in the background from the app, the answer appears in the same panel, with links to whatever changed; if not, your agent opens in a visible terminal and the answer still reaches the panel; and if there is no terminal to open, it is saved as a request for your next session. Each time you open it you start a new conversation; earlier ones stay in “Previous conversations”, and within a conversation your agent remembers what you already asked.",
       "keywords": "assistant chat ask request agent text box portal conversation history"
     },
     "askAgentLimits": {

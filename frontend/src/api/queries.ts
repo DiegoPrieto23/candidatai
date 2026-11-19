@@ -1458,16 +1458,22 @@ export function useAssistantConversation(id: number | null) {
     enabled: id !== null,
     refetchOnMount: 'always',
     refetchInterval: (query) =>
-      query.state.data?.requests.some((item) => item.status === 'queued' || item.status === 'running') ? 3000 : 20000,
+      // En tu terminal tarda más y la ventana puede quedarse abierta: se mira con menos prisa.
+      query.state.data?.requests.some((item) => item.status === 'queued' || item.status === 'running')
+        ? 3000
+        : query.state.data?.requests.some((item) => item.status === 'terminal')
+          ? 10000
+          : 20000,
   })
 }
 
-/** Envía lo que has escrito: ahora en segundo plano o como encargo para tu próxima sesión. Sin
+/** Envía lo que has escrito: ahora en segundo plano, ahora en una terminal a la vista (tu agente no
+ * trabaja en segundo plano) o como encargo para tu próxima sesión. Sin
  * `conversation_id`, empieza una conversación nueva. */
 export function useAskAssistant() {
   const client = useQueryClient()
   return useMutation({
-    mutationFn: (body: { text: string; mode: 'background' | 'session'; conversation_id?: number | null }) =>
+    mutationFn: (body: { text: string; mode: 'background' | 'terminal' | 'session'; conversation_id?: number | null }) =>
       unwrap(api.POST('/agent/assistant', { body })),
     onSuccess: (view) => {
       // Una conversación nueva se ve ya con su primera pregunta, sin esperar a pedirla.

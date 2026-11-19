@@ -284,7 +284,118 @@ class OpenCodeJsonParser:
         state.result = short(str(data.get("message") or error.get("name") or "sin detalle"), 500)
 
 
+class CodexJsonParser:
+    """`codex exec --json` (fase 46, comprobado con codex-cli 0.163.0): un JSON por línea con `type`
+    (`thread.started`, `turn.started`, `item.started`, `item.completed`, `turn.completed`,
+    `turn.failed` o `error`). Cada `item` tiene su `type`: `agent_message`, `mcp_tool_call`,
+    `collab_tool_call` (un subagente), `command_execution`, `web_search`, `file_change`, `error`…
+    La respuesta es el último `agent_message` (los anteriores anuncian lo que va a hacer). Lo que no
+    es JSON se ignora."""
+
+    LABELS = {
+        "collab_tool_call": "Subagente",
+        "command_execution": "Terminal",
+        "web_search": "Búsqueda web",
+        "file_change": "Edita ficheros",
+    }
+    DENIED = ("denied", "rejected", "not allowed", "blocked", "not available", "no disponible")
+
+    def __init__(self, mcp_prefix: str = f"mcp__{MCP_SERVER}__") -> None:
+        self.state = StreamState()
+        self.prefix = mcp_prefix
+        self._last: str | None = None  # el último mensaje del agente
+        self._turns = 0
+        self._denied: set[str] = set()
+
+    def _add(self, kind: ProgressKind, text: str) -> None:
+        self.state.progress.append((kind, short(text)))
+
+    def feed(self, line: str) -> None:
+        line = line.strip()
+        if not line.startswith("{"):
+            return
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            return
+        if not isinstance(event, dict):
+            return
+        kind = event.get("type")
+        item = event.get("item") if isinstance(event.get("item"), dict) else {}
+        if kind == "thread.started":
+            sid = event.get("thread_id")
+            if isinstance(sid, str) and SESSION_ID_RE.fullmatch(sid):
+                self.state.session_id = sid
+            self._add("info", "Agente arrancado.")
+        elif kind == "item.started":
+            self._started(item)
+        elif kind == "item.completed":
+            self._completed(item)
+        elif kind == "turn.completed":
+            self._turn_completed(event)
+        elif kind == "turn.failed":
+            error = event.get("error") if isinstance(event.get("error"), dict) else {}
+            self._fail(str(error.get("message") or "sin detalle"))
+
+    def _tool_name(self, item: dict[str, Any]) -> str:
+        server = str(item.get("server") or "")
+        tool = str(item.get("tool") or "?")
+        return tool if server == MCP_SERVER else f"{server}/{tool}" if server else tool
+
+    def _started(self, item: dict[str, Any]) -> None:
+        """El nombre de la herramienta; nunca su entrada (puede llevar texto de una oferta)."""
+        kind = item.get("type")
+        if kind == "mcp_tool_call":
+            self._add("tool", short(self._tool_name(item), 60))
+        elif kind in self.LABELS:
+            self._add("tool", self.LABELS[kind])
+
+    def _completed(self, item: dict[str, Any]) -> None:
+        kind = item.get("type")
+        if kind == "agent_message" and str(item.get("text") or "").strip():
+            self._last = str(item["text"])
+            self._add("text", self._last)
+        elif kind == "mcp_tool_call" and (item.get("error") or item.get("status") == "failed"):
+            name = self._tool_name(item)
+            error = item.get("error") if isinstance(item.get("error"), dict) else {}
+            message = str(error.get("message") or "").lower()
+            if any(word in message for word in self.DENIED):
+                self._denied.add(name)
+                self.state.usage["denied_tools"] = sorted(self._denied)
+                self._add("error", f"Denegada: {name}")
+            else:
+                self._add("error", f"Error en {name}")
+        elif kind in ("command_execution", "file_change") and item.get("status") == "failed":
+            self._add("error", f"Denegada: {self.LABELS[str(kind)]}")
+
+    def _turn_completed(self, event: dict[str, Any]) -> None:
+        state = self.state
+        self._turns += 1
+        state.usage["turns"] = self._turns
+        tokens = event.get("usage") if isinstance(event.get("usage"), dict) else {}
+        output = (tokens.get("output_tokens") or 0) + (tokens.get("reasoning_output_tokens") or 0)
+        for key, value in (
+            ("input_tokens", tokens.get("input_tokens")),
+            ("output_tokens", output),
+            ("cached_tokens", tokens.get("cached_input_tokens")),
+        ):
+            if isinstance(value, int) and not isinstance(value, bool):
+                state.usage[key] = state.usage.get(key, 0) + value
+        state.finished = True
+        state.subtype = "success"
+        state.is_error = False
+        state.result = self._last[:RESULT_CHARS] if self._last else None
+
+    def _fail(self, message: str) -> None:
+        state = self.state
+        state.finished = True
+        state.is_error = True
+        state.subtype = "error"
+        state.result = short(message, 500)
+
+
 PARSERS: dict[str, Callable[[str], StreamParser]] = {
     "claude-stream-json": ClaudeStreamParser,
     "opencode-json": OpenCodeJsonParser,
+    "codex-json": CodexJsonParser,
 }

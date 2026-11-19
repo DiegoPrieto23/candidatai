@@ -6,7 +6,8 @@ import { mockApi, renderApp, status } from '@/test/utils'
 
 const emptyPage = { items: [], total: 0, limit: 50, offset: 0 }
 
-function launcher(background = true, noAgent = false) {
+/** `terminal`: tu agente no trabaja en segundo plano pero se puede abrir en una terminal. */
+function launcher(background = true, noAgent = false, terminal = false) {
   return {
     available: !noAgent,
     agent: noAgent ? null : 'claude',
@@ -21,6 +22,9 @@ function launcher(background = true, noAgent = false) {
         prompt: null,
         background: true,
         background_agent: { available: background, agent: background ? 'claude' : null, reason: null },
+        ...(terminal && {
+          agent: { agent: 'antigravity', display_name: 'Antigravity CLI', reason: 'first_installed', reason_text: '', blocked: null },
+        }),
       },
     ],
   }
@@ -231,6 +235,26 @@ describe('Asistente', () => {
     await waitFor(() => expect(calls.some((call) => call.method === 'POST')).toBe(true))
     expect(calls.find((call) => call.method === 'POST')?.body).toEqual({ text: 'Resume mis procesos', mode: 'session', conversation_id: null })
     expect(await within(panel).findByText('Se lo pasaré a tu agente en tu próxima sesión')).toBeInTheDocument()
+  })
+
+  it('sin segundo plano pero con terminal, la abre y la respuesta llega aquí', async () => {
+    const open = request({ id: 2, status: 'terminal', mode: 'terminal', answer: null, links: [], run_id: null, finished_at: null, agent: 'antigravity' })
+    let sent = false
+    const { calls, panel } = await openAssistant({
+      'GET /agent': launcher(false, false, true),
+      'GET /agent/assistant/conversations/1': () => ({ ...conversation([open])['GET /agent/assistant/conversations/1'], requests: sent ? [open] : [] }),
+      'POST /agent/assistant': () => {
+        sent = true
+        return open
+      },
+    })
+    await userEvent.type(within(panel).getByRole('textbox'), 'Resume mis procesos{Enter}')
+    await waitFor(() => expect(calls.some((call) => call.method === 'POST')).toBe(true))
+    expect(calls.find((call) => call.method === 'POST')?.body).toEqual({ text: 'Resume mis procesos', mode: 'terminal', conversation_id: null })
+    expect(
+      await within(panel).findByText('Tu agente está trabajando en la terminal que se ha abierto: la respuesta aparecerá aquí'),
+    ).toBeInTheDocument()
+    expect(within(panel).getByRole('button', { name: 'Cancelar' })).toBeInTheDocument()
   })
 
   it('si se envía antes de saber si hay segundo plano, espera a saberlo y no se pierde', async () => {

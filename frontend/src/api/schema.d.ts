@@ -4353,8 +4353,9 @@ export interface components {
         };
         /**
          * AssistantBody
-         * @description Lo que escribes en la caja. `background`: ahora, en segundo plano; `session`: como encargo
-         *     para tu próxima sesión. Solo texto, sin adjuntos. Sin `conversation_id`, empieza una
+         * @description Lo que escribes en la caja. `background`: ahora, en segundo plano; `terminal`: ahora, en una
+         *     terminal a la vista (agentes sin segundo plano); `session`: como encargo para tu próxima
+         *     sesión. Solo texto, sin adjuntos. Sin `conversation_id`, empieza una
          *     conversación nueva; con él, sigue en esa.
          */
         AssistantBody: {
@@ -4364,7 +4365,7 @@ export interface components {
              * Mode
              * @enum {string}
              */
-            mode: "background" | "session";
+            mode: "background" | "terminal" | "session";
             /** Conversation Id */
             conversation_id?: number | null;
         };
@@ -4388,12 +4389,12 @@ export interface components {
              * Mode
              * @enum {string}
              */
-            mode: "background" | "session";
+            mode: "background" | "terminal" | "session";
             /**
              * Status
              * @enum {string}
              */
-            status: "queued" | "running" | "waiting" | "done" | "failed" | "cancelled";
+            status: "queued" | "running" | "terminal" | "waiting" | "done" | "failed" | "cancelled";
             /** Answer */
             answer: string | null;
             /** Links */

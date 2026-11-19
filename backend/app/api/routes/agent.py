@@ -468,8 +468,9 @@ def cancel_agent_request(
 
 
 class AssistantBody(BaseModel):
-    """Lo que escribes en la caja. `background`: ahora, en segundo plano; `session`: como encargo
-    para tu próxima sesión. Solo texto, sin adjuntos. Sin `conversation_id`, empieza una
+    """Lo que escribes en la caja. `background`: ahora, en segundo plano; `terminal`: ahora, en una
+    terminal a la vista (agentes sin segundo plano); `session`: como encargo para tu próxima
+    sesión. Solo texto, sin adjuntos. Sin `conversation_id`, empieza una
     conversación nueva; con él, sigue en esa."""
 
     model_config = ConfigDict(extra="forbid")

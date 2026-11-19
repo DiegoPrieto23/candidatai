@@ -894,15 +894,17 @@ la respuesta de tu agente. Cada una va en una conversación.
 | id | int PK | Lo único que lleva la orden del agente |
 | conversation_id | FK | Su conversación (`assistant_conversations`) |
 | text | text | Tu petición (≤ 2000). La lee el skill `assistant` con `get_assistant_request` |
-| mode | str | `background` (una ejecución de `agent_runs`) o `session` (un encargo de `agent_requests`) |
+| mode | str | `background` (una ejecución de `agent_runs`), `terminal` (tu agente abierto en una terminal a la vista, fase 46: ni ejecución ni encargo) o `session` (un encargo de `agent_requests`) |
 | run_id / request_id | FK? | La ejecución o el encargo que la atiende |
 | answer | text? | Lo que deja el agente con `save_assistant_answer` (≤ 4000) |
 | links | JSON | `[{"job_id": 42}, {"screen": "inbox"}]`: una oferta o una pantalla, nunca una URL |
 | agent_name | str? | |
 | created_at / answered_at | datetime | |
+| cancelled_at | datetime? | Solo `terminal`: cancelada desde el panel (migración 0044) |
 
-El estado no se guarda: sale de la ejecución (`queued`, `running`, `done`, `failed`, `cancelled`) o
-del encargo (`waiting`, `done`, `cancelled`).
+El estado no se guarda: sale de la ejecución (`queued`, `running`, `done`, `failed`, `cancelled`), del
+encargo (`waiting`, `done`, `cancelled`) o, en `terminal`, de la propia fila: `done` con respuesta,
+`cancelled` con `cancelled_at`, `failed` si pasan 2 horas sin respuesta y, si no, `terminal`.
 
 ### `agent_preferences`
 Qué agente y qué modelo usa cada acción (fase 24.4, migración 0022). Son datos de uso de

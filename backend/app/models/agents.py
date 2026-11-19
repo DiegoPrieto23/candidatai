@@ -108,9 +108,10 @@ class AssistantRequest(Base):
 
     El texto se queda aquí: la orden del agente solo lleva el `id`, y el skill `assistant` lo lee
     con `get_assistant_request`. `run_id`: la ejecución en segundo plano (`mode = background`);
-    `request_id`: el encargo para la próxima sesión (`mode = session`). `answer` y `links`: lo
-    que deja el agente con `save_assistant_answer`. Cada una va en una conversación
-    (`conversation_id`).
+    `request_id`: el encargo para la próxima sesión (`mode = session`). Con `mode = terminal`, el
+    agente se abre en una ventana y no hay ninguna de las dos: `cancelled_at` marca que se canceló
+    desde el panel. `answer` y `links`: lo que deja el agente con `save_assistant_answer`. Cada
+    una va en una conversación (`conversation_id`).
     """
 
     __tablename__ = "assistant_requests"
@@ -121,7 +122,7 @@ class AssistantRequest(Base):
         index=True,
     )
     text: Mapped[str] = mapped_column(Text)
-    mode: Mapped[str] = mapped_column(String(16))  # background | session
+    mode: Mapped[str] = mapped_column(String(16))  # background | session | terminal
     run_id: Mapped[int | None] = mapped_column(ForeignKey("agent_runs.id"), index=True)
     request_id: Mapped[int | None] = mapped_column(ForeignKey("agent_requests.id"))
     answer: Mapped[str | None] = mapped_column(Text)
@@ -129,6 +130,7 @@ class AssistantRequest(Base):
     agent_name: Mapped[str | None] = mapped_column(String(64))
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
     answered_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
+    cancelled_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
 
 
 class AgentPreference(Base):

@@ -249,11 +249,14 @@ def _mcp_prefix(agent: str) -> str | None:
     return spec.mcp_prefix if spec is not None and spec.headless is not None else None
 
 
-def _write_config(run: AgentRun) -> tuple[dict[str, str], list[str]]:
+def _write_config(run: AgentRun) -> tuple[dict[str, str], list[str], list[str]]:
     """Escribe la configuración de la ejecución, si la lleva, y devuelve las variables que se la
-    pasan al agente y las que hay que quitar (`RunConfigError` si no se puede limitar)."""
+    pasan al agente, las que hay que quitar y la orden con el nombre de la configuración de esta
+    ejecución (fase 46: `cai-run-{run_id}` → `cai-run-12`). `RunConfigError` si no se puede
+    limitar."""
+    command = list(run.command)
     if not run.run_config:
-        return {}, []
+        return {}, [], command
     data = dict(run.run_config)
     prefix = data.pop("mcp_prefix", "") or ""
     try:
@@ -261,7 +264,8 @@ def _write_config(run: AgentRun) -> tuple[dict[str, str], list[str]]:
     except ValueError as exc:
         raise agent_run_config.RunConfigError("La configuración guardada no es válida.") from exc
     env = agent_run_config.write(run.id, run.action, spec, prefix)  # type: ignore[arg-type]
-    return env, list(spec.clear_env)
+    name = spec.name_for(run.id)
+    return env, list(spec.clear_env), [name if part == spec.agent else part for part in command]
 
 
 def execute(run: AgentRun, timeout: float | None = None, poll: float = 0.5) -> AgentRunOutcome:
@@ -295,12 +299,12 @@ def _execute(run: AgentRun, timeout: float | None, poll: float) -> AgentRunOutco
         return finish("failed", f"Formato de salida desconocido: «{run.output_format}».")
     parser = factory(_mcp_prefix(run.agent) or "mcp__candidatai__")
     try:
-        extra_env, clear_env = _write_config(run)
+        extra_env, clear_env, command = _write_config(run)
     except (agent_run_config.RunConfigError, OSError) as exc:
         return finish("failed", f"No se pudo preparar la configuración de la ejecución: {exc}")
     try:
         unset = [*run.unset_env, *clear_env]
-        proc = _popen(list(run.command), unset, run.agent, extra_env)
+        proc = _popen(command, unset, run.agent, extra_env)
     except OSError as exc:
         return finish("failed", f"No se pudo lanzar el agente: {exc}")
 

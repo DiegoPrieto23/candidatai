@@ -92,7 +92,7 @@ Dónde: «Agente».
 
 ### ¿Puedo pedirle algo a mi agente desde el portal?
 
-Sí. Pulsa «Asistente», abajo a la derecha, escribe lo que necesitas y pulsa Intro o la flecha. Si tu agente trabaja en segundo plano desde la app, la respuesta aparece en el mismo panel, con enlaces a lo que haya cambiado; si no, se guarda como encargo para tu próxima sesión. Cada vez que lo abres empiezas una conversación nueva; las anteriores siguen en «Conversaciones anteriores», y en una misma conversación tu agente recuerda lo que ya le preguntaste.
+Sí. Pulsa «Asistente», abajo a la derecha, escribe lo que necesitas y pulsa Intro o la flecha. Si tu agente trabaja en segundo plano desde la app, la respuesta aparece en el mismo panel, con enlaces a lo que haya cambiado; si no, se abre tu agente en una terminal a la vista y la respuesta llega igual al panel; y si no hay terminal que abrir, se guarda como encargo para tu próxima sesión. Cada vez que lo abres empiezas una conversación nueva; las anteriores siguen en «Conversaciones anteriores», y en una misma conversación tu agente recuerda lo que ya le preguntaste.
 
 ### ¿Qué puede hacer mi agente cuando se lo pido desde el portal?
 

@@ -22,7 +22,7 @@ import { cn } from '@/lib/utils'
 /** El mismo tope que aplica el servidor (y que la corrección de un CV). */
 const ASSISTANT_MAX_CHARS = 2000
 
-const ACTIVE: AssistantView['status'][] = ['queued', 'running']
+const ACTIVE: AssistantView['status'][] = ['queued', 'running', 'terminal']
 /** Ejemplos para la primera vez: una pulsación los escribe en la caja, sin enviarlos. */
 const SUGGESTIONS = ['pending', 'reviewFirst', 'noReply', 'howItGoes'] as const
 const linkClass =
@@ -142,7 +142,8 @@ function Turn({ request, asking, onGo }: { request: AssistantView; asking: boole
 
 /**
  * «Asistente», como un chat: lo que escribes se guarda en la app y se lo pasa a tu agente, en
- * segundo plano si puede trabajar así desde la app o, si no, como encargo para tu próxima sesión.
+ * segundo plano si puede trabajar así desde la app; si no, en una terminal a la vista; y si tampoco,
+ * como encargo para tu próxima sesión.
  * La app no llama a ningún modelo. Arriba, los mensajes de la conversación abierta, por días; abajo,
  * la caja. `conversationId` en `null`: una conversación nueva, que se crea al enviar.
  */
@@ -189,6 +190,9 @@ export function AssistantTab({
   const action = launcher.data?.actions.find((item) => item.id === 'assistant')
   const noAgent = launcher.data?.no_agent_installed ?? false
   const canRunNow = action?.background_agent?.available ?? false
+  // Sin segundo plano, si tu agente se puede abrir en una terminal, se abre a la vista y la respuesta
+  // llega igual aquí; si tampoco, queda como encargo para tu próxima sesión.
+  const canOpenTerminal = Boolean(action?.agent?.agent && !action.agent.blocked)
   const asking = (prompts.data?.prompts ?? []).some((prompt) => prompt.kind === 'question')
   const trimmed = text.trim()
   // Si se envía antes de saber si hay segundo plano, el texto espera a saberlo (`queued`).
@@ -209,10 +213,10 @@ export function AssistantTab({
     seen.current.count = list.length
   }, [list.length, last?.id, last?.status, last?.answer, last?.progress.length])
 
-  // Sin segundo plano, la misma flecha lo deja como encargo y el hilo lo dice. Si no se pudo saber
-  // (falla la consulta del agente), también: un encargo funciona con cualquier agente.
+  // Sin segundo plano ni terminal, la misma flecha lo deja como encargo y el hilo lo dice. Si no se
+  // pudo saber (falla la consulta del agente), también: un encargo funciona con cualquier agente.
   const known = launcher.data !== undefined || launcher.isError
-  const mode = canRunNow ? 'background' : 'session'
+  const mode = canRunNow ? 'background' : canOpenTerminal ? 'terminal' : 'session'
   // Con `mutateAsync`, la conversación nueva queda abierta aunque cambies de pestaña mientras se
   // envía; si has pasado a otra conversación, no se salta de vuelta.
   const submit = (body: string) => {

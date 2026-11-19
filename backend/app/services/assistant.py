@@ -4,8 +4,10 @@ La app no llama a ningún modelo: lo que escribes se lo pasa a tu agente, como l
 
 - El texto se guarda en `assistant_requests` y **no va en la orden**: la orden es fija y solo
   lleva el id de la petición. El skill `assistant` lo lee con `get_assistant_request`.
-- Dos formas de enviarlo: ahora, en segundo plano (`agent_runs`, con las herramientas de la acción
-  `assistant` y ninguna más), o como encargo para tu próxima sesión (`agent_requests`).
+- Tres formas de enviarlo: ahora, en segundo plano (`agent_runs`, con las herramientas de la acción
+  `assistant` y ninguna más); en una terminal a la vista, para los agentes sin segundo plano (fase
+  46: la ventana se abre y la respuesta llega igual al panel); o como encargo para tu próxima sesión
+  (`agent_requests`).
 - El agente contesta con `save_assistant_answer`: un texto y enlaces a una oferta o a una pantalla
   de la app, nunca una dirección libre.
 - Lo que la app protege (enviar una candidatura, borrar, aceptar una respuesta) no tiene
@@ -17,7 +19,7 @@ La app no llama a ningún modelo: lo que escribes se lo pasa a tu agente, como l
 
 import contextlib
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Annotated, Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_validator
@@ -33,7 +35,7 @@ from app.models import (
     Job,
 )
 from app.models.base import utcnow
-from app.services import agent_requests, agent_runs
+from app.services import agent_launch, agent_requests, agent_runs
 from app.services.agent_launch import LaunchError
 
 MAX_TEXT = 2000  # como la corrección de un CV
@@ -46,9 +48,17 @@ TITLE_CHARS = 60  # el título de una conversación: el principio de su primera 
 CONVERSATIONS = 100  # las que lista el historial del panel
 HISTORY_TURNS = 6  # turnos anteriores que recibe el agente como contexto…
 HISTORY_CHARS = 6000  # …y cuántos caracteres, como mucho, entre todos
+# Fase 46: una petición abierta en tu terminal que no contesta en este tiempo deja de esperar (la
+# ventana se pudo cerrar sin contestar).
+TERMINAL_HOURS = 2
+TERMINAL_EXPIRED = (
+    f"Tu agente no contestó en {TERMINAL_HOURS} horas desde la terminal. Si sigue abierta, "
+    "ciérrala y vuelve a preguntar."
+)
 
-Mode = Literal["background", "session"]
-AssistantStatus = Literal["queued", "running", "waiting", "done", "failed", "cancelled"]
+Mode = Literal["background", "terminal", "session"]
+# `terminal`: abierta en tu terminal, a la espera de que el agente conteste (fase 46).
+AssistantStatus = Literal["queued", "running", "terminal", "waiting", "done", "failed", "cancelled"]
 # Las pantallas a las que puede enlazar una respuesta: las mismas claves que usa la ayuda del
 # portal (`frontend/src/lib/helpTopics.json`), que es quien sabe su ruta.
 Screen = Literal[
@@ -235,7 +245,48 @@ def _status(row: AssistantRequest, run: AgentRun | None, request: AgentRequest |
         return _RUN_STATUS.get(run.status, "failed")
     if request is not None:
         return _REQUEST_STATUS.get(request.status, "waiting")
+    if row.mode == "terminal":
+        if row.answer is not None:
+            return "done"
+        if row.cancelled_at is not None:
+            return "cancelled"
+        return "failed" if _terminal_expired(row) else "terminal"
     return "failed"  # sin ejecución ni encargo: `create` no deja filas así
+
+
+def _terminal_cutoff() -> datetime:
+    return utcnow() - timedelta(hours=TERMINAL_HOURS)
+
+
+def _terminal_expired(row: AssistantRequest) -> bool:
+    created = row.created_at
+    if created.tzinfo is None:  # SQLite puede devolverla sin zona: está en UTC
+        created = created.replace(tzinfo=_terminal_cutoff().tzinfo)
+    return created < _terminal_cutoff()
+
+
+def _open_terminals(session: Session) -> int:
+    """Las peticiones abiertas en tu terminal que aún esperan respuesta."""
+    return (
+        session.scalar(
+            select(func.count())
+            .select_from(AssistantRequest)
+            .where(
+                AssistantRequest.mode == "terminal",
+                AssistantRequest.answer.is_(None),
+                AssistantRequest.cancelled_at.is_(None),
+                AssistantRequest.created_at >= _terminal_cutoff(),
+            )
+        )
+        or 0
+    )
+
+
+def _error(row: AssistantRequest, run: AgentRun | None) -> str | None:
+    """Por qué falló: lo que dijo la ejecución o, en tu terminal, que no contestó a tiempo."""
+    if run is not None:
+        return run.error
+    return TERMINAL_EXPIRED if row.mode == "terminal" else None
 
 
 def _links(session: Session, rows: list[AssistantRequest]) -> dict[int, str]:
@@ -260,7 +311,9 @@ def _view(session: Session, row: AssistantRequest, labels: dict[int, str]) -> As
         answer = (run.result if run is not None else None) or (
             request.summary if request is not None else None
         )
-    finished = row.answered_at
+    finished = row.answered_at or row.cancelled_at
+    if status == "failed" and row.mode == "terminal" and finished is None:
+        finished = row.created_at + timedelta(hours=TERMINAL_HOURS)
     if run is not None and run.finished_at is not None:
         finished = run.finished_at
     elif request is not None and request.completed_at is not None:
@@ -283,12 +336,12 @@ def _view(session: Session, row: AssistantRequest, labels: dict[int, str]) -> As
             for link in row.links or []
         ],
         questions=list(run.questions or []) if run is not None else [],
-        error=run.error if run is not None and status == "failed" else None,
+        error=_error(row, run) if status == "failed" else None,
         progress=[ProgressView.model_validate(line) for line in progress],
         agent=(run.agent if run is not None else None) or row.agent_name,
         run_id=row.run_id,
         created_at=row.created_at,
-        finished_at=finished if not active and status != "waiting" else None,
+        finished_at=finished if not active and status not in ("waiting", "terminal") else None,
     )
 
 
@@ -320,9 +373,17 @@ def create(
     model: str | None = None,
     preset: str | None = None,
 ) -> AssistantView:
-    """Guarda lo que pide el usuario y lo envía: a una ejecución en segundo plano o a la cola de
-    encargos. Sin `conversation_id`, empieza una conversación nueva; con él, sigue en esa. Si no se
-    puede lanzar (`LaunchError`), no queda nada guardado (tampoco la conversación nueva)."""
+    """Guarda lo que pide el usuario y lo envía: a una ejecución en segundo plano, a tu terminal o a
+    la cola de encargos. Sin `conversation_id`, empieza una conversación nueva; con él, sigue en
+    esa. Si no se puede lanzar (`LaunchError`), no queda nada guardado (tampoco la conversación
+    nueva). En modo terminal se guarda (commit) antes de abrir la ventana: el agente la lee desde
+    otro proceso en cuanto arranca."""
+    if mode == "terminal" and _open_terminals(session) >= MAX_ACTIVE:
+        raise LaunchError(
+            "invalid_request",
+            f"Ya hay {MAX_ACTIVE} peticiones abiertas en tu terminal: espera a que tu agente "
+            "conteste o cancélalas.",
+        )
     if mode == "background":
         active = session.scalar(
             select(func.count())
@@ -359,6 +420,13 @@ def create(
                 session, "assistant", agent=agent, model=model, preset=preset, assistant_id=row.id
             )
             row.run_id = run.id
+        elif mode == "terminal":
+            conversation.updated_at = now
+            session.commit()
+            launched = agent_launch.launch_assistant(
+                session, row.id, agent=agent, model=model, preset=preset
+            )
+            row.agent_name = launched.agent
         else:
             request = agent_requests.create(session, "assistant", assistant_id=row.id)
             row.request_id = request.id
@@ -368,6 +436,8 @@ def create(
         if new_conversation:
             session.delete(conversation)
             session.flush()
+        if mode == "terminal":
+            session.commit()  # ya se había guardado antes de abrir la ventana
         raise
     conversation.updated_at = now
     session.flush()
@@ -424,6 +494,19 @@ def list_conversations(session: Session, limit: int = CONVERSATIONS) -> Conversa
         if ids
         else set()
     )
+    # Fase 46: también las que tienen una petición abierta en tu terminal.
+    if ids:
+        active |= set(
+            session.scalars(
+                select(AssistantRequest.conversation_id).where(
+                    AssistantRequest.conversation_id.in_(ids),
+                    AssistantRequest.mode == "terminal",
+                    AssistantRequest.answer.is_(None),
+                    AssistantRequest.cancelled_at.is_(None),
+                    AssistantRequest.created_at >= _terminal_cutoff(),
+                )
+            )
+        )
     return ConversationList(
         conversations=[
             ConversationSummary(
@@ -476,10 +559,16 @@ def delete_conversation(session: Session, conversation_id: int) -> None:
 
 
 def cancel(session: Session, request_id: int) -> AssistantView:
-    """Desde la UI: para la ejecución o retira el encargo."""
+    """Desde la UI: para la ejecución, retira el encargo o, si se abrió en tu terminal, la da por
+    cancelada (si el agente contesta después, ya no se guarda)."""
     row = _row(session, request_id)
     try:
-        if row.run_id is not None:
+        if row.mode == "terminal" and row.run_id is None and row.request_id is None:
+            if _state(session, row) != "terminal":
+                raise LaunchError("invalid_request", "Esa petición ya ha terminado.")
+            row.cancelled_at = utcnow()
+            session.flush()
+        elif row.run_id is not None:
             agent_runs.cancel(session, row.run_id)
         elif row.request_id is not None:
             agent_requests.cancel(session, row.request_id)
@@ -498,8 +587,8 @@ def _state(session: Session, row: AssistantRequest) -> str:
 
 
 def _pending(session: Session, row: AssistantRequest) -> bool:
-    """En cola, en curso o esperando a tu próxima sesión."""
-    return _state(session, row) in ("queued", "running", "waiting")
+    """En cola, en curso, abierta en tu terminal o esperando a tu próxima sesión."""
+    return _state(session, row) in ("queued", "running", "terminal", "waiting")
 
 
 def _open(session: Session, row: AssistantRequest) -> bool:

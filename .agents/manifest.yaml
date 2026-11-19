@@ -279,6 +279,27 @@ targets:
     launch:                       # botones «en tu agente» de la UI: sesión interactiva
       command: [codex, "{prompt}"]
       unset_env: [OPENAI_API_KEY]     # sin clave de API, Codex usa tu sesión de ChatGPT
+      resume: [codex, resume, "{session_id}"]   # «Abrir en terminal» retoma una ejecución en segundo plano
+      # «En segundo plano» (fase 46): el techo va en un perfil propio de cada ejecución
+      # (`ceiling: config`, backend/app/services/agent_run_config.py), porque Codex solo lee su
+      # configuración de su carpeta y con `-c` en la orden esconde todas las MCP. El perfil
+      # `cai-run-<id>` deja solo las MCP de la acción (`enabled_tools`), sin terminal, web,
+      # navegador ni plugins, en solo lectura y sin aprobaciones, y apaga los demás servidores MCP
+      # de tu configuración. Los subagentes heredan ese techo. Comprobado con codex-cli 0.163.0.
+      # Por ahora solo el Asistente: las demás acciones leen texto de ofertas y Codex es de nivel B.
+      headless:
+        ceiling: config
+        command: [codex, exec, --json, --skip-git-repo-check, -p, "cai-run-{run_id}", "{model}", "{prompt}"]
+        config:
+          format: codex
+          value: profile
+          env: CODEX_HOME
+          home: ~/.codex
+          agent: "cai-run-{run_id}"
+        output: codex-json
+        actions: [assistant]
+    tools:                        # herramientas lógicas → nombres nativos (solo `mcp_prefix`)
+      mcp_prefix: "mcp__candidatai__"
     # Codex no permite limitar herramientas por subagente: se aplica sandbox_mode del rol.
     # Los subagentes heredan la política de la sesión padre (ver docs/AGENTS_COMPAT.md, nivel B).
 

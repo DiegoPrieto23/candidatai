@@ -111,7 +111,8 @@ def test_headless_capability_is_derived_from_launch() -> None:
     agents = agent_registry.load()
     assert agents["claude"].capabilities.headless is True
     assert agents["claude"].headless is not None
-    assert agents["codex"].capabilities.headless is False
+    assert agents["qwen"].capabilities.headless is False
+    assert agents["codex"].capabilities.headless is True  # fase 46: solo el asistente
 
 
 def test_misspelled_key_names_agent_and_key(tmp_path: Path) -> None:
@@ -320,14 +321,14 @@ def test_overview_follows_cai_agent(
     from app.services import agent_launch
 
     monkeypatch.setattr(agent_launch.shutil, "which", lambda name: f"C:/bin/{name}.exe")
-    monkeypatch.setenv("CAI_AGENT", "codex")
+    monkeypatch.setenv("CAI_AGENT", "qwen")
     get_settings.cache_clear()
     try:
         overview = doctor.agents_overview(get_settings())
     finally:
         get_settings.cache_clear()
-    assert overview.selected == "codex"
-    assert overview.selected_reason == "porque CAI_AGENT=codex"
+    assert overview.selected == "qwen"
+    assert overview.selected_reason == "porque CAI_AGENT=qwen"
     assert overview.background is None and "launch.headless" in (overview.background_reason or "")
 
 

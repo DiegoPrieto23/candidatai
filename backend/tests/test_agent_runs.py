@@ -156,7 +156,7 @@ def test_manifest_command_allows_only_the_action_tools(action: str) -> None:
     launchers = {launcher.agent: launcher for launcher in agent_launch._launchers()}
     claude = launchers["claude"]
     assert claude.headless is not None and claude.headless.output == "claude-stream-json"
-    assert launchers["codex"].headless is None  # Codex: sin segundo plano
+    assert launchers["qwen"].headless is None  # Qwen Code: sin segundo plano
     spec = ACTIONS[action]
     command = agent_launch.headless_command(claude, "ORDEN", action)
 

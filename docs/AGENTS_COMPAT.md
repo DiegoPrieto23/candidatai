@@ -22,7 +22,7 @@ uv run --directory backend cai agents doctor         # cuál se usaría hoy, por
 | Agente | Licencia | En el manifiesto | Nivel | MCP | Segundo plano |
 |---|---|---|---|---|---|
 | Claude Code | propietaria | habilitado, configuración generada | A | sí | sí |
-| Codex | Apache-2.0 | habilitado, configuración generada, probado (24.6, 1 oferta) | B | sí | no |
+| Codex | Apache-2.0 | habilitado, configuración generada, probado (24.6, 1 oferta) | B | sí | solo el asistente (46) |
 | Antigravity CLI | propietaria | habilitado, configuración generada (24.3) | C | sí | no |
 | OpenCode | MIT | habilitado, configuración generada (24.3) | B | sí | sí (24.5), salvo `generate-cv` |
 | Qwen Code | Apache-2.0 | habilitado, configuración generada (24.3) | B | sí | no |
@@ -208,6 +208,9 @@ aceptas en la UI, y aceptar no tiene herramienta ni comando.
   `finish_task`); las demás (`save_fit_assessment`, `save_cv_content`, `render_cv`…) piden permiso, como en Claude Code. «Allow for this session» evita que vuelva a
   preguntar hasta que cierres Codex.
 - Para delegar en un rol, pídelo explícitamente: "lanza el subagente `extractor` con el job_id 42".
+- **En segundo plano, solo el asistente** (comprobado con codex-cli 0.163.0 el 2026-11-19): ver
+  «En segundo plano y cola de encargos». Si el asistente falla con «No existe la carpeta de
+  configuración del agente», abre Codex una vez para que cree `~/.codex` (o la de `CODEX_HOME`).
 - Los modelos por rol están vacíos en el manifiesto a propósito (heredan el de la sesión). Si
   quieres un modelo rápido para `extractor`, pon su nombre en `targets.codex.models.fast` y regenera.
 
@@ -280,8 +283,15 @@ aceptas en la UI, y aceptar no tiene herramienta ni comando.
   models` lista los de tu cuenta.
 - **Web:** tiene `search_web`.
 - **Sin segundo plano:** `agy -p` ya imprime sin terminal en la 1.4.5, pero no tiene cómo limitar
-  las herramientas a las de la acción (ni lista blanca ni configuración por ejecución), y sin ese
-  techo la app no lanza nada sin ventana.
+  las herramientas a las de la acción, y sin ese techo la app no lanza nada sin ventana. Revisado
+  otra vez con la 1.4.10 el 2026-11-19: `--settings` y las reglas `deny` (`command(*)`,
+  `read_file(*)`, `write_file(*)`, `read_url(*)`, `execute_url(*)` y una `mcp(candidatai/<x>)` por
+  cada herramienta fuera de la acción) bloquean la terminal, los ficheros, las URL y las demás MCP,
+  también en sus subagentes; pero `search_web` funciona con cualquier regla (también con
+  `toolPermission: strict`, que además bloquea las MCP permitidas) y siguen disponibles `schedule`,
+  `send_message`, `run_workflow` y `define_subagent`, que ninguna regla documentada cubre.
+- **El asistente, en una terminal:** como no tiene segundo plano, lo que escribes en «Asistente»
+  abre `agy -i "<orden>"` en una ventana a la vista (fase 46) y la respuesta llega al panel.
 
 ### Gemini CLI (fuera desde la 24.3)
 Desde el 18/06/2026 solo funciona con una clave de pago de la API de Gemini o con una licencia de
@@ -415,6 +425,29 @@ subagentes no tienen más. Hay dos formas de ponerlo (`ceiling`):
   `"*": "deny"` y, detrás, solo las herramientas MCP de la acción, su skill (`skill`) y los roles
   en que delega (`task`). Un rol solo se permite si sus herramientas caben en las de la acción.
 
+- `config` con un perfil (Codex, fase 46): Codex solo lee su configuración de su carpeta
+  (`CODEX_HOME`, o `~/.codex`), así que el runner escribe ahí `cai-run-<id>.config.toml` y la
+  orden lo carga con `codex exec --json -p cai-run-<id>`; se borra igual (su ruta queda apuntada en
+  `data/tmp/agent-runs/<id>/external.txt`). El perfil define el servidor de la app entero con
+  `enabled_tools` (solo las de la acción), aprobadas, a la vista (`omit_tools_from = ["deferred",
+  "code_mode"]`: si no, el modelo a veces no las encontraba) y `required`; `approval_policy =
+  "never"`, `sandbox_mode = "read-only"`, `web_search = "disabled"` y apagados la terminal
+  (`shell_tool`), subagentes, navegador, imágenes, apps, plugins y `code_mode_host`. Apaga también
+  los demás servidores MCP de tu `config.toml`, porque Codex la carga siempre (con
+  `--ignore-user-config` no carga el perfil). Pasado con `-c` en la orden, `enabled_tools`
+  escondía todas las herramientas de la app. Comprobado con codex-cli 0.163.0: la terminal, leer y
+  escribir ficheros, la web y las MCP fuera de la lista fallan, también desde un subagente. Las MCP
+  van en lista blanca, pero las funciones de Codex se apagan una a una (lista negra): **al subir de
+  versión de Codex, repite la prueba** (una función nueva quedaría encendida; la sostienen el modo
+  de solo lectura y `approval_policy = "never"`). También se apagan los servidores MCP de
+  `.codex/config.toml` que no sean el de la app. Por
+  ahora solo el asistente (`launch.headless.actions`): las demás acciones leen texto de ofertas y
+  Codex es de nivel B.
+
+Si un agente no tiene segundo plano pero se puede abrir en una terminal, lo que escribes en
+«Asistente» la abre a la vista con la orden y la respuesta llega igual al panel (fase 46): así
+funciona con Antigravity CLI y Qwen Code. Sin terminal, queda como encargo para tu próxima sesión.
+
 `{model}` en la orden marca dónde van los argumentos del modelo (sin modelo, desaparece). Si el
 agente efectivo de una acción no tiene segundo plano, el desplegable propone uno que sí lo tenga.
 La cola sigue ejecutando una cada vez, pero cada ejecución lleva su agente: se puede extraer con
@@ -422,7 +455,7 @@ OpenCode y generar un CV con Claude Code.
 
 | | Claude Code | OpenCode | Codex | Qwen Code | Otros |
 |---|---|---|---|---|---|
-| En segundo plano | Sí: `claude -p` con `stream-json`, `--tools Skill,Agent,Read`, `dontAsk`, `--allowedTools` con las herramientas MCP de la acción, `Skill(<su skill>)` y `Read(./docs/**)`, y `--disallowedTools` con todas las demás MCP de la app. Comprobado con `claude` 2.1.296 (ver abajo); el recorrido completo, pendiente de una prueba manual | Sí en `process-jobs` y `assess-fit`: `opencode run --format json --pure --agent cai-run [-m <modelo>] "<orden>"` con la configuración de la ejecución en `OPENCODE_CONFIG_CONTENT`. **No en `generate-cv`** (ni en `correct-cv`, `verify-cv` ni `generate-cover-letter`, que también usan `verifier`): `writer` y `verifier` leen ficheros (`POLICIES.md`) y en OpenCode su `read` no se acota a `docs/` como en la ejecución, así que el subagente tendría más que ella. La UI propone Claude Code. Comprobado con OpenCode 1.19.3 (ver abajo); con un modelo, pendiente de una prueba manual | No: solo deja **apagar** herramientas (`--disable shell_tool`, `unified_exec`, `browser_use`…), una lista negra que cada versión puede ampliar, y sin terminal no lee los skills. Revisado con codex-cli 0.163.0 el 2026-10-16 | No, de momento: tiene `--core-tools` (lista blanca), `--allowed-mcp-server-names`, `--exclude-tools` y `-o stream-json`, pero no tiene forma de comprobar el techo sin un modelo (no tiene `debug`). Revisado con Qwen Code 0.25.2 el 2026-10-16; pendiente de comprobarlo con un modelo local | No (Antigravity no imprime nada sin terminal) |
+| En segundo plano | Sí: `claude -p` con `stream-json`, `--tools Skill,Agent,Read`, `dontAsk`, `--allowedTools` con las herramientas MCP de la acción, `Skill(<su skill>)` y `Read(./docs/**)`, y `--disallowedTools` con todas las demás MCP de la app. Comprobado con `claude` 2.1.296 (ver abajo); el recorrido completo, pendiente de una prueba manual | Sí en `process-jobs` y `assess-fit`: `opencode run --format json --pure --agent cai-run [-m <modelo>] "<orden>"` con la configuración de la ejecución en `OPENCODE_CONFIG_CONTENT`. **No en `generate-cv`** (ni en `correct-cv`, `verify-cv` ni `generate-cover-letter`, que también usan `verifier`): `writer` y `verifier` leen ficheros (`POLICIES.md`) y en OpenCode su `read` no se acota a `docs/` como en la ejecución, así que el subagente tendría más que ella. La UI propone Claude Code. Comprobado con OpenCode 1.19.3 (ver abajo); con un modelo, pendiente de una prueba manual | Solo `assistant`: `codex exec --json -p cai-run-<id>` con el techo en un perfil propio de la ejecución (lista blanca `enabled_tools`, sin terminal ni web). Lee el skill sin terminal. Comprobado con codex-cli 0.163.0 el 2026-11-19 | No, de momento: tiene `--core-tools` (lista blanca), `--allowed-mcp-server-names`, `--exclude-tools` y `-o stream-json`, pero no tiene forma de comprobar el techo sin un modelo (no tiene `debug`). Revisado con Qwen Code 0.25.2 el 2026-10-16; pendiente de comprobarlo con un modelo local | No (Antigravity no imprime nada sin terminal) |
 | Cola de encargos | Sí (`list_agent_requests`, `complete_agent_request`, skill `handle-requests`) | Sí | Sí (mismas herramientas o `cai requests … --json`) | Sí | Sí, con MCP o CLI |
 
 Comprobado con `claude` 2.1.296 (2026-10-12, modelo haiku, sin datos):

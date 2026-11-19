@@ -196,8 +196,7 @@ def test_manifest_opencode_headless() -> None:
     assert "--pure" in headless.command
     assert "--auto" not in headless.command  # aprobaría solo lo que quede en `ask`
     assert spec.launch is not None and "{session_id}" in spec.launch.resume
-    # Codex y Qwen Code, sin segundo plano (docs/AGENTS_COMPAT.md).
-    assert agent_registry.get("codex").headless is None  # type: ignore[union-attr]
+    # Qwen Code, sin segundo plano (docs/AGENTS_COMPAT.md); Codex, solo el asistente (fase 46).
     assert agent_registry.get("qwen").headless is None  # type: ignore[union-attr]
 
 

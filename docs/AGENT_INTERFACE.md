@@ -644,6 +644,11 @@ lo que escribe el usuario en `assistant_requests` y se lo pasa al agente con la 
 - **`mode: background`**: una ejecución en segundo plano como las de arriba, con su techo de
   herramientas. Cada petición es una ejecución distinta. La orden le permite preguntar con
   `ask_user` y `wait_user_action`, porque el usuario tiene la app delante.
+- **`mode: terminal`** (fase 46): para los agentes sin segundo plano que se pueden abrir en una
+  terminal (Antigravity CLI, Qwen Code). La app guarda la petición y abre el agente a la vista con
+  la misma orden; valen los permisos de esa sesión interactiva. La respuesta llega igual con
+  `save_assistant_answer`. Desde el panel se cancela (`cancelled_at`); sin respuesta en 2 horas,
+  deja de esperar. Como mucho 3 abiertas a la vez.
 - **`mode: session`**: un encargo de la cola (`handle-requests`). Ahí valen los permisos de la
   sesión interactiva del usuario, no el techo del segundo plano.
 - **Techo en segundo plano** (`ASSISTANT_READS` y `ASSISTANT_WRITES` en
