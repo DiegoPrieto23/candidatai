@@ -461,6 +461,15 @@ def _file_case(
     )  # fmt: skip
 
 
+KNOWN: dict[str, Any] = {
+    "items": [
+        {"url": "https://otra.example.com/oferta/7", "title": "Data Engineer",
+         "company": "Acme Analytics", "location": "Bilbao"},
+        {"url": "https://careers.example.com/jobs/99", "title": "Chef", "company": "Otra"},
+    ]
+}  # fmt: skip
+
+
 ASSESSMENT: dict[str, Any] = {
     "verdict": "possible",
     "rationale": "Cubre Python y SQL con nivel F; dbt y Airflow solo como básicos.",
@@ -693,6 +702,11 @@ CASES = [
     Case("check-open-no-url", "check_job_open", {"job_id": 1}, ["jobs", "check-open", "1"]),
     Case("check-open-unknown", "check_job_open", {"job_id": 999},
          ["jobs", "check-open", "999"], expect_error="not_found"),
+    _file_case("known", "check_known", KNOWN, ["jobs", "known"], "k.json", KNOWN),
+    _file_case("known-seeded", "check_known", KNOWN, ["jobs", "known"], "k.json", KNOWN,
+               seed=seed_closed),
+    _file_case("known-empty", "check_known", {"items": []}, ["jobs", "known"], "k.json",
+               {"items": []}, expect_error="validation_error"),
     Case("titles", "get_search_titles", {}, ["jobs", "titles"], seed=seed_approved),
     Case("titles-days", "get_search_titles", {"days": 30}, ["jobs", "titles", "--days", "30"],
          seed=seed_closed),

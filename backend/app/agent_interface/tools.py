@@ -48,6 +48,7 @@ from app.services import (
     interview_guide,
     interviews,
     jobs,
+    known,
     liveness,
     mail_sources,
     network,
@@ -114,6 +115,18 @@ class CheckJobOpenInput(_Input):
     force: bool = Field(
         default=False,
         description="Comprobar aunque haya una comprobación reciente (`liveness.fresh_hours`).",
+    )
+
+
+class CheckKnownInput(_Input):
+    items: list[known.KnownItem] = Field(
+        min_length=1,
+        max_length=known.MAX_ITEMS,
+        description=(
+            f"Hasta {known.MAX_ITEMS} resultados de la lista de un portal, con lo que se ve sin "
+            "abrir la oferta: `url` y, si se ven, `title`, `company`, `location`, `platform` y "
+            "`external_id`."
+        ),
     )
 
 
@@ -705,6 +718,10 @@ def _check_job_open(
     return liveness.check_job(session, args.job_id, force=args.force)
 
 
+def _check_known(session: Session, args: CheckKnownInput, _ctx: CallContext) -> known.KnownList:
+    return known.check_known(session, args.items)
+
+
 def _get_search_titles(
     session: Session, args: SearchTitlesInput, _ctx: CallContext
 ) -> search_titles.SearchTitlesView:
@@ -1098,6 +1115,22 @@ TOOLS: tuple[ToolSpec, ...] = (
         output_model=liveness.LivenessView,
         handler=_check_job_open,
         cli=CliSpec(path=("jobs", "check-open"), arguments=("job_id",)),
+    ),
+    ToolSpec(
+        name="check_known",
+        description=(
+            "¿Ya tengo estas ofertas? Antes de abrir los resultados de una página, pasa el lote "
+            "(hasta 100: `url` y lo que se vea de título, empresa, ubicación e id). Para cada uno: "
+            "`new` (no está), `known` (mismo id de plataforma o misma URL, sin contar parámetros "
+            "de seguimiento), `same_offer` (misma empresa, título y ubicación, que pasa si la "
+            "ves: cuenta en la comparación; y la oferta sigue "
+            "viva o se cerró hace poco) o `reopen_candidate` (la misma, pero cerrada hace más de "
+            "`dedup.reopen_after_days`; con `closed_by`). Solo lee: no da de alta nada."
+        ),
+        input_model=CheckKnownInput,
+        output_model=known.KnownList,
+        handler=_check_known,
+        cli=CliSpec(path=("jobs", "known"), file_keys=("items",)),
     ),
     ToolSpec(
         name="get_search_titles",

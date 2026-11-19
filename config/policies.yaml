@@ -4,6 +4,7 @@
 dedup:
   fuzzy_title_threshold: 90        # rapidfuzz token_set_ratio, misma empresa
   fuzzy_window_days: 60
+  reopen_after_days: 30            # cerrada hace más: la misma oferta que vuelve es una reapertura
 
 hard_filters:
   years_tolerance: 1               # años exigidos por encima de preferences.max_years_required

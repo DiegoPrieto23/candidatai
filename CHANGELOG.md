@@ -10,6 +10,11 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Tu agente sabe qué ofertas ya tienes antes de abrirlas:** con la herramienta nueva `check_known`
+  (`cai jobs known`) comprueba de una vez la lista de resultados de un portal y distingue las nuevas,
+  las que ya están (por su id o su dirección, aunque lleve parámetros de seguimiento), la misma
+  oferta publicada con otro id y las que cerraste hace más de 30 días y vuelven a publicarse. El
+  umbral es `dedup.reopen_after_days` en `config/policies.yaml`.
 - **El botón «Enviar a CandidatAI» funciona en más portales:** Glassdoor (también con la oferta
   abierta a la derecha de la búsqueda), Manfred, Ticjob, JobFluent, Domestika, Welcome to the
   Jungle y las webs de empleo de las empresas que usan Greenhouse, Lever, Workday, Ashby,

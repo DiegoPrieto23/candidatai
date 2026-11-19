@@ -20,6 +20,9 @@ approval_mode = "approve"
 [mcp_servers.candidatai.tools.check_job_open]
 approval_mode = "approve"
 
+[mcp_servers.candidatai.tools.check_known]
+approval_mode = "approve"
+
 [mcp_servers.candidatai.tools.get_search_titles]
 approval_mode = "approve"
 

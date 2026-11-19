@@ -40,6 +40,7 @@ policy:
     - mcp:list_jobs
     - mcp:get_job
     - mcp:check_job_open
+    - mcp:check_known
     - mcp:get_search_titles
     - mcp:save_extraction
     - mcp:get_extraction

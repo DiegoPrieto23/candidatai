@@ -19,6 +19,8 @@ CONFIG_DIR = REPO_ROOT / "config"
 class DedupPolicy(BaseModel):
     fuzzy_title_threshold: int = Field(ge=0, le=100)
     fuzzy_window_days: int = Field(gt=0)
+    # Días cerrada a partir de los cuales la misma oferta (huella) que vuelve es una reapertura.
+    reopen_after_days: int = Field(default=30, gt=0)
 
 
 class HardFilterPolicy(BaseModel):
