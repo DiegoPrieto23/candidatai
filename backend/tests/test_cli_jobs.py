@@ -42,6 +42,9 @@ def test_add_url_json() -> None:
         "created": True,
         "duplicate_of": None,
         "risk_flags": ["hidden_text", "injection_phrase"],
+        "reopening_of": None,
+        "reopened": False,
+        "republished_after_close": False,
     }
 
     result = runner.invoke(cli.app, ["jobs", "add-url", url])
