@@ -23,12 +23,14 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.policies import get_policies
-from app.models import Company, Job, Source
+from app.models import Application, Company, Event, Job, Source
 from app.models.base import utcnow
 from app.services import platforms, reposts
 from app.services.events import record
 from app.services.normalize import fingerprint, normalize_company, normalize_title
-from app.services.pipeline import Actor, EventType
+from app.services.pipeline import Actor, EventType, Stage
+from app.services.signals import RepublishedSignal, set_signal
+from app.services.signals import read as read_signals
 from app.services.untrusted import assess
 
 MIN_TEXT_CHARS = 400
@@ -81,6 +83,12 @@ class AddJobResult(BaseModel):
     created: bool
     duplicate_of: int | None
     risk_flags: list[str]
+    # Fase 45: una vacante cerrada por la empresa que vuelve entra nueva y enlazada a la antigua;
+    # la misma publicación caducada que reaparece reabre la existente; una que cerraste tú y vuelve
+    # no se crea, pero queda avisada en la Bandeja.
+    reopening_of: int | None = None
+    reopened: bool = False
+    republished_after_close: bool = False
 
 
 @dataclass(frozen=True)
@@ -355,10 +363,117 @@ def find_by_platform(session: Session, platform: str, external_id: str) -> Job |
     ).first()
 
 
-def _existing(job: Job) -> AddJobResult:
+def _existing(job: Job, **flags: bool) -> AddJobResult:
     return AddJobResult(
-        job_id=job.id, created=False, duplicate_of=job.duplicate_of, risk_flags=job.risk_flags
+        job_id=job.id,
+        created=False,
+        duplicate_of=job.duplicate_of,
+        risk_flags=job.risk_flags,
+        **flags,
     )
+
+
+# --- Reaperturas (fase 45) ---------------------------------------------------------------------
+
+Republication = Literal["reopening", "reactivate", "notice"]
+# Quién cerró la oferta: la empresa (o caducó) o tú. Los demás cierres (el filtro previo) no se
+# reconsideran: si vuelve, se anota la publicación como siempre.
+COMPANY_CLOSES = frozenset({EventType.EXPIRED, EventType.REJECTED})
+USER_CLOSES = frozenset({EventType.WITHDRAWN, EventType.ACCEPTED})
+
+
+def discard_reason(session: Session, job_id: int) -> str | None:
+    payload = session.scalars(
+        select(Event.payload)
+        .where(Event.job_id == job_id, Event.type == EventType.DISCARDED)
+        .order_by(Event.occurred_at.desc(), Event.id.desc())
+        .limit(1)
+    ).first()
+    reason = (payload or {}).get("reason")
+    return reason if isinstance(reason, str) else None
+
+
+def closed_by_company(session: Session, job_id: int, closed_by: str | None) -> bool | None:
+    """`True` si la cerró la empresa o caducó, `False` si la cerraste tú, `None` si ninguna (el
+    filtro previo). Descartada con el motivo `closed` («la han cerrado») cuenta como la empresa."""
+    if closed_by in COMPANY_CLOSES:
+        return True
+    if closed_by in USER_CLOSES:
+        return False
+    if closed_by == EventType.DISCARDED:
+        return discard_reason(session, job_id) == "closed"
+    return None
+
+
+def republication(
+    session: Session, job: Job, *, same_id: bool, now: datetime | None = None
+) -> Republication | None:
+    """Qué hacer cuando `job`, ya guardada, vuelve a aparecer. Solo lee.
+
+    Nada si sigue viva o se cerró hace menos de `dedup.reopen_after_days`. Si no:
+    - la misma publicación (`same_id`: mismo id o URL) que caducó: `reactivate`, se reabre esa;
+    - otra publicación (misma huella) de una que cerró la empresa o caducó: `reopening`, oferta
+      nueva enlazada;
+    - otra publicación de una que cerraste tú: `notice`, solo el aviso."""
+    app = session.get(Application, job.id)
+    if app is None or app.stage != Stage.CLOSED or app.closed_at is None:
+        return None
+    limit = (now or utcnow()) - timedelta(days=get_policies().dedup.reopen_after_days)
+    if app.closed_at >= limit:
+        return None
+    if same_id:
+        return "reactivate" if app.closed_by == EventType.EXPIRED else None
+    company = closed_by_company(session, job.id, app.closed_by)
+    if company is None:
+        return None
+    return "reopening" if company else "notice"
+
+
+def latest_by_fingerprint(session: Session, fp: str) -> Job | None:
+    """La oferta más reciente con esa huella (con reaperturas puede haber varias)."""
+    return session.scalars(
+        select(Job).where(Job.fingerprint == fp).order_by(Job.id.desc()).limit(1)
+    ).first()
+
+
+def note_known(
+    session: Session,
+    job: Job,
+    *,
+    same_id: bool,
+    url: str | None,
+    platform: str | None,
+    external_id: str | None,
+) -> AddJobResult:
+    """Una oferta ya guardada vuelve a aparecer: reactiva, avisa o solo anota la publicación.
+    `reopening` no se trata aquí: la oferta nueva la crea `store_job`."""
+    now = utcnow()
+    action = republication(session, job, same_id=same_id, now=now)
+    reposts.note_sighting(session, job, url=url, platform=platform, external_id=external_id)
+    if action == "reactivate":
+        record(session, job.id, EventType.REOPENED, Actor.SYSTEM, {"reason": "republished"})
+        return _existing(job, reopened=True)
+    if action == "notice":
+        previous = read_signals(job).republished_after_close
+        quiet = timedelta(days=get_policies().dedup.reopen_after_days)
+        dismissed = (
+            previous.dismissed_at
+            if previous and previous.dismissed_at and now - previous.dismissed_at < quiet
+            else None
+        )
+        set_signal(
+            job,
+            "republished_after_close",
+            RepublishedSignal(seen_at=now, url=url or None, dismissed_at=dismissed),
+        )
+        return _existing(job, republished_after_close=True)
+    return _existing(job)
+
+
+def needs_store(session: Session, job: Job) -> bool:
+    """La misma publicación ya guardada que hay que pasar por `store_job` (para reactivarla)
+    aunque quien la lee la salte por conocida."""
+    return republication(session, job, same_id=True) is not None
 
 
 def _fuzzy_duplicate(
@@ -409,7 +524,8 @@ def store_job(
 ) -> AddJobResult:
     """Guarda una oferta: huella, duplicados, riesgo y eventos. Lo usan el alta manual, los
     conectores (fase 09) y las alertas por correo (09b). Un duplicado exacto devuelve la existente
-    sin registrar eventos (sí la publicación, si trae otro id o URL: `services/reposts.py`).
+    sin registrar eventos (sí la publicación, si trae otro id o URL: `services/reposts.py`), salvo
+    las reaperturas de la fase 45 (`republication`).
 
     Sin `platform`, se deduce de la URL (`services/platforms.py`) cuando su id coincide con
     `external_id` o no hay `external_id`. Una oferta `summary` entra en `pending_detail`."""
@@ -426,24 +542,48 @@ def store_job(
         pid = platforms.detect(url)
         if pid is not None and external_id in (None, pid.external_id):
             platform, external_id = pid.platform, pid.external_id
+    same: Job | None = None
     if platform is not None and external_id:
         same = find_by_platform(session, platform, external_id)
-        if same is not None:
-            return _existing(same)
+    elif external_id and source.kind not in SOURCE_NAMES:
+        # Un conector sin plataforma reconocible: su id vale dentro de esa fuente.
+        same = session.scalars(
+            select(Job)
+            .where(Job.source_id == source.id, Job.external_id == external_id)
+            .order_by(Job.id.desc())
+            .limit(1)
+        ).first()
+    if same is not None:
+        return note_known(
+            session, same, same_id=True, url=url, platform=platform, external_id=external_id
+        )
 
     fp = fingerprint(company, title, location)
-    existing = session.scalars(select(Job).where(Job.fingerprint == fp)).first()
+    reopening_of: int | None = None
+    existing = latest_by_fingerprint(session, fp)
     if existing is not None:
-        # La misma oferta con otro id o URL: puede ser una republicación (fase 16).
-        reposts.note_sighting(
-            session, existing, url=url, platform=platform, external_id=external_id
-        )
-        return _existing(existing)
+        if republication(session, existing, same_id=False) == "reopening":
+            reopening_of = existing.id
+        else:
+            # La misma oferta con otro id o URL: puede ser una republicación (fase 16).
+            return note_known(
+                session,
+                existing,
+                same_id=False,
+                url=url,
+                platform=platform,
+                external_id=external_id,
+            )
 
     now = utcnow()
     company_row = get_or_create_company(session, company)
-    duplicate = _fuzzy_duplicate(
-        session, company_row.id, title, now, source.id if external_id else None
+    # Una reapertura no es un duplicado de la oferta de la que viene.
+    duplicate = (
+        None
+        if reopening_of is not None
+        else _fuzzy_duplicate(
+            session, company_row.id, title, now, source.id if external_id else None
+        )
     )
     risk = assess(text, html)
     job = Job(
@@ -459,6 +599,7 @@ def store_job(
         risk_flags=[flag.value for flag in risk.flags],
         fingerprint=fp,
         duplicate_of=duplicate[0] if duplicate else None,
+        reopening_of=reopening_of,
         posted_at=posted_at,
         first_seen_at=now,
     )
@@ -474,6 +615,8 @@ def store_job(
         found["source_id"] = source.id
     if detail_level == "summary":
         found["detail_level"] = "summary"
+    if reopening_of is not None:
+        found["reopening_of"] = reopening_of
     record(session, job.id, EventType.FOUND, Actor.SYSTEM, found, occurred_at=now)
     if risk.risky:
         record(
@@ -492,7 +635,11 @@ def store_job(
             {"duplicate_of": duplicate[0], "score": round(duplicate[1], 1)},
         )
     return AddJobResult(
-        job_id=job.id, created=True, duplicate_of=job.duplicate_of, risk_flags=job.risk_flags
+        job_id=job.id,
+        created=True,
+        duplicate_of=job.duplicate_of,
+        risk_flags=job.risk_flags,
+        reopening_of=reopening_of,
     )
 
 

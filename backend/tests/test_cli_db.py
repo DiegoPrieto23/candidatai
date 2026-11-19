@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 from typer.testing import CliRunner
 
 from app import cli
+from app.core import migrations
 from app.core.db import session_scope
 from app.models import Company, Job, Source
 from app.services.events import record
@@ -49,7 +50,8 @@ def test_commands_require_migrated_db() -> None:
 def test_db_upgrade() -> None:
     result = runner.invoke(cli.app, ["db", "upgrade", "--json"])
     assert result.exit_code == 0, result.output
-    assert json.loads(result.stdout) == {"ok": True, "from": None, "to": "0041"}
+    head = migrations.head_revision()
+    assert json.loads(result.stdout) == {"ok": True, "from": None, "to": head}
 
     result = runner.invoke(cli.app, ["db", "upgrade"])
     assert result.exit_code == 0
@@ -59,7 +61,7 @@ def test_db_upgrade() -> None:
 def test_db_upgrade_text() -> None:
     result = runner.invoke(cli.app, ["db", "upgrade"])
     assert result.exit_code == 0
-    assert "vacía -> 0041" in result.stdout
+    assert f"vacía -> {migrations.head_revision()}" in result.stdout
 
 
 def test_status() -> None:

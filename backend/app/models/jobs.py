@@ -41,8 +41,12 @@ class Job(Base):
     location_raw: Mapped[str | None] = mapped_column(String(500))
     raw_text: Mapped[str] = mapped_column(Text)
     risk_flags: Mapped[list[str]] = mapped_column(JSON, default=list)
-    fingerprint: Mapped[str] = mapped_column(String(64), unique=True)
+    # Empresa + título + ubicación normalizados. No es única: una reapertura (fase 45) comparte la
+    # huella con la oferta cerrada de la que viene.
+    fingerprint: Mapped[str] = mapped_column(String(64), index=True)
     duplicate_of: Mapped[int | None] = mapped_column(ForeignKey("jobs.id"))
+    # La misma vacante, cerrada por la empresa o caducada, que ha vuelto a publicarse (fase 45).
+    reopening_of: Mapped[int | None] = mapped_column(ForeignKey("jobs.id"), index=True)
     posted_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
     first_seen_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
     # Observaciones del código que no son riesgo de inyección (fase 16):

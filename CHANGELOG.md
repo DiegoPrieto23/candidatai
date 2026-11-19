@@ -10,6 +10,13 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Ofertas que vuelven a publicarse:** si una vacante que cerró la empresa (te rechazaron, caducó o
+  la descartaste porque la habían cerrado) se publica otra vez pasados 30 días, entra como oferta
+  nueva con la etiqueta **Reabierta**, y su ficha dice de qué oferta viene y cómo acabó. Si la cerraste
+  tú (la retiraste o la descartaste por otro motivo), no entra: la Bandeja te avisa de que **ha vuelto
+  a publicarse** y puedes reabrirla o ignorar el aviso (no vuelve a salir en 30 días). Si una oferta
+  que caducó vuelve a aparecer tal cual, se reabre sola. «Republicada» y «Publicada hace meses» ya no
+  cuentan lo que pasó con la vacante anterior. El umbral es `dedup.reopen_after_days`.
 - **Tu agente sabe qué ofertas ya tienes antes de abrirlas:** con la herramienta nueva `check_known`
   (`cai jobs known`) comprueba de una vez la lista de resultados de un portal y distingue las nuevas,
   las que ya están (por su id o su dirección, aunque lleve parámetros de seguimiento), la misma

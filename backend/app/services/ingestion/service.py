@@ -46,7 +46,7 @@ from app.schemas.sources import (
     Website,
     parse_config,
 )
-from app.services import ingest, platforms, reposts
+from app.services import ingest, platforms
 from app.services import profile as profile_service
 from app.services.ingestion import resolve
 from app.services.ingestion.adzuna import AdzunaConnector
@@ -659,19 +659,26 @@ def _unrecognized(
 # --- Ejecución -------------------------------------------------------------------------------
 
 
-def _already_stored(session: Session, source: Source, raw: RawJob) -> Job | None:
-    """Oferta ya vista: por id en la fuente, por URL o por huella (sin descargar el detalle)."""
+def _already_stored(session: Session, source: Source, raw: RawJob) -> tuple[Job, bool] | None:
+    """Oferta ya vista: por id en la fuente, por URL o por huella (sin descargar el detalle). El
+    segundo valor dice si es la misma publicación (id o URL) o solo la misma huella."""
     by_id = session.scalars(
-        select(Job).where(Job.source_id == source.id, Job.external_id == raw.external_id).limit(1)
+        select(Job)
+        .where(Job.source_id == source.id, Job.external_id == raw.external_id)
+        .order_by(Job.id.desc())
+        .limit(1)
     ).first()
     if by_id is not None:
-        return by_id
+        return by_id, True
     if raw.url:
-        by_url = session.scalars(select(Job).where(Job.url == raw.url).limit(1)).first()
+        by_url = session.scalars(
+            select(Job).where(Job.url == raw.url).order_by(Job.id.desc()).limit(1)
+        ).first()
         if by_url is not None:
-            return by_url
+            return by_url, True
     fp = fingerprint(raw.company, raw.title, raw.location)
-    return session.scalars(select(Job).where(Job.fingerprint == fp).limit(1)).first()
+    by_fp = ingest.latest_by_fingerprint(session, fp)
+    return (by_fp, False) if by_fp is not None else None
 
 
 def _finish(
@@ -696,7 +703,7 @@ def _collect(
     config: SourceConfig,
     client: httpx.Client,
     result: SourceRunResult,
-) -> tuple[list[RawJob], list[tuple[int, RawJob]]]:
+) -> tuple[list[RawJob], list[tuple[int, RawJob, bool]]]:
     """Toda la parte de red, sin escribir en la BD (SQLite no queda bloqueado mientras se
     descarga): descarga, filtro previo, descarte de lo ya visto y detalle de lo nuevo.
 
@@ -707,16 +714,20 @@ def _collect(
     result.found = len(fetched.jobs)
     result.errors.extend(fetched.issues)
     pending: list[RawJob] = []
-    seen: list[tuple[int, RawJob]] = []
+    seen: list[tuple[int, RawJob, bool]] = []
     details_blocked: ConnectorError | None = None
     skipped_details = 0
     for raw in fetched.jobs:
         if not prefilter.check(raw.title, raw.location, raw.remote).passed:
             continue
         result.after_filters += 1
-        if (stored := _already_stored(session, source, raw)) is not None:
+        stored = _already_stored(session, source, raw)
+        # Una vacante que cerró la empresa y vuelve (fase 45) se guarda como oferta nueva.
+        if stored is not None and (
+            stored[1] or ingest.republication(session, stored[0], same_id=False) != "reopening"
+        ):
             result.existing += 1
-            seen.append((stored.id, raw))
+            seen.append((stored[0].id, raw, stored[1]))
             continue
         if raw.needs_detail:
             if details_blocked is not None:
@@ -744,13 +755,19 @@ def _collect(
     return pending, seen
 
 
-def _note_seen(session: Session, seen: list[tuple[int, RawJob]]) -> None:
-    """Lo ya visto con otro id o URL es otra publicación de la misma oferta (fase 16)."""
-    for job_id, raw in seen:
+def _note_seen(session: Session, seen: list[tuple[int, RawJob, bool]]) -> None:
+    """Lo ya visto con otro id o URL es otra publicación de la misma oferta (fase 16); si estaba
+    cerrada, puede reabrirse o avisar (fase 45, `ingest.note_known`)."""
+    for job_id, raw, same_id in seen:
         job = session.get(Job, job_id)
         if job is not None:
-            reposts.note_sighting(
-                session, job, url=raw.url, platform=None, external_id=raw.external_id
+            ingest.note_known(
+                session,
+                job,
+                same_id=same_id,
+                url=raw.url,
+                platform=None,
+                external_id=raw.external_id,
             )
 
 

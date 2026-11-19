@@ -98,6 +98,16 @@ class StaleRepostSignal(BaseModel):
     span_days: int
 
 
+class RepublishedSignal(BaseModel):
+    """Una oferta que cerraste tú ha vuelto a publicarse (fase 45): no se crea otra; la Bandeja
+    avisa para que decidas si la reabres."""
+
+    seen_at: datetime
+    url: str | None = None
+    # «Ignorar»: el aviso no vuelve a salir hasta pasados `dedup.reopen_after_days`.
+    dismissed_at: datetime | None = None
+
+
 class JobSignals(BaseModel):
     possibly_closed: ClosedSignal | None = None
     liveness: LivenessCheck | None = None
@@ -108,6 +118,7 @@ class JobSignals(BaseModel):
     fixed_term: FixedTermSignal | None = None
     ai_screening: AiScreeningSignal | None = None
     stale_repost: StaleRepostSignal | None = None
+    republished_after_close: RepublishedSignal | None = None
 
 
 DoubtfulCode = Literal[

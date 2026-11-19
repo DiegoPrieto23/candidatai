@@ -437,7 +437,7 @@ def test_0030_adds_indexes_on_a_db_with_data_and_back(db_url: str) -> None:
         before = snapshot()
         engine.dispose()
 
-        migrations.upgrade(db_url)
+        migrations.upgrade(db_url, "0030")
         assert {"ix_jobs_company_id_first_seen_at", "ix_jobs_first_seen_at"} <= indexes("jobs")
         assert "ix_jobs_company_id" not in indexes("jobs")
         assert "ix_events_type_job_id_occurred_at" in indexes("events")
@@ -634,5 +634,46 @@ def test_0040_adds_the_origin_of_each_profile_version_and_back(db_url: str) -> N
         assert "origin" not in columns
         with engine.connect() as conn:
             assert conn.exec_driver_sql("SELECT count(*) FROM profile_versions").scalar() == 1
+    finally:
+        engine.dispose()
+
+
+def test_0042_lets_reopenings_share_the_fingerprint_and_back(db_url: str) -> None:
+    """Fase 45: la huella deja de ser única (una reapertura la comparte) y `reopening_of`."""
+    migrations.upgrade(db_url, "0041")
+    engine = create_engine(db_url)
+    insert = (
+        "INSERT INTO jobs (id, source_id, company_id, url, title, raw_text, risk_flags, "
+        "fingerprint, first_seen_at) VALUES (?, 1, 1, '', 'T', 'x', '[]', 'f1', "
+        "'2026-10-01 09:00:00')"
+    )
+    try:
+        with engine.begin() as conn:
+            conn.exec_driver_sql(
+                "INSERT INTO sources (id, kind, name, config, active) "
+                "VALUES (1, 'manual_text', 'x', '{}', 1)"
+            )
+            conn.exec_driver_sql(
+                "INSERT INTO companies (id, name, normalized_name, watchlist) "
+                "VALUES (1, 'Acme', 'acme', 0)"
+            )
+            conn.exec_driver_sql(insert, (1,))
+        engine.dispose()
+
+        migrations.upgrade(db_url, "0042")
+        with engine.begin() as conn:
+            conn.exec_driver_sql(insert, (2,))
+            conn.exec_driver_sql("UPDATE jobs SET reopening_of = 1 WHERE id = 2")
+        engine.dispose()
+
+        with pytest.raises(RuntimeError, match="reabiertas"):
+            migrations.downgrade(db_url, "0041")
+        engine.dispose()
+        with engine.begin() as conn:
+            conn.exec_driver_sql("DELETE FROM jobs WHERE id = 2")
+        engine.dispose()
+        migrations.downgrade(db_url, "0041")
+        with engine.begin() as conn, pytest.raises(IntegrityError):
+            conn.exec_driver_sql(insert, (3,))
     finally:
         engine.dispose()

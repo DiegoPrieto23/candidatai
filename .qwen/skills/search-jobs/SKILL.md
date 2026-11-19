@@ -91,8 +91,8 @@ búsqueda puntual con puesto, ubicación o ambos (ver «Modo búsqueda»).
      de la descripción y da de alta cada una con `add_job_from_text` (`title`, `company`, `text`,
      `url`, `location`, `source_id` = el `id` de la plataforma y, si los conoces, `platform` y
      `external_id`; si no, la app los deduce de la URL). Si responde `created: false`, cuéntala en
-     `existing`; si no, en `created`. Una `reopen_candidate` cuenta además en `reopened`, en los dos
-     casos. Si responde `not_allowed`, para esa plataforma: no insistas. Las candidatas que no
+     `existing`; si no, en `created`. Si la respuesta trae `reopening_of` (entró como reapertura) o
+     `reopened: true` (se reabrió la misma), cuéntala además en `reopened`. Si responde `not_allowed`, para esa plataforma: no insistas. Las candidatas que no
      abres por llegar a N van a `left_by_limit`, y entonces `stop_reason` es `limit`.
    - **Al terminar la plataforma**, `record_source_run` con:
      - `source_id`, `found` (resultados vistos en las listas), `created` (nuevas), `existing`,

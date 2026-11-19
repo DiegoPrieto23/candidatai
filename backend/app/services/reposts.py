@@ -16,8 +16,11 @@ Es una observación, no un veredicto: la UI enseña «Republicada ×N» con las 
 `stale_repost` (fase 25.3, oferta dudosa) mira el mismo grupo con **todo** el historial, sin
 ventana, en el canal con más días: al menos `doubtful.stale_repost_min_count` días con publicación
 nueva, o al menos `doubtful.stale_repost_min_span_days` días entre la primera y la última de ese
-canal. Una vacante nueva con la misma empresa, título y ciudad un año después también cuenta: el
-código no las distingue.
+canal.
+
+Desde la fase 45, una vacante que cerró la empresa y vuelve entra como reapertura
+(`jobs.reopening_of`): las dos señales solo cuentan las publicaciones desde la última reapertura
+del grupo, para no tomar por dudosa una vacante nueva por lo que pasó con la anterior.
 """
 
 from collections import defaultdict
@@ -116,6 +119,12 @@ def _local_date(moment: datetime, zone: ZoneInfo) -> date:
     return moment.astimezone(zone).date()
 
 
+def _since_reopening(group: list[Job]) -> datetime | None:
+    """Desde cuándo cuentan las publicaciones del grupo: la última reapertura, si hay alguna."""
+    reopenings = [j.first_seen_at for j in group if j.reopening_of is not None]
+    return max(reopenings) if reopenings else None
+
+
 def compute(
     session: Session, job: Job, now: datetime | None = None, group: list[Job] | None = None
 ) -> RepostSignal | None:
@@ -124,6 +133,9 @@ def compute(
     zone = ZoneInfo(get_policies().calendar.timezone)
     since = (now or utcnow()) - timedelta(days=policy.window_days)
     group = group if group is not None else _group(session, job)
+    reopened = _since_reopening(group)
+    if reopened is not None:
+        since = max(since, reopened)
     rows = session.execute(
         select(JobSighting.channel, JobSighting.ref, JobSighting.seen_at).where(
             JobSighting.job_id.in_([j.id for j in group]), JobSighting.seen_at >= since
@@ -154,11 +166,12 @@ def compute_stale(
     policy = get_policies().doubtful
     zone = ZoneInfo(get_policies().calendar.timezone)
     group = group if group is not None else _group(session, job)
-    rows = session.execute(
-        select(JobSighting.channel, JobSighting.ref, JobSighting.seen_at).where(
-            JobSighting.job_id.in_([j.id for j in group])
-        )
-    ).all()
+    query = select(JobSighting.channel, JobSighting.ref, JobSighting.seen_at).where(
+        JobSighting.job_id.in_([j.id for j in group])
+    )
+    if (reopened := _since_reopening(group)) is not None:
+        query = query.where(JobSighting.seen_at >= reopened)
+    rows = session.execute(query).all()
     if not rows:
         return None
     first_seen: dict[str, dict[str, datetime]] = defaultdict(dict)

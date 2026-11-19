@@ -51,7 +51,15 @@ def _save_extraction(job_id: int, **changes: Any) -> None:
 
 def test_add_from_text_creates_job(client: TestClient) -> None:
     added = _add_text(client)
-    assert added == {"job_id": 1, "created": True, "duplicate_of": None, "risk_flags": []}
+    assert added == {
+        "job_id": 1,
+        "created": True,
+        "duplicate_of": None,
+        "risk_flags": [],
+        "reopening_of": None,
+        "reopened": False,
+        "republished_after_close": False,
+    }
     again = _add_text(client)
     assert again["created"] is False and again["job_id"] == 1
 

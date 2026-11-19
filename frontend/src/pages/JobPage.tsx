@@ -27,6 +27,7 @@ import { CompanyResearchSection } from '@/components/CompanyResearchSection'
 import { CvSection } from '@/components/CvSection'
 import { JobReplyNotice } from '@/components/JobReplyNotice'
 import { ClosedNotice, DoubtfulNote, RepostNote } from '@/components/JobSignals'
+import { ReopeningNote, RepublishedNotice } from '@/components/Reopenings'
 import { DiscardDialog } from '@/components/DiscardDialog'
 import { MoveDialog } from '@/components/MoveDialog'
 import type { MoveOption } from '@/lib/moves'
@@ -795,6 +796,8 @@ export function JobPage() {
             {job.injection && <InjectionAlert injection={job.injection} />}
             {wasSent(job) && <JobReplyNotice jobId={job.id} />}
             <ClosedNotice job={job} />
+            <RepublishedNotice job={job} />
+            <ReopeningNote job={job} />
             <RepostNote job={job} />
             <DoubtfulNote job={job} />
           </div>

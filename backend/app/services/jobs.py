@@ -13,6 +13,7 @@ from app.schemas.llm_io import JobExtraction, Salary
 from app.services import application_archive, extractions, network
 from app.services.events import EventOut, JobNotFoundError
 from app.services.pipeline import EventType, Stage, job_events
+from app.services.reopenings import ReopeningOf, reopening_of
 from app.services.signals import JobSignals
 from app.services.signals import read as read_signals
 from app.services.untrusted import wrap_untrusted
@@ -37,6 +38,8 @@ class JobSummary(BaseModel):
     stage: Stage | None
     risk_flags: list[str]
     duplicate_of: int | None
+    # Reapertura de una vacante cerrada por la empresa (fase 45): la oferta de la que viene.
+    reopening_of: int | None = None
     first_seen_at: datetime
     score: int | None  # del último match; None si aún no se ha puntuado
     # El código o el agente vieron texto dirigido a una IA (evento `injection_suspected`).
@@ -112,6 +115,7 @@ def list_jobs(
             risk_flags=job.risk_flags,
             signals=read_signals(job),
             duplicate_of=job.duplicate_of,
+            reopening_of=job.reopening_of,
             first_seen_at=job.first_seen_at,
             score=score,
             injection_suspected=suspected,
@@ -141,6 +145,7 @@ def get_job(session: Session, job_id: int) -> JobDetail:
         risk_flags=job.risk_flags,
         signals=read_signals(job),
         duplicate_of=job.duplicate_of,
+        reopening_of=job.reopening_of,
         first_seen_at=job.first_seen_at,
         score=score,
         injection_suspected=suspected,
@@ -353,6 +358,7 @@ def search_jobs(
                 risk_flags=job.risk_flags,
                 signals=read_signals(job),
                 duplicate_of=job.duplicate_of,
+                reopening_of=job.reopening_of,
                 first_seen_at=job.first_seen_at,
                 score=score,
                 injection_suspected=suspected,
@@ -394,6 +400,8 @@ class JobView(JobSummary):
     injection: InjectionWarning | None  # None si no hay nada sospechoso
     # Carpeta con la copia de lo enviado (relativa a la carpeta de datos), si ya se archivó.
     archive_folder: str | None = None
+    # Si es una reapertura (fase 45), la oferta cerrada de la que viene.
+    reopening: ReopeningOf | None = None
 
 
 SENT_STAGES = frozenset({Stage.APPLIED, Stage.IN_PROCESS, Stage.CLOSED})
@@ -432,6 +440,7 @@ def get_job_view(session: Session, job_id: int) -> JobView:
         risk_flags=job.risk_flags,
         signals=read_signals(job),
         duplicate_of=job.duplicate_of,
+        reopening_of=job.reopening_of,
         first_seen_at=job.first_seen_at,
         score=score,
         injection_suspected=suspected,
@@ -452,4 +461,5 @@ def get_job_view(session: Session, job_id: int) -> JobView:
         ),
         events=[EventOut.model_validate(e, from_attributes=True) for e in events],
         injection=injection,
+        reopening=reopening_of(session, job),
     )

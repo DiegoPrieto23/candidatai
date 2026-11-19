@@ -272,7 +272,9 @@ def poll_email(
                 )
             )
         for item in items:
-            if ingest.find_by_platform(session, item.platform, item.external_id) is not None:
+            known = ingest.find_by_platform(session, item.platform, item.external_id)
+            # Si caducó y vuelve, pasa por `store_job`, que la reabre (fase 45).
+            if known is not None and not ingest.needs_store(session, known):
                 result.existing += 1
                 continue
             pending = _Pending(item)

@@ -218,3 +218,16 @@ def test_search_policies_come_from_the_yaml() -> None:
         AgentBrowsePolicy(
             max_result_pages=5, delay_seconds=5, default_max_offers=15, stop_after_known=0
         )
+
+
+def test_closed_by_you_is_same_offer_not_reopen(session: Session) -> None:
+    """Como `store_job`: solo es reapertura lo que cerró la empresa o caducó."""
+    job_id = _add(session, "https://careers.acme.com/jobs/8")
+    events.record(session, job_id, EventType.DISCARDED, Actor.USER, {"reason": "salary"})
+    for event in session.scalars(select(Event).where(Event.job_id == job_id)):
+        event.occurred_at -= timedelta(days=40)
+    session.flush()
+    rebuild_projection(session, job_id)
+    item = KnownItem(url=_infojobs(3), title="Data Engineer", company="Acme Datos", location="Vigo")
+    [result] = check_known(session, [item]).items
+    assert (result.status, result.closed_by) == ("same_offer", "discarded")

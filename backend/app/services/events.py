@@ -25,6 +25,7 @@ from app.services.pipeline import (
     save_projection,
     tolerated,
 )
+from app.services.signals import set_signal
 
 
 class UnknownEventTypeError(ValueError):
@@ -208,6 +209,10 @@ def record(
         raise LaterEventsConflictError(_conflict_message(event, conflicts), conflicts)
     session.add(event)
     save_projection(session, job_id, state)
+    if event_type == EventType.REOPENED:
+        job = session.get(Job, job_id)
+        if job is not None and (job.signals or {}).get("republished_after_close"):
+            set_signal(job, "republished_after_close", None)
     session.flush()
     return event
 

@@ -7,8 +7,9 @@ dar de alta:
 1. **Id de plataforma** (el dado o el que se deduce de la URL): `known`.
 2. **URL**, comparada como publicación (`reposts.ref_of`: sin esquema, fragmento ni parámetros de
    seguimiento) o, si no, tal cual: `known`.
-3. **Huella** (empresa + título + ubicación): `same_offer` si la oferta sigue viva o se cerró hace
-   menos de `dedup.reopen_after_days`; `reopen_candidate` si lleva cerrada más tiempo.
+3. **Huella** (empresa + título + ubicación): `reopen_candidate` si la cerró la empresa o caducó
+   hace más de `dedup.reopen_after_days` (`store_job` la dará de alta como reapertura); si no
+   (viva, cerrada hace poco o cerrada por ti), `same_offer`.
 4. Nada de lo anterior: `new`.
 
 No escribe nada: ni publicaciones, ni eventos, ni ofertas.
@@ -26,7 +27,7 @@ from app.core.policies import get_policies
 from app.models import Application, Job, JobSighting
 from app.models.base import utcnow
 from app.services import platforms, reposts
-from app.services.ingest import find_by_platform
+from app.services.ingest import closed_by_company, find_by_platform
 from app.services.normalize import fingerprint, normalize_company
 from app.services.pipeline import Stage
 
@@ -156,6 +157,8 @@ def _check_one(session: Session, item: KnownItem, reopen_before: datetime) -> Kn
         and app.stage == Stage.CLOSED
         and app.closed_at is not None
         and app.closed_at < reopen_before
+        # Solo lo que `store_job` daría de alta como reapertura: la cerró la empresa o caducó.
+        and closed_by_company(session, job.id, app.closed_by) is True
     )
     return _result(item, "reopen_candidate" if reopen else "same_offer", "fingerprint", job, app)
 

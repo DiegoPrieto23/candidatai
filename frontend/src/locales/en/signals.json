@@ -38,5 +38,33 @@
     "label": "Points to review",
     "title": "Before you spend time on it",
     "intro": "They're notes for you to decide: the fit and the job stay as they are. If you want them to discard, ask your agent (“discard jobs from undisclosed companies”)."
+  },
+  "reopening": {
+    "badge": "Reopened",
+    "badgeTooltip": "A role you already had is posted again: the company closed the previous one or it expired.",
+    "note": "<strong>Reopening</strong> of the <job>job from {{date}}</job> ({{how}}). It's a new opening: assess it like any other.",
+    "how": {
+      "rejected": "you were rejected after applying",
+      "rejected_in_process": "you were rejected during the process",
+      "expired": "it expired",
+      "closed": "the company closed it",
+      "other": "it was closed"
+    }
+  },
+  "republished": {
+    "title": "Posted again",
+    "jobText": "You closed it and it was posted again on {{date}}. No new job was created: reopen it if you're interested.",
+    "bannerTitle_one": "A job you closed has been posted again",
+    "bannerTitle_other": "{{count}} jobs you closed have been posted again",
+    "bannerLine": "{{closedBy}} · posted again on {{date}}.",
+    "closedBy": {
+      "withdrawn": "You withdrew",
+      "accepted": "You accepted it",
+      "discarded": "You discarded it",
+      "other": "You closed it"
+    },
+    "reopen": "Reopen",
+    "dismiss": "Ignore",
+    "view": "See the posting"
   }
 }

@@ -90,8 +90,9 @@ Lo demás (portales recorridos, ofertas nuevas, problemas) se calcula con `sourc
 | raw_text | text | Texto limpio de la oferta. **No confiable** |
 | risk_flags | JSON | Riesgo de inyección detectado por el código: `hidden_text`, `injection_phrase`… |
 | signals | JSON | Observaciones que no son riesgo (fase 16): `possibly_closed`, `liveness`, `open_confirmed`, `reposted`; y de oferta dudosa (fase 25.3): `salary_range_wide`, `employer_hidden`, `fixed_term`, `stale_repost`, `ai_screening`. Ver §Fase 16 |
-| fingerprint | str UNIQUE | Ver abajo |
+| fingerprint | str (índice) | Ver abajo. Única hasta la fase 45: una reapertura comparte la huella con la oferta de la que viene (migración `0042`) |
 | duplicate_of | FK jobs? | Si se detecta como duplicado difuso |
+| reopening_of | FK jobs? | Fase 45: reapertura de esta oferta cerrada (ver «Ofertas que vuelven a publicarse») |
 | posted_at | datetime? | |
 | first_seen_at | datetime | |
 
@@ -105,6 +106,21 @@ minúsculas. Además, un chequeo difuso (rapidfuzz, umbral en `config/policies.y
 de la misma empresa en los últimos 60 días marca `duplicate_of`. Excepción (fase 09): dos ofertas
 de la misma fuente con conector y `external_id` distintos nunca son duplicado difuso entre sí (el
 ATS ya dice que son publicaciones distintas).
+
+**Ofertas que vuelven a publicarse (fase 45, `ingest.republication`).** Cuando llega una oferta que
+ya está y la guardada se cerró hace más de `dedup.reopen_after_days` (30 por defecto), decide quién
+la cerró. Vale para todas las vías: alta manual, conectores, alertas, búsqueda con navegador.
+- **Otra publicación** (misma huella, otro id o URL) de una que cerró la empresa o caducó (`expired`,
+  `rejected` o `discarded` con motivo `closed`): oferta nueva con `reopening_of` = la antigua, `found`
+  con `{reopening_of}`, sin duplicado difuso, y sigue el flujo normal. La huella busca siempre la
+  oferta más reciente.
+- **Otra publicación** de una que cerraste tú (`withdrawn`, `accepted` o `discarded` con otro motivo):
+  no se crea nada; señal `republished_after_close` y aviso «Ha vuelto a publicarse» en la Bandeja.
+- **La misma publicación** (mismo id de plataforma, mismo id en la fuente o misma URL) de una que
+  caducó: se reabre esa misma con `reopened` (actor `system`, `{reason: "republished"}`). Si la
+  cerró otra cosa (te rechazaron, la descartaste…), el mismo id no la reabre: es la misma
+  publicación que sigue listada, no una vacante nueva.
+- Cerrada hace menos, o por el filtro previo o como duplicado: se anota la publicación, como siempre.
 
 ### `job_extractions`
 Una fila por extracción; la vigente es la más reciente.
@@ -691,7 +707,8 @@ Observaciones del código sobre la oferta que **no** son riesgo de inyección (m
 | `employer_hidden` (25.3) | `reason` (`agency`, `agency_for_client`, `unnamed`), `origin` (`extraction`, `company`), `client?`, `matched?` | Ídem: `is_agency` de la extracción, o el nombre de la empresa coincide con `agencies` o `hidden_employer` de `config/doubtful_patterns.yaml` |
 | `fixed_term` (25.3) | `origin` | Ídem: `contract_type: fixed_term` en la extracción |
 | `ai_screening` (25.3) | `origin` (`extraction`, `text`), `matched?` | Ídem: `mentions_ai_screening`, o una frase de `ai_screening` en el texto |
-| `stale_repost` (25.3) | `count`, `channel`, `first_seen`, `last_seen`, `span_days` | `services/reposts.py`, con todo el historial de `job_sightings` del grupo, sin ventana: `count ≥ doubtful.stale_repost_min_count` o `span_days ≥ doubtful.stale_repost_min_span_days` |
+| `stale_repost` (25.3) | `count`, `channel`, `first_seen`, `last_seen`, `span_days` | `services/reposts.py`, con todo el historial de `job_sightings` del grupo, sin ventana: `count ≥ doubtful.stale_repost_min_count` o `span_days ≥ doubtful.stale_repost_min_span_days`. Desde la fase 45, este y `reposted` solo cuentan lo visto desde la última reapertura del grupo |
+| `republished_after_close` (45) | `seen_at`, `url?`, `dismissed_at?` | `ingest.note_known`: una oferta que cerraste tú ha vuelto a publicarse. La Bandeja la lista (`GET /jobs/republished`); se borra con `reopened`; «Ignorar» (`POST /jobs/{id}/republished/dismiss`) pone `dismissed_at` y el aviso no vuelve hasta pasados `dedup.reopen_after_days` |
 
 Las cinco de la fase 25.3 son **señales de oferta dudosa** («Puntos a revisar» en la UI): no cambian el score ni los filtros
 duros, salvo `employer_hidden` y `fixed_term` si están en `preferences.exclude_signals` del perfil

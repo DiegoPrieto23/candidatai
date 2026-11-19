@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Query, Request, status
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 
 from app.api.deps import EmptyBody, SessionDep, require_ui, require_ui_read
-from app.services import agent_costs, events, ingest, jobs, liveness
+from app.services import agent_costs, events, ingest, jobs, liveness, reopenings
 from app.services.matching import service as matching
 from app.services.pipeline import EventType, Stage
 
@@ -94,6 +94,28 @@ def list_jobs(
         has_score=has_score,
         min_score=min_score,
     )
+
+
+@router.get(
+    "/republished",
+    operation_id="list_republished_jobs",
+    dependencies=[Depends(require_ui_read)],
+)
+def list_republished_jobs(session: SessionDep) -> reopenings.RepublishedList:
+    """Ofertas que cerraste tú y han vuelto a publicarse (fase 45): el aviso de la Bandeja."""
+    return reopenings.list_republished(session)
+
+
+@router.post(
+    "/{job_id}/republished/dismiss",
+    operation_id="dismiss_republished_job",
+    dependencies=[Depends(require_ui)],
+)
+def dismiss_republished_job(
+    session: SessionDep, job_id: int, body: EmptyBody
+) -> reopenings.RepublishedList:
+    """«Ignorar» el aviso «Ha vuelto a publicarse». Para reabrirla, el evento `reopened`."""
+    return reopenings.dismiss(session, job_id)
 
 
 @router.get("/{job_id}", operation_id="get_job")

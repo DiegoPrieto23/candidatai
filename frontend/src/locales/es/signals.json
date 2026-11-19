@@ -38,5 +38,33 @@
     "label": "Puntos a revisar",
     "title": "Antes de dedicarle tiempo",
     "intro": "Son observaciones para que decidas tú: el encaje y la oferta siguen igual. Si quieres que descarten, pídeselo a tu agente («descarta las ofertas de empresa oculta»)."
+  },
+  "reopening": {
+    "badge": "Reabierta",
+    "badgeTooltip": "Vuelve a publicarse una vacante que ya tuviste: la anterior la cerró la empresa o caducó.",
+    "note": "<strong>Reapertura</strong> de la <job>oferta del {{date}}</job> ({{how}}). Es una vacante nueva: valórala como cualquier otra.",
+    "how": {
+      "rejected": "te rechazaron tras enviar la candidatura",
+      "rejected_in_process": "te rechazaron durante el proceso",
+      "expired": "caducó",
+      "closed": "la cerró la empresa",
+      "other": "se cerró"
+    }
+  },
+  "republished": {
+    "title": "Ha vuelto a publicarse",
+    "jobText": "La cerraste tú y se ha vuelto a publicar el {{date}}. No se ha creado otra oferta: si te interesa, reábrela.",
+    "bannerTitle_one": "Una oferta que cerraste ha vuelto a publicarse",
+    "bannerTitle_other": "{{count}} ofertas que cerraste han vuelto a publicarse",
+    "bannerLine": "{{closedBy}} · publicada otra vez el {{date}}.",
+    "closedBy": {
+      "withdrawn": "La retiraste",
+      "accepted": "La aceptaste",
+      "discarded": "La descartaste",
+      "other": "La cerraste"
+    },
+    "reopen": "Reabrir",
+    "dismiss": "Ignorar",
+    "view": "Ver la publicación"
   }
 }

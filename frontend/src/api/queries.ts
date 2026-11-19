@@ -277,6 +277,28 @@ export function useConfirmJobOpen() {
   })
 }
 
+/** Ofertas que cerraste tú y han vuelto a publicarse (fase 45): el aviso de la Bandeja. */
+export function useRepublishedJobs() {
+  return useQuery({
+    queryKey: [...keys.allJobs, 'republished'] as const,
+    queryFn: () => unwrap(api.GET('/jobs/republished')),
+  })
+}
+
+/** «Ignorar» el aviso «Ha vuelto a publicarse». Reabrir va por `useJobEvent` (`reopened`). */
+export function useDismissRepublished() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (jobId: number) =>
+      unwrap(api.POST('/jobs/{job_id}/republished/dismiss', { params: { path: { job_id: jobId } }, body: {} })),
+    onSuccess: (_result, jobId) =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: keys.allJobs }),
+        client.invalidateQueries({ queryKey: keys.job(jobId) }),
+      ]),
+  })
+}
+
 /** CV vigente de la oferta (contenido, verificación y renders); `cv: null` si aún no tiene.
  * `poll`: cada cuántos ms volver a pedirlo, también con la pestaña en segundo plano (avisos). */
 export function useJobCv(jobId: number, enabled = true, poll?: number) {

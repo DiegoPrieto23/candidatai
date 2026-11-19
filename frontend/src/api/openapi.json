@@ -395,6 +395,231 @@
         }
       }
     },
+    "/jobs/republished": {
+      "get": {
+        "tags": [
+          "jobs"
+        ],
+        "summary": "List Republished Jobs",
+        "description": "Ofertas que cerraste tú y han vuelto a publicarse (fase 45): el aviso de la Bandeja.",
+        "operationId": "list_republished_jobs",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepublishedList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{job_id}/republished/dismiss": {
+      "post": {
+        "tags": [
+          "jobs"
+        ],
+        "summary": "Dismiss Republished Job",
+        "description": "«Ignorar» el aviso «Ha vuelto a publicarse». Para reabrirla, el evento `reopened`.",
+        "operationId": "dismiss_republished_job",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmptyBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepublishedList"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
     "/jobs/{job_id}": {
       "get": {
         "tags": [
@@ -22950,6 +23175,27 @@
             },
             "type": "array",
             "title": "Risk Flags"
+          },
+          "reopening_of": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reopening Of"
+          },
+          "reopened": {
+            "type": "boolean",
+            "title": "Reopened",
+            "default": false
+          },
+          "republished_after_close": {
+            "type": "boolean",
+            "title": "Republished After Close",
+            "default": false
           }
         },
         "type": "object",
@@ -30855,6 +31101,17 @@
             ],
             "title": "Duplicate Of"
           },
+          "reopening_of": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reopening Of"
+          },
           "first_seen_at": {
             "type": "string",
             "format": "date-time",
@@ -31115,6 +31372,16 @@
                 "type": "null"
               }
             ]
+          },
+          "republished_after_close": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RepublishedSignal"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -31176,6 +31443,17 @@
               }
             ],
             "title": "Duplicate Of"
+          },
+          "reopening_of": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reopening Of"
           },
           "first_seen_at": {
             "type": "string",
@@ -31254,6 +31532,16 @@
               }
             ],
             "title": "Archive Folder"
+          },
+          "reopening": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReopeningOf"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -36375,6 +36663,74 @@
         ],
         "title": "RenderWarning"
       },
+      "ReopeningOf": {
+        "properties": {
+          "job_id": {
+            "type": "integer",
+            "title": "Job Id"
+          },
+          "first_seen_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "First Seen At"
+          },
+          "closed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed At"
+          },
+          "closed_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed By"
+          },
+          "stage_before_close": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Stage"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "discard_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discard Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "first_seen_at",
+          "closed_at",
+          "closed_by",
+          "stage_before_close",
+          "discard_reason"
+        ],
+        "title": "ReopeningOf",
+        "description": "La oferta cerrada de la que viene una reapertura."
+      },
       "RepliesPollResult": {
         "properties": {
           "processes": {
@@ -37083,6 +37439,126 @@
           "window_days"
         ],
         "title": "RepostSignal"
+      },
+      "RepublishedList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RepublishedNotice"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "RepublishedList"
+      },
+      "RepublishedNotice": {
+        "properties": {
+          "job_id": {
+            "type": "integer",
+            "title": "Job Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "closed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed At"
+          },
+          "closed_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed By"
+          },
+          "seen_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Seen At"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "title",
+          "company",
+          "closed_at",
+          "closed_by",
+          "seen_at",
+          "url"
+        ],
+        "title": "RepublishedNotice"
+      },
+      "RepublishedSignal": {
+        "properties": {
+          "seen_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Seen At"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "dismissed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dismissed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seen_at"
+        ],
+        "title": "RepublishedSignal",
+        "description": "Una oferta que cerraste tú ha vuelto a publicarse (fase 45): no se crea otra; la Bandeja\navisa para que decidas si la reabres."
       },
       "RequestBody": {
         "properties": {

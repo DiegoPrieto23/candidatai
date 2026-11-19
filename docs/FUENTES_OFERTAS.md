@@ -136,7 +136,10 @@ empresas (abajo). Antes de guardar, «Probar» enseña las ofertas que pasan tus
   `config/title_aliases.yaml`, así que da igual el idioma en que los escribas; la ubicación, encajar con tus zonas o ser remota si aceptas remoto.
   Ante la duda deja pasar (sin ubicación, sin perfil). La 09b lo reutiliza para los resúmenes.
 - **Idempotente:** lo ya visto (por id en la fuente, URL o huella) no se vuelve a crear ni a
-  descargar. Lo nuevo queda en `pending_extraction` con el evento `found`.
+  descargar. Lo nuevo queda en `pending_extraction` con el evento `found`. Excepción: una vacante
+  cerrada hace más de `dedup.reopen_after_days` que vuelve (ver `docs/DATA_MODEL.md`, «Ofertas que
+  vuelven a publicarse»): si la cerró la empresa entra como reapertura y, si caducó y el ATS la
+  vuelve a listar, se reabre.
 - **Cada día** a la hora de `connectors.daily_at` (`config/policies.yaml`), `cai worker` encola una
   tarea por fuente activa. Si una falla, se anota en `source_runs` y las demás siguen.
 
@@ -354,7 +357,8 @@ hayas aprobado. Skill `search-jobs`.
     (`wait_user_action`). Si lo resuelves («Ya está»), sigue con esa plataforma; si no («Saltar» o
     caduca), lo anota y pasa a la siguiente. Los captchas los resuelves tú: nunca el agente.
 - Cada oferta encontrada entra por `add_job_from_text` con `source_id`, `platform`,
-  `external_id` y `url`. La deduplicación hace que lo ya visto o descartado no vuelva como nuevo.
+  `external_id` y `url`. La deduplicación hace que lo ya visto o descartado no vuelva como nuevo,
+  salvo una vacante que cerró la empresa hace más de `dedup.reopen_after_days`: entra como reabierta.
   El agente que navega no extrae ni valora: eso lo hacen luego `process-jobs` y `assess-fit`.
 - Al terminar cada plataforma, `record_source_run` con lo visto, lo que no pasa tus filtros, lo que ya
   tenías, lo nuevo, lo reabierto, lo que quedó por el límite, por qué paró (`stop_reason`), la marca de

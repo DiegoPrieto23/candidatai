@@ -46,6 +46,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/jobs/republished": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Republished Jobs
+         * @description Ofertas que cerraste tú y han vuelto a publicarse (fase 45): el aviso de la Bandeja.
+         */
+        get: operations["list_republished_jobs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/jobs/{job_id}/republished/dismiss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Dismiss Republished Job
+         * @description «Ignorar» el aviso «Ha vuelto a publicarse». Para reabrirla, el evento `reopened`.
+         */
+        post: operations["dismiss_republished_job"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/jobs/{job_id}": {
         parameters: {
             query?: never;
@@ -3724,6 +3764,18 @@ export interface components {
             duplicate_of: number | null;
             /** Risk Flags */
             risk_flags: string[];
+            /** Reopening Of */
+            reopening_of?: number | null;
+            /**
+             * Reopened
+             * @default false
+             */
+            reopened: boolean;
+            /**
+             * Republished After Close
+             * @default false
+             */
+            republished_after_close: boolean;
         };
         /** AddUserEventBody */
         AddUserEventBody: {
@@ -6447,6 +6499,8 @@ export interface components {
             risk_flags: string[];
             /** Duplicate Of */
             duplicate_of: number | null;
+            /** Reopening Of */
+            reopening_of?: number | null;
             /**
              * First Seen At
              * Format: date-time
@@ -6505,6 +6559,7 @@ export interface components {
             fixed_term?: components["schemas"]["FixedTermSignal"] | null;
             ai_screening?: components["schemas"]["AiScreeningSignal"] | null;
             stale_repost?: components["schemas"]["StaleRepostSignal"] | null;
+            republished_after_close?: components["schemas"]["RepublishedSignal"] | null;
         };
         /** JobView */
         JobView: {
@@ -6523,6 +6578,8 @@ export interface components {
             risk_flags: string[];
             /** Duplicate Of */
             duplicate_of: number | null;
+            /** Reopening Of */
+            reopening_of?: number | null;
             /**
              * First Seen At
              * Format: date-time
@@ -6544,6 +6601,7 @@ export interface components {
             injection: components["schemas"]["InjectionWarning"] | null;
             /** Archive Folder */
             archive_folder?: string | null;
+            reopening?: components["schemas"]["ReopeningOf"] | null;
         };
         /**
          * KeywordCoverage
@@ -8242,6 +8300,26 @@ export interface components {
             /** Fix */
             fix?: ("template" | "content") | null;
         };
+        /**
+         * ReopeningOf
+         * @description La oferta cerrada de la que viene una reapertura.
+         */
+        ReopeningOf: {
+            /** Job Id */
+            job_id: number;
+            /**
+             * First Seen At
+             * Format: date-time
+             */
+            first_seen_at: string;
+            /** Closed At */
+            closed_at: string | null;
+            /** Closed By */
+            closed_by: string | null;
+            stage_before_close: components["schemas"]["Stage"] | null;
+            /** Discard Reason */
+            discard_reason: string | null;
+        };
         /** RepliesPollResult */
         RepliesPollResult: {
             /** Processes */
@@ -8477,6 +8555,47 @@ export interface components {
             channel: string;
             /** Window Days */
             window_days: number;
+        };
+        /** RepublishedList */
+        RepublishedList: {
+            /** Items */
+            items: components["schemas"]["RepublishedNotice"][];
+        };
+        /** RepublishedNotice */
+        RepublishedNotice: {
+            /** Job Id */
+            job_id: number;
+            /** Title */
+            title: string;
+            /** Company */
+            company: string;
+            /** Closed At */
+            closed_at: string | null;
+            /** Closed By */
+            closed_by: string | null;
+            /**
+             * Seen At
+             * Format: date-time
+             */
+            seen_at: string;
+            /** Url */
+            url: string | null;
+        };
+        /**
+         * RepublishedSignal
+         * @description Una oferta que cerraste tú ha vuelto a publicarse (fase 45): no se crea otra; la Bandeja
+         *     avisa para que decidas si la reabres.
+         */
+        RepublishedSignal: {
+            /**
+             * Seen At
+             * Format: date-time
+             */
+            seen_at: string;
+            /** Url */
+            url?: string | null;
+            /** Dismissed At */
+            dismissed_at?: string | null;
         };
         /** RequestBody */
         RequestBody: {
@@ -9913,6 +10032,196 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["JobPage"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_republished_jobs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RepublishedList"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    dismiss_republished_job: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmptyBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RepublishedList"];
                 };
             };
             /** @description Unauthorized */

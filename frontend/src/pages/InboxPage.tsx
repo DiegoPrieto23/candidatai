@@ -19,6 +19,7 @@ import { type JobSort, PAGE_SIZE, type SortDirection, useEditableProfile, useJob
 import { DiscardDialog, type DiscardChoice } from '@/components/DiscardDialog'
 import { Hint } from '@/components/Hint'
 import { SignalBadges } from '@/components/JobSignals'
+import { ReopenedBadge, RepublishedBanner } from '@/components/Reopenings'
 import { KnownBadge } from '@/components/KnownBadge'
 import { Pager } from '@/components/Pager'
 import { ScoreBadge } from '@/components/MatchDetails'
@@ -469,6 +470,7 @@ function JobTable({
                     {job.title}
                   </Link>
                   {job.risk_flags.length > 0 && <RiskMark />}
+                  <ReopenedBadge reopeningOf={job.reopening_of} />
                   <SignalBadges signals={job.signals} />
                   <KnownBadge count={job.known_contacts} />
                 </div>
@@ -535,7 +537,8 @@ function JobTable({
                       {job.risk_flags.length > 0 && (
                         <WarningIcon className="size-4 shrink-0 text-warning-foreground" weight="fill" />
                       )}
-                      <SignalBadges signals={job.signals} />
+                      <ReopenedBadge reopeningOf={job.reopening_of} />
+                  <SignalBadges signals={job.signals} />
                     <KnownBadge count={job.known_contacts} />
                     </p>
                     <p className="truncate text-sm text-muted-foreground">{job.company}</p>
@@ -806,6 +809,7 @@ export function InboxPage() {
       />
 
       <div className="mb-4 space-y-3 empty:hidden">
+        <RepublishedBanner />
         {done.length > 0 && (
           <div role="status" className="flex items-center gap-3 rounded-xl border bg-card px-4 py-2.5 text-sm animate-in fade-in slide-in-from-top-1">
             <ProhibitIcon className="size-[18px] shrink-0 text-muted-foreground" />

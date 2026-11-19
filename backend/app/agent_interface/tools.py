@@ -1124,8 +1124,9 @@ TOOLS: tuple[ToolSpec, ...] = (
             "`new` (no está), `known` (mismo id de plataforma o misma URL, sin contar parámetros "
             "de seguimiento), `same_offer` (misma empresa, título y ubicación, que pasa si la "
             "ves: cuenta en la comparación; y la oferta sigue "
-            "viva o se cerró hace poco) o `reopen_candidate` (la misma, pero cerrada hace más de "
-            "`dedup.reopen_after_days`; con `closed_by`). Solo lee: no da de alta nada."
+            "viva o se cerró hace poco) o `reopen_candidate` (la misma, cerrada por la empresa o "
+            "caducada hace más de `dedup.reopen_after_days`: entrará como reapertura; con "
+            "`closed_by`). Solo lee: no da de alta nada."
         ),
         input_model=CheckKnownInput,
         output_model=known.KnownList,

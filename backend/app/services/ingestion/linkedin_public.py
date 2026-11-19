@@ -543,7 +543,9 @@ def _collect(
                     if not prefilter.check_summary(card.title, card.location).passed:
                         continue
                     result.after_filters += 1
-                    if ingest.find_by_platform(session, "linkedin", card.external_id) is not None:
+                    known = ingest.find_by_platform(session, "linkedin", card.external_id)
+                    # Si caducó y vuelve, pasa por `store_job`, que la reabre (fase 45).
+                    if known is not None and not ingest.needs_store(session, known):
                         result.existing += 1
                         continue
                     fresh.append(card)
