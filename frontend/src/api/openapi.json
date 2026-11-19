@@ -23178,6 +23178,113 @@
         "title": "AgentBrowseSource",
         "description": "Una plataforma donde el agente busca con el navegador del usuario (`agent_browse`).\n\nSe identifica por `name`: guardar otra con el mismo nombre la actualiza."
       },
+      "AgentBrowseView": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "description": "Nombre de la plataforma tal como quieres verlo."
+          },
+          "platform": {
+            "type": "string",
+            "title": "Platform",
+            "description": "Id corto: `linkedin`, `infojobs`, `tecnoempleo`…"
+          },
+          "search_urls": {
+            "items": {
+              "type": "string",
+              "maxLength": 2000,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 10,
+            "minItems": 1,
+            "title": "Search Urls",
+            "description": "Búsquedas ya filtradas por puesto y ubicación (URLs http/https)."
+          },
+          "priority": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Priority",
+            "description": "Puesto en el orden de recorrido, sin empates (1 se recorre primero). Sin valor: al final si es nueva; si ya existe, conserva el suyo. Un puesto ocupado: una nueva se inserta ahí y las siguientes bajan uno; una existente se intercambia con la que lo tenía."
+          },
+          "access": {
+            "type": "string",
+            "enum": [
+              "free",
+              "login",
+              "blocked"
+            ],
+            "title": "Access",
+            "description": "`free`, `login` (inicias sesión tú) o `blocked`.",
+            "default": "free"
+          },
+          "allow_agent_browsing": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allow Agent Browsing",
+            "description": "Si el agente puede recorrerla. Por defecto, sí; en LinkedIn, no (y solo el usuario puede activarla, en la UI)."
+          },
+          "max_offers": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 100.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Offers",
+            "description": "Ofertas que abrir; por defecto, `agent_browse.default_max_offers`."
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "last_seen": {
+            "items": {
+              "$ref": "#/components/schemas/SeenSearch"
+            },
+            "type": "array",
+            "title": "Last Seen",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "platform",
+          "search_urls"
+        ],
+        "title": "AgentBrowseView",
+        "description": "La plataforma tal como se lista: su configuración y hasta dónde llegó cada búsqueda."
+      },
       "AgentCapabilities": {
         "properties": {
           "mcp": {
@@ -38477,6 +38584,52 @@
         ],
         "title": "SectionChange"
       },
+      "SeenSearch": {
+        "properties": {
+          "search_url": {
+            "type": "string",
+            "title": "Search Url"
+          },
+          "newest_refs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Newest Refs"
+          },
+          "newest_posted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Newest Posted At"
+          },
+          "run_id": {
+            "type": "integer",
+            "title": "Run Id"
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "search_url",
+          "newest_refs",
+          "newest_posted_at",
+          "run_id",
+          "recorded_at"
+        ],
+        "title": "SeenSearch",
+        "description": "La marca de agua vigente de una búsqueda: la del último recorrido que la anotó."
+      },
       "SemanticResult": {
         "properties": {
           "model": {
@@ -39294,6 +39447,49 @@
             },
             "type": "array",
             "title": "Errors"
+          },
+          "existing": {
+            "type": "integer",
+            "title": "Existing",
+            "default": 0
+          },
+          "skipped_known": {
+            "type": "integer",
+            "title": "Skipped Known",
+            "default": 0
+          },
+          "filtered_out": {
+            "type": "integer",
+            "title": "Filtered Out",
+            "default": 0
+          },
+          "left_by_limit": {
+            "type": "integer",
+            "title": "Left By Limit",
+            "default": 0
+          },
+          "reopened": {
+            "type": "integer",
+            "title": "Reopened",
+            "default": 0
+          },
+          "stop_reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "limit",
+                  "watermark",
+                  "known_streak",
+                  "pages",
+                  "incident"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stop Reason"
           }
         },
         "type": "object",
@@ -39408,7 +39604,7 @@
           "browse": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AgentBrowseSource"
+                "$ref": "#/components/schemas/AgentBrowseView"
               },
               {
                 "type": "null"

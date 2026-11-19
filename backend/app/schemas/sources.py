@@ -342,12 +342,59 @@ class Incident(_Strict):
     message: str = Field(min_length=1, max_length=500)
 
 
+StopReason = Literal["limit", "watermark", "known_streak", "pages", "incident"]
+MAX_WATERMARK_REFS = 20
+
+
+class SearchWatermark(_Strict):
+    """Hasta dónde llegó un recorrido en una búsqueda: lo más reciente que vio, para que el
+    siguiente pare al llegar ahí."""
+
+    search_url: SearchUrl = Field(description="La búsqueda (una de `search_urls` o puntual).")
+    newest_refs: list[Annotated[str, Field(min_length=1, max_length=2000)]] = Field(
+        default=[],
+        max_length=MAX_WATERMARK_REFS,
+        description=(
+            "Referencias (URL o id) de los primeros resultados de la búsqueda, de más reciente a "
+            "más antiguo; unas 10."
+        ),
+    )
+    newest_posted_at: AwareDatetime | None = Field(
+        default=None, description="Fecha de publicación del resultado más reciente, si se ve."
+    )
+
+
 class SourceRunSummary(_Strict):
     """Lo que hizo el agente en una plataforma: encontradas, nuevas, ya conocidas e incidentes."""
 
     found: int = Field(ge=0, description="Resultados vistos en las páginas de búsqueda.")
     created: int = Field(ge=0, description="Ofertas dadas de alta como nuevas.")
     existing: int = Field(default=0, ge=0, description="Dadas de alta que ya estaban.")
+    skipped_known: int = Field(
+        default=0,
+        ge=0,
+        description="Sin abrir porque ya estaban (`known` o `same_offer` en `check_known`).",
+    )
+    filtered_out: int = Field(
+        default=0, ge=0, description="Vistas en la lista que no pasan tus filtros."
+    )
+    left_by_limit: int = Field(
+        default=0, ge=0, description="Candidatas nuevas que quedaron sin abrir por el límite."
+    )
+    reopened: int = Field(
+        default=0, ge=0, description="De las abiertas, cuántas eran `reopen_candidate`."
+    )
+    stop_reason: StopReason | None = Field(
+        default=None,
+        description=(
+            "Por qué paró: `limit` (llegó a N nuevas), `watermark` (llegó a lo de la búsqueda "
+            "anterior), `known_streak` (varias conocidas seguidas), `pages` (se acabaron las "
+            "páginas o el máximo) o `incident`."
+        ),
+    )
+    watermarks: list[SearchWatermark] = Field(
+        default=[], max_length=10, description="La marca de agua de cada búsqueda recorrida."
+    )
     incidents: list[Incident] = Field(default=[], max_length=50)
     started_at: AwareDatetime | None = None
     finished_at: AwareDatetime | None = None
@@ -359,6 +406,36 @@ class SourceRunSummary(_Strict):
         found, created = info.data.get("found"), info.data.get("created")
         if found is not None and created is not None and created + value > found:
             raise ValueError("`created` + `existing` no puede superar `found`.")
+        return value
+
+    @field_validator("left_by_limit")
+    @classmethod
+    def _seen_fit_in_found(cls, value: int, info: ValidationInfo) -> int:
+        data = info.data
+        keys = ("created", "existing", "skipped_known", "filtered_out")
+        if data.get("found") is None or any(data.get(k) is None for k in keys):
+            return value
+        if sum(data[k] for k in keys) + value > data["found"]:
+            raise ValueError(
+                "`created` + `existing` + `skipped_known` + `filtered_out` + `left_by_limit` "
+                "no puede superar `found`."
+            )
+        return value
+
+    @field_validator("reopened")
+    @classmethod
+    def _reopened_were_opened(cls, value: int, info: ValidationInfo) -> int:
+        created, existing = info.data.get("created"), info.data.get("existing")
+        if created is not None and existing is not None and value > created + existing:
+            raise ValueError("`reopened` no puede superar `created` + `existing`.")
+        return value
+
+    @field_validator("watermarks")
+    @classmethod
+    def _one_per_search(cls, value: list[SearchWatermark]) -> list[SearchWatermark]:
+        urls = [w.search_url for w in value]
+        if len(set(urls)) != len(urls):
+            raise ValueError("Una sola marca de agua por búsqueda (`search_url` repetida).")
         return value
 
     @field_validator("finished_at")
@@ -395,6 +472,29 @@ class SourceRunView(BaseModel):
     after_filters: int
     created: int
     errors: list[Issue]
+    # Recorridos del agente (fase 45); en el resto, 0 y sin motivo.
+    existing: int = 0
+    skipped_known: int = 0
+    filtered_out: int = 0
+    left_by_limit: int = 0
+    reopened: int = 0
+    stop_reason: StopReason | None = None
+
+
+class SeenSearch(BaseModel):
+    """La marca de agua vigente de una búsqueda: la del último recorrido que la anotó."""
+
+    search_url: str
+    newest_refs: list[str]
+    newest_posted_at: datetime | None
+    run_id: int
+    recorded_at: datetime
+
+
+class AgentBrowseView(AgentBrowseSource):
+    """La plataforma tal como se lista: su configuración y hasta dónde llegó cada búsqueda."""
+
+    last_seen: list[SeenSearch] = []
 
 
 class SourceView(BaseModel):
@@ -405,7 +505,7 @@ class SourceView(BaseModel):
     active: bool
     config: dict[str, Any]  # nunca lleva secretos: las claves de los portales van en `.env`
     keys_missing: bool  # portal opcional sin claves en `.env`: se omite al ejecutar
-    browse: AgentBrowseSource | None = None  # solo en plataformas `agent_browse`
+    browse: AgentBrowseView | None = None  # solo en plataformas `agent_browse`
     # Web de la empresa o del portal, para su logo: la que puso el usuario o, si no, la de sus
     # ofertas cuando no están en el dominio del ATS.
     website: str | None = None

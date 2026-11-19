@@ -303,7 +303,8 @@ def save_source(session: Session, data: AgentBrowseSource) -> SaveSourceResult:
 
 
 def record_run(session: Session, source_id: int, summary: SourceRunSummary) -> RecordRunResult:
-    """Anota un recorrido del agente (actor `agent`) y avanza `last_run_at`."""
+    """Anota un recorrido del agente (actor `agent`) y avanza `last_run_at`. La marca de agua de
+    cada búsqueda queda en el recorrido; `list_sources` enseña la última de cada una."""
     source = browse_source(session, source_id)
     require_browsing(source)
     now = utcnow()
@@ -318,8 +319,18 @@ def record_run(session: Session, source_id: int, summary: SourceRunSummary) -> R
         started_at=started,
         finished_at=finished,
         found=summary.found,
-        after_filters=summary.created + summary.existing,
+        # Pasan tus filtros: las abiertas, las que ya tenías y las que quedaron por el límite.
+        after_filters=(
+            summary.created + summary.existing + summary.skipped_known + summary.left_by_limit
+        ),
         created=summary.created,
+        existing=summary.existing,
+        skipped_known=summary.skipped_known,
+        filtered_out=summary.filtered_out,
+        left_by_limit=summary.left_by_limit,
+        reopened=summary.reopened,
+        stop_reason=summary.stop_reason,
+        watermarks=[w.model_dump(mode="json") for w in summary.watermarks] or None,
         errors=[
             Issue(code=i.code, message=i.message).model_dump(exclude_none=True)
             for i in summary.incidents

@@ -22,6 +22,7 @@ function source(overrides: Partial<SourceView> = {}): SourceView {
       found: 12,
       after_filters: 3,
       created: 2,
+      existing: 0, skipped_known: 0, filtered_out: 0, left_by_limit: 0, reopened: 0,
       errors: [],
     },
     ...overrides,

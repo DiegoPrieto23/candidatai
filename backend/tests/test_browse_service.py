@@ -485,6 +485,145 @@ def test_run_summary_validation() -> None:
         )
 
 
+# --- Marca de agua (fase 45) ------------------------------------------------------------------
+
+SEARCH_A = TECNO["search_urls"][0]
+SEARCH_B = "https://www.tecnoempleo.com/ofertas-trabajo/?te=analytics+engineer"
+
+
+def _mark(url: str, refs: list[str], day: int) -> dict[str, Any]:
+    return {
+        "search_url": url,
+        "newest_refs": refs,
+        "newest_posted_at": datetime(2026, 11, day, 8, 0, tzinfo=UTC).isoformat(),
+    }
+
+
+def _run(session: Session, source_id: int, day: int, **data: Any) -> int:
+    summary = SourceRunSummary.model_validate(
+        {"found": 20, "created": 0, "finished_at": datetime(2026, 11, day, 9, 0, tzinfo=UTC)} | data
+    )
+    return browse.record_run(session, source_id, summary).run_id
+
+
+def test_two_runs_keep_the_latest_watermark_and_the_history(session: Session) -> None:
+    source_id = _save(session, **TECNO).source_id
+    first = _run(
+        session,
+        source_id,
+        10,
+        created=12,
+        existing=1,
+        filtered_out=4,
+        left_by_limit=3,
+        reopened=1,
+        stop_reason="limit",
+        watermarks=[_mark(SEARCH_A, ["a1", "a2"], 10), _mark(SEARCH_B, ["b1"], 9)],
+    )
+    second = _run(
+        session,
+        source_id,
+        11,
+        created=2,
+        skipped_known=6,
+        stop_reason="watermark",
+        watermarks=[_mark(SEARCH_A, ["a3", "a1"], 11)],
+    )
+
+    run = session.get(SourceRun, first)
+    assert run is not None
+    assert (run.created, run.existing, run.filtered_out, run.left_by_limit, run.reopened) == (
+        12,
+        1,
+        4,
+        3,
+        1,
+    )
+    assert (run.after_filters, run.stop_reason) == (16, "limit")
+    # El historial conserva la marca del primero.
+    assert run.watermarks is not None and run.watermarks[0]["newest_refs"] == ["a1", "a2"]
+
+    view = service.get_source(session, source_id)
+    assert view.browse is not None
+    seen = {s.search_url: s for s in view.browse.last_seen}
+    assert (seen[SEARCH_A].newest_refs, seen[SEARCH_A].run_id) == (["a3", "a1"], second)
+    assert seen[SEARCH_A].newest_posted_at == datetime(2026, 11, 11, 8, 0, tzinfo=UTC)
+    # La búsqueda que el segundo no recorrió sigue con la marca del primero.
+    assert (seen[SEARCH_B].newest_refs, seen[SEARCH_B].run_id) == (["b1"], first)
+    assert view.last_run is not None
+    assert (view.last_run.skipped_known, view.last_run.stop_reason) == (6, "watermark")
+
+    listed = service.list_sources(session, "agent_browse").sources[0]
+    assert listed.browse is not None and len(listed.browse.last_seen) == 2
+
+
+def test_run_without_watermark_keeps_the_previous_one(session: Session) -> None:
+    source_id = _save(session, **TECNO).source_id
+    first = _run(session, source_id, 10, watermarks=[_mark(SEARCH_A, ["a1"], 10)])
+    _run(session, source_id, 11, stop_reason="incident")
+    run = session.scalars(select(SourceRun).order_by(SourceRun.id.desc())).first()
+    assert run is not None and run.watermarks is None
+    view = service.get_source(session, source_id)
+    assert view.browse is not None
+    assert [(s.search_url, s.run_id) for s in view.browse.last_seen] == [(SEARCH_A, first)]
+
+
+def test_empty_or_broken_marks_do_not_hide_a_good_one(session: Session) -> None:
+    source_id = _save(session, **TECNO).source_id
+    good = _run(session, source_id, 10, watermarks=[_mark(SEARCH_A, ["a1"], 10)])
+    # Un recorrido sin resultados anota la búsqueda sin refs ni fecha: no pisa la anterior.
+    _run(session, source_id, 11, watermarks=[{"search_url": SEARCH_A}])
+    # Una marca editada a mano con una fecha imposible se salta sin romper la lista.
+    broken = _run(session, source_id, 12, watermarks=[_mark(SEARCH_B, ["b1"], 12)])
+    run = session.get(SourceRun, broken)
+    assert run is not None
+    run.watermarks = [{**_mark(SEARCH_B, ["b1"], 12), "newest_posted_at": "ayer"}]
+    session.flush()
+
+    view = service.get_source(session, source_id)
+    assert view.browse is not None
+    assert [(s.search_url, s.run_id) for s in view.browse.last_seen] == [(SEARCH_A, good)]
+
+
+def test_latest_recorded_run_wins_even_with_older_dates(session: Session) -> None:
+    source_id = _save(session, **TECNO).source_id
+    _run(session, source_id, 12, watermarks=[_mark(SEARCH_A, ["viejo"], 12)])
+    later = _run(session, source_id, 11, watermarks=[_mark(SEARCH_A, ["nuevo"], 11)])
+    view = service.get_source(session, source_id)
+    assert view.browse is not None
+    assert [(s.newest_refs, s.run_id) for s in view.browse.last_seen] == [(["nuevo"], later)]
+
+
+def test_save_source_does_not_accept_last_seen() -> None:
+    with pytest.raises(ValidationError):
+        AgentBrowseSource.model_validate({**TECNO, "last_seen": []})
+
+
+def test_watermark_summary_validation() -> None:
+    with pytest.raises(ValidationError, match="left_by_limit"):
+        SourceRunSummary(found=5, created=2, skipped_known=2, left_by_limit=2)
+    with pytest.raises(ValidationError, match="reopened"):
+        SourceRunSummary(found=5, created=1, reopened=2)
+    with pytest.raises(ValidationError, match="repetida"):
+        SourceRunSummary.model_validate(
+            {"found": 0, "created": 0, "watermarks": [_mark(SEARCH_A, [], 1)] * 2}
+        )
+    with pytest.raises(ValidationError):
+        SourceRunSummary.model_validate({"found": 0, "created": 0, "stop_reason": "cansado"})
+    with pytest.raises(ValidationError):
+        SourceRunSummary.model_validate(
+            {"found": 0, "created": 0, "watermarks": [_mark(SEARCH_A, ["x"] * 21, 1)]}
+        )
+    with pytest.raises(ValidationError):  # fecha sin zona
+        SourceRunSummary.model_validate(
+            {
+                "found": 0,
+                "created": 0,
+                "watermarks": [{"search_url": SEARCH_A, "newest_posted_at": "2026-11-01T08:00"}],
+            }
+        )
+
+
 # --- add_from_text con plataforma -----------------------------------------------------------
 
 

@@ -9,6 +9,8 @@ Cada ejecución queda en `source_runs`, también si la fuente falla: así el err
 """
 
 import logging
+from datetime import datetime
+from typing import Any, cast
 from urllib.parse import urlsplit
 
 import httpx
@@ -28,8 +30,10 @@ from app.schemas.sources import (
     KIND_LABELS,
     AgentBrowseLimits,
     AgentBrowseSource,
+    AgentBrowseView,
     Issue,
     PreviewJob,
+    SeenSearch,
     SourceConfig,
     SourceInput,
     SourceList,
@@ -38,6 +42,7 @@ from app.schemas.sources import (
     SourceRunView,
     SourceTestResult,
     SourceView,
+    StopReason,
     Website,
     parse_config,
 )
@@ -157,6 +162,12 @@ def _run_view(run: SourceRun) -> SourceRunView:
         after_filters=run.after_filters,
         created=run.created,
         errors=[Issue.model_validate(e) for e in run.errors],
+        existing=run.existing,
+        skipped_known=run.skipped_known,
+        filtered_out=run.filtered_out,
+        left_by_limit=run.left_by_limit,
+        reopened=run.reopened,
+        stop_reason=cast(StopReason | None, run.stop_reason),
     )
 
 
@@ -169,14 +180,58 @@ def _last_run(session: Session, source_id: int) -> SourceRun | None:
     ).first()
 
 
-def _browse(source: Source) -> AgentBrowseSource | None:
+# Recorridos que se miran para la marca de agua de cada búsqueda.
+LAST_SEEN_RUNS = 50
+
+
+def _seen_search(run: SourceRun, mark: Any) -> SeenSearch | None:
+    """Una marca guardada, o `None` si no sirve para parar (vacía) o está mal (editada a mano)."""
+    if not isinstance(mark, dict) or not isinstance(mark.get("search_url"), str):
+        return None
+    if not mark.get("newest_refs") and not mark.get("newest_posted_at"):
+        return None
+    try:
+        posted = mark.get("newest_posted_at")
+        return SeenSearch(
+            search_url=mark["search_url"],
+            newest_refs=[str(r) for r in mark.get("newest_refs") or []],
+            newest_posted_at=datetime.fromisoformat(posted) if posted else None,
+            run_id=run.id,
+            recorded_at=run.finished_at or run.started_at,
+        )
+    except (TypeError, ValueError):
+        logger.warning("Marca de agua no válida en el recorrido %s", run.id)
+        return None
+
+
+def _last_seen(session: Session, source_id: int) -> list[SeenSearch]:
+    """La marca de agua vigente de cada búsqueda: la del último recorrido anotado que dejó una
+    útil (las de antes siguen en su recorrido, como historial). Se ordena por orden de anotación,
+    no por las fechas que da el agente."""
+    runs = session.scalars(
+        select(SourceRun)
+        .where(SourceRun.source_id == source_id, SourceRun.watermarks.is_not(None))
+        .order_by(SourceRun.id.desc())
+        .limit(LAST_SEEN_RUNS)
+    )
+    seen: dict[str, SeenSearch] = {}
+    for run in runs:
+        for mark in run.watermarks or []:
+            view = _seen_search(run, mark)
+            if view is not None and view.search_url not in seen:
+                seen[view.search_url] = view
+    return list(seen.values())
+
+
+def _browse(session: Session, source: Source) -> AgentBrowseView | None:
     if source.kind != "agent_browse":
         return None
     try:
-        return AgentBrowseSource.model_validate({"name": source.name, **(source.config or {})})
+        config = AgentBrowseSource.model_validate({"name": source.name, **(source.config or {})})
     except ValueError:  # config editada a mano: se lista igual, sin el bloque tipado
         logger.warning("Configuración no válida en la plataforma %s", source.id)
         return None
+    return AgentBrowseView(**config.model_dump(), last_seen=_last_seen(session, source.id))
 
 
 def _website(session: Session, source: Source) -> str | None:
@@ -224,7 +279,7 @@ def _view(session: Session, source: Source) -> SourceView:
         active=source.active,
         config=dict(source.config or {}),
         keys_missing=keys_missing(source.kind),
-        browse=_browse(source),
+        browse=_browse(session, source),
         website=_website(session, source),
         last_run_at=source.last_run_at,
         last_run=_run_view(last) if last else None,

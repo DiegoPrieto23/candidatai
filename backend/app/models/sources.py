@@ -68,6 +68,15 @@ class SourceRun(Base):
     created: Mapped[int] = mapped_column(default=0)
     completed: Mapped[int] = mapped_column(default=0)  # resúmenes completados (fase 09b)
     errors: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
+    # Recorridos del agente (fase 45): lo que no abrió y por qué paró.
+    existing: Mapped[int] = mapped_column(default=0, server_default="0")
+    skipped_known: Mapped[int] = mapped_column(default=0, server_default="0")
+    filtered_out: Mapped[int] = mapped_column(default=0, server_default="0")
+    left_by_limit: Mapped[int] = mapped_column(default=0, server_default="0")
+    reopened: Mapped[int] = mapped_column(default=0, server_default="0")
+    stop_reason: Mapped[str | None] = mapped_column(String(16))
+    # Marca de agua por búsqueda: `[{search_url, newest_refs, newest_posted_at}]`.
+    watermarks: Mapped[list[dict[str, Any]] | None] = mapped_column(JSON(none_as_null=True))
 
 
 class SearchRun(Base):

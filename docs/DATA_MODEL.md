@@ -29,10 +29,17 @@ Una fila por ejecución de una fuente; la usan los conectores y, desde la 09b, a
 | actor | str | `system` (worker), `user` (CLI o UI), `agent` (09b) |
 | started_at / finished_at | datetime | |
 | found | int | Ofertas que devolvió la fuente |
-| after_filters | int | Las que pasaron el filtro previo de título y ubicación |
+| after_filters | int | Las que pasaron el filtro previo de título y ubicación. En los recorridos del agente: `created + existing + skipped_known + left_by_limit` |
 | created | int | Ofertas nuevas guardadas (en `pending_extraction`) |
 | completed | int | Resúmenes completados (09b) |
 | errors | JSON | `[{code, message, item?}]`: fallo de la fuente o de una oferta suelta |
+| existing | int | Recorridos del agente (45): abiertas que ya estaban. 0 en el resto |
+| skipped_known | int | Recorridos del agente (45): sin abrir porque ya estaban (`check_known`: `known` o `same_offer`) |
+| filtered_out | int | Recorridos del agente (45): vistas que no pasan tus filtros (`preferences`) |
+| left_by_limit | int | Recorridos del agente (45): candidatas nuevas que quedaron sin abrir por el límite de N |
+| reopened | int | Recorridos del agente (45): de las abiertas, las que eran `reopen_candidate` |
+| stop_reason | str? | Recorridos del agente (45): `limit`, `watermark`, `known_streak`, `pages` o `incident` |
+| watermarks | JSON? | Recorridos del agente (45): `[{search_url, newest_refs, newest_posted_at}]`, lo más reciente que vio cada búsqueda. La vigente de cada búsqueda es la del último recorrido que la anotó (`list_sources` → `browse.last_seen`); las anteriores quedan como historial |
 
 ### `agent_tasks` (fase 39g)
 Lo que acaba de lanzar un botón de la app: de ella salen los avisos «Leyendo y valorando ofertas…», «Generando el

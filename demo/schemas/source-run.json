@@ -1,7 +1,22 @@
 {
-  "found": 12,
+  "found": 24,
   "created": 3,
-  "existing": 9,
+  "existing": 0,
+  "skipped_known": 9,
+  "filtered_out": 12,
+  "left_by_limit": 0,
+  "reopened": 0,
+  "stop_reason": "watermark",
+  "watermarks": [
+    {
+      "search_url": "https://www.tecnoempleo.com/ofertas-trabajo/?te=data+engineer",
+      "newest_refs": [
+        "0a1b2c3d4e5f60718293",
+        "1a2b3c4d5e6f70819203"
+      ],
+      "newest_posted_at": "2026-10-16T07:30:00+02:00"
+    }
+  ],
   "incidents": [],
   "started_at": "2026-10-16T08:00:00+02:00",
   "finished_at": "2026-10-16T08:10:00+02:00"

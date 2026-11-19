@@ -3809,6 +3809,56 @@ export interface components {
             notes?: string | null;
         };
         /**
+         * AgentBrowseView
+         * @description La plataforma tal como se lista: su configuración y hasta dónde llegó cada búsqueda.
+         */
+        AgentBrowseView: {
+            /**
+             * Name
+             * @description Nombre de la plataforma tal como quieres verlo.
+             */
+            name: string;
+            /**
+             * Platform
+             * @description Id corto: `linkedin`, `infojobs`, `tecnoempleo`…
+             */
+            platform: string;
+            /**
+             * Search Urls
+             * @description Búsquedas ya filtradas por puesto y ubicación (URLs http/https).
+             */
+            search_urls: string[];
+            /**
+             * Priority
+             * @description Puesto en el orden de recorrido, sin empates (1 se recorre primero). Sin valor: al final si es nueva; si ya existe, conserva el suyo. Un puesto ocupado: una nueva se inserta ahí y las siguientes bajan uno; una existente se intercambia con la que lo tenía.
+             */
+            priority?: number | null;
+            /**
+             * Access
+             * @description `free`, `login` (inicias sesión tú) o `blocked`.
+             * @default free
+             * @enum {string}
+             */
+            access: "free" | "login" | "blocked";
+            /**
+             * Allow Agent Browsing
+             * @description Si el agente puede recorrerla. Por defecto, sí; en LinkedIn, no (y solo el usuario puede activarla, en la UI).
+             */
+            allow_agent_browsing?: boolean | null;
+            /**
+             * Max Offers
+             * @description Ofertas que abrir; por defecto, `agent_browse.default_max_offers`.
+             */
+            max_offers?: number | null;
+            /** Notes */
+            notes?: string | null;
+            /**
+             * Last Seen
+             * @default []
+             */
+            last_seen: components["schemas"]["SeenSearch"][];
+        };
+        /**
          * AgentCapabilities
          * @description Qué sabe hacer el agente. `None`: sin comprobar.
          */
@@ -8909,6 +8959,25 @@ export interface components {
              */
             reordered: boolean;
         };
+        /**
+         * SeenSearch
+         * @description La marca de agua vigente de una búsqueda: la del último recorrido que la anotó.
+         */
+        SeenSearch: {
+            /** Search Url */
+            search_url: string;
+            /** Newest Refs */
+            newest_refs: string[];
+            /** Newest Posted At */
+            newest_posted_at: string | null;
+            /** Run Id */
+            run_id: number;
+            /**
+             * Recorded At
+             * Format: date-time
+             */
+            recorded_at: string;
+        };
         /** SemanticResult */
         SemanticResult: {
             /** Model */
@@ -9186,6 +9255,33 @@ export interface components {
             created: number;
             /** Errors */
             errors: components["schemas"]["Issue"][];
+            /**
+             * Existing
+             * @default 0
+             */
+            existing: number;
+            /**
+             * Skipped Known
+             * @default 0
+             */
+            skipped_known: number;
+            /**
+             * Filtered Out
+             * @default 0
+             */
+            filtered_out: number;
+            /**
+             * Left By Limit
+             * @default 0
+             */
+            left_by_limit: number;
+            /**
+             * Reopened
+             * @default 0
+             */
+            reopened: number;
+            /** Stop Reason */
+            stop_reason?: ("limit" | "watermark" | "known_streak" | "pages" | "incident") | null;
         };
         /**
          * SourceTestResult
@@ -9230,7 +9326,7 @@ export interface components {
             };
             /** Keys Missing */
             keys_missing: boolean;
-            browse?: components["schemas"]["AgentBrowseSource"] | null;
+            browse?: components["schemas"]["AgentBrowseView"] | null;
             /** Website */
             website?: string | null;
             /** Last Run At */
