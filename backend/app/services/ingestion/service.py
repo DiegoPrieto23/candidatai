@@ -808,9 +808,12 @@ def _store(session: Session, source: Source, raw: RawJob, result: SourceRunResul
         result.duplicates += 1
 
 
-def run_source(session: Session, source_id: int, actor: str = "user") -> SourceRunResult:
+def run_source(
+    session: Session, source_id: int, actor: str = "user", *, search_run_id: int | None = None
+) -> SourceRunResult:
     """Ejecuta una fuente y guarda lo nuevo. Un fallo de la fuente no lanza: queda en `errors`
-    (y en `source_runs`); `retryable_error` dice al worker si conviene reintentar."""
+    (y en `source_runs`); `retryable_error` dice al worker si conviene reintentar. Con
+    `search_run_id`, el recorrido queda ligado a esa búsqueda de «Buscar ahora»."""
     source = _source(session, source_id)
     if source.kind not in CONNECTORS:
         raise NotAConnectorError(f"La fuente «{source.name}» no tiene conector.")
@@ -830,7 +833,13 @@ def run_source(session: Session, source_id: int, actor: str = "user") -> SourceR
         errors=[],
         message="",
     )
-    run = SourceRun(source_id=source.id, actor=actor, started_at=utcnow(), errors=[])
+    run = SourceRun(
+        source_id=source.id,
+        actor=actor,
+        started_at=utcnow(),
+        errors=[],
+        search_run_id=search_run_id,
+    )
     try:
         config = parse_config(source.kind, source.config)
         with _client() as client:

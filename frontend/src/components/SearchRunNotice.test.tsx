@@ -10,7 +10,11 @@ function run(overrides: Record<string, unknown> = {}) {
     outcome: null,
     portals_total: 3,
     portals_done: 1,
+    companies_total: 0,
+    companies_done: 0,
+    portals_finished: false,
     found: 12,
+    reopened: 0,
     created: 4,
     problems: 0,
     started_at: '2026-11-03T10:00:00Z',
@@ -104,5 +108,19 @@ describe('Aviso de la búsqueda', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Cerrar el aviso' }))
     await waitFor(() => expect(screen.queryByText('Búsqueda terminada')).not.toBeInTheDocument())
     expect(calls.some((c) => c.method === 'POST' && c.path === '/agent/search-run/7/dismiss')).toBe(true)
+  })
+
+  it('espera a las empresas después de tu agente y cuenta las reabiertas (fase 45)', async () => {
+    mockApi(routes(run({ outcome: 'done', portals_finished: true, portals_done: 3, companies_total: 2, companies_done: 1 })))
+    renderApp('/')
+    expect(await screen.findByText('Buscando ofertas…')).toBeInTheDocument()
+    expect(screen.getByText('La app está revisando las webs de empleo de tus empresas.')).toBeInTheDocument()
+    expect(screen.getByText('3 de 3 portales · 1 de 2 empresas · 4 ofertas nuevas')).toBeInTheDocument()
+  })
+
+  it('al terminar dice cuántas son reaperturas', async () => {
+    mockApi(routes(run({ status: 'finished', outcome: 'done', portals_done: 3, reopened: 2, finished_at: '2026-11-03T10:30:00Z' })))
+    renderApp('/')
+    expect(await screen.findByText(/2 son reaperturas de vacantes anteriores/)).toBeInTheDocument()
   })
 })

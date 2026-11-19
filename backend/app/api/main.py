@@ -32,6 +32,7 @@ from app.api.routes import (
     prompts,
     received_offers,
     replies,
+    search,
     secrets,
     skills,
     sources,
@@ -89,6 +90,7 @@ def create_app() -> FastAPI:
     app.include_router(apply.router)
     app.include_router(prompts.router)
     app.include_router(agent.router)
+    app.include_router(search.router)
     app.include_router(context.router)
     app.include_router(profile.router)
     app.include_router(skills.router)

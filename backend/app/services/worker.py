@@ -81,7 +81,13 @@ def _rescore_all(session: Session, _payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def _run_source(session: Session, payload: dict[str, Any]) -> dict[str, Any]:
-    result = sources.run_source(session, int(payload["source_id"]), actor="system")
+    search_run_id = payload.get("search_run_id")
+    result = sources.run_source(
+        session,
+        int(payload["source_id"]),
+        actor="system",
+        search_run_id=int(search_run_id) if search_run_id is not None else None,
+    )
     data = result.model_dump(mode="json")
     # La ejecución fallida queda en `source_runs` (se confirma) y la tarea se reintenta.
     if (error := sources.retryable_error(result)) is not None:

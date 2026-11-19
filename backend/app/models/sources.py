@@ -75,6 +75,8 @@ class SourceRun(Base):
     left_by_limit: Mapped[int] = mapped_column(default=0, server_default="0")
     reopened: Mapped[int] = mapped_column(default=0, server_default="0")
     stop_reason: Mapped[str | None] = mapped_column(String(16))
+    # La búsqueda de «Buscar ahora» a la que pertenece (fase 45), si vino de ahí.
+    search_run_id: Mapped[int | None] = mapped_column(ForeignKey("search_runs.id"), index=True)
     # Marca de agua por búsqueda: `[{search_url, newest_refs, newest_posted_at}]`.
     watermarks: Mapped[list[dict[str, Any]] | None] = mapped_column(JSON(none_as_null=True))
 
@@ -85,6 +87,8 @@ class SearchRun(Base):
     `source_ids`: los portales que tenía que recorrer. `after_source_run_id`: el último recorrido
     anotado al empezar; los de esta búsqueda son los posteriores. `outcome`: `done`, `no_browser` o
     `stopped`, lo que dijo el agente al terminar. `dismissed_at`: el aviso ya está cerrado.
+    `company_ids` y `task_ids` (fase 45): las empresas con portal propio que se revisan a la vez y
+    sus tareas del worker; la búsqueda no acaba hasta que terminan.
     """
 
     __tablename__ = "search_runs"
@@ -96,6 +100,8 @@ class SearchRun(Base):
     started_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
     finished_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
     dismissed_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
+    company_ids: Mapped[list[int] | None] = mapped_column(JSON)
+    task_ids: Mapped[list[int] | None] = mapped_column(JSON)
 
 
 class EmailMessage(Base):

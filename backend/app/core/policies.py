@@ -102,6 +102,8 @@ class ConnectorsPolicy(BaseModel):
     timezone: str = Field(min_length=1)
     timeout_seconds: float = Field(gt=0)
     max_jobs_per_source: int = Field(gt=0)
+    # «Buscar ahora» (fase 45): una empresa revisada hace menos no se vuelve a revisar.
+    min_hours_between_runs: float = Field(default=6, ge=0)
 
     @model_validator(mode="after")
     def _known_timezone(self) -> "ConnectorsPolicy":

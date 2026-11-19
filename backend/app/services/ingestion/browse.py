@@ -20,7 +20,7 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models import Source, SourceRun
+from app.models import SearchRun, Source, SourceRun
 from app.models.base import utcnow
 from app.models.sources import PriorityConflictError
 from app.schemas.sources import (
@@ -302,6 +302,19 @@ def save_source(session: Session, data: AgentBrowseSource) -> SaveSourceResult:
     )
 
 
+def _open_search_run(session: Session, source_id: int) -> int | None:
+    """La búsqueda de «Buscar ahora» abierta que recorre este portal, si hay alguna."""
+    runs = session.scalars(
+        select(SearchRun)
+        .where(SearchRun.dismissed_at.is_(None), SearchRun.outcome.is_(None))
+        .order_by(SearchRun.id.desc())
+    )
+    for run in runs:
+        if source_id in (run.source_ids or []):
+            return run.id
+    return None
+
+
 def record_run(session: Session, source_id: int, summary: SourceRunSummary) -> RecordRunResult:
     """Anota un recorrido del agente (actor `agent`) y avanza `last_run_at`. La marca de agua de
     cada búsqueda queda en el recorrido; `list_sources` enseña la última de cada una."""
@@ -316,6 +329,7 @@ def record_run(session: Session, source_id: int, summary: SourceRunSummary) -> R
     run = SourceRun(
         source_id=source.id,
         actor="agent",
+        search_run_id=_open_search_run(session, source.id),
         started_at=started,
         finished_at=finished,
         found=summary.found,

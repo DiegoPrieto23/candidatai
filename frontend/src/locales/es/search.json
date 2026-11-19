@@ -118,9 +118,14 @@
     "eyebrow": "Tu agente buscará en",
     "portals_one": "{{count}} portal",
     "portals_other": "{{count}} portales",
-    "change": "Cambiar",
-    "offers_one": "hasta <n>{{count}}</n> oferta",
-    "offers_other": "hasta <n>{{count}}</n> ofertas"
+    "companies_one": "{{count}} empresa",
+    "companies_other": "{{count}} empresas",
+    "companiesHint": "Las empresas con portal propio se revisan a la vez, sin tu agente: la app lee su web de empleo entera y trae lo nuevo. Las revisadas hace poco se saltan.",
+    "companiesHintLabel": "Qué pasa con las empresas",
+    "companiesOnly_one": "Sin portales elegidos: solo revisará la empresa.",
+    "companiesOnly_other": "Sin portales elegidos: solo revisará las {{count}} empresas.",
+    "offers_one": "hasta <n>{{count}}</n> oferta nueva en portales",
+    "offers_other": "hasta <n>{{count}}</n> ofertas nuevas en portales"
   },
   "more": {
     "button": "Más ajustes",

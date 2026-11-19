@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { CompassIcon } from '@phosphor-icons/react'
-import { usePlatforms, useSearchRun } from '@/api/queries'
+import { usePlatforms, useSearchRun, useSources } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
 import { EmptyState, ErrorState } from '@/components/States'
 import { LaunchPanel } from '@/components/search/LaunchPanel'
@@ -12,6 +12,7 @@ import { SearchFooter } from '@/components/search/SearchFooter'
 import { SearchStrip } from '@/components/search/SearchStrip'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { COMPANY_KINDS } from '@/lib/sourceKinds'
 
 const PORTALS_ID = 'search-where'
 
@@ -25,6 +26,7 @@ const PORTALS_ID = 'search-where'
 export function SearchPage({ moreOpen = false, onMore = () => {} }: { moreOpen?: boolean; onMore?: (open: boolean) => void }) {
   const { t } = useTranslation('search')
   const platforms = usePlatforms()
+  const allSources = useSources()
   const searchRun = useSearchRun().data?.run
   // Dos agentes a la vez se pisarían en tu navegador. Si esa búsqueda se quedó colgada, su aviso te deja
   // dar por terminada la espera.
@@ -37,6 +39,7 @@ export function SearchPage({ moreOpen = false, onMore = () => {} }: { moreOpen?:
   const unusable = sources.filter((s) => !usable.includes(s))
   const chosen = usable.filter((s) => !skipped.has(s.id))
   const allChosen = chosen.length === usable.length
+  const companies = (allSources.data?.sources ?? []).filter((s) => s.active && COMPANY_KINDS.has(s.kind)).length
   // Todos: la orden normal, «las plataformas activas».
   const search = { platform_ids: allChosen ? [] : chosen.map((s) => s.id) }
 
@@ -48,7 +51,7 @@ export function SearchPage({ moreOpen = false, onMore = () => {} }: { moreOpen?:
         platforms.isPending ? (
           <Skeleton className="h-44" />
         ) : (
-          <LaunchPanel chosen={chosen} none={usable.length === 0} search={search} searching={searching} portalsId={PORTALS_ID} />
+          <LaunchPanel chosen={chosen} companies={companies} none={usable.length === 0} search={search} searching={searching} />
         )
       }
       moreOpen={moreOpen}

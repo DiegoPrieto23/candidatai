@@ -85,10 +85,9 @@
   "searchRun": {
     "running": {
       "title": "Buscando ofertas…",
-      "body": "Tu agente sigue trabajando en su ventana."
+      "body": "Tu agente sigue trabajando en su ventana.",
+      "companies": "La app está revisando las webs de empleo de tus empresas."
     },
-    "counts_one": "{{done}} de {{total}} portales · {{count}} oferta nueva",
-    "counts_other": "{{done}} de {{total}} portales · {{count}} ofertas nuevas",
     "stale": {
       "title": "Sin noticias de tu agente",
       "body": "Lleva un rato sin dar de alta nada. Mira su ventana: quizá espera tu respuesta o se ha cerrado."
@@ -96,7 +95,9 @@
     "done": {
       "title": "Búsqueda terminada",
       "body_one": "{{count}} oferta nueva de {{found}} vistas.",
-      "body_other": "{{count}} ofertas nuevas de {{found}} vistas."
+      "body_other": "{{count}} ofertas nuevas de {{found}} vistas.",
+      "reopened_one": "Una es la reapertura de una vacante anterior.",
+      "reopened_other": "{{count}} son reaperturas de vacantes anteriores."
     },
     "no_browser": {
       "title": "Tu agente no ha podido buscar",
@@ -106,13 +107,17 @@
       "title": "Tu agente ha parado antes de acabar",
       "body": "En su ventana cuenta por qué. Lo que ya había encontrado está en la Bandeja."
     },
-    "problems_one": "{{count}} problema en los portales. Los ves en «Dónde buscar».",
-    "problems_other": "{{count}} problemas en los portales. Los ves en «Dónde buscar».",
+    "problems_one": "{{count}} problema en los portales o las empresas. Los ves en «Dónde buscar».",
+    "problems_other": "{{count}} problemas en los portales o las empresas. Los ves en «Dónde buscar».",
     "seeInbox": "Ver en la Bandeja",
     "close": "Cerrar el aviso",
     "notification": "Mira el resultado en CandidatAI.",
     "minimize": "Minimizar el aviso",
-    "expand": "{{title}}: abrir el aviso"
+    "expand": "{{title}}: abrir el aviso",
+    "portalCounts": "{{done}} de {{total}} portales",
+    "companyCounts": "{{done}} de {{total}} empresas",
+    "newCount_one": "{{count}} oferta nueva",
+    "newCount_other": "{{count}} ofertas nuevas"
   },
   "tasks": {
     "runningTerminal": "Sigue en la ventana de tu agente. Si te pide permiso, contesta allí.",

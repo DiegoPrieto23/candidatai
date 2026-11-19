@@ -1231,6 +1231,29 @@ export function useDismissAgentTask() {
 }
 
 /** La búsqueda de la que avisa la app. Sigue preguntando sin la pestaña a la vista: acaba cuando acaba. */
+/** «Buscar ahora» (fase 45): abre la búsqueda y encola las empresas; devuelve su id para el agente. */
+export function useStartSearch() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (body: Schemas['StartSearchBody']) => unwrap(api.POST('/search/run', { body })),
+    onSuccess: () =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: keys.searchRun }),
+        client.invalidateQueries({ queryKey: keys.sources }),
+      ]),
+  })
+}
+
+/** No se pudo abrir tu agente tras «Buscar ahora»: la búsqueda deja de esperarlo. */
+export function useStopSearch() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (runId: number) =>
+      unwrap(api.POST('/search/run/{run_id}/stop', { params: { path: { run_id: runId } }, body: {} })),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.searchRun }),
+  })
+}
+
 export function useSearchRun() {
   return useQuery({
     queryKey: keys.searchRun,

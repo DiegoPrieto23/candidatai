@@ -190,6 +190,11 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   puesto ya no desaparece mientras la editas.
 
 ### Cambiado
+- **«Buscar ahora» revisa también tus empresas:** el mismo botón lanza a tu agente en los portales y, a
+  la vez, la app revisa las webs de empleo de tus empresas con portal propio (sin gastar tokens; se
+  saltan las revisadas hace menos de 6 horas). El panel dice «N portales · M empresas», el aviso
+  «Buscando…» espera a las dos cosas y su resumen las junta. Sin portales elegidos, revisa solo las
+  empresas. Fuera el enlace «Cambiar» del panel: los portales se eligen en sus tarjetas, debajo.
 - **«Buscar ahora» trae ofertas nuevas de verdad:** el número de ofertas por portal cuenta solo las
   **nuevas**. Tu agente ya no abre las que tienes: comprueba cada página de resultados antes de
   abrir nada y deja de leer cada búsqueda al llegar a lo que vio la vez anterior. Lee hasta 5 páginas

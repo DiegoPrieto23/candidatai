@@ -40,6 +40,7 @@ function routes(sources: unknown[], extra: Record<string, unknown> = {}) {
 }
 
 const launched = { label: 'Buscar ofertas', prompt: 'x', agent: 'Claude Code', job_id: null }
+const started = { run_id: 5, portals: 2, companies: 0, companies_skipped: 0, message: '' }
 
 /** La franja de arriba: lo que buscas, la columna de «Buscar ahora» y «Más ajustes». */
 const strip = () => screen.getByRole('region', { name: 'Lo que vas a buscar' })
@@ -57,7 +58,7 @@ describe('Buscar ofertas', () => {
           platform(2, 'Tecnoempleo'),
           platform(3, 'LinkedIn', { browse: { allow_agent_browsing: false, search_urls: [], priority: 3, access: 'login', max_offers: 10, notes: '' } }),
         ],
-        { 'POST /agent/launch': { status: 202, body: launched } },
+        { 'POST /search/run': started, 'POST /agent/launch': { status: 202, body: launched } },
       ),
     )
     renderApp('/buscar')
@@ -66,7 +67,7 @@ describe('Buscar ofertas', () => {
     expect(within(list).getByText('4 nuevas')).toBeInTheDocument()
     expect(within(list).getByText('de 9', { exact: false })).toBeInTheDocument()
     expect(strip()).toHaveTextContent('2 portales')
-    expect(strip()).toHaveTextContent('hasta 20 ofertas')
+    expect(strip()).toHaveTextContent('hasta 20 ofertas nuevas en portales')
     // LinkedIn sin permiso no se ofrece: se ve aparte, con lo que le pasa y dónde se cambia.
     expect(within(list).queryByText('LinkedIn')).not.toBeInTheDocument()
     const off = screen.getByRole('list', { name: 'Portales en los que ahora no se busca' })
@@ -77,32 +78,34 @@ describe('Buscar ofertas', () => {
     expect(screen.getByText(/1 oferta nueva de 9 vistas|4 ofertas nuevas de 9 vistas/)).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Ver en la bandeja' })).toHaveAttribute('href', '/bandeja')
     await userEvent.click(screen.getByRole('button', { name: /^Buscar ahora/ }))
-    await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true))
-    const body = calls.find((c) => c.method === 'POST')?.body as { action: string; search: Record<string, unknown> }
+    await waitFor(() => expect(calls.some((c) => c.path === '/agent/launch')).toBe(true))
+    // Primero abre la búsqueda (con las empresas) y el agente la sigue.
+    expect(calls.find((c) => c.path === '/search/run')?.body).toEqual({ portal_ids: [1, 2], include_companies: true })
+    const body = calls.find((c) => c.path === '/agent/launch')?.body as { action: string; search: Record<string, unknown> }
     expect(body.action).toBe('search-jobs')
-    expect(body.search).toEqual({ platform_ids: [] })
+    expect(body.search).toEqual({ platform_ids: [], search_run_id: 5 })
   })
 
   it('manda solo los portales elegidos, y sin «solo esta vez»', async () => {
     const calls = mockApi(
-      routes([platform(1, 'InfoJobs'), platform(2, 'Tecnoempleo')], { 'POST /agent/launch': { status: 202, body: launched } }),
+      routes([platform(1, 'InfoJobs'), platform(2, 'Tecnoempleo')], { 'POST /search/run': started, 'POST /agent/launch': { status: 202, body: launched } }),
     )
     renderApp('/buscar')
     await userEvent.click(await screen.findByRole('checkbox', { name: /Tecnoempleo/ }))
     expect(strip()).toHaveTextContent('1 portal')
     expect(screen.queryByRole('button', { name: 'Buscar otra cosa solo esta vez' })).not.toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: /^Buscar ahora/ }))
-    await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true))
-    const body = calls.find((c) => c.method === 'POST')?.body as { search: unknown }
-    expect(body.search).toEqual({ platform_ids: [1] })
+    await waitFor(() => expect(calls.some((c) => c.path === '/agent/launch')).toBe(true))
+    expect(calls.find((c) => c.path === '/search/run')?.body).toEqual({ portal_ids: [1], include_companies: true })
+    const body = calls.find((c) => c.path === '/agent/launch')?.body as { search: unknown }
+    expect(body.search).toEqual({ platform_ids: [1], search_run_id: 5 })
   })
 
-  it('no deja lanzar sin portales elegidos, y «Cambiar» baja a ellos', async () => {
+  it('no deja lanzar sin portales elegidos ni empresas, y no hay «Cambiar»', async () => {
     mockApi(routes([platform(1, 'InfoJobs')]))
     renderApp('/buscar')
     const box = await screen.findByRole('checkbox', { name: /InfoJobs/ })
-    await userEvent.click(within(strip()).getByRole('button', { name: 'Cambiar' }))
-    expect(screen.getByRole('heading', { level: 3, name: /^Portales ·/ })).toHaveFocus()
+    expect(within(strip()).queryByRole('button', { name: 'Cambiar' })).not.toBeInTheDocument()
     await userEvent.click(box)
     expect(screen.getByText('Elige al menos un portal.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /^Buscar ahora/ })).toBeDisabled()
@@ -110,6 +113,45 @@ describe('Buscar ofertas', () => {
     expect(screen.getByRole('button', { name: /^Buscar ahora/ })).toBeEnabled()
     const portals = screen.getByRole('region', { name: /^Portales ·/ })
     expect(within(portals).getByRole('link', { name: 'Empresas con portal propio' })).toHaveAttribute('href', '/fuentes/empresas')
+  })
+
+  it('con el mismo clic revisa las empresas y, sin portales elegidos, solo ellas (fase 45)', async () => {
+    const infojobs = platform(1, 'InfoJobs')
+    const acme = { ...platform(9, 'Acme'), kind: 'greenhouse', kind_label: 'Greenhouse', browse: null }
+    const calls = mockApi(
+      routes([], {
+        // «Buscar» pide las plataformas (`kind=agent_browse`) y todas las fuentes, para las empresas.
+        'GET /sources': (_req: Request, url: URL) => ({
+          sources: url.searchParams.get('kind') ? [infojobs] : [infojobs, acme],
+          agent_browse: { max_result_pages: 5, delay_seconds: 5 },
+        }),
+        'POST /search/run': { run_id: 6, portals: 0, companies: 1, companies_skipped: 0, message: '' },
+      }),
+    )
+    renderApp('/buscar')
+    await screen.findByRole('checkbox', { name: /InfoJobs/ })
+    expect(await within(strip()).findByText(/1 portal · 1 empresa/)).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('checkbox', { name: /InfoJobs/ }))
+    expect(strip()).toHaveTextContent('Sin portales elegidos: solo revisará la empresa.')
+    await userEvent.click(within(strip()).getByRole('button', { name: /^Buscar ahora/ }))
+    await waitFor(() => expect(calls.some((c) => c.path === '/search/run')).toBe(true))
+    expect(calls.find((c) => c.path === '/search/run')?.body).toEqual({ portal_ids: [], include_companies: true })
+    expect(calls.some((c) => c.path === '/agent/launch')).toBe(false)
+  })
+
+  it('si tu agente no se abre, la búsqueda deja de esperarlo (fase 45)', async () => {
+    const calls = mockApi(
+      routes([platform(1, 'InfoJobs')], {
+        'POST /search/run': started,
+        'POST /agent/launch': { status: 409, body: { ok: false, error: { type: 'unavailable', message: 'Sin terminal.', details: [] } } },
+        'POST /search/run/5/stop': { run: null },
+      }),
+    )
+    renderApp('/buscar')
+    await screen.findByRole('checkbox', { name: /InfoJobs/ })
+    await userEvent.click(within(strip()).getByRole('button', { name: /^Buscar ahora/ }))
+    await waitFor(() => expect(calls.some((c) => c.path === '/search/run/5/stop')).toBe(true))
+    expect(calls.filter((c) => c.path === '/search/run')).toHaveLength(1)
   })
 
   it('una casilla encima de la lista selecciona o quita todos los portales', async () => {
@@ -142,13 +184,16 @@ describe('Buscar ofertas', () => {
     )
     renderApp('/buscar')
     const list = await screen.findByRole('list', { name: 'Portales en los que buscar' })
-    expect(strip()).toHaveTextContent('hasta 25 ofertas')
+    expect(strip()).toHaveTextContent('hasta 25 ofertas nuevas en portales')
     expect(within(list).getByText('2 búsquedas guardadas')).toBeInTheDocument()
     expect(within(list).getByText('1 búsqueda guardada')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Qué ofertas cuentan' })).toBeInTheDocument()
     // Ningún texto nombra un agente concreto ni pide conectar el navegador: lo dice tu agente si falta.
     expect(screen.queryByText(/navegador conectado/)).not.toBeInTheDocument()
-    expect(document.body.textContent).not.toMatch(/Claude|Codex|Chrome/)
+    // La ayuda del botón de tu agente sí dice con cuál se abre (fase 24.4): no cuenta.
+    const page = document.body.cloneNode(true) as HTMLElement
+    page.querySelectorAll('[data-slot="agent-button"]').forEach((button) => button.remove())
+    expect(page.textContent).not.toMatch(/Claude|Codex|Chrome/)
     expect(within(list).getByText('Pide sesión')).toBeInTheDocument()
     expect(screen.getByText('Inicia sesión en Glassdoor')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('checkbox', { name: /Glassdoor/ }))

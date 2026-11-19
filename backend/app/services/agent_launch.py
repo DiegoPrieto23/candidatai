@@ -148,6 +148,9 @@ class SearchScope(BaseModel):
     platform_ids: list[int] = Field(default_factory=list, max_length=50)
     role: str | None = Field(default=None, max_length=80, pattern=SEARCH_TEXT)
     location: str | None = Field(default=None, max_length=80, pattern=SEARCH_TEXT)
+    # La búsqueda que ya abrió `POST /search/run` (fase 45, con las empresas): el agente la sigue
+    # en vez de abrir otra.
+    search_run_id: int | None = Field(default=None, ge=1)
 
 
 def _check_search_scope(session: Session, scope: SearchScope) -> str:
@@ -619,6 +622,11 @@ def check_target(
         raise LaunchError("invalid_request", f"«{spec.label}» no admite elegir qué buscar.")
     if search is not None:
         prompt += _check_search_scope(session, search)
+        if search.search_run_id is not None:
+            try:
+                search_runs.attach(session, search.search_run_id)
+            except search_runs.SearchRunNotFoundError as exc:
+                raise LaunchError("not_found", str(exc)) from exc
     return prompt, job_id, milestone_id
 
 
@@ -644,7 +652,8 @@ def launch(
     picked = pick(session, action, prompt, agent=agent, model=model, preset=preset)
     result = _open(spec.label, prompt, picked, picked.command, prompt)
     result.job_id = job_id
-    if action == "search-jobs":
+    # Con `search_run_id`, la búsqueda ya la abrió «Buscar ahora» (`check_target` la comprueba).
+    if action == "search-jobs" and (search is None or search.search_run_id is None):
         search_runs.start(session, search.platform_ids if search else [])
     agent_tasks.start(session, action, job_id, milestone_id)
     return result

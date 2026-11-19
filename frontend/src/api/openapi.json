@@ -16892,6 +16892,241 @@
         }
       }
     },
+    "/search/run": {
+      "post": {
+        "tags": [
+          "search"
+        ],
+        "summary": "Start Search",
+        "description": "Abre la búsqueda que sigue el aviso «Buscando…» y encola la revisión de las empresas\n(salvo las revisadas hace menos de `connectors.min_hours_between_runs`). El agente se lanza\ndespués con `POST /agent/launch` y `search.search_run_id`.",
+        "operationId": "start_search",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartSearchBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StartSearchResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/search/run/{run_id}/stop": {
+      "post": {
+        "tags": [
+          "search"
+        ],
+        "summary": "Stop Search",
+        "description": "No se pudo abrir tu agente: la búsqueda deja de esperarlo (las empresas siguen).",
+        "operationId": "stop_search",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmptyBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchRunResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
     "/context": {
       "get": {
         "tags": [
@@ -38771,6 +39006,21 @@
             "type": "integer",
             "title": "Portals Done"
           },
+          "companies_total": {
+            "type": "integer",
+            "title": "Companies Total",
+            "default": 0
+          },
+          "companies_done": {
+            "type": "integer",
+            "title": "Companies Done",
+            "default": 0
+          },
+          "portals_finished": {
+            "type": "boolean",
+            "title": "Portals Finished",
+            "default": false
+          },
           "found": {
             "type": "integer",
             "title": "Found"
@@ -38778,6 +39028,11 @@
           "created": {
             "type": "integer",
             "title": "Created"
+          },
+          "reopened": {
+            "type": "integer",
+            "title": "Reopened",
+            "default": 0
           },
           "problems": {
             "type": "integer",
@@ -38852,6 +39107,18 @@
               }
             ],
             "title": "Location"
+          },
+          "search_run_id": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Search Run Id"
           }
         },
         "additionalProperties": false,
@@ -40188,6 +40455,76 @@
           "span_days"
         ],
         "title": "StaleRepostSignal"
+      },
+      "StartSearchBody": {
+        "properties": {
+          "portal_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array",
+                "maxItems": 50
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Portal Ids",
+            "description": "Portales que recorrerá tu agente: `[]`, ninguno; sin valor, los activos."
+          },
+          "include_companies": {
+            "type": "boolean",
+            "title": "Include Companies",
+            "description": "Revisar también las empresas con portal propio activas.",
+            "default": true
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "StartSearchBody"
+      },
+      "StartSearchResult": {
+        "properties": {
+          "run_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Id"
+          },
+          "portals": {
+            "type": "integer",
+            "title": "Portals"
+          },
+          "companies": {
+            "type": "integer",
+            "title": "Companies"
+          },
+          "companies_skipped": {
+            "type": "integer",
+            "title": "Companies Skipped"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "run_id",
+          "portals",
+          "companies",
+          "companies_skipped",
+          "message"
+        ],
+        "title": "StartSearchResult",
+        "description": "Lo que ha empezado «Buscar ahora»: `run_id` es la búsqueda que sigue el aviso."
       },
       "StatusReport": {
         "properties": {

@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { notifyIfHidden } from '@/lib/notify'
 import { cn } from '@/lib/utils'
 
-/** Un tramo por portal: se ve de un vistazo cuánto queda sin leer ninguna cifra. */
+/** Un tramo por portal y por empresa: se ve de un vistazo cuánto queda sin leer ninguna cifra. */
 function PortalProgress({ done, total }: { done: number; total: number }) {
   return (
     <span aria-hidden className="mt-2 flex gap-1">
@@ -20,8 +20,9 @@ function PortalProgress({ done, total }: { done: number; total: number }) {
 }
 
 /**
- * «Buscando ofertas…» mientras tu agente recorre los portales en su ventana, en cualquier página de
- * la app. Cambia cuando el agente dice que ha terminado o que no ha podido, y se queda hasta que lo
+ * «Buscando ofertas…» mientras tu agente recorre los portales en su ventana y la app revisa las
+ * empresas con portal propio (fase 45), en cualquier página de la app. No acaba hasta que acaban los
+ * dos. Cambia cuando el agente dice que ha terminado o que no ha podido, y se queda hasta que lo
  * cierras: la búsqueda puede acabar cuando no estás mirando. Minimizado se queda en una pastilla, y
  * vuelve a abrirse solo cuando cambia de estado, para que no se te pase que ha terminado.
  */
@@ -33,7 +34,7 @@ export function SearchRunNotice() {
   const [minimized, setMinimized] = useState<string | null>(null)
 
   // Lo que llega mientras buscas se ve sin recargar: la bandeja, los recuentos, «última búsqueda».
-  const progress = run ? `${run.id}:${run.status}:${run.portals_done}:${run.created}` : null
+  const progress = run ? `${run.id}:${run.status}:${run.portals_done}:${run.companies_done}:${run.created}` : null
   const previous = useRef<string | null>(null)
   useEffect(() => {
     if (previous.current !== null && progress !== null && progress !== previous.current) {
@@ -53,7 +54,15 @@ export function SearchRunNotice() {
 
   if (!run) return null
 
-  const counts = t('counts', { done: run.portals_done, total: run.portals_total, count: run.created })
+  const done = run.portals_done + run.companies_done
+  const total = run.portals_total + run.companies_total
+  const counts = [
+    run.portals_total > 0 ? t('portalCounts', { done: run.portals_done, total: run.portals_total }) : null,
+    run.companies_total > 0 ? t('companyCounts', { done: run.companies_done, total: run.companies_total }) : null,
+    t('newCount', { count: run.created }),
+  ]
+    .filter(Boolean)
+    .join(' · ')
   const problems = run.problems > 0 ? t('problems', { count: run.problems }) : null
   const running = run.status === 'running'
   const good = run.status === 'finished' && run.outcome === 'done'
@@ -71,7 +80,8 @@ export function SearchRunNotice() {
   let body: string
   if (running) {
     title = t('running.title')
-    body = t('running.body')
+    // El agente ya terminó (o no hay portales): solo faltan las empresas.
+    body = run.portals_finished || run.portals_total === 0 ? t('running.companies') : t('running.body')
   } else if (run.status === 'stale') {
     title = t('stale.title')
     body = t('stale.body')
@@ -84,6 +94,7 @@ export function SearchRunNotice() {
   } else {
     title = t('done.title')
     body = t('done.body', { count: run.created, found: run.found })
+    if (run.reopened > 0) body += ` ${t('done.reopened', { count: run.reopened })}`
   }
 
   if (minimized === state) {
@@ -98,7 +109,7 @@ export function SearchRunNotice() {
         {title}
         {running && (
           <span className="tabular text-xs font-normal text-muted-foreground">
-            {run.portals_done}/{run.portals_total}
+            {done}/{total}
           </span>
         )}
       </button>
@@ -116,7 +127,7 @@ export function SearchRunNotice() {
         <p className="mt-0.5 text-muted-foreground">{body}</p>
         {(running || run.status === 'stale') && (
           <>
-            <PortalProgress done={run.portals_done} total={run.portals_total} />
+            <PortalProgress done={done} total={total} />
             <p className="tabular mt-1.5 text-xs text-muted-foreground">{counts}</p>
           </>
         )}

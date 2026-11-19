@@ -103,6 +103,7 @@ connectors:                     # fase 09: APIs de ATS (Greenhouse, Lever, Ashby
   timezone: Europe/Madrid
   timeout_seconds: 20
   max_jobs_per_source: 500        # por ejecución; lo que pase de ahí se ignora con un aviso
+  min_hours_between_runs: 6       # «Buscar ahora» no repite una empresa revisada hace menos
 
 email_alerts:                  # fase 09b
   poll_minutes: 60

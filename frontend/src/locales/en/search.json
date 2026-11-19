@@ -118,9 +118,14 @@
     "eyebrow": "Your agent will search",
     "portals_one": "{{count}} job board",
     "portals_other": "{{count}} job boards",
-    "change": "Change",
-    "offers_one": "up to <n>{{count}}</n> job",
-    "offers_other": "up to <n>{{count}}</n> jobs"
+    "companies_one": "{{count}} company",
+    "companies_other": "{{count}} companies",
+    "companiesHint": "Companies with their own careers site are checked at the same time, without your agent: the app reads their whole jobs page and brings in what's new. Those checked recently are skipped.",
+    "companiesHintLabel": "What happens with companies",
+    "companiesOnly_one": "No job boards chosen: it will only check the company.",
+    "companiesOnly_other": "No job boards chosen: it will only check the {{count}} companies.",
+    "offers_one": "up to <n>{{count}}</n> new job on job boards",
+    "offers_other": "up to <n>{{count}}</n> new jobs on job boards"
   },
   "more": {
     "button": "More settings",

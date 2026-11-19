@@ -85,10 +85,9 @@
   "searchRun": {
     "running": {
       "title": "Searching for jobs…",
-      "body": "Your agent is still working in its window."
+      "body": "Your agent is still working in its window.",
+      "companies": "The app is checking your companies' careers sites."
     },
-    "counts_one": "{{done}} of {{total}} job boards · {{count}} new job",
-    "counts_other": "{{done}} of {{total}} job boards · {{count}} new jobs",
     "stale": {
       "title": "No news from your agent",
       "body": "It hasn't added anything for a while. Check its window: it may be waiting for you, or it may have closed."
@@ -96,7 +95,9 @@
     "done": {
       "title": "Search finished",
       "body_one": "{{count}} new job out of {{found}} seen.",
-      "body_other": "{{count}} new jobs out of {{found}} seen."
+      "body_other": "{{count}} new jobs out of {{found}} seen.",
+      "reopened_one": "One is a reopening of an earlier role.",
+      "reopened_other": "{{count}} are reopenings of earlier roles."
     },
     "no_browser": {
       "title": "Your agent couldn't search",
@@ -106,13 +107,17 @@
       "title": "Your agent stopped before the end",
       "body": "Its window says why. What it had already found is in the Inbox."
     },
-    "problems_one": "{{count}} problem on the job boards. See it in “Where to search”.",
-    "problems_other": "{{count}} problems on the job boards. See them in “Where to search”.",
+    "problems_one": "{{count}} problem on the job boards or companies. See it in “Where to search”.",
+    "problems_other": "{{count}} problems on the job boards or companies. See them in “Where to search”.",
     "seeInbox": "See in the Inbox",
     "close": "Close this notice",
     "notification": "See the result in CandidatAI.",
     "minimize": "Minimise this notice",
-    "expand": "{{title}}: open this notice"
+    "expand": "{{title}}: open this notice",
+    "portalCounts": "{{done}} of {{total}} job boards",
+    "companyCounts": "{{done}} of {{total}} companies",
+    "newCount_one": "{{count}} new job",
+    "newCount_other": "{{count}} new jobs"
   },
   "tasks": {
     "runningTerminal": "Still going in your agent's window. If it asks for permission, answer there.",

@@ -2733,6 +2733,48 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/search/run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start Search
+         * @description Abre la búsqueda que sigue el aviso «Buscando…» y encola la revisión de las empresas
+         *     (salvo las revisadas hace menos de `connectors.min_hours_between_runs`). El agente se lanza
+         *     después con `POST /agent/launch` y `search.search_run_id`.
+         */
+        post: operations["start_search"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/search/run/{run_id}/stop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Stop Search
+         * @description No se pudo abrir tu agente: la búsqueda deja de esperarlo (las empresas siguen).
+         */
+        post: operations["stop_search"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/context": {
         parameters: {
             query?: never;
@@ -8984,10 +9026,30 @@ export interface components {
             portals_total: number;
             /** Portals Done */
             portals_done: number;
+            /**
+             * Companies Total
+             * @default 0
+             */
+            companies_total: number;
+            /**
+             * Companies Done
+             * @default 0
+             */
+            companies_done: number;
+            /**
+             * Portals Finished
+             * @default false
+             */
+            portals_finished: boolean;
             /** Found */
             found: number;
             /** Created */
             created: number;
+            /**
+             * Reopened
+             * @default 0
+             */
+            reopened: number;
             /** Problems */
             problems: number;
             /**
@@ -9011,6 +9073,8 @@ export interface components {
             role?: string | null;
             /** Location */
             location?: string | null;
+            /** Search Run Id */
+            search_run_id?: number | null;
         };
         /**
          * SearchStory
@@ -9477,6 +9541,36 @@ export interface components {
             last_seen: string;
             /** Span Days */
             span_days: number;
+        };
+        /** StartSearchBody */
+        StartSearchBody: {
+            /**
+             * Portal Ids
+             * @description Portales que recorrerá tu agente: `[]`, ninguno; sin valor, los activos.
+             */
+            portal_ids?: number[] | null;
+            /**
+             * Include Companies
+             * @description Revisar también las empresas con portal propio activas.
+             * @default true
+             */
+            include_companies: boolean;
+        };
+        /**
+         * StartSearchResult
+         * @description Lo que ha empezado «Buscar ahora»: `run_id` es la búsqueda que sigue el aviso.
+         */
+        StartSearchResult: {
+            /** Run Id */
+            run_id: number | null;
+            /** Portals */
+            portals: number;
+            /** Companies */
+            companies: number;
+            /** Companies Skipped */
+            companies_skipped: number;
+            /** Message */
+            message: string;
         };
         /** StatusReport */
         StatusReport: {
@@ -23735,6 +23829,200 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AssistantView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    start_search: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StartSearchBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StartSearchResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    stop_search: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmptyBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SearchRunResponse"];
                 };
             };
             /** @description Unauthorized */

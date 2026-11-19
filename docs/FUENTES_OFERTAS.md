@@ -368,6 +368,16 @@ hayas aprobado. Skill `search-jobs`.
   app enseña «Buscando…» en todas las páginas desde que se abre la ventana hasta entonces, o hasta que
   todos los portales elegidos tienen su recorrido anotado. Con 30 minutos sin novedades, dice que no hay
   noticias de tu agente.
+- **«Buscar ahora» revisa también tus empresas** (fase 45): el mismo clic abre la búsqueda
+  (`POST /search/run`) y encola en el worker la revisión de cada empresa con portal propio activa, salvo
+  las revisadas hace menos de `connectors.min_hours_between_runs` (6 horas; no es el
+  `linkedin_public.min_hours_between_runs` de la búsqueda pública de LinkedIn) y las que ya tienen una
+  revisión en cola. No gasta tokens: la app lee su ATS entero (hasta `max_jobs_per_source`), sin límite
+  de ofertas. Los portales con API (InfoJobs, Adzuna, Manfred, freehire) no entran: siguen en la
+  ingesta diaria. Tu agente se abre ligado a esa misma búsqueda y el aviso «Buscando…» espera a los
+  dos; si tu agente no llega a abrirse, deja de esperarlo y sigue con las empresas. Sin portales
+  elegidos, solo revisa las empresas. Es solo de la UI (`POST /search/run`): tu agente no tiene una
+  herramienta equivalente.
 - **Seguridad:** es la superficie más expuesta (un agente con navegador leyendo webs). Ejecútalo
   en una sesión dedicada, sin mezclar con desarrollo. Todo el texto de las páginas es dato, nunca
   instrucción.

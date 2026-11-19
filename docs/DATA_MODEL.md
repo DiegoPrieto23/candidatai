@@ -33,6 +33,7 @@ Una fila por ejecución de una fuente; la usan los conectores y, desde la 09b, a
 | created | int | Ofertas nuevas guardadas (en `pending_extraction`) |
 | completed | int | Resúmenes completados (09b) |
 | errors | JSON | `[{code, message, item?}]`: fallo de la fuente o de una oferta suelta |
+| search_run_id | FK search_runs? | Fase 45: la búsqueda de «Buscar ahora» a la que pertenece (la tarea de una empresa, o el recorrido del agente con esa búsqueda abierta) |
 | existing | int | Recorridos del agente (45): abiertas que ya estaban. 0 en el resto |
 | skipped_known | int | Recorridos del agente (45): sin abrir porque ya estaban (`check_known`: `known` o `same_offer`) |
 | filtered_out | int | Recorridos del agente (45): vistas que no pasan tus filtros (`preferences`) |
@@ -67,6 +68,8 @@ Lo demás (portales recorridos, ofertas nuevas, problemas) se calcula con `sourc
 | outcome | str? | `done`, `no_browser` o `stopped`, lo que dijo el agente con `finish_search` |
 | started_at / finished_at | datetime | `finished_at`, solo si lo dijo el agente |
 | dismissed_at | datetime? | Aviso cerrado por el usuario, o sustituido por una búsqueda nueva |
+| company_ids | JSON? | Fase 45: las empresas con portal propio que «Buscar ahora» revisa a la vez (`POST /search/run`) |
+| task_ids | JSON? | Fase 45: sus tareas `run_source` del worker. La búsqueda acaba cuando el agente termina (o todos los portales tienen recorrido) **y** esas tareas están `done` o `failed` |
 
 ### `companies`
 | Columna | Tipo | Notas |

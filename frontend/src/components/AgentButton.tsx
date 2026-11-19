@@ -17,6 +17,7 @@ import {
   useCreateAgentRequest,
   useLaunchAgent,
   useStartAgentRun,
+  useStopSearch,
   type AgentAction,
   type SearchScope,
 } from '@/api/queries'
@@ -75,6 +76,7 @@ export function AgentButton({
   size = 'sm',
   primary = false,
   prepare,
+  prepareSearch,
   disabled = false,
   className,
   fill = false,
@@ -96,6 +98,8 @@ export function AgentButton({
   primary?: boolean
   /** Lo que hay que guardar antes de lanzar (p. ej. el texto de una corrección), en cualquier modo. */
   prepare?: () => Promise<unknown>
+  /** «Buscar ahora» (fase 45): abre la búsqueda (con las empresas) y da su id, que sigue el agente. */
+  prepareSearch?: () => Promise<number | null>
   disabled?: boolean
   className?: string
   /** Ocupa todo el ancho de su caja (el botón principal de «Buscar»). */
@@ -112,6 +116,9 @@ export function AgentButton({
   const launch = useLaunchAgent()
   const startRun = useStartAgentRun()
   const leave = useCreateAgentRequest()
+  const stopSearch = useStopSearch()
+  // De «Buscar ahora» hasta que se abre (o no) tu agente: un segundo clic abriría otra búsqueda.
+  const [preparing, setPreparing] = useState(false)
   const [feedback, setFeedback] = useState<Feedback>(null)
   // La orden que no se pudo abrir: se queda a la vista hasta cerrarla.
   const [prompt, setPrompt] = useState<string | null>(null)
@@ -134,8 +141,20 @@ export function AgentButton({
     prepare().then(go, () => undefined)
   }
 
-  const run = (agentName?: string) => prepared(() =>
-    launch.mutate(agentName ? { ...target, agent: agentName } : target, {
+  /** En una terminal, con la búsqueda que abre `prepareSearch` (si la hay). */
+  const searchFirst = (go: (searchRunId: number | null) => void) => {
+    if (!prepareSearch) return prepared(() => go(null))
+    if (preparing) return
+    setPreparing(true)
+    prepareSearch().then(go, (error: unknown) => {
+      setPreparing(false)
+      failed(error, t('openFailed'))
+    })
+  }
+
+  const run = (agentName?: string) => searchFirst((searchRunId) => {
+    const scoped = searchRunId ? { ...target, search: { ...(search ?? {}), search_run_id: searchRunId } } : target
+    launch.mutate(agentName ? { ...scoped, agent: agentName } : scoped, {
       onSuccess: (result) => {
         const opened = t('opened', { agent: result.agent })
         const warning = result.warning ? warningText(result) : null
@@ -144,8 +163,12 @@ export function AgentButton({
         watchFor(action, result.job_id ?? jobId, milestoneId)
         onStarted?.()
       },
+      onSettled: () => setPreparing(false),
       onError: (error) => {
         const order = error instanceof ApiError ? error.details.find((d) => d.field === 'prompt')?.received : null
+        // La búsqueda ya está abierta: si tu agente no se abre (y no hay orden que pegar), deja de
+        // esperarlo; las empresas siguen.
+        if (searchRunId && !order) stopSearch.mutate(searchRunId)
         if (order) {
           clearTimeout(timer.current)
           setFeedback(null)
@@ -154,7 +177,8 @@ export function AgentButton({
           failed(error, t('openFailed'))
         }
       },
-    }))
+    })
+  })
 
   const runInBackground = (agentName?: string) => prepared(() =>
     startRun.mutate(agentName ? { ...target, agent: agentName } : target, {
@@ -185,7 +209,7 @@ export function AgentButton({
   const shownAgent = effective?.display_name ?? null
   const blocked = effective?.blocked && !COPY_PROMPT_CODES.has(effective.blocked_code ?? '') ? blockedText(effective) : null
   const alternatives = spec?.alternatives ?? []
-  const busy = launch.isPending || startRun.isPending || leave.isPending
+  const busy = launch.isPending || startRun.isPending || leave.isPending || preparing
   const hint = tHint(action)
   const mechanism = agent ? t('titleAgent', { agent: shownAgent ?? agent }) : t('titleCopy')
   const variant = primary ? 'default' : 'outline'
