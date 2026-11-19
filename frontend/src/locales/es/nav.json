@@ -93,11 +93,7 @@
       "body": "Lleva un rato sin dar de alta nada. Mira su ventana: quizá espera tu respuesta o se ha cerrado."
     },
     "done": {
-      "title": "Búsqueda terminada",
-      "body_one": "{{count}} oferta nueva de {{found}} vistas.",
-      "body_other": "{{count}} ofertas nuevas de {{found}} vistas.",
-      "reopened_one": "Una es la reapertura de una vacante anterior.",
-      "reopened_other": "{{count}} son reaperturas de vacantes anteriores."
+      "title": "Búsqueda terminada"
     },
     "no_browser": {
       "title": "Tu agente no ha podido buscar",

@@ -108,7 +108,7 @@ def test_run_twice(db: None) -> None:
     second = _json(["sources", "run", "1"])
     assert [(r["created"], r["existing"]) for r in second["runs"]] == [(0, 3)]
     listed = runner.invoke(cli.app, ["sources", "list"])
-    assert "5 encontradas, 3 tras filtros, 0 nuevas" in listed.stdout
+    assert "5 vistas, 3 pasan tus filtros, 3 ya las tenías, 0 nuevas" in listed.stdout
 
 
 def test_run_without_sources(db: None) -> None:
@@ -152,3 +152,53 @@ def test_add_new_kinds_with_their_options(db: None) -> None:
     }  # fmt: skip
     listed = runner.invoke(cli.app, ["sources", "list"])
     assert "Personio        Acme Datos [acmedatos] (activa)" in listed.stdout
+
+
+def test_list_explains_an_agent_run_with_the_same_numbers_as_the_ui(db: None) -> None:
+    from app.schemas.sources import AgentBrowseSource, SourceRunSummary
+    from app.services.ingestion import browse
+
+    with session_scope() as session:
+        saved = browse.save_source(
+            session,
+            AgentBrowseSource(
+                name="Tecnoempleo",
+                platform="tecnoempleo",
+                search_urls=["https://www.tecnoempleo.com/ofertas-trabajo/?te=data"],
+            ),
+        )
+        summary = SourceRunSummary(
+            found=30,
+            created=6,
+            existing=1,
+            skipped_known=9,
+            filtered_out=10,
+            left_by_limit=4,
+            reopened=2,
+            stop_reason="limit",
+        )
+        browse.record_run(session, saved.source_id, summary)
+
+    listed = runner.invoke(cli.app, ["sources", "list"])
+    assert listed.exit_code == 0, listed.output
+    assert (
+        "30 vistas, 20 pasan tus filtros, 10 ya las tenías, 6 nuevas (de ellas, 2 reabiertas). "
+        "Alcanzó el límite: quedan 4 sin abrir"
+    ) in listed.stdout
+    run = _json(["sources", "list"])["sources"][0]["last_run"]
+    assert (run["known"], run["left_by_limit"], run["stop_reason"]) == (10, 4, "limit")
+
+
+def test_already_had_never_goes_below_zero() -> None:
+    from app.schemas.sources import known_count
+
+    assert known_count(after_filters=3, created=2, left_by_limit=0) == 1
+    # Datos incoherentes (un recorrido antiguo o de otra vía): nunca una cifra negativa.
+    assert known_count(after_filters=2, created=3, left_by_limit=1) == 0
+
+
+def test_the_limit_reason_in_singular_and_without_a_number() -> None:
+    from app.cli_commands import _stop_reason_text
+
+    assert _stop_reason_text("limit", 1) == "Alcanzó el límite: queda 1 sin abrir"
+    assert _stop_reason_text("limit", 0) == "Alcanzó el límite"

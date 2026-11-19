@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { CheckCircleIcon, CircleNotchIcon, MinusIcon, WarningIcon, XIcon } from '@phosphor-icons/react'
 import { keys, useDismissSearchRun, useSearchRun } from '@/api/queries'
+import { useRunText } from '@/components/search/runNumbers'
 import { Button } from '@/components/ui/button'
 import { notifyIfHidden } from '@/lib/notify'
 import { cn } from '@/lib/utils'
@@ -31,6 +32,7 @@ export function SearchRunNotice() {
   const client = useQueryClient()
   const run = useSearchRun().data?.run ?? null
   const dismiss = useDismissSearchRun()
+  const runText = useRunText()
   const [minimized, setMinimized] = useState<string | null>(null)
 
   // Lo que llega mientras buscas se ve sin recargar: la bandeja, los recuentos, «última búsqueda».
@@ -93,8 +95,9 @@ export function SearchRunNotice() {
     body = t('stopped.body')
   } else {
     title = t('done.title')
-    body = t('done.body', { count: run.created, found: run.found })
-    if (run.reopened > 0) body += ` ${t('done.reopened', { count: run.reopened })}`
+    // Las mismas cifras que cada portal en «Buscar», sumadas.
+    body = `${runText.summary(run)}.`
+    if (run.left_by_limit > 0) body += ` ${runText.left(run.left_by_limit)}`
   }
 
   if (minimized === state) {

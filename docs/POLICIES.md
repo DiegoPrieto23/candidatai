@@ -351,6 +351,10 @@ Cuando el agente recorre portales con tu navegador (skill `search-jobs`, detalle
   de `config/policies.yaml` → `agent_browse`. Cada búsqueda para al llegar a lo que vio la anterior. LinkedIn solo si lo has activado tú en la UI: la interfaz para agentes no puede
   activarlo. La API local no tiene autenticación, así que un agente con terminal podría
   llamarla directamente (riesgo residual, `docs/FUENTES_OFERTAS.md`).
+- **Cuentas claras:** el agente anota en cada plataforma lo que vio, lo que no pasa tus filtros, lo que
+  ya tenías, lo nuevo, lo reabierto, lo que quedó sin abrir por el límite y por qué paró, y resume con
+  esas mismas cifras, las que enseña la UI. Lo que deja por el límite lo dice siempre: la búsqueda
+  siguiente no vuelve a por ello.
 
 ### Búsqueda pública de LinkedIn sin sesión (fase 22)
 

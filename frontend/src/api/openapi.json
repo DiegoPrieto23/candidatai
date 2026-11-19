@@ -39025,6 +39025,21 @@
             "type": "integer",
             "title": "Found"
           },
+          "passed": {
+            "type": "integer",
+            "title": "Passed",
+            "default": 0
+          },
+          "known": {
+            "type": "integer",
+            "title": "Known",
+            "default": 0
+          },
+          "left_by_limit": {
+            "type": "integer",
+            "title": "Left By Limit",
+            "default": 0
+          },
           "created": {
             "type": "integer",
             "title": "Created"
@@ -40238,6 +40253,12 @@
               }
             ],
             "title": "Stop Reason"
+          },
+          "known": {
+            "type": "integer",
+            "title": "Known",
+            "description": "Ya las tenías (ver `known_count`): la misma cifra en la UI, la CLI y el aviso.",
+            "readOnly": true
           }
         },
         "type": "object",
@@ -40249,7 +40270,8 @@
           "found",
           "after_filters",
           "created",
-          "errors"
+          "errors",
+          "known"
         ],
         "title": "SourceRunView"
       },

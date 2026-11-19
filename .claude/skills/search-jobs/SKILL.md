@@ -128,9 +128,11 @@ búsqueda puntual con puesto, ubicación o ambos (ver «Modo búsqueda»).
    - no extraigas ni valores las ofertas aquí: eso lo hacen `process-jobs` y `assess-fit`.
 4. Llama a `finish_search` con `outcome: done` (o `stopped` si paraste antes de acabar): el aviso
    «Buscando…» de la app cambia al momento. Hazlo también si solo te pidieron una plataforma.
-5. Resume por plataforma con los mismos números que anotaste: vistas, pasan tus filtros, ya las
-   tenías, nuevas y reabiertas, por qué paró («llegó a lo de la búsqueda anterior», «alcanzó el
-   límite: quedan 5 sin abrir»…) e incidentes. Si quedaron ofertas sin abrir por el límite, avisa:
+5. Resume por plataforma con los mismos números que anotaste, los que enseña la app: vistas · pasan
+   tus filtros · ya las tenías (`skipped_known` + `existing`) · nuevas (y, de ellas, cuántas
+   reabiertas), por qué paró («llegó a lo de la búsqueda anterior», «alcanzó el límite: quedan 5 sin
+   abrir», «encontró varias seguidas que ya tenías», «leyó todas las páginas que podía») e
+   incidentes. Si quedaron ofertas sin abrir por el límite, avisa:
    la próxima búsqueda para en lo ya visto y no vuelve a por ellas, así que, si son muchas,
    conviene subir «Ofertas por recorrido» de ese portal. Sugiere ejecutar `process-jobs` después,
    idealmente en otra sesión.

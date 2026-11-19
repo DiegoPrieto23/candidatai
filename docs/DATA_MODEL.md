@@ -59,7 +59,10 @@ CV…». Cómo va se calcula con `mcp_calls` (un guardado correcto posterior) y,
 
 ### `search_runs` (fase 39d)
 Una búsqueda abierta desde «Buscar ahora» en la terminal del agente: de ella sale el aviso «Buscando…».
-Lo demás (portales recorridos, ofertas nuevas, problemas) se calcula con `source_runs` y `jobs`.
+Lo demás (portales recorridos, ofertas nuevas, problemas) se calcula con `source_runs` y `jobs`. El aviso
+suma de sus recorridos `found`, `after_filters` (`passed`), «ya las tenías» (`known`: `after_filters −
+created − left_by_limit` de cada recorrido, como en `SourceRunView.known`) y `left_by_limit`; las nuevas y
+las reabiertas las cuenta por `jobs` de esas fuentes desde que empezó, para ir al día mientras busca.
 | Columna | Tipo | Notas |
 |---|---|---|
 | id | int PK | |

@@ -9043,6 +9043,21 @@ export interface components {
             portals_finished: boolean;
             /** Found */
             found: number;
+            /**
+             * Passed
+             * @default 0
+             */
+            passed: number;
+            /**
+             * Known
+             * @default 0
+             */
+            known: number;
+            /**
+             * Left By Limit
+             * @default 0
+             */
+            left_by_limit: number;
             /** Created */
             created: number;
             /**
@@ -9467,6 +9482,11 @@ export interface components {
             reopened: number;
             /** Stop Reason */
             stop_reason?: ("limit" | "watermark" | "known_streak" | "pages" | "incident") | null;
+            /**
+             * Known
+             * @description Ya las tenías (ver `known_count`): la misma cifra en la UI, la CLI y el aviso.
+             */
+            readonly known: number;
         };
         /**
          * SourceTestResult

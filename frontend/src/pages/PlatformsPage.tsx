@@ -34,6 +34,7 @@ import { platformHome, searchLabel } from '@/lib/searches'
 import { splitIssues } from '@/lib/runIssues'
 import { cn } from '@/lib/utils'
 import { maxOffersOptions } from '@/lib/maxOffers'
+import { numbersOf, useRunText } from '@/components/search/runNumbers'
 import { BusyLabel } from '@/components/StableLabel'
 
 const ACCESS: readonly BrowseAccess[] = ['free', 'login', 'blocked']
@@ -91,7 +92,7 @@ function Searches({ urls, name }: { urls: string[]; name: string }) {
   )
 }
 
-type CountKey = 'found' | 'new' | 'newForYou' | 'known' | 'problems' | 'notes' | 'offers' | 'pages'
+type CountKey = 'seen' | 'new' | 'newForYou' | 'known' | 'problems' | 'notes' | 'offers' | 'pages'
 
 function plural(key: CountKey, count: number): string {
   return i18n.t(`platforms:counts.${key}`, { count })
@@ -208,7 +209,7 @@ function PublicLastRun({ view }: { view: LinkedInPublicView }) {
   if (!last) {
     return <p className="text-xs text-muted-foreground">{t('public.notRun')}</p>
   }
-  const existing = Math.max(0, last.after_filters - last.created)
+  const existing = last.known
   const warnings = last.errors.filter((e) => e.code !== 'blocked')
   return (
     <div className="text-xs text-muted-foreground">
@@ -396,7 +397,7 @@ function LastRun({ source }: { source: SourceView }) {
     <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
       <ClockIcon className="size-3.5 shrink-0" />
       <span>
-        {formatWhen(last.finished_at ?? last.started_at)} · {plural('found', last.found)}, {plural('new', last.created)}
+        {formatWhen(last.finished_at ?? last.started_at)} · {plural('seen', last.found)}, {plural('new', last.created)}
         {problems.length > 0 && (
           <span className="text-amber-700 dark:text-amber-400"> · {plural('problems', problems.length)}</span>
         )}
@@ -409,16 +410,17 @@ function LastRun({ source }: { source: SourceView }) {
 /** El registro del último recorrido: cuántas ya conocía, qué falló y qué apuntó tu agente. */
 function RunLog({ source }: { source: SourceView }) {
   const { t } = useTranslation('platforms', { keyPrefix: 'row' })
+  const runText = useRunText()
   const last = source.last_run
   if (!last) return null
-  const existing = Math.max(0, last.after_filters - last.created)
+  const numbers = numbersOf(last)
+  const stop = runText.stop(numbers)
   const { problems, notes } = splitIssues(last.errors)
   return (
     <div className="grid gap-1 text-xs text-muted-foreground">
       <span>{t('log')}</span>
-      <p className="text-foreground/80">
-        {plural('found', last.found)}, {plural('new', last.created)}, {plural('known', existing)}
-      </p>
+      <p className="text-foreground/80">{runText.summary(numbers)}</p>
+      {stop && <p>{stop}</p>}
       {[
         { title: t('problemsTitle'), hint: t('problemsHint'), items: problems },
         { title: t('notesTitle'), hint: t('notesHint'), items: notes },

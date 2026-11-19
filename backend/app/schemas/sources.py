@@ -12,6 +12,7 @@ from pydantic import (
     ConfigDict,
     Field,
     ValidationInfo,
+    computed_field,
     field_validator,
     model_validator,
 )
@@ -467,6 +468,13 @@ class Issue(BaseModel):
     item: str | None = None
 
 
+def known_count(after_filters: int, created: int, left_by_limit: int) -> int:
+    """«Ya las tenías»: de las que pasan tus filtros, las que no son nuevas ni quedaron sin abrir
+    por el límite. Es `skipped_known` + `existing` del agente y, en las empresas o en recorridos
+    anteriores a esos contadores, lo que pasa los filtros y ya estaba."""
+    return max(0, after_filters - created - left_by_limit)
+
+
 class SourceRunView(BaseModel):
     id: int
     actor: str
@@ -483,6 +491,12 @@ class SourceRunView(BaseModel):
     left_by_limit: int = 0
     reopened: int = 0
     stop_reason: StopReason | None = None
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def known(self) -> int:
+        """Ya las tenías (ver `known_count`): la misma cifra en la UI, la CLI y el aviso."""
+        return known_count(self.after_filters, self.created, self.left_by_limit)
 
 
 class SeenSearch(BaseModel):

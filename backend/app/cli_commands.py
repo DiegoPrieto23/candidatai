@@ -1415,6 +1415,21 @@ def _source_input(
     )
 
 
+def _stop_reason_text(reason: str, left_by_limit: int) -> str:
+    """Por qué paró tu agente en un portal, con las mismas palabras que la UI."""
+    if reason == "limit":
+        if left_by_limit == 0:
+            return "Alcanzó el límite"
+        verb = "queda" if left_by_limit == 1 else "quedan"
+        return f"Alcanzó el límite: {verb} {left_by_limit} sin abrir"
+    return {
+        "watermark": "Llegó a lo de la búsqueda anterior",
+        "known_streak": "Encontró varias seguidas que ya tenías",
+        "pages": "Leyó todas las páginas que podía",
+        "incident": "Paró por un problema",
+    }.get(reason, reason)
+
+
 def _render_source(source: Any) -> None:
     state = "activa" if source.active else "pausada"
     target = source.config.get("slug") or source.config.get("query") or ""
@@ -1428,8 +1443,12 @@ def _render_source(source: Any) -> None:
     if source.last_run:
         run = source.last_run
         when = run.started_at.astimezone().strftime("%d/%m %H:%M")
-        line = f"      Última: {when}, {run.found} encontradas, {run.after_filters} tras filtros, "
-        line += f"{run.created} nuevas"
+        line = f"      Última: {when}, {run.found} vistas, {run.after_filters} pasan tus filtros, "
+        line += f"{run.known} ya las tenías, {run.created} nuevas"
+        if run.reopened:
+            line += f" (de ellas, {run.reopened} reabiertas)"
+        if run.stop_reason:
+            line += f". {_stop_reason_text(run.stop_reason, run.left_by_limit)}"
         if run.errors:
             line += f", {len(run.errors)} avisos: {run.errors[0].message}"
         typer.echo(line)

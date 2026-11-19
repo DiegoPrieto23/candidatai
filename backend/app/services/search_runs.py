@@ -20,7 +20,7 @@ from sqlalchemy.orm import Session
 from app.core.policies import get_policies
 from app.models import Job, SearchRun, Source, SourceRun, Task
 from app.models.base import utcnow
-from app.schemas.sources import ATS_KINDS
+from app.schemas.sources import ATS_KINDS, known_count
 from app.services import tasks
 from app.services.ingestion.browse import KIND
 from app.services.ingestion.service import keys_missing
@@ -51,6 +51,11 @@ class SearchRunView(BaseModel):
     # Tu agente ya terminó (lo dijo o todos los portales tienen recorrido): solo faltan empresas.
     portals_finished: bool = False
     found: int
+    # Las mismas cifras que cada portal (fase 45): pasan tus filtros, ya las tenías y las que quedan
+    # sin abrir por el límite de ofertas nuevas.
+    passed: int = 0
+    known: int = 0
+    left_by_limit: int = 0
     created: int
     reopened: int = 0  # de las nuevas, las que son reaperturas de una vacante anterior
     problems: int
@@ -220,6 +225,9 @@ def _view(session: Session, run: SearchRun) -> SearchRunView:
     # Una tarea borrada (limpieza de la cola) cuenta como acabada.
     companies_done += len(run.task_ids or []) - len(task_rows)
     done = {walk.source_id for walk in walks}
+    # Las nuevas, por las ofertas y no por los recorridos: así el aviso cuenta las que van entrando
+    # antes de que tu agente anote el recorrido de un portal (por eso, si a la vez entra otra por la
+    # extensión o a mano, `passed` puede no cuadrar con `known + created + left_by_limit`).
     created, reopened, last_job = session.execute(
         select(
             func.count(Job.id),
@@ -250,6 +258,12 @@ def _view(session: Session, run: SearchRun) -> SearchRunView:
         companies_done=min(companies_done, len(companies)),
         portals_finished=portals_finished,
         found=sum(walk.found for walk in [*walks, *company_walks]),
+        passed=sum(walk.after_filters for walk in [*walks, *company_walks]),
+        known=sum(
+            known_count(walk.after_filters, walk.created, walk.left_by_limit)
+            for walk in [*walks, *company_walks]
+        ),
+        left_by_limit=sum(walk.left_by_limit for walk in walks),
         created=created,
         reopened=reopened,
         problems=sum(

@@ -52,7 +52,7 @@
     "login": "Needs sign-in",
     "created_one": "{{count}} new",
     "created_other": "{{count}} new",
-    "of": "of {{found}}",
+    "of": "of {{found}} seen",
     "never": "Not searched yet",
     "searches_one": "{{count}} saved search",
     "searches_other": "{{count}} saved searches",
@@ -68,7 +68,9 @@
     "legend": {
       "found": "Seen",
       "passed": "Pass your filters",
-      "created": "New"
+      "known": "Already had",
+      "created": "New",
+      "reopened": "Reopened"
     },
     "companies": "Companies with their own careers site"
   },
@@ -160,5 +162,30 @@
     "undo": "Undo",
     "undone": "Undone: your settings are back as they were.",
     "unsavedConfirm": "You have unsaved changes in “More settings”. Leave without saving them?"
+  },
+  "run": {
+    "seen_one": "{{count}} seen",
+    "seen_other": "{{count}} seen",
+    "passed_one": "{{count}} passes your filters",
+    "passed_other": "{{count}} pass your filters",
+    "known_one": "{{count}} you already had",
+    "known_other": "{{count}} you already had",
+    "created_one": "{{count}} new",
+    "created_other": "{{count}} new",
+    "ofThemReopened_one": "({{count}} of them reopened)",
+    "ofThemReopened_other": "({{count}} of them reopened)",
+    "reopened_one": "{{count}} reopened",
+    "reopened_other": "{{count}} reopened",
+    "left_one": "Reached the limit: {{count}} left unopened.",
+    "left_other": "Reached the limit: {{count}} left unopened.",
+    "stop": {
+      "watermark": "Reached what the previous search saw",
+      "limitReached": "Reached the limit",
+      "limit_one": "Reached the limit: {{count}} left unopened",
+      "limit_other": "Reached the limit: {{count}} left unopened",
+      "known_streak": "Found several in a row you already had",
+      "pages": "Read every page it could",
+      "incident": "Stopped because of a problem"
+    }
   }
 }

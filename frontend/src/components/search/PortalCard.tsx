@@ -8,6 +8,7 @@ import { formatRelative } from '@/lib/labels'
 import { hostOf } from '@/lib/siteHost'
 import { splitIssues } from '@/lib/runIssues'
 import { cn } from '@/lib/utils'
+import { numbersOf, useRunText, type RunNumbers } from '@/components/search/runNumbers'
 
 /** Por qué tu agente no puede buscar en un portal (lo cambias en «Dónde buscar»). */
 function unusableReason(source: SourceView): 'off' | 'blocked' | 'noAgent' {
@@ -16,13 +17,26 @@ function unusableReason(source: SourceView): 'off' | 'blocked' | 'noAgent' {
   return 'noAgent'
 }
 
-/** Vistas, las que pasan tus filtros y nuevas, en una barra (cada parte, sobre las vistas). */
-function RunBar({ found, passed, created }: { found: number; passed: number; created: number }) {
+/** Las reabiertas, rayadas sobre el color de las nuevas: son parte de ellas. */
+const HATCH = {
+  backgroundImage:
+    'repeating-linear-gradient(135deg, color-mix(in oklch, var(--primary-foreground) 70%, transparent) 0 1.5px, transparent 1.5px 4px)',
+}
+
+/**
+ * Vistas, las que pasan tus filtros, las que ya tenías y las nuevas (de ellas, las reabiertas), en
+ * una barra: cada parte, sobre las vistas y empezando por la izquierda.
+ */
+function RunBar({ numbers }: { numbers: RunNumbers }) {
+  const { found, passed, known, created, reopened } = numbers
   const pct = (n: number) => `${Math.min(100, Math.round((n / found) * 100))}%`
+  const segment = 'absolute inset-y-0 left-0 rounded-full'
   return (
-    <span className="relative block h-1.5 overflow-hidden rounded-full bg-foreground/10" aria-hidden>
-      <span className="absolute inset-y-0 left-0 rounded-full bg-primary/45" style={{ width: pct(passed) }} />
-      <span className="absolute inset-y-0 left-0 rounded-full bg-primary" style={{ width: pct(created) }} />
+    <span className="relative block h-2 overflow-hidden rounded-full bg-foreground/10" aria-hidden>
+      <span className={cn(segment, 'bg-primary/30')} style={{ width: pct(passed) }} />
+      <span className={cn(segment, 'bg-primary/45')} style={{ width: pct(created + known) }} />
+      <span className={cn(segment, 'bg-primary')} style={{ width: pct(created) }} />
+      {reopened > 0 && <span className={cn(segment, 'bg-primary')} style={{ width: pct(Math.min(reopened, created)), ...HATCH }} />}
     </span>
   )
 }
@@ -34,6 +48,9 @@ export function PortalCard({ source, checked, onChange }: { source: SourceView; 
   const { t } = useTranslation('search', { keyPrefix: 'portals' })
   const browse = source.browse!
   const run = source.last_run
+  const numbers = run ? numbersOf(run) : null
+  const text = useRunText()
+  const stop = numbers ? text.stop(numbers) : null
   const { problems } = splitIssues(run?.errors ?? [])
   return (
     <li className="contents">
@@ -71,7 +88,12 @@ export function PortalCard({ source, checked, onChange }: { source: SourceView; 
             )}
           </span>
         </span>
-        {run && run.found > 0 && <RunBar found={run.found} passed={run.after_filters} created={run.created} />}
+        {numbers && numbers.found > 0 && (
+          <>
+            <RunBar numbers={numbers} />
+            <span className="sr-only">{text.summary(numbers)}</span>
+          </>
+        )}
         <span className="grid gap-0.5 text-xs text-muted-foreground">
           <span>
             {run ? (
@@ -79,11 +101,13 @@ export function PortalCard({ source, checked, onChange }: { source: SourceView; 
                 {formatRelative(source.last_run_at ?? run.started_at)} ·{' '}
                 <strong className="font-semibold text-foreground">{t('created', { count: run.created })}</strong>{' '}
                 {t('of', { found: run.found })}
+                {run.reopened > 0 && <> · {text.reopened(run.reopened)}</>}
               </>
             ) : (
               t('never')
             )}
           </span>
+          {stop && <span>{stop}</span>}
           <span>
             {t('searches', { count: browse.search_urls.length })}
             {problems.length > 0 && (
@@ -151,8 +175,13 @@ export function RunLegend() {
   return (
     <p className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
       <span className={cn(item, 'before:bg-foreground/10')}>{t('found')}</span>
-      <span className={cn(item, 'before:bg-primary/45')}>{t('passed')}</span>
+      <span className={cn(item, 'before:bg-primary/30')}>{t('passed')}</span>
+      <span className={cn(item, 'before:bg-primary/45')}>{t('known')}</span>
       <span className={cn(item, 'before:bg-primary')}>{t('created')}</span>
+      <span className="inline-flex items-center gap-1.5">
+        <span className="size-2 rounded-[2px] bg-primary" style={HATCH} aria-hidden />
+        {t('reopened')}
+      </span>
     </p>
   )
 }

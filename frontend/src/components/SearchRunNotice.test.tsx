@@ -14,6 +14,9 @@ function run(overrides: Record<string, unknown> = {}) {
     companies_done: 0,
     portals_finished: false,
     found: 12,
+    passed: 9,
+    known: 5,
+    left_by_limit: 0,
     reopened: 0,
     created: 4,
     problems: 0,
@@ -46,7 +49,7 @@ describe('Aviso de la búsqueda', () => {
     mockApi(routes(run({ status: 'finished', outcome: 'done', portals_done: 3, problems: 1, finished_at: '2026-11-03T10:30:00Z' })))
     renderApp('/como-funciona')
     expect(await screen.findByText('Búsqueda terminada')).toBeInTheDocument()
-    expect(screen.getByText('4 ofertas nuevas de 12 vistas.')).toBeInTheDocument()
+    expect(screen.getByText('12 vistas · 9 pasan tus filtros · 5 ya las tenías · 4 nuevas.')).toBeInTheDocument()
     expect(screen.getByText(/^1 problema en los portales/)).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Ver en la Bandeja' })).toHaveAttribute('href', '/bandeja')
   })
@@ -83,7 +86,7 @@ describe('Aviso de la búsqueda', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Minimizar el aviso' }))
     current = run({ status: 'finished', outcome: 'done', portals_done: 3 })
     await waitFor(() => expect(screen.getByText('Búsqueda terminada')).toBeInTheDocument(), { timeout: 6000 })
-    expect(screen.getByText('4 ofertas nuevas de 12 vistas.')).toBeInTheDocument()
+    expect(screen.getByText('12 vistas · 9 pasan tus filtros · 5 ya las tenías · 4 nuevas.')).toBeInTheDocument()
   }, 10_000)
 
   it('mientras busca también se puede cerrar con la X', async () => {
@@ -118,9 +121,15 @@ describe('Aviso de la búsqueda', () => {
     expect(screen.getByText('3 de 3 portales · 1 de 2 empresas · 4 ofertas nuevas')).toBeInTheDocument()
   })
 
-  it('al terminar dice cuántas son reaperturas', async () => {
-    mockApi(routes(run({ status: 'finished', outcome: 'done', portals_done: 3, reopened: 2, finished_at: '2026-11-03T10:30:00Z' })))
+  it('al terminar dice cuántas son reaperturas y cuántas quedan por el límite', async () => {
+    mockApi(
+      routes(run({ status: 'finished', outcome: 'done', portals_done: 3, reopened: 2, left_by_limit: 3, finished_at: '2026-11-03T10:30:00Z' })),
+    )
     renderApp('/')
-    expect(await screen.findByText(/2 son reaperturas de vacantes anteriores/)).toBeInTheDocument()
+    expect(
+      await screen.findByText(
+        '12 vistas · 9 pasan tus filtros · 5 ya las tenías · 4 nuevas (de ellas, 2 reabiertas). Alcanzó el límite: quedan 3 sin abrir.',
+      ),
+    ).toBeInTheDocument()
   })
 })

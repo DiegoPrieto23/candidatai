@@ -47,7 +47,7 @@ const tecno = platform(1, {}, {
     found: 12,
     after_filters: 4,
     created: 3,
-    existing: 0, skipped_known: 0, filtered_out: 0, left_by_limit: 0, reopened: 0,
+    existing: 0, skipped_known: 0, filtered_out: 0, left_by_limit: 0, reopened: 0, known: 1,
     errors: [{ code: 'captcha', message: 'Captcha en la página 2: se para.', item: null }],
   },
 })
@@ -110,7 +110,7 @@ describe('Plataformas', () => {
     expect(headings.map((h) => h.textContent)).toEqual(['LinkedIn', 'Tecnoempleo'])
     expect(calls.some((c) => c.path === '/sources' && c.search.get('kind') === 'agent_browse')).toBe(true)
     // Cada una, en una línea: su último recorrido; lo demás, plegado.
-    expect(screen.getByText(/12 encontradas,\s+3 nuevas$/)).toBeInTheDocument()
+    expect(screen.getByText(/12 vistas,\s+3 nuevas$/)).toBeInTheDocument()
     expect(screen.getByText(/· 1 problema/)).toBeInTheDocument()
     // Plegados aunque haya problemas: la línea del recorrido ya los cuenta.
     expect(screen.queryByText('Captcha en la página 2: se para.')).not.toBeInTheDocument()
@@ -127,7 +127,7 @@ describe('Plataformas', () => {
     expect(screen.queryByText(tecno.browse!.search_urls[0])).not.toBeInTheDocument()
     for (const button of screen.getAllByRole('button', { name: 'Ver las URLs' })) await userEvent.click(button)
     expect(screen.getByText(tecno.browse!.search_urls[0])).toBeInTheDocument()
-    expect(screen.getByText(/12 encontradas,\s+3 nuevas, 1 ya conocida/)).toBeInTheDocument()
+    expect(screen.getByText('12 vistas · 4 pasan tus filtros · 1 ya la tenías · 3 nuevas')).toBeInTheDocument()
     expect(screen.getByText('Captcha en la página 2: se para.')).toBeInTheDocument()
     expect(screen.getByText('El agente aún no la ha recorrido')).toBeInTheDocument()
   })
@@ -378,7 +378,7 @@ describe('Búsqueda pública de LinkedIn', () => {
           found: 5,
           after_filters: 2,
           created: 2,
-          existing: 0, skipped_known: 0, filtered_out: 0, left_by_limit: 0, reopened: 0,
+          existing: 0, skipped_known: 0, filtered_out: 0, left_by_limit: 0, reopened: 0, known: 0,
           errors: [{ code: 'blocked', message: 'LinkedIn respondió HTTP 429: corta la búsqueda.', item: null }],
         },
       }),

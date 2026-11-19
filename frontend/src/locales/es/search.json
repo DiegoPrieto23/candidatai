@@ -52,7 +52,7 @@
     "login": "Pide sesión",
     "created_one": "{{count}} nueva",
     "created_other": "{{count}} nuevas",
-    "of": "de {{found}}",
+    "of": "de {{found}} vistas",
     "never": "Aún no se ha buscado aquí",
     "searches_one": "{{count}} búsqueda guardada",
     "searches_other": "{{count}} búsquedas guardadas",
@@ -68,7 +68,9 @@
     "legend": {
       "found": "Vistas",
       "passed": "Pasan tus filtros",
-      "created": "Nuevas"
+      "known": "Ya las tenías",
+      "created": "Nuevas",
+      "reopened": "Reabiertas"
     },
     "companies": "Empresas con portal propio"
   },
@@ -160,5 +162,30 @@
     "undo": "Deshacer",
     "undone": "Deshecho: tus ajustes vuelven a estar como antes.",
     "unsavedConfirm": "Tienes cambios sin guardar en «Más ajustes». ¿Salir sin guardarlos?"
+  },
+  "run": {
+    "seen_one": "{{count}} vista",
+    "seen_other": "{{count}} vistas",
+    "passed_one": "{{count}} pasa tus filtros",
+    "passed_other": "{{count}} pasan tus filtros",
+    "known_one": "{{count}} ya la tenías",
+    "known_other": "{{count}} ya las tenías",
+    "created_one": "{{count}} nueva",
+    "created_other": "{{count}} nuevas",
+    "ofThemReopened_one": "(de ellas, {{count}} reabierta)",
+    "ofThemReopened_other": "(de ellas, {{count}} reabiertas)",
+    "reopened_one": "{{count}} reabierta",
+    "reopened_other": "{{count}} reabiertas",
+    "left_one": "Alcanzó el límite: queda {{count}} sin abrir.",
+    "left_other": "Alcanzó el límite: quedan {{count}} sin abrir.",
+    "stop": {
+      "watermark": "Llegó a lo de la búsqueda anterior",
+      "limitReached": "Alcanzó el límite",
+      "limit_one": "Alcanzó el límite: queda {{count}} sin abrir",
+      "limit_other": "Alcanzó el límite: quedan {{count}} sin abrir",
+      "known_streak": "Encontró varias seguidas que ya tenías",
+      "pages": "Leyó todas las páginas que podía",
+      "incident": "Paró por un problema"
+    }
   }
 }

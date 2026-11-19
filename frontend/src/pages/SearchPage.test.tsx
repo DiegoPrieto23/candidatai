@@ -53,7 +53,7 @@ describe('Buscar ofertas', () => {
         [
           platform(1, 'InfoJobs', {
             last_run_at: '2026-10-30T08:00:00Z',
-            last_run: { id: 1, actor: 'agent', started_at: '2026-10-30T08:00:00Z', finished_at: null, found: 9, after_filters: 9, created: 4, errors: [] },
+            last_run: { id: 1, actor: 'agent', started_at: '2026-10-30T08:00:00Z', finished_at: null, found: 9, after_filters: 9, created: 4, known: 5, reopened: 0, left_by_limit: 0, stop_reason: null, errors: [] },
           }),
           platform(2, 'Tecnoempleo'),
           platform(3, 'LinkedIn', { browse: { allow_agent_browsing: false, search_urls: [], priority: 3, access: 'login', max_offers: 10, notes: '' } }),
@@ -84,6 +84,38 @@ describe('Buscar ofertas', () => {
     const body = calls.find((c) => c.path === '/agent/launch')?.body as { action: string; search: Record<string, unknown> }
     expect(body.action).toBe('search-jobs')
     expect(body.search).toEqual({ platform_ids: [], search_run_id: 5 })
+  })
+
+  it('cada portal dice qué trajo y por qué paró, con las cifras de la leyenda', async () => {
+    const run = (id: number, extra: Record<string, unknown>) => ({
+      id, actor: 'agent', started_at: '2026-10-30T08:00:00Z', finished_at: null, errors: [], existing: 0, skipped_known: 0, filtered_out: 0, ...extra,
+    })
+    mockApi(
+      routes([
+        platform(1, 'InfoJobs', {
+          last_run_at: '2026-10-30T08:00:00Z',
+          last_run: run(1, { found: 40, after_filters: 25, created: 15, known: 5, reopened: 2, left_by_limit: 5, stop_reason: 'limit' }),
+        }),
+        platform(2, 'Tecnoempleo', {
+          last_run_at: '2026-10-30T08:00:00Z',
+          last_run: run(2, { found: 12, after_filters: 6, created: 0, known: 6, reopened: 0, left_by_limit: 0, stop_reason: 'watermark' }),
+        }),
+      ]),
+    )
+    renderApp('/buscar')
+    const list = await screen.findByRole('list', { name: 'Portales en los que buscar' })
+    const infojobs = within(list).getByRole('checkbox', { name: /InfoJobs/ }).closest('label')!
+    expect(infojobs).toHaveTextContent('15 nuevas de 40 vistas · 2 reabiertas')
+    expect(within(infojobs).getByText('Alcanzó el límite: quedan 5 sin abrir')).toBeInTheDocument()
+    expect(
+      within(infojobs).getByText('40 vistas · 25 pasan tus filtros · 5 ya las tenías · 15 nuevas (de ellas, 2 reabiertas)'),
+    ).toHaveClass('sr-only')
+    const tecno = within(list).getByRole('checkbox', { name: /Tecnoempleo/ }).closest('label')!
+    expect(within(tecno).getByText('Llegó a lo de la búsqueda anterior')).toBeInTheDocument()
+    expect(tecno).not.toHaveTextContent('reabierta')
+    for (const item of ['Vistas', 'Pasan tus filtros', 'Ya las tenías', 'Nuevas', 'Reabiertas']) {
+      expect(screen.getByText(item)).toBeInTheDocument()
+    }
   })
 
   it('manda solo los portales elegidos, y sin «solo esta vez»', async () => {

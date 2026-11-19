@@ -80,6 +80,22 @@ def test_it_stays_running_until_every_board_is_recorded(session: Session) -> Non
     assert view.finished_at is not None
 
 
+def test_the_notice_adds_up_the_same_numbers_as_each_portal(session: Session) -> None:
+    one, two = portal(session, "Uno"), portal(session, "Dos")
+    search_runs.start(session, [])
+    browse.record_run(
+        session,
+        one,
+        SourceRunSummary(
+            found=30, created=0, skipped_known=9, filtered_out=10, left_by_limit=4, existing=7
+        ),
+    )
+    browse.record_run(session, two, SourceRunSummary(found=8, created=0, existing=2))
+    view = seen(session)
+    # Pasan tus filtros: 20 + 2; ya las tenías: 16 + 2; sin abrir por el límite: 4.
+    assert (view.found, view.passed, view.known, view.left_by_limit) == (38, 22, 18, 4)
+
+
 def test_a_walk_from_before_the_search_does_not_count(session: Session) -> None:
     one = portal(session, "Uno")
     walk(session, one)

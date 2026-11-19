@@ -190,6 +190,11 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   puesto ya no desaparece mientras la editas.
 
 ### Cambiado
+- **Qué trajo cada búsqueda, de un vistazo:** cada portal de «Buscar» enseña una barra con las
+  **vistas**, las que **pasan tus filtros**, las que **ya tenías** y las **nuevas** (de ellas, las
+  **reabiertas**), con la leyenda de esas mismas cifras, y una nota de por qué paró: «Llegó a lo de la
+  búsqueda anterior» o «Alcanzó el límite: quedan 5 sin abrir». «Dónde buscar», el aviso «Buscando…» al
+  terminar y el resumen de tu agente usan los mismos números, y `cai sources list` también.
 - **Tarjetas de empresas más simples:** cada empresa con portal propio tiene un interruptor, **Activa** o
   **Pausada**, y un menú **⋯** con **Buscar ahora**, su web y los lugares a los que se limita. **Probar**
   queda solo al añadir una empresa, donde enseña lo que traería antes de guardarla.

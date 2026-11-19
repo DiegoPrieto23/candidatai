@@ -364,6 +364,15 @@ hayas aprobado. Skill `search-jobs`.
   tenías, lo nuevo, lo reabierto, lo que quedó por el límite, por qué paró (`stop_reason`), la marca de
   agua de cada búsqueda y los incidentes. La UI
   enseña el código `other` como una nota del agente y los demás como un problema.
+- **Cómo se lee el resultado.** Cada portal de «Buscar» (y su registro en «Dónde buscar») usa las mismas
+  cifras, en la barra y en su leyenda: **Vistas** (`found`) · **Pasan tus filtros** (`after_filters`) ·
+  **Ya las tenías** (`known` = las que pasan tus filtros menos las nuevas y las que quedaron por el
+  límite: `skipped_known + existing`) · **Nuevas** (`created`), y de ellas las **Reabiertas**
+  (`reopened`, rayadas dentro de las nuevas). Debajo, una nota con por qué paró: «Llegó a lo de la
+  búsqueda anterior» (`watermark`), «Alcanzó el límite: quedan 5 sin abrir» (`limit`), «Encontró varias
+  seguidas que ya tenías» (`known_streak`), «Leyó todas las páginas que podía» (`pages`) o «Paró por un
+  problema» (`incident`). El aviso «Buscando…» suma esas cifras de toda la búsqueda al terminar, `cai
+  sources list` las escribe en la línea de «Última» y tu agente resume con ellas.
 - Al terminar la búsqueda, o si no ha podido hacerla, `finish_search`. Si se abrió con «Buscar ahora», la
   app enseña «Buscando…» en todas las páginas desde que se abre la ventana hasta entonces, o hasta que
   todos los portales elegidos tienen su recorrido anotado. Con 30 minutos sin novedades, dice que no hay

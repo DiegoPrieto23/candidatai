@@ -93,11 +93,7 @@
       "body": "It hasn't added anything for a while. Check its window: it may be waiting for you, or it may have closed."
     },
     "done": {
-      "title": "Search finished",
-      "body_one": "{{count}} new job out of {{found}} seen.",
-      "body_other": "{{count}} new jobs out of {{found}} seen.",
-      "reopened_one": "One is a reopening of an earlier role.",
-      "reopened_other": "{{count}} are reopenings of earlier roles."
+      "title": "Search finished"
     },
     "no_browser": {
       "title": "Your agent couldn't search",

@@ -24,8 +24,8 @@
     "remoteIn": "Remoto ({{place}})"
   },
   "counts": {
-    "found_one": "{{count}} encontrada",
-    "found_other": "{{count}} encontradas",
+    "seen_one": "{{count}} vista",
+    "seen_other": "{{count}} vistas",
     "new_one": "{{count}} nueva",
     "new_other": "{{count}} nuevas",
     "newForYou_one": "{{count}} nueva para ti",
