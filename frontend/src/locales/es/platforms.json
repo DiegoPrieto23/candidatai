@@ -111,7 +111,7 @@
     "notesTitle": "Notas de tu agente.",
     "notesHint": "No ha fallado nada: es lo que apuntó, como las búsquedas que dejó sin recorrer."
   },
-  "limits": "Límites de la app: como mucho {{pages}} de resultados por búsqueda, {{delay}} s de pausa entre páginas y {{offers}} ofertas por recorrido en las plataformas nuevas (en cada una lo cambias con «Ofertas por recorrido»).",
+  "limits": "Límites de la app: como mucho {{pages}} de resultados por búsqueda (para antes al llegar a lo de la búsqueda anterior), {{delay}} s de pausa entre páginas y {{offers}} ofertas nuevas por recorrido en las plataformas nuevas (las que ya tienes no cuentan); en cada una lo cambias con «Ofertas por recorrido».",
   "empty": {
     "title": "Aún no buscas en ningún portal",
     "body": "Pide a tu agente que lo configure: te pregunta dónde buscas, te recomienda portales y prepara sus búsquedas con los puestos de tu perfil. O añade uno tú: en los portales conocidos, las búsquedas salen solas de tu perfil."

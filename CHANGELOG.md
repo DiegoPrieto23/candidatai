@@ -183,6 +183,11 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   puesto ya no desaparece mientras la editas.
 
 ### Cambiado
+- **«Buscar ahora» trae ofertas nuevas de verdad:** el número de ofertas por portal cuenta solo las
+  **nuevas**. Tu agente ya no abre las que tienes: comprueba cada página de resultados antes de
+  abrir nada y deja de leer cada búsqueda al llegar a lo que vio la vez anterior. Lee hasta 5 páginas
+  por búsqueda (antes, 2), y anota cuántas vio, cuántas no pasan tus filtros, cuántas ya tenías y
+  cuántas quedaron sin abrir por el límite.
 - **«Buscar ofertas»: buscar y configurar en un solo panel.** En la franja de arriba, además de tus
   puestos y lugares, marcas la **modalidad** y el **nivel** con un clic, y al pulsar un lugar eliges
   qué aceptas en él (cualquier modalidad, solo híbrido o remoto, o descartarlo). Cada cambio se guarda

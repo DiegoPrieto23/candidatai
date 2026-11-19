@@ -44,7 +44,7 @@ describe('Inicio', () => {
       'GET /followups': noFollowups,
       'GET /upcoming': noUpcoming,
       'GET /jobs': page([]),
-      'GET /sources': { sources: [portal], agent_browse: { max_result_pages: 2, delay_seconds: 5, default_max_offers: 15 } },
+      'GET /sources': { sources: [portal], agent_browse: { max_result_pages: 5, delay_seconds: 5, default_max_offers: 15, stop_after_known: 5 } },
     })
     renderApp('/')
     expect(await screen.findByRole('button', { name: 'Buscar ofertas' })).toBeInTheDocument()
@@ -112,7 +112,7 @@ describe('Primeros pasos (app recién instalada)', () => {
   const base = { 'GET /status': status(), 'GET /followups': noFollowups, 'GET /upcoming': noUpcoming, 'GET /jobs': page([]) }
   const noProfile = { exists: false, file_hash: null, profile: null, issues: [], profile_version_id: null, undo_available: 0 }
   const withProfile = { ...noProfile, exists: true, file_hash: 'h', profile: {}, profile_version_id: 1 }
-  const limits = { max_result_pages: 2, delay_seconds: 5, default_max_offers: 15 }
+  const limits = { max_result_pages: 5, delay_seconds: 5, default_max_offers: 15, stop_after_known: 5 }
 
   it('sin perfil ni portales: subir el CV y configurar dónde buscar con tu agente', async () => {
     mockApi({

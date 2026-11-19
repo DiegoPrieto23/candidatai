@@ -115,9 +115,10 @@ email_alerts:                  # fase 09b
     tecnoempleo: [tecnoempleo.com]
 
 agent_browse:                   # fase 09b, skill search-jobs
-  max_result_pages: 2
+  max_result_pages: 5             # páginas por búsqueda como mucho; suele parar antes, en lo ya visto
   delay_seconds: 5
-  default_max_offers: 15
+  default_max_offers: 15          # ofertas NUEVAS que abrir por portal (las conocidas no cuentan)
+  stop_after_known: 5             # deja de leer una búsqueda tras tantas conocidas seguidas
 
 linkedin_public:                # fase 22: búsqueda pública de LinkedIn sin sesión, apagada por defecto
   max_searches_per_run: 5         # búsquedas (search_urls de la plataforma LinkedIn) por ejecución

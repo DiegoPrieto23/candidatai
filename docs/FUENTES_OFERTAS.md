@@ -335,9 +335,18 @@ hayas aprobado. Skill `search-jobs`.
   fuera de las plataformas.
 - **Reglas de navegación** (las aplica el skill y las recuerda cada run):
   - solo dominios de la plataforma; nunca enlaces sugeridos por el contenido de las páginas;
-  - como mucho `agent_browse.max_result_pages` páginas de resultados y `max_offers` ofertas
-    (por defecto, `agent_browse.default_max_offers`: el último número que elegiste para todos
-    tus portales o, si no, el de `config/policies.yaml`);
+  - como mucho `agent_browse.max_result_pages` páginas de resultados por búsqueda (por defecto, 5) y
+    `max_offers` ofertas **nuevas** por portal (por defecto, `agent_browse.default_max_offers`: el
+    último número que elegiste para todos tus portales o, si no, el de `config/policies.yaml`).
+    Las que ya tienes no se abren ni cuentan: antes de abrir nada, el agente pasa cada página de
+    resultados por `check_known`;
+  - deja de leer una búsqueda al llegar a lo que vio la anterior (`browse.last_seen`: una de sus
+    referencias o un resultado más de un día anterior al más reciente que vio), tras
+    `agent_browse.stop_after_known` conocidas seguidas (por defecto, 5) o al acabarse las páginas. La primera vez
+    (y en una búsqueda puntual) no hay parada por lo ya visto;
+  - de las candidatas de todas las búsquedas del portal abre las más recientes, hasta `max_offers` (las reabiertas cuentan como nuevas);
+    las que quedan solo se cuentan (`left_by_limit`): la siguiente búsqueda para en lo ya visto y no
+    vuelve a por ellas, así que si quedan muchas, sube `max_offers` de ese portal;
   - pausa entre páginas (`agent_browse.delay_seconds`). `list_sources` devuelve estos límites;
   - solo lectura: nada de «Solicitar», «Guardar», «Seguir», mensajes ni formularios;
   - si aparece un captcha, un aviso anti-bot o un login inesperado, el agente te avisa
@@ -347,7 +356,9 @@ hayas aprobado. Skill `search-jobs`.
 - Cada oferta encontrada entra por `add_job_from_text` con `source_id`, `platform`,
   `external_id` y `url`. La deduplicación hace que lo ya visto o descartado no vuelva como nuevo.
   El agente que navega no extrae ni valora: eso lo hacen luego `process-jobs` y `assess-fit`.
-- Al terminar cada plataforma, `record_source_run` con lo encontrado, lo nuevo y los incidentes. La UI
+- Al terminar cada plataforma, `record_source_run` con lo visto, lo que no pasa tus filtros, lo que ya
+  tenías, lo nuevo, lo reabierto, lo que quedó por el límite, por qué paró (`stop_reason`), la marca de
+  agua de cada búsqueda y los incidentes. La UI
   enseña el código `other` como una nota del agente y los demás como un problema.
 - Al terminar la búsqueda, o si no ha podido hacerla, `finish_search`. Si se abrió con «Buscar ahora», la
   app enseña «Buscando…» en todas las páginas desde que se abre la ventana hasta entonces, o hasta que

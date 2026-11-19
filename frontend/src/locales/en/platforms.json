@@ -111,7 +111,7 @@
     "notesTitle": "Notes from your agent.",
     "notesHint": "Nothing failed: this is what it wrote down, like the searches it didn't get to."
   },
-  "limits": "App limits: at most {{pages}} of results per search, {{delay}} s pause between pages and {{offers}} jobs per run on new platforms (change it on each one with “Jobs per run”).",
+  "limits": "App limits: at most {{pages}} of results per search (it stops earlier when it reaches what the previous search saw), {{delay}} s pause between pages and {{offers}} new jobs per run on new platforms (the ones you already have don't count); change it on each one with “Jobs per run”.",
   "empty": {
     "title": "You're not searching any job board yet",
     "body": "Ask your agent to set it up: it asks where you search, recommends job boards and prepares their searches with the roles in your profile. Or add one yourself: on known job boards, the searches come from your profile."

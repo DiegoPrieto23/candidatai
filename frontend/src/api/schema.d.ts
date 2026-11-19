@@ -3760,6 +3760,8 @@ export interface components {
             delay_seconds: number;
             /** Default Max Offers */
             default_max_offers: number;
+            /** Stop After Known */
+            stop_after_known: number;
         };
         /**
          * AgentBrowseSource
@@ -3802,7 +3804,7 @@ export interface components {
             allow_agent_browsing?: boolean | null;
             /**
              * Max Offers
-             * @description Ofertas que abrir; por defecto, `agent_browse.default_max_offers`.
+             * @description Ofertas nuevas que abrir en cada recorrido (las que ya están no cuentan); por defecto, `agent_browse.default_max_offers`.
              */
             max_offers?: number | null;
             /** Notes */
@@ -3847,7 +3849,7 @@ export interface components {
             allow_agent_browsing?: boolean | null;
             /**
              * Max Offers
-             * @description Ofertas que abrir; por defecto, `agent_browse.default_max_offers`.
+             * @description Ofertas nuevas que abrir en cada recorrido (las que ya están no cuentan); por defecto, `agent_browse.default_max_offers`.
              */
             max_offers?: number | null;
             /** Notes */

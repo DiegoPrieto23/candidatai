@@ -112,9 +112,10 @@ def test_platforms_listed_with_limits(client: TestClient) -> None:
     body = client.get("/sources", params={"kind": "agent_browse"}).json()
 
     assert body["agent_browse"] == {
-        "max_result_pages": 2,
+        "max_result_pages": 5,
         "delay_seconds": 5.0,
         "default_max_offers": 15,
+        "stop_after_known": 5,
     }
     [platform] = body["sources"]
     assert platform["id"] == source_id

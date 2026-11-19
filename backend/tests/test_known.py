@@ -8,7 +8,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.agent_interface.tools import CheckKnownInput
-from app.core.policies import get_policies
+from app.core.policies import AgentBrowsePolicy, get_policies
 from app.models import Event, Job, JobSighting
 from app.services import events, ingest
 from app.services.known import MAX_ITEMS, KnownItem, check_known
@@ -207,3 +207,14 @@ def test_input_limits() -> None:
         CheckKnownInput(items=[])
     with pytest.raises(ValidationError):
         CheckKnownInput(items=[{"url": ""}])
+
+
+def test_search_policies_come_from_the_yaml() -> None:
+    policies = get_policies()
+    assert policies.dedup.reopen_after_days == 30
+    browse = policies.agent_browse
+    assert (browse.max_result_pages, browse.stop_after_known) == (5, 5)
+    with pytest.raises(ValidationError):
+        AgentBrowsePolicy(
+            max_result_pages=5, delay_seconds=5, default_max_offers=15, stop_after_known=0
+        )

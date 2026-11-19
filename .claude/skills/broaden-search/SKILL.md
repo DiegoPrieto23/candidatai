@@ -76,7 +76,10 @@ Pregunta cuáles acepta y dónde. Sin respuesta clara, no hagas nada.
   término del puesto). Guarda con `save_source` reenviando **toda** su configuración (`name`,
   `platform`, `search_urls` con las anteriores más las nuevas, `access`, `max_offers`, `notes`),
   sin `allow_agent_browsing` ni `priority` (así conserva su puesto aunque el usuario haya cambiado
-  el orden). Como mucho 10 búsquedas por plataforma: si no caben,
+  el orden). Una búsqueda nueva no tiene aún hasta dónde llegó (`last_seen`): la
+  primera vez `search-jobs` la lee hasta `max_result_pages` o hasta abrir las ofertas nuevas que
+  tocan, y desde la siguiente para en lo ya visto. Cambiar el texto de una búsqueda la cuenta como
+  nueva. Como mucho 10 búsquedas por plataforma: si no caben,
   pregunta cuáles quitar.
 - Si no puedes editar ficheros ni ejecutar comandos, dale el texto exacto para pegar en
   `data/profile.yaml` y los comandos.

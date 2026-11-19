@@ -7,7 +7,7 @@ import { mockApi, renderApp, status } from '@/test/utils'
 /** «Dónde buscar»: la sección de «Buscar ofertas» donde está la lista de portales. */
 const where = () => within(screen.getByRole('region', { name: 'Dónde buscar' }))
 
-const LIMITS = { max_result_pages: 2, delay_seconds: 5, default_max_offers: 15 }
+const LIMITS = { max_result_pages: 5, delay_seconds: 5, default_max_offers: 15, stop_after_known: 5 }
 
 function platform(id: number, browse: Partial<AgentBrowseSource>, overrides: Partial<SourceView> = {}): SourceView {
   const full: AgentBrowseSource = {
@@ -116,7 +116,7 @@ describe('Plataformas', () => {
     expect(screen.queryByText('Captcha en la página 2: se para.')).not.toBeInTheDocument()
     expect(screen.queryByRole('combobox', { name: 'Prioridad de LinkedIn' })).not.toBeInTheDocument()
     await openSettings()
-    expect(screen.getAllByText(/2 páginas de resultados por búsqueda, 5 s/)[0]).toBeInTheDocument()
+    expect(screen.getAllByText(/5 páginas de resultados por búsqueda \(para antes al llegar a lo de la búsqueda anterior\), 5 s/)[0]).toBeInTheDocument()
     const search = screen
       .getAllByRole('link', { name: 'data' })
       .find((link) => link.getAttribute('href') === tecno.browse!.search_urls[0])

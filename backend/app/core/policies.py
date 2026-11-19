@@ -127,6 +127,8 @@ class AgentBrowsePolicy(BaseModel):
     max_result_pages: int = Field(gt=0)  # páginas de resultados por búsqueda
     delay_seconds: float = Field(ge=0)  # pausa entre páginas
     default_max_offers: int = Field(gt=0)  # ofertas por plataforma si no dice `max_offers`
+    # Conocidas seguidas en una búsqueda a partir de las cuales el agente deja de leerla.
+    stop_after_known: int = Field(default=5, gt=0)
 
 
 class LinkedInPublicPolicy(BaseModel):

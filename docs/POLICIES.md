@@ -346,8 +346,9 @@ Cuando el agente recorre portales con tu navegador (skill `search-jobs`, detalle
 - **Solo lectura:** nada de «Solicitar», «Guardar», «Seguir», «Contactar» ni formularios.
 - **Captchas, anti-bot o login inesperado:** se para esa plataforma y se anota. El login lo haces
   tú; los captchas no se resuelven ni se esquivan.
-- **Límites:** páginas de resultados, ofertas por plataforma y pausas de `config/policies.yaml` →
-  `agent_browse`. LinkedIn solo si lo has activado tú en la UI: la interfaz para agentes no puede
+- **Límites:** páginas de resultados, ofertas **nuevas** por plataforma (las que ya tienes no se
+  abren ni cuentan), conocidas seguidas tras las que deja una búsqueda (`stop_after_known`) y pausas
+  de `config/policies.yaml` → `agent_browse`. Cada búsqueda para al llegar a lo que vio la anterior. LinkedIn solo si lo has activado tú en la UI: la interfaz para agentes no puede
   activarlo. La API local no tiene autenticación, así que un agente con terminal podría
   llamarla directamente (riesgo residual, `docs/FUENTES_OFERTAS.md`).
 

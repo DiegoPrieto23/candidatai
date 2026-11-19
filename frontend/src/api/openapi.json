@@ -23068,13 +23068,18 @@
           "default_max_offers": {
             "type": "integer",
             "title": "Default Max Offers"
+          },
+          "stop_after_known": {
+            "type": "integer",
+            "title": "Stop After Known"
           }
         },
         "type": "object",
         "required": [
           "max_result_pages",
           "delay_seconds",
-          "default_max_offers"
+          "default_max_offers",
+          "stop_after_known"
         ],
         "title": "AgentBrowseLimits",
         "description": "Límites de `config/policies.yaml` → `agent_browse`, para el agente que navega."
@@ -23153,7 +23158,7 @@
               }
             ],
             "title": "Max Offers",
-            "description": "Ofertas que abrir; por defecto, `agent_browse.default_max_offers`."
+            "description": "Ofertas nuevas que abrir en cada recorrido (las que ya están no cuentan); por defecto, `agent_browse.default_max_offers`."
           },
           "notes": {
             "anyOf": [
@@ -23252,7 +23257,7 @@
               }
             ],
             "title": "Max Offers",
-            "description": "Ofertas que abrir; por defecto, `agent_browse.default_max_offers`."
+            "description": "Ofertas nuevas que abrir en cada recorrido (las que ya están no cuentan); por defecto, `agent_browse.default_max_offers`."
           },
           "notes": {
             "anyOf": [

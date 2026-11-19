@@ -209,7 +209,7 @@ targets:
         allowed-tools: ["read", "cai_templates_cli"]
       search-jobs:
         argument-hint: "[configurar | plataforma | nada para todas]"
-        allowed-tools: ["mcp:get_profile", "mcp:list_sources"]
+        allowed-tools: ["mcp:get_profile", "mcp:list_sources", "mcp:check_known"]
       review-linkedin:
         argument-hint: "[ruta al PDF de LinkedIn o nada para pegar el texto]"
         allowed-tools: ["read", "mcp:get_profile", "mcp:list_jobs", "mcp:get_extraction"]

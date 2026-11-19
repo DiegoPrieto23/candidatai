@@ -145,7 +145,7 @@ describe('Barra lateral (fase 23.3)', () => {
   })
 
   it('las rutas antiguas de Empresas y Plataformas llevan a «Dónde buscar»', async () => {
-    mockApi({ ...routes(), 'GET /sources': { sources: [], agent_browse: { max_result_pages: 2, delay_seconds: 5, default_max_offers: 15 } } })
+    mockApi({ ...routes(), 'GET /sources': { sources: [], agent_browse: { max_result_pages: 5, delay_seconds: 5, default_max_offers: 15, stop_after_known: 5 } } })
     renderApp('/empresas')
     expect(await screen.findByRole('heading', { name: 'Empresas con portal propio' })).toBeInTheDocument()
     const tabs = screen.getByRole('navigation', { name: 'Dónde buscar' })
@@ -155,7 +155,7 @@ describe('Barra lateral (fase 23.3)', () => {
   })
 
   it('«Dónde buscar» abre en «Portales de empleo», la primera pestaña', async () => {
-    mockApi({ ...routes(), 'GET /sources': { sources: [], agent_browse: { max_result_pages: 2, delay_seconds: 5, default_max_offers: 15 } } })
+    mockApi({ ...routes(), 'GET /sources': { sources: [], agent_browse: { max_result_pages: 5, delay_seconds: 5, default_max_offers: 15, stop_after_known: 5 } } })
     renderApp('/fuentes')
     expect(await screen.findByRole('heading', { name: 'Portales de empleo' })).toBeInTheDocument()
     const tabs = screen.getByRole('navigation', { name: 'Dónde buscar' })
@@ -168,7 +168,7 @@ describe('Barra lateral (fase 23.3)', () => {
   })
 
   it('«Buscar ofertas» es una página: las rutas de antes llevan a su sección y el índice, a las demás', async () => {
-    mockApi({ ...routes(), 'GET /sources': { sources: [], agent_browse: { max_result_pages: 2, delay_seconds: 5, default_max_offers: 15 } } })
+    mockApi({ ...routes(), 'GET /sources': { sources: [], agent_browse: { max_result_pages: 5, delay_seconds: 5, default_max_offers: 15, stop_after_known: 5 } } })
     const scrolled: string[] = []
     const original = Element.prototype.scrollIntoView
     Element.prototype.scrollIntoView = function (this: Element) {

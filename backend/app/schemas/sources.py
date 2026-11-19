@@ -332,7 +332,10 @@ class AgentBrowseSource(_Strict):
         default=None,
         ge=1,
         le=100,
-        description="Ofertas que abrir; por defecto, `agent_browse.default_max_offers`.",
+        description=(
+            "Ofertas nuevas que abrir en cada recorrido (las que ya están no cuentan); por "
+            "defecto, `agent_browse.default_max_offers`."
+        ),
     )
     notes: str | None = Field(default=None, max_length=1000)
 
@@ -453,6 +456,7 @@ class AgentBrowseLimits(BaseModel):
     max_result_pages: int
     delay_seconds: float
     default_max_offers: int
+    stop_after_known: int
 
 
 class Issue(BaseModel):
