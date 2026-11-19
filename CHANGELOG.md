@@ -190,6 +190,9 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   puesto ya no desaparece mientras la editas.
 
 ### Cambiado
+- **Tarjetas de empresas más simples:** cada empresa con portal propio tiene un interruptor, **Activa** o
+  **Pausada**, y un menú **⋯** con **Buscar ahora**, su web y los lugares a los que se limita. **Probar**
+  queda solo al añadir una empresa, donde enseña lo que traería antes de guardarla.
 - **«Buscar ahora» revisa también tus empresas:** el mismo botón lanza a tu agente en los portales y, a
   la vez, la app revisa las webs de empleo de tus empresas con portal propio (sin gastar tokens; se
   saltan las revisadas hace menos de 6 horas). El panel dice «N portales · M empresas», el aviso

@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import type { SourceRunResult, SourceTestResult, SourceView } from '@/api/client'
@@ -167,11 +167,14 @@ describe('Empresas objetivo', () => {
   it('sin ofertas que encajen, lo dice', async () => {
     mockApi({
       'GET /status': status(),
-      'GET /sources': { sources: [source()] },
-      'POST /sources/1/test': { ...preview, after_filters: 0, jobs: [preview.jobs[1]!] },
+      'GET /sources': { sources: [] },
+      'POST /sources/test': { ...preview, after_filters: 0, jobs: [preview.jobs[1]!] },
     })
     renderApp('/empresas')
-    await userEvent.click(await screen.findByRole('button', { name: 'Probar' }))
+    const form = await screen.findByRole('form', { name: 'Añadir fuente' })
+    await userEvent.type(within(form).getByLabelText('Empresa'), 'Brétema')
+    await userEvent.type(within(form).getByLabelText('Dirección de su web de empleo'), URL)
+    await userEvent.click(within(form).getByRole('button', { name: 'Probar' }))
     expect(await screen.findByText('0 ofertas para ti')).toBeInTheDocument()
     expect(screen.getByText('Ninguna oferta encaja ahora con tu búsqueda; se revisa cada día.')).toBeInTheDocument()
     expect(screen.queryByText('Account Executive')).not.toBeInTheDocument()
@@ -184,7 +187,8 @@ describe('Empresas objetivo', () => {
       'POST /sources/1/locations': { status: 200, body: source() },
     })
     renderApp('/empresas')
-    await userEvent.click(await screen.findByRole('button', { name: 'Limitar a unos lugares' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Más acciones de Acme Datos' }))
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Limitar a unos lugares' }))
     await userEvent.type(screen.getByRole('textbox', { name: 'Lugares de Acme Datos' }), 'Madrid, Vigo')
     await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
     expect(calls.find((c) => c.path === '/sources/1/locations')?.body).toEqual({ locations: ['Madrid', 'Vigo'] })
@@ -220,6 +224,46 @@ describe('Empresas objetivo', () => {
     expect(await within(form).findByText('Dirección no válida.')).toBeInTheDocument()
   })
 
+  it('cada empresa tiene un interruptor y un menú, sin «Probar»', async () => {
+    mockApi({ 'GET /status': status(), 'GET /sources': { sources: [source(), source({ id: 2, name: 'Brétema', active: false })] } })
+    renderApp('/empresas')
+    const list = (await screen.findByRole('heading', { name: 'Acme Datos' })).closest('ul')!
+    const rows = within(list).getAllByRole('listitem')
+    expect(rows).toHaveLength(2)
+    expect(within(rows[0]!).getByRole('switch', { name: 'Revisar Acme Datos cada día' })).toHaveAttribute('aria-checked', 'true')
+    expect(within(rows[1]!).getByRole('switch', { name: 'Revisar Brétema cada día' })).toHaveAttribute('aria-checked', 'false')
+    expect(within(rows[1]!).getByText('Pausada')).toBeInTheDocument()
+    for (const row of rows) {
+      expect(within(row).getAllByRole('button').map((b) => b.getAttribute('aria-label'))).toEqual([
+        expect.stringMatching(/^Más acciones de /),
+      ])
+      expect(within(row).queryByRole('button', { name: 'Probar' })).not.toBeInTheDocument()
+    }
+    // Pausada, «Buscar ahora» no se puede pulsar.
+    await userEvent.click(within(rows[1]!).getByRole('button', { name: 'Más acciones de Brétema' }))
+    expect(await screen.findByRole('menuitem', { name: 'Buscar ahora' })).toHaveAttribute('aria-disabled', 'true')
+  })
+
+  it('el menú abre el campo con el foco dentro, y pasar de la web a los lugares empieza de cero', async () => {
+    mockApi({
+      'GET /status': status(),
+      'GET /sources': { sources: [source({ website: 'https://careers.acmedatos.example', config: { slug: 'acmedatos', locations: ['Madrid'] } })] },
+    })
+    renderApp('/empresas')
+    await userEvent.click(await screen.findByRole('button', { name: 'Más acciones de Acme Datos' }))
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Cambiar web' }))
+    const web = screen.getByRole('textbox', { name: 'Web de Acme Datos' })
+    await waitFor(() => expect(web).toHaveFocus())
+    expect(web).toHaveValue('careers.acmedatos.example')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Más acciones de Acme Datos' }))
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Cambiar lugares' }))
+    const places = screen.getByRole('textbox', { name: 'Lugares de Acme Datos' })
+    await waitFor(() => expect(places).toHaveFocus())
+    expect(places).toHaveValue('Madrid')
+    expect(screen.queryByRole('textbox', { name: 'Web de Acme Datos' })).not.toBeInTheDocument()
+  })
+
   it('ejecuta una fuente ahora y la pausa', async () => {
     const run: SourceRunResult = {
       source_id: 1,
@@ -243,12 +287,14 @@ describe('Empresas objetivo', () => {
       'POST /sources/1/active': { status: 200, body: source({ active: false }) },
     })
     renderApp('/empresas')
-    await userEvent.click(await screen.findByRole('button', { name: /Buscar ahora/ }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Más acciones de Acme Datos' }))
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Buscar ahora' }))
+    expect(calls.some((c) => c.path === '/sources/1/run')).toBe(true)
     expect(await screen.findByText('2 ofertas nuevas para ti.')).toBeInTheDocument()
     expect(screen.queryByText(/tras filtros/)).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Verlas' })).toHaveAttribute('href', '/bandeja?stage=pending_extraction')
 
-    await userEvent.click(screen.getByRole('button', { name: 'Pausar' }))
+    await userEvent.click(screen.getByRole('switch', { name: 'Revisar Acme Datos cada día' }))
     expect(calls.find((c) => c.path === '/sources/1/active')?.body).toEqual({ active: false })
   })
 
@@ -269,7 +315,8 @@ describe('Empresas objetivo', () => {
       'http://127.0.0.1:8000/sources/1/icon?v=careers.acmedatos.example',
     )
 
-    await userEvent.click(screen.getByRole('button', { name: 'Cambiar web' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Más acciones de Acme Datos' }))
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Cambiar web' }))
     const input = screen.getByRole('textbox', { name: 'Web de Acme Datos' })
     await userEvent.clear(input)
     await userEvent.type(input, 'acmedatos.example')
@@ -280,8 +327,9 @@ describe('Empresas objetivo', () => {
   it('sin web, pone la inicial y ofrece añadirla', async () => {
     mockApi({ 'GET /status': status(), 'GET /sources': { sources: [source({ website: null })] } })
     renderApp('/empresas')
-    expect(await screen.findByRole('button', { name: 'Añadir su web para el logo' })).toBeInTheDocument()
-    expect(screen.getByText('A')).toBeInTheDocument()
+    expect(await screen.findByText('A')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Más acciones de Acme Datos' }))
+    expect(await screen.findByRole('menuitem', { name: 'Añadir su web (para el logo)' })).toBeInTheDocument()
   })
 
   it('en «Más opciones», los ATS con su ejemplo de slug y su idioma en Personio', async () => {

@@ -93,11 +93,11 @@ Notas:
 guardan tal cual. Un segmento de la ruta (`/madrid/`) solo cuenta si casa con la ubicación de alguna
 oferta del tablero o con tus lugares del perfil; así `/engineering/` no se toma por un sitio. El
 departamento se ignora: los conectores no lo traen. Quedan en `config.locations` y se aplican a cada
-oferta antes del filtro previo (también sin perfil). Una oferta sin ubicación pasa. Se cambian en la
-tarjeta de la empresa («Solo Madrid · Cambiar», `POST /sources/{id}/locations`) o con
+oferta antes del filtro previo (también sin perfil). Una oferta sin ubicación pasa. Se cambian en el menú
+⋯ de la tarjeta de la empresa («Limitar a unos lugares» o «Cambiar lugares», `POST /sources/{id}/locations`) o con
 `--locations` al darla de alta.
 
-**Solo lo que encaja.** «Probar» enseña «Encontrada: usa Greenhouse · 3 ofertas para ti» y esas
+**Solo lo que encaja.** «Probar», en el alta, enseña «Encontrada: usa Greenhouse · 3 ofertas para ti» y esas
 ofertas; la última revisión, «Hoy: 2 ofertas nuevas para ti». Los totales (encontradas, tras
 filtros) siguen en `cai sources test|list|run` y en `source_runs`, para el diagnóstico.
 

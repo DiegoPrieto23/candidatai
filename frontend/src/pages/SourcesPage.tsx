@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ReactNode } from 'react'
+import { useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import {
@@ -7,8 +7,9 @@ import {
   CaretDownIcon,
   CheckCircleIcon,
   ClockIcon,
+  DotsThreeIcon,
+  GlobeIcon,
   MapPinIcon,
-  PauseIcon,
   PlayIcon,
   WarningCircleIcon,
 } from '@phosphor-icons/react'
@@ -30,8 +31,10 @@ import {
   useSources,
 } from '@/api/queries'
 import { SiteIcon } from '@/components/SiteIcon'
+import { Switch } from '@/components/Switch'
 import { EmptyState, ErrorState, InlineCode } from '@/components/States'
 import { Button } from '@/components/ui/button'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { CodeInput } from '@/components/CodeInput'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -563,18 +566,14 @@ function InlineEdit({
   )
 }
 
-/** La web de una empresa con portal propio, para su logo, y los lugares a los que se limita
- * («Solo Madrid», que suele salir de la dirección de su web de empleo). */
-function CompanyDetails({ source }: { source: SourceView }) {
+type Editing = 'website' | 'places' | null
+
+/** El campo que se abre desde el menú ⋯ de una empresa: su web (para el logo) o los lugares a los que se limita. */
+function CompanyEdit({ source, editing, onClose }: { source: SourceView; editing: 'website' | 'places'; onClose: () => void }) {
   const { t } = useTranslation('sources', { keyPrefix: 'row' })
-  const { t: tRoot } = useTranslation('sources')
   const saveWebsite = useSetSourceWebsite()
   const savePlaces = useSetSourceLocations()
-  const [editing, setEditing] = useState<'website' | 'places' | null>(null)
   const home = source.website ? platformHome([source.website]) : null
-  const editable = ATS.includes(source.kind as ConnectorKind)
-  const places = placesOf(source)
-
   if (editing === 'website') {
     return (
       <InlineEdit
@@ -584,91 +583,86 @@ function CompanyDetails({ source }: { source: SourceView }) {
         placeholder="acme.com"
         pending={saveWebsite.isPending}
         error={saveWebsite.error}
-        onCancel={() => setEditing(null)}
-        onSave={(website) =>
-          saveWebsite.mutate({ sourceId: source.id, website: website || null }, { onSuccess: () => setEditing(null) })
-        }
+        onCancel={onClose}
+        onSave={(website) => saveWebsite.mutate({ sourceId: source.id, website: website || null }, { onSuccess: onClose })}
       />
     )
   }
-  if (editing === 'places') {
-    return (
-      <InlineEdit
-        label={t('placesLabel', { name: source.name })}
-        hint={t('placesHint')}
-        initial={places.join(', ')}
-        placeholder="Madrid"
-        pending={savePlaces.isPending}
-        error={savePlaces.error}
-        onCancel={() => setEditing(null)}
-        onSave={(value) =>
-          savePlaces.mutate(
-            { sourceId: source.id, locations: value.split(',').map((p) => p.trim()).filter(Boolean) },
-            { onSuccess: () => setEditing(null) },
-          )
-        }
-      />
-    )
-  }
-  const open = (what: 'website' | 'places') => {
-    saveWebsite.reset()
-    savePlaces.reset()
-    setEditing(what)
-  }
-  const link = 'underline-offset-2 hover:text-foreground hover:underline'
   return (
-    <>
-      {places.length > 0 && (
-        <p className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
-          <span className="inline-flex items-center gap-1 text-foreground/80">
-            <MapPinIcon className="size-3.5" aria-hidden />
-            {tRoot('onlyIn', { places: places.join(', ') })}
-          </span>
-          <button type="button" onClick={() => open('places')} className={link}>
-            {t('changePlaces')}
-          </button>
-        </p>
-      )}
-      <p className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
-        {home && (
-          <a
-            href={home.origin}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-foreground/80 underline-offset-2 hover:text-foreground hover:underline"
-          >
-            {home.host}
-            <ArrowSquareOutIcon className="size-3" aria-hidden />
-          </a>
-        )}
-        {editable && (
-          <button type="button" onClick={() => open('website')} className={link}>
-            {home ? t('changeWebsite') : t('addWebsite')}
-          </button>
-        )}
-        {editable && places.length === 0 && (
-          <button type="button" onClick={() => open('places')} className={link}>
-            {t('addPlaces')}
-          </button>
-        )}
-      </p>
-    </>
+    <InlineEdit
+      label={t('placesLabel', { name: source.name })}
+      hint={t('placesHint')}
+      initial={placesOf(source).join(', ')}
+      placeholder="Madrid"
+      pending={savePlaces.isPending}
+      error={savePlaces.error}
+      onCancel={onClose}
+      onSave={(value) =>
+        savePlaces.mutate(
+          { sourceId: source.id, locations: value.split(',').map((p) => p.trim()).filter(Boolean) },
+          { onSuccess: onClose },
+        )
+      }
+    />
   )
 }
 
+/** Los lugares a los que se limita una empresa («Solo Madrid», que suele salir de la dirección de su web
+ * de empleo) y su web. Solo se leen: se cambian desde el menú ⋯. */
+function CompanyDetails({ source }: { source: SourceView }) {
+  const { t: tRoot } = useTranslation('sources')
+  const home = source.website ? platformHome([source.website]) : null
+  const places = placesOf(source)
+  if (places.length === 0 && !home) return null
+  return (
+    <p className="mt-0.5 flex flex-wrap items-center gap-x-3 text-xs text-muted-foreground">
+      {places.length > 0 && (
+        <span className="inline-flex items-center gap-1 text-foreground/80">
+          <MapPinIcon className="size-3.5" aria-hidden />
+          {tRoot('onlyIn', { places: places.join(', ') })}
+        </span>
+      )}
+      {home && (
+        <a
+          href={home.origin}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 text-foreground/80 underline-offset-2 hover:text-foreground hover:underline"
+        >
+          {home.host}
+          <ArrowSquareOutIcon className="size-3" aria-hidden />
+        </a>
+      )}
+    </p>
+  )
+}
+
+/**
+ * Una empresa: el interruptor dice si se revisa cada día, y el resto (buscar ya, su web, sus lugares) va
+ * en el menú ⋯. «Probar» solo está en el alta, donde sirve para ver qué traería antes de añadirla.
+ */
 function SourceRow({ source }: { source: SourceView }) {
   const { t } = useTranslation('sources', { keyPrefix: 'row' })
-  const preview = usePreviewSource()
   const run = useRunSource()
   const toggle = useSetSourceActive()
+  const [editing, setEditing] = useState<Editing>(null)
+  const row = useRef<HTMLLIElement>(null)
+  // Al cerrarse, el menú devuelve el foco a ⋯: si abriste un campo, se lleva a ese campo.
+  const editChosen = useRef(false)
+  const edit = (what: 'website' | 'places') => {
+    editChosen.current = true
+    setEditing(what)
+  }
   // El nombre de la empresa en su ATS ya está en el título; de un portal, se enseña qué busca.
   const query = source.config.query ? String(source.config.query) : null
   const last = source.last_run
-  const busy = preview.isPending || run.isPending
-  const error = preview.error ?? run.error ?? toggle.error
+  const editable = ATS.includes(source.kind as ConnectorKind)
+  const hasWebsite = !!source.website
+  const hasPlaces = placesOf(source).length > 0
+  const error = run.error ?? toggle.error
 
   return (
-    <li className={cn('grid gap-3 px-4 py-4 sm:px-5', !source.active && 'opacity-70')}>
+    <li ref={row} className={cn('grid gap-3 px-4 py-4 sm:px-5', !source.active && 'opacity-70')}>
       <div className="flex flex-wrap items-start gap-x-4 gap-y-2">
         <SiteIcon
           key={source.website ?? ''}
@@ -682,7 +676,6 @@ function SourceRow({ source }: { source: SourceView }) {
             <span className="rounded-md border px-1.5 py-0.5 text-xs text-muted-foreground">
               {SOURCE_KIND_LABEL[source.kind] ?? source.kind_label}
             </span>
-            {!source.active && <span className="rounded-md bg-muted px-1.5 py-0.5 text-xs">{t('paused')}</span>}
             {source.keys_missing && (
               <span className="rounded-md bg-amber-500/10 px-1.5 py-0.5 text-xs text-amber-700 dark:text-amber-400">
                 {t('noKeys')}
@@ -691,9 +684,13 @@ function SourceRow({ source }: { source: SourceView }) {
           </div>
           {query && <p className="mt-0.5 text-xs text-muted-foreground">«{query}»</p>}
           <CompanyDetails source={source} />
+          {/* Con su `key`: pasar de la web a los lugares empieza un campo nuevo, sin el texto ni el error del otro. */}
+          {editing && <CompanyEdit key={editing} source={source} editing={editing} onClose={() => setEditing(null)} />}
           <p className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
             <ClockIcon className="size-3.5" />
-            {last ? (
+            {run.isPending ? (
+              <span>{t('running')}</span>
+            ) : last ? (
               <span>
                 {t('last', { when: whenLabel(last.started_at), count: last.created })}
                 {last.errors.length > 0 && last.found === 0 && (
@@ -705,26 +702,53 @@ function SourceRow({ source }: { source: SourceView }) {
             )}
           </p>
         </div>
-        <div className="flex flex-wrap gap-1.5">
-          <Button variant="outline" size="sm" disabled={busy} onClick={() => preview.mutate(source.id)}>
-            <BusyLabel busy={preview.isPending} busyText={t('testing')} text={t('test')} />
-          </Button>
-          <Button variant="outline" size="sm" disabled={busy || !source.active} onClick={() => run.mutate(source.id)}>
-            <PlayIcon weight="fill" />
-            <BusyLabel busy={run.isPending} busyText={t('running')} text={t('run')} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
+        <div className="flex items-center gap-2">
+          {/* El estado en palabras; el lector de pantalla ya lo oye del interruptor. */}
+          <span aria-hidden className="text-xs text-muted-foreground">
+            {source.active ? t('active') : t('paused')}
+          </span>
+          <Switch
+            checked={source.active}
             disabled={toggle.isPending}
-            onClick={() => toggle.mutate({ sourceId: source.id, active: !source.active })}
-          >
-            {source.active ? <PauseIcon /> : <PlayIcon />}
-            {source.active ? t('pause') : t('resume')}
-          </Button>
+            label={t('toggle', { name: source.name })}
+            onChange={(active) => toggle.mutate({ sourceId: source.id, active })}
+          />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="size-8" aria-label={t('actions', { name: source.name })}>
+                <DotsThreeIcon weight="bold" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              className="min-w-[13rem]"
+              onCloseAutoFocus={(event) => {
+                if (!editChosen.current) return
+                editChosen.current = false
+                event.preventDefault()
+                row.current?.querySelector<HTMLInputElement>('form input')?.focus()
+              }}
+            >
+              <DropdownMenuItem disabled={!source.active || run.isPending} onSelect={() => run.mutate(source.id)}>
+                <PlayIcon />
+                {t('run')}
+              </DropdownMenuItem>
+              {editable && (
+                <>
+                  <DropdownMenuItem onSelect={() => edit('website')}>
+                    <GlobeIcon />
+                    {hasWebsite ? t('changeWebsite') : t('addWebsite')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => edit('places')}>
+                    <MapPinIcon />
+                    {hasPlaces ? t('changePlaces') : t('addPlaces')}
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
-      {preview.data && <PreviewResult result={preview.data} />}
       {run.data && <RunResult result={run.data} />}
       {error && (
         <Notice tone="error">
