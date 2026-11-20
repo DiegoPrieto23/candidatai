@@ -16,6 +16,7 @@ import { ErrorState, InlineCode } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Reveal } from '@/components/Reveal'
 import { blockedText, modelText, reasonText, warningText } from '@/lib/agentText'
@@ -36,7 +37,8 @@ type Save = (change: (prefs: AgentPreferences) => void) => void
 /** Mientras se guarda, los controles se bloquean: cada guardado sustituye todas las preferencias y
  * parte de las últimas leídas, así que dos seguidos se pisarían. */
 
-const SELECT = 'h-9 rounded-md border border-input bg-background px-3 text-sm'
+/** Radix no admite el valor vacío en una opción: este la sustituye («sin preset», «automático»…). */
+const NONE = '__none__'
 
 function clone(prefs: AgentPreferences): AgentPreferences {
   return {
@@ -162,23 +164,26 @@ function ModelControls({
               <Label htmlFor={`${id}-preset`} className="text-xs">
                 {t('preset')}
               </Label>
-              <select
-                id={`${id}-preset`}
-                className={SELECT}
+              <Select
                 disabled={busy}
-                value={current.preset ?? ''}
-                onChange={(e) => {
+                value={current.preset || NONE}
+                onValueChange={(v) => {
                   setModel('')
-                  commit({ preset: e.target.value })
+                  commit({ preset: v === NONE ? null : v })
                 }}
               >
-                <option value="">{t('noPreset')}</option>
-                {entry.models.presets.map((preset) => (
-                  <option key={preset} value={preset}>
-                    {preset}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger id={`${id}-preset`} className="min-w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NONE}>{t('noPreset')}</SelectItem>
+                  {entry.models.presets.map((preset) => (
+                    <SelectItem key={preset} value={preset}>
+                      {preset}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
         </div>
@@ -291,23 +296,26 @@ function ActionRow({
         {label}
       </th>
       <td className="py-2 pr-3">
-        <select
-          aria-label={t('agent')}
-          className={cn(SELECT, 'h-8 w-full min-w-32')}
+        <Select
           disabled={busy}
-          value={pref?.agent ?? ''}
-          onChange={(e) => {
+          value={pref?.agent || NONE}
+          onValueChange={(v) => {
             setModel('')
-            setAgent(e.target.value)
+            setAgent(v === NONE ? '' : v)
           }}
         >
-          <option value="">{t('inherit')}</option>
-          {overview.launchable.map((name) => (
-            <option key={name} value={name}>
-              {names.get(name) ?? name}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger aria-label={t('agent')} size="sm" className="w-full min-w-32">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={NONE}>{t('inherit')}</SelectItem>
+            {overview.launchable.map((name) => (
+              <SelectItem key={name} value={name}>
+                {names.get(name) ?? name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         {pref && (
           <Input
             aria-label={t('model')}
@@ -359,24 +367,27 @@ export function AgentsSection() {
       <p className="max-w-prose text-sm text-muted-foreground">{t('intro')}</p>
       <div className="grid max-w-md gap-1.5">
         <Label htmlFor="default-agent">{t('defaultAgent')}</Label>
-        <select
-          id="default-agent"
-          className={SELECT}
+        <Select
           disabled={mutation.isPending}
-          value={data.preferences.default_agent ?? ''}
-          onChange={(e) => save((p) => void (p.default_agent = e.target.value || null))}
+          value={data.preferences.default_agent || NONE}
+          onValueChange={(v) => save((p) => void (p.default_agent = v === NONE ? null : v))}
         >
-          <option value="">{t('defaultAuto')}</option>
-          {data.launchable.map((name) => {
-            const entry = names.get(name)
-            return (
-              <option key={name} value={name}>
-                {entry?.info.display_name ?? name}
-                {entry && !entry.installed ? ` (${t('notInstalled')})` : ''}
-              </option>
-            )
-          })}
-        </select>
+          <SelectTrigger id="default-agent" className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={NONE}>{t('defaultAuto')}</SelectItem>
+            {data.launchable.map((name) => {
+              const entry = names.get(name)
+              return (
+                <SelectItem key={name} value={name}>
+                  {entry?.info.display_name ?? name}
+                  {entry && !entry.installed ? ` (${t('notInstalled')})` : ''}
+                </SelectItem>
+              )
+            })}
+          </SelectContent>
+        </Select>
       </div>
       {mutation.isError && (
         <p role="alert" className="text-sm text-destructive">
@@ -393,7 +404,7 @@ export function AgentsSection() {
       {[installed, others].map((group, i) =>
         group.length === 0 ? null : (
           <Wrap key={i} label={i === 0 || installed.length === 0 ? null : t('others', { count: group.length })}>
-            <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
               {group.map((entry) => (
                 <AgentCard
                   key={`${entry.name}-${JSON.stringify(data.preferences.agents?.[entry.name] ?? {})}`}

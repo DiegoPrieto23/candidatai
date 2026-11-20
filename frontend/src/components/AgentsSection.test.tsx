@@ -230,9 +230,9 @@ describe('Sección «Agentes» (fase 24.4)', () => {
     const calls = page()
     renderApp('/agente')
     await openAgents()
-    const select = await screen.findByLabelText('Agente por defecto')
-    expect(within(select).getByRole('option', { name: 'OpenCode (No instalado)' })).toBeInTheDocument()
-    await userEvent.selectOptions(select, 'codex')
+    await userEvent.click(await screen.findByRole('combobox', { name: 'Agente por defecto' }))
+    expect(screen.getByRole('option', { name: 'OpenCode (No instalado)' })).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('option', { name: 'Codex' }))
     await waitFor(() => expect(lastPut(calls)).toEqual({ default_agent: 'codex', agents: {}, actions: {} }))
   })
 
@@ -246,7 +246,8 @@ describe('Sección «Agentes» (fase 24.4)', () => {
       expect(lastPut(calls)).toMatchObject({ agents: { claude: { model: 'sonnet', preset: null } } }),
     )
     const codex = screen.getByRole('listitem', { name: 'Codex' })
-    await userEvent.selectOptions(within(codex).getByLabelText('Preset'), 'local')
+    await userEvent.click(within(codex).getByRole('combobox', { name: 'Preset' }))
+    await userEvent.click(screen.getByRole('option', { name: 'local' }))
     await waitFor(() =>
       expect(lastPut(calls)).toMatchObject({ agents: { codex: { model: null, preset: 'local' } } }),
     )
@@ -264,7 +265,8 @@ describe('Sección «Agentes» (fase 24.4)', () => {
 
     const assess = within(table).getByRole('row', { name: /Valorar las que están por revisar/ })
     expect(within(assess).getByText(/el primero instalado/)).toBeInTheDocument()
-    await userEvent.selectOptions(within(assess).getByLabelText('Agente'), 'opencode')
+    await userEvent.click(within(assess).getByRole('combobox', { name: 'Agente' }))
+    await userEvent.click(screen.getByRole('option', { name: 'OpenCode' }))
     await waitFor(() =>
       expect(lastPut(calls)).toEqual({
         default_agent: null,
@@ -287,7 +289,8 @@ describe('Sección «Agentes» (fase 24.4)', () => {
     await waitFor(() =>
       expect(lastPut(calls)).toMatchObject({ actions: { 'assess-fit': { agent: 'codex', model: 'o4' } } }),
     )
-    await userEvent.selectOptions(within(row).getByLabelText('Agente'), '')
+    await userEvent.click(within(row).getByRole('combobox', { name: 'Agente' }))
+    await userEvent.click(screen.getByRole('option', { name: 'Por defecto' }))
     await waitFor(() => expect(lastPut(calls)).toMatchObject({ actions: {} }))
   })
 

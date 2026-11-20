@@ -197,6 +197,12 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   puesto ya no desaparece mientras la editas.
 
 ### Cambiado
+- **«Configurar agentes», más ancho y con los desplegables de siempre:** al abrirlo ocupa todo el
+  ancho de la página «Agente», así que las tarjetas de los agentes caben de tres en tres en una
+  pantalla grande, y sus selectores (agente por defecto, preset, agente de cada acción y niveles de
+  gasto) tienen el mismo aspecto que los del resto de la app.
+- En «Fuentes de ofertas» › «Extensión», «Ver cómo se hace» va junto al título del paso 3, no en el
+  otro extremo.
 - **Página «Agente» más clara:** cada agente lleva su logo, arriba en «Tu agente» y en su tarjeta de
   «Configurar agentes». Ya no está la sección «En segundo plano» con cada ejecución ni la nota sobre
   Claude y Claude Code: un aviso te dice cuándo termina lo que lanzas sin ventana.

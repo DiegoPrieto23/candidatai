@@ -40,7 +40,7 @@ function Step({
         </span>
       )}
       <div className="min-w-0 flex-1 space-y-3 pt-0.5">
-        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
           <h4 className={cn('font-medium', done && 'text-muted-foreground')}>{title}</h4>
           {aside}
         </div>

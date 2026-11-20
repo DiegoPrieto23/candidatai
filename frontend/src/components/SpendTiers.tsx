@@ -5,6 +5,7 @@ import { useSpendTierActions, useSpendTiers, type AgentAction } from '@/api/quer
 import { ErrorState, InlineCode } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { errorMessage } from '@/lib/errors'
 import { i18n } from '@/lib/i18n'
@@ -15,8 +16,6 @@ import { cn } from '@/lib/utils'
  * por acción que se rellenan una vez y se aplican con un clic. Aplicar cambia tus preferencias por
  * acción (las de la tabla «Por acción») y se puede deshacer.
  */
-
-const SELECT = 'h-8 w-full min-w-28 rounded-md border border-input bg-background px-2 text-sm'
 
 type Pref = SpendTier['actions'][string]
 
@@ -59,19 +58,22 @@ function TierEditor({
       {Object.entries(draft).map(([action, pref]) => (
         <fieldset key={action} className="grid gap-1">
           <legend className="text-xs text-muted-foreground">{actionName(action)}</legend>
-          <select
-            aria-label={t('tiers.agentFor', { action: actionName(action) })}
-            className={SELECT}
+          <Select
             disabled={busy}
             value={pref.agent}
-            onChange={(e) => set(action, { agent: e.target.value, model: null, preset: null })}
+            onValueChange={(v) => set(action, { agent: v, model: null, preset: null })}
           >
-            {overview.launchable.map((name) => (
-              <option key={name} value={name}>
-                {names.get(name) ?? name}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger aria-label={t('tiers.agentFor', { action: actionName(action) })} size="sm" className="w-full min-w-28">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {overview.launchable.map((name) => (
+                <SelectItem key={name} value={name}>
+                  {names.get(name) ?? name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Input
             aria-label={t('tiers.modelFor', { action: actionName(action) })}
             className="h-8"
