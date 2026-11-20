@@ -19,8 +19,10 @@ from app.services.jobs import last_match_subquery
 from app.services.pipeline import (
     TRANSITIONS,
     EventType,
+    Reached,
     Stage,
     project,
+    reached_step,
 )
 from app.services.process import (
     followup_status,
@@ -390,6 +392,7 @@ class BoardCard(BaseModel):
     followup_due: bool
     days_waiting: int | None  # solo en `applied`
     closed_by: str | None  # evento de cierre (solo en `closed`)
+    reached: Reached | None  # hasta dónde llegó antes de cerrarse (solo en `closed`)
     reopen_to: Stage | None  # etapa a la que vuelve si se reabre (solo en `closed`)
 
 
@@ -480,9 +483,9 @@ def get_board(
             sent.get(application.job_id, 0),
             reply_pending=application.job_id in replied,
         )
-        closed_by = reopen_to = None
+        closed_by = reopen_to = reached = None
         if stage == Stage.CLOSED:
-            closed_by, reopen_to = closings.get(application.job_id, (None, None))
+            closed_by, reopen_to, reached = closings.get(application.job_id, (None, None, None))
         cards[stage].append(
             BoardCard(
                 job_id=application.job_id,
@@ -497,6 +500,7 @@ def get_board(
                 days_waiting=status.days_waiting if status else None,
                 closed_by=closed_by,
                 reopen_to=reopen_to,
+                reached=reached,
             )
         )
     for stage in BOARD_STAGES:
@@ -543,8 +547,11 @@ def _next_milestones(
     }
 
 
-def _closings(session: Session, job_ids: list[int]) -> dict[int, tuple[str | None, Stage | None]]:
-    """Evento que cerró cada oferta y etapa a la que volvería al reabrirla (una sola consulta)."""
+def _closings(
+    session: Session, job_ids: list[int]
+) -> dict[int, tuple[str | None, Stage | None, Reached]]:
+    """Evento que cerró cada oferta, etapa a la que volvería al reabrirla y hasta dónde llegó
+    (una sola consulta)."""
     if not job_ids:
         return {}
     # Solo lo que lee la proyección: sin cargar los eventos como objetos del ORM.
@@ -556,8 +563,9 @@ def _closings(session: Session, job_ids: list[int]) -> dict[int, tuple[str | Non
     )
     for event in session.execute(stmt):
         by_job[event.job_id].append(event)
-    result: dict[int, tuple[str | None, Stage | None]] = {}
+    result: dict[int, tuple[str | None, Stage | None, Reached]] = {}
     for job_id, events in by_job.items():
         closed_by = next((e.type for e in reversed(events) if e.type in CLOSING_EVENTS), None)
-        result[job_id] = (closed_by, project(events).stage_before_close)
+        reached = reached_step(e.type for e in events)
+        result[job_id] = (closed_by, project(events).stage_before_close, reached)
     return result

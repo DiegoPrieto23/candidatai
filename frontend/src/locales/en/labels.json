@@ -215,5 +215,10 @@
     "email_alerts": "Email alerts",
     "browser_capture": "Browser button",
     "agent_browse": "Browser search"
+  },
+  "rejectedAfter": {
+    "applied": "Rejected before interview",
+    "interview": "Rejected after interview",
+    "offer": "Rejected after the offer"
   }
 }

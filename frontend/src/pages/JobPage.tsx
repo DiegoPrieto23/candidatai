@@ -22,6 +22,7 @@ import { useAddNote, useAssessThreshold, useJob, useJobEvent, useJobMatch, type 
 import { JobCostPanel } from '@/components/JobCostPanel'
 import { ApplySection } from '@/components/ApplySection'
 import { ArchivedApplication } from '@/components/ArchivedApplication'
+import { EraseJobButton } from '@/components/EraseData'
 import { CoverLetterSection } from '@/components/CoverLetterSection'
 import { CompanyResearchSection } from '@/components/CompanyResearchSection'
 import { CvSection } from '@/components/CvSection'
@@ -52,6 +53,7 @@ import { i18n, serverText } from '@/lib/i18n'
 import {
   actorLabel,
   discardReasonLabel,
+  closingLabel,
   EMPLOYMENT_LABEL,
   eventLabel,
   formatDate,
@@ -778,6 +780,16 @@ export function JobPage() {
             </div>
             <div className="flex shrink-0 flex-wrap items-start gap-3">
               <StageBadge stage={job.stage} className="mt-1" />
+              {job.closed_by && (
+                <span
+                  className={cn(
+                    'mt-1 inline-flex h-6 items-center rounded-full px-2.5 text-xs font-medium',
+                    job.closed_by === 'rejected' ? 'bg-destructive/10 text-destructive' : 'bg-muted text-muted-foreground',
+                  )}
+                >
+                  {closingLabel(job.closed_by, job.reached)}
+                </span>
+              )}
               <Decision job={job} />
               {job.url && (
                 <Button asChild variant="outline" size="sm">
@@ -787,6 +799,7 @@ export function JobPage() {
                   </a>
                 </Button>
               )}
+              <EraseJobButton jobId={job.id} title={job.title} company={job.company} />
             </div>
           </header>
 
@@ -803,6 +816,7 @@ export function JobPage() {
           </div>
 
           <JobTabs job={job} />
+
         </>
       )}
     </div>

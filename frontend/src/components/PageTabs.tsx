@@ -1,4 +1,4 @@
-import type { ComponentType } from 'react'
+import type { ComponentType, ReactNode } from 'react'
 import { NavLink } from 'react-router'
 import type { IconProps } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
@@ -24,16 +24,19 @@ export function PageTabs({
   tabs,
   className,
   level = 'main',
+  actions,
 }: {
   label: string
   tabs: readonly PageTab[]
   className?: string
   /** `sub`: pestañas dentro de otra pestaña. Pesan menos para que se lea cuál manda. */
   level?: 'main' | 'sub'
+  /** Botones a la derecha de las pestañas, en la misma barra (fuera de la navegación). */
+  actions?: ReactNode
 }) {
   const main = level === 'main'
-  return (
-    <nav aria-label={label} className={cn('w-full min-w-0', main && 'border-b', className)}>
+  const bar = (
+    <nav aria-label={label} className={cn('min-w-0', !actions && 'w-full', main && !actions && 'border-b', className)}>
       <ul className={cn('scroll-row flex max-w-full', main ? '-mb-px gap-5' : 'gap-1')}>
         {tabs.map(({ to, label: name, icon: Icon, end, count, countLabel }) => (
           <li key={to} className="flex-none">
@@ -68,5 +71,13 @@ export function PageTabs({
         ))}
       </ul>
     </nav>
+  )
+  if (!actions) return bar
+  return (
+    // Justo detrás de la última pestaña, en la misma línea.
+    <div className={cn('flex w-full min-w-0 items-end gap-5', main && 'border-b')}>
+      {bar}
+      <div className="flex shrink-0 items-center gap-2 pb-1.5">{actions}</div>
+    </div>
   )
 }

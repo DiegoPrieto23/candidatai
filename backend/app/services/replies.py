@@ -31,7 +31,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.core.policies import get_policies
-from app.models import Application, Company, Contact, Job, Milestone, Reply
+from app.models import Application, Company, Contact, Event, Job, Milestone, Reply
 from app.models.base import utcnow
 from app.schemas.sources import Issue
 from app.services import events, platforms
@@ -50,7 +50,14 @@ from app.services.ingestion.email.message import (
     parse_message,
 )
 from app.services.normalize import fold, normalize_company
-from app.services.pipeline import TRANSITIONS, Actor, EventType, Stage
+from app.services.pipeline import (
+    TRANSITIONS,
+    Actor,
+    EventType,
+    InvalidTransitionError,
+    Stage,
+    job_events,
+)
 from app.services.process import (
     MilestoneCreate,
     create_milestone,
@@ -905,6 +912,18 @@ def _ensure_open(row: Reply) -> None:
         raise ReplyResolvedError(f"Esta respuesta ya la {verb}.")
 
 
+def _already_recorded(session: Session, job_id: int, event_type: str) -> Event | None:
+    """El último evento `event_type` de la oferta desde su última reapertura, si lo hay: lo que
+    ya cuenta el correo, anotado por otro camino."""
+    found: Event | None = None
+    for event in job_events(session, job_id):
+        if event.type == EventType.REOPENED:
+            found = None
+        elif event.type == event_type:
+            found = event
+    return found
+
+
 def accept_reply(session: Session, reply_id: int, decision: ReplyDecision) -> ReplyDecisionResult:
     """Acepta la propuesta (o la cambiada por el usuario). Solo se llama desde la UI.
 
@@ -950,16 +969,27 @@ def accept_reply(session: Session, reply_id: int, decision: ReplyDecision) -> Re
     else:
         if decision.note:
             extra["note"] = decision.note
-        event = events.record(
-            session,
-            decision.job_id,
-            decision.event_type,
-            Actor.USER,
-            payload=extra,
-            occurred_at=occurred_at,
-        )
+        try:
+            event = events.record(
+                session,
+                decision.job_id,
+                decision.event_type,
+                Actor.USER,
+                payload=extra,
+                occurred_at=occurred_at,
+            )
+            message = "Registrado en la oferta."
+        except InvalidTransitionError:
+            # Lo anotaste ya a mano (p. ej. el rechazo, antes de leer el correo): el correo se
+            # enlaza a ese registro en vez de fallar o de duplicarlo.
+            event = _already_recorded(session, decision.job_id, decision.event_type)
+            if event is None:
+                raise
+            when = events.local_time(event.occurred_at)
+            message = f"Ya estaba anotado el {when}: el correo queda enlazado a eso."
+            if decision.note:
+                message += " La nota no se ha guardado."
         event_id = event.id
-        message = "Registrado en la oferta."
     row.status = "accepted"
     row.job_id = decision.job_id
     row.event_id = event_id

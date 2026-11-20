@@ -108,6 +108,118 @@
         }
       }
     },
+    "/data/erase": {
+      "post": {
+        "tags": [
+          "status"
+        ],
+        "summary": "Erase All Jobs",
+        "description": "Borra todas las ofertas y candidaturas, tras copiar la base de datos. Solo desde la UI.",
+        "operationId": "erase_all_jobs",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EraseAllBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EraseResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/jobs": {
       "get": {
         "tags": [
@@ -985,6 +1097,129 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SalaryGapView"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/jobs/{job_id}/erase": {
+      "post": {
+        "tags": [
+          "jobs"
+        ],
+        "summary": "Erase Job",
+        "description": "Borra la oferta con todo lo suyo, tras copiar la base de datos. Solo desde la UI.",
+        "operationId": "erase_job",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EraseJobBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EraseResult"
                 }
               }
             }
@@ -25711,6 +25946,23 @@
             ],
             "title": "Closed By"
           },
+          "reached": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "before_applying",
+                  "applied",
+                  "interview",
+                  "offer"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reached"
+          },
           "reopen_to": {
             "anyOf": [
               {
@@ -25735,6 +25987,7 @@
           "followup_due",
           "days_waiting",
           "closed_by",
+          "reached",
           "reopen_to"
         ],
         "title": "BoardCard"
@@ -29090,6 +29343,64 @@
         "title": "EmptyBody",
         "description": "Cuerpo `{}` de las acciones de la UI sin datos: JSON, para que `require_ui` lo compruebe."
       },
+      "EraseAllBody": {
+        "properties": {
+          "confirm": {
+            "type": "string",
+            "title": "Confirm",
+            "description": "«BORRAR», escrito por el usuario."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "confirm"
+        ],
+        "title": "EraseAllBody"
+      },
+      "EraseJobBody": {
+        "properties": {
+          "confirm": {
+            "type": "string",
+            "title": "Confirm",
+            "description": "El nombre de la empresa, escrito por el usuario."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "confirm"
+        ],
+        "title": "EraseJobBody"
+      },
+      "EraseResult": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok",
+            "default": true
+          },
+          "deleted_jobs": {
+            "type": "integer",
+            "title": "Deleted Jobs"
+          },
+          "backup": {
+            "type": "string",
+            "title": "Backup"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "deleted_jobs",
+          "backup",
+          "message"
+        ],
+        "title": "EraseResult"
+      },
       "ErrorDetail": {
         "properties": {
           "field": {
@@ -31780,6 +32091,34 @@
                 "type": "null"
               }
             ]
+          },
+          "closed_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed By"
+          },
+          "reached": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "before_applying",
+                  "applied",
+                  "interview",
+                  "offer"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reached"
           }
         },
         "type": "object",

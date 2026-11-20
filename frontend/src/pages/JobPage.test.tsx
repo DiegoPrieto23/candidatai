@@ -247,6 +247,16 @@ describe('Ficha de oferta', () => {
     )
   })
 
+  it('una cerrada por rechazo dice hasta dónde llegó, en rojo', async () => {
+    mockApi({
+      'GET /status': status(),
+      'GET /jobs/1': jobView({ stage: 'closed', closed_by: 'rejected', reached: 'interview' }),
+      'GET /jobs/1/match': matchView(),
+    })
+    renderApp('/jobs/1')
+    expect(await screen.findByText('Rechazada tras entrevista')).toHaveClass('text-destructive')
+  })
+
   it('reabre una oferta cerrada por los filtros y explica por qué se cerró', async () => {
     const now = new Date().toISOString()
     const view = jobView({

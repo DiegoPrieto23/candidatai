@@ -109,6 +109,8 @@
     "byReason": "({{stage}}; by {{reason}})",
     "connect": "Connect your email",
     "noneFiltered": "Nothing here with this filter.",
+    "olderInGroup_one": "{{count}} earlier email for this application",
+    "olderInGroup_other": "{{count}} earlier emails for this application",
     "resolved": {
       "accepted": "Accepted: logged on <job>{{job}}</job>.",
       "archived": "Archived without logging anything on <job>{{job}}</job>.",

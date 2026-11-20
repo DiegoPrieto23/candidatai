@@ -9,7 +9,7 @@ from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, replace
 from datetime import datetime
 from enum import StrEnum
-from typing import Any, Protocol
+from typing import Any, Literal, Protocol
 
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
@@ -308,6 +308,23 @@ def project(events: Iterable[EventLike], strict: EventLike | None = None) -> Pro
 
 def stage_for(events: Iterable[EventLike]) -> Stage:
     return project(events).stage
+
+
+# Hasta dónde llegó una candidatura: distingue, en una cerrada, un rechazo sin entrevista de uno
+# tras entrevista o tras una oferta. Como en el embudo, una entrevista es `interview_scheduled`
+# (o `interview_done`, si no se anotó antes) y cuenta todo el historial, aunque se reabriera.
+Reached = Literal["before_applying", "applied", "interview", "offer"]
+_REACHED_BY: tuple[tuple[Reached, frozenset[str]], ...] = (
+    ("offer", frozenset({EventType.OFFER_RECEIVED, EventType.ACCEPTED})),
+    ("interview", frozenset({EventType.INTERVIEW_SCHEDULED, EventType.INTERVIEW_DONE})),
+    ("applied", frozenset({EventType.APPLIED, EventType.APPLIED_MANUALLY})),
+)
+
+
+def reached_step(event_types: Iterable[str]) -> Reached:
+    """El paso más avanzado al que llegó la candidatura, según los tipos de sus eventos."""
+    seen = set(event_types)
+    return next((step for step, types in _REACHED_BY if seen & types), "before_applying")
 
 
 def job_events(session: Session, job_id: int) -> list[Event]:

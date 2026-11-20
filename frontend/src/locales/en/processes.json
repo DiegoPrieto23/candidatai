@@ -61,5 +61,13 @@
     "reset": "Reset",
     "cancel": "Cancel",
     "save": "Save"
+  },
+  "closedFilter": {
+    "label": "Show",
+    "all": "All",
+    "discarded": "Discarded by you",
+    "rejected_early": "Rejected before interview",
+    "rejected_interview": "Rejected after interview",
+    "other": "Withdrawn, expired and accepted"
   }
 }

@@ -73,7 +73,8 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 | `POST /capture` | Botón «Enviar a CandidatAI» (la extensión, no la UI): exige el origen de la extensión (403) y su token (401; 503 si no hay); completa un resumen, reconoce una oferta ya guardada o da de alta una nueva (`services/capture.py`) |
 | `DELETE /templates/{id}`, `GET /templates/hidden`, `POST /templates/{id}/restore` | Eliminar una plantilla tuya la borra con el CV del que salió; eliminar una de la app (`templates/`) la quita de tu lista en `data/templates-hidden.json` (no se borra del programa, para que los CVs ya hechos y las plantillas de respaldo sigan funcionando) y `restore` la devuelve. Lo que ve el agente (`list_cv_templates`) no incluye las eliminadas |
 | `GET /templates/default`, `POST /templates/{id}/default` | Plantilla por defecto del perfil vigente; fijarla edita solo esa clave de `data/profile.yaml` (con ruamel.yaml, conserva comentarios) e importa la versión nueva |
-| `GET /board` | Kanban (fase 10): tarjetas de `approved` a `closed` (las cerradas, solo las que llegaron a aprobarse; las 50 más recientes) y los movimientos posibles (eventos del usuario por etapa de origen y destino) |
+| `POST /jobs/{id}/erase`, `POST /data/erase` | Borrar una oferta con todo lo suyo, o todas (solo la UI; `confirm`: el nombre de la empresa o «BORRAR»), tras copiar la base de datos en `data/backups/`. Ver `DATA_MODEL.md` (`events`) |
+| `GET /board` | Kanban (fase 10): tarjetas de `approved` a `closed` (las cerradas, solo las que llegaron a aprobarse; las 50 más recientes, con `closed_by` y `reached`: hasta dónde llegó antes de cerrarse, `before_applying`, `applied`, `interview` u `offer`, como en el embudo; la ficha de la oferta lleva lo mismo) y los movimientos posibles (eventos del usuario por etapa de origen y destino) |
 | `GET /followups`, `GET /upcoming?days=` | Seguimientos vencidos y próximos hitos (como `list_followups_due` y `list_upcoming`) |
 | `GET /calendar?start=&end=` | Página «Calendario»: todos los hitos (también hechos, cancelados y de procesos cerrados) y los plazos de las ofertas sin enviar, entre dos días incluidos. Solo para la UI: sin herramienta MCP |
 | `GET /stats/flow?since=` | «¿Cómo van mis candidaturas?», en la portada y en «Resultados»: los pasos y, de cada candidatura enviada, dónde se quedó y cómo está ahora |
@@ -130,8 +131,8 @@ found ─► pending_extraction ─► pending_triage ─► approved ─► cv_
 - Las etapas marcadas [agente] se quedan en cola hasta que ejecutas el skill correspondiente en tu
   agente, o hasta que una tarea programada de tu agente lo hace por ti, si tu herramienta lo permite.
 - La etapa actual de cada oferta se calcula a partir de sus eventos (`docs/DATA_MODEL.md`). Los
-  eventos solo se añaden, salvo al borrar un hito anotado por error: se van los suyos y la etapa
-  se recalcula.
+  eventos solo se añaden, salvo al borrar un hito anotado por error (se van los suyos y la etapa
+  se recalcula) y al borrar una oferta entera desde la UI, con copia previa de la base de datos.
 
 ## Qué hace el agente y qué hace el código
 

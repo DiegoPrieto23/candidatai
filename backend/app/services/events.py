@@ -103,7 +103,8 @@ def _utc(value: datetime) -> datetime:
     return value.replace(tzinfo=UTC) if value.tzinfo is None else value  # SQLite: UTC sin zona
 
 
-def _local(value: datetime) -> str:
+def local_time(value: datetime) -> str:
+    """«04/11/2026 15:31», en la zona horaria del calendario."""
     zone = ZoneInfo(get_policies().calendar.timezone)
     return _utc(value).astimezone(zone).strftime("%d/%m/%Y %H:%M")
 
@@ -155,11 +156,11 @@ def _replay(previous: Sequence[Event], event: Event) -> tuple[ProjectionState, l
 
 
 def _conflict_message(event: Event, conflicts: list[Event]) -> str:
-    listed = ", ".join(f"«{c.type}» ({_local(c.occurred_at)})" for c in conflicts)
-    last = _local(max(_utc(c.occurred_at) for c in conflicts))
+    listed = ", ".join(f"«{c.type}» ({local_time(c.occurred_at)})" for c in conflicts)
+    last = local_time(max(_utc(c.occurred_at) for c in conflicts))
     message = (
-        f"No se puede anotar «{event.type}» el {_local(event.occurred_at)}: después hay anotado "
-        f"{listed}, que no encaja con eso. Pon una fecha posterior al {last}"
+        f"No se puede anotar «{event.type}» el {local_time(event.occurred_at)}: después hay "
+        f"anotado {listed}, que no encaja con eso. Pon una fecha posterior al {last}"
     )
     if all(_removable(c) for c in conflicts):
         return (

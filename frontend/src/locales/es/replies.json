@@ -109,6 +109,8 @@
     "byReason": "({{stage}}; por {{reason}})",
     "connect": "Conectar tu correo",
     "noneFiltered": "Nada aquí con este filtro.",
+    "olderInGroup_one": "{{count}} correo anterior de esta candidatura",
+    "olderInGroup_other": "{{count}} correos anteriores de esta candidatura",
     "resolved": {
       "accepted": "Aceptada: registrada en <job>{{job}}</job>.",
       "archived": "Archivada sin registrar nada en <job>{{job}}</job>.",

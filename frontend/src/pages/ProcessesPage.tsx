@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
+import { Link, useLocation } from 'react-router'
 import {
   DndContext,
   DragOverlay,
@@ -34,11 +34,13 @@ import { MoveDialog } from '@/components/MoveDialog'
 import { BoardColumnsDialog } from '@/components/BoardColumnsDialog'
 import { StageBadge } from '@/components/StageBadge'
 import { ReceivedOffersComparison } from '@/components/ReceivedOffersComparison'
+import type { ErasedNotice } from '@/components/EraseData'
 import { EmptyState, ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { eventLabel, UPCOMING_KIND_LABEL } from '@/lib/labels'
+import { closingLabel, UPCOMING_KIND_LABEL } from '@/lib/labels'
 import { columnMoveOptions, isForward, moveOptions, noMoveReason, type MoveOption } from '@/lib/moves'
 import { BOARD_STAGES, columnId, columnName, useBoardLayout, type BoardColumnSetting, type BoardStage } from '@/lib/boardColumns'
 import { formatWhen } from '@/lib/time'
@@ -82,7 +84,14 @@ function CardBody({ card, onMove, showStage }: { card: BoardCard; onMove?: () =>
             </span>
           )}
           {card.closed_by && (
-            <span className="rounded bg-muted px-1.5 py-0.5 text-muted-foreground">{eventLabel(card.closed_by)}</span>
+            <span
+              className={cn(
+                'rounded px-1.5 py-0.5',
+                card.closed_by === 'rejected' ? 'bg-destructive/10 text-destructive' : 'bg-muted text-muted-foreground',
+              )}
+            >
+              {closingLabel(card.closed_by, card.reached)}
+            </span>
           )}
         </div>
       )}
@@ -134,15 +143,50 @@ interface ViewColumn {
   total: number
 }
 
+// --- Filtro de las cerradas -----------------------------------------------------------------
+
+const CLOSED_FILTERS = ['all', 'discarded', 'rejected_early', 'rejected_interview', 'other'] as const
+type ClosedFilter = (typeof CLOSED_FILTERS)[number]
+
+/** A qué grupo del filtro va una tarjeta cerrada. */
+function closedKind(card: BoardCard): Exclude<ClosedFilter, 'all'> {
+  if (card.closed_by === 'discarded') return 'discarded'
+  if (card.closed_by !== 'rejected') return 'other'
+  return card.reached === 'interview' || card.reached === 'offer' ? 'rejected_interview' : 'rejected_early'
+}
+
+function ClosedFilterSelect({ value, onChange }: { value: ClosedFilter; onChange: (value: ClosedFilter) => void }) {
+  const { t } = useTranslation('processes', { keyPrefix: 'closedFilter' })
+  return (
+    <div className="px-1 pb-2.5">
+      <Select value={value} onValueChange={(v) => onChange(v as ClosedFilter)}>
+        <SelectTrigger aria-label={t('label')} size="sm" className="w-full bg-background text-xs">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {CLOSED_FILTERS.map((option) => (
+            <SelectItem key={option} value={option}>
+              {t(option)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  )
+}
+
 function Column({
   column,
   children,
   dropHint,
+  toolbar,
 }: {
   column: ViewColumn
   children: ReactNode
   /** Mientras arrastras: `target`, se puede soltar aquí; `blocked`, no. */
   dropHint?: 'target' | 'blocked'
+  /** Bajo la cabecera: el filtro de la columna de las cerradas. */
+  toolbar?: ReactNode
 }) {
   const { t } = useTranslation('processes')
   const { setNodeRef, isOver } = useDroppable({ id: column.id })
@@ -165,6 +209,7 @@ function Column({
         </div>
         <span className="tabular pt-0.5 text-xs font-medium text-muted-foreground">{column.total}</span>
       </header>
+      {toolbar}
       {column.cards.length === 0 ? (
         <p className="rounded-lg border border-dashed px-3 py-6 text-center text-xs text-muted-foreground">{t('empty')}</p>
       ) : (
@@ -193,10 +238,18 @@ function viewColumns(layout: BoardColumnSetting[], columns: StageColumn[]): View
   })
 }
 
+/** Con un filtro, la columna de las cerradas solo enseña ese grupo, y cuenta las que enseña. */
+function filterClosed(column: ViewColumn, filter: ClosedFilter): ViewColumn {
+  if (filter === 'all' || !column.stages.includes('closed')) return column
+  const cards = column.cards.filter((card) => card.stage !== 'closed' || closedKind(card) === filter)
+  return { ...column, cards, total: cards.length }
+}
+
 function Board({ columns, moves }: { columns: StageColumn[]; moves: BoardMove[] }) {
   const { t } = useTranslation('processes')
   const layout = useBoardLayout()
-  const view = viewColumns(layout, columns)
+  const [closedFilter, setClosedFilter] = useState<ClosedFilter>('all')
+  const view = viewColumns(layout, columns).map((column) => filterClosed(column, closedFilter))
   const byId = new Map(view.map((column) => [column.id, column]))
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -266,7 +319,16 @@ function Board({ columns, moves }: { columns: StageColumn[]; moves: BoardMove[] 
         <div className="-mx-4 overflow-x-auto overflow-y-hidden px-4 pb-2 sm:mx-0 sm:px-0">
           <div className="grid gap-3" style={gridColumns(view.length)}>
             {view.map((column) => (
-              <Column key={column.id} column={column} dropHint={dropHint(column)}>
+              <Column
+                key={column.id}
+                column={column}
+                dropHint={dropHint(column)}
+                toolbar={
+                  column.stages.includes('closed') && (
+                    <ClosedFilterSelect value={closedFilter} onChange={setClosedFilter} />
+                  )
+                }
+              >
                 {column.cards.map((card) => (
                   <DraggableCard
                     key={card.job_id}
@@ -378,9 +440,16 @@ export function ProcessesPage() {
   const thanks = useFollowups().data?.thanks_due?.length ?? 0
   const layout = useBoardLayout()
   const [editColumns, setEditColumns] = useState(false)
+  // Al volver de borrar una oferta desde su ficha.
+  const erased = (useLocation().state as ErasedNotice | null)?.erased
 
   return (
     <div className="animate-in fade-in duration-300">
+      {erased && (
+        <p role="status" className="mb-4 rounded-xl border bg-card px-4 py-2.5 text-sm">
+          {erased}
+        </p>
+      )}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>

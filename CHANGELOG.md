@@ -10,6 +10,18 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Borrar una oferta o vaciarlo todo:** arriba en la ficha de cada oferta, junto a «Ver original»,
+  «Borrar oferta» la quita con todo lo suyo (historial, CVs, cartas, entrevistas, borradores y los
+  correos que solo eran de ella); su aviso explica que borrar no es descartar, que la cierra y la
+  guarda en tu historial. En la barra de la Bandeja, detrás de «Revisión rápida», «Vaciar todo» borra
+  todas las ofertas y candidaturas, para empezar de cero; se quedan tu perfil, tus plantillas, tus fuentes, tus buzones, tu red de contactos y la
+  configuración. Los dos piden pasar uno o dos avisos y escribir el nombre de la empresa o «BORRAR»,
+  y antes guardan una copia de seguridad de la base de datos en la carpeta `backups` de tus datos (las
+  10 últimas), que es la forma de recuperarlo. Los ficheros de tu carpeta de datos no se tocan.
+- **Cómo acabó cada candidatura cerrada:** en «Procesos» y en la ficha, un rechazo dice hasta dónde
+  llegaste («Rechazada sin entrevista», «tras entrevista» o «tras la oferta»), en rojo, y la columna de
+  cerradas tiene un filtro: descartadas por ti, rechazadas sin entrevista, rechazadas tras entrevista
+  y el resto.
 - **El Asistente funciona con Codex y con Antigravity CLI:** con Codex, lo que escribes en
   «Asistente» se contesta en segundo plano, como con Claude Code u OpenCode, con solo las
   herramientas de consulta del asistente (sin terminal, ficheros ni web). Con Antigravity CLI (y Qwen
@@ -197,6 +209,10 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   puesto ya no desaparece mientras la editas.
 
 ### Cambiado
+- **«Respuestas» agrupa los correos de cada candidatura:** los de una misma oferta salen juntos, el
+  más reciente arriba y los anteriores plegados debajo («4 correos anteriores de esta candidatura»),
+  que despliegas con un clic. Un rechazo propuesto, y la opción «Rechazo» al cambiar o decidir qué
+  significa un correo, se ven en rojo.
 - **«Configurar agentes», más ancho y con los desplegables de siempre:** al abrirlo ocupa todo el
   ancho de la página «Agente», así que las tarjetas de los agentes caben de tres en tres en una
   pantalla grande, y sus selectores (agente por defecto, preset, agente de cada acción y niveles de
@@ -490,6 +506,9 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   conserva en tu perfil y tus CVs lo siguen teniendo en cuenta.
 
 ### Corregido
+- **Aceptar un correo que cuenta algo ya anotado:** si marcabas como «Rechazo» el correo de una
+  candidatura que ya habías cerrado a mano como rechazada, salía un error de fechas. Ahora el correo
+  se enlaza a ese registro, sin duplicarlo.
 - **Asistente: la respuesta de tu agente sale en cuanto vuelves a él.** Si tu agente contestaba
   desde su ventana una petición que esperaba a tu próxima sesión, al volver al Asistente podía
   tardar hasta 20 segundos en verse. Ahora se pide al momento cada vez que lo abres.

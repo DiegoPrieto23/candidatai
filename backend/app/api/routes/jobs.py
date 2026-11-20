@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Query, Request, status
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 
 from app.api.deps import EmptyBody, SessionDep, require_ui, require_ui_read
-from app.services import agent_costs, events, ingest, jobs, liveness, reopenings
+from app.services import agent_costs, erase, events, ingest, jobs, liveness, reopenings
 from app.services.matching import service as matching
 from app.services.pipeline import EventType, Stage
 
@@ -25,6 +25,10 @@ class AddFromTextBody(_Body):
     text: str = Field(min_length=1)
     url: str | None = None
     location: str | None = None
+
+
+class EraseJobBody(_Body):
+    confirm: str = Field(description="El nombre de la empresa, escrito por el usuario.")
 
 
 class CheckOpenBody(_Body):
@@ -145,6 +149,12 @@ def get_job_match(session: SessionDep, job_id: int) -> matching.MatchView:
 def get_job_salary_gap(session: SessionDep, job_id: int) -> matching.SalaryGapView:
     """Cuánto queda el sueldo publicado por debajo de tu mínimo. Solo la UI."""
     return matching.salary_gap(session, job_id)
+
+
+@router.post("/{job_id}/erase", operation_id="erase_job", dependencies=[Depends(require_ui)])
+def erase_job(session: SessionDep, job_id: int, body: EraseJobBody) -> erase.EraseResult:
+    """Borra la oferta con todo lo suyo, tras copiar la base de datos. Solo desde la UI."""
+    return erase.erase_job(session, job_id, body.confirm)
 
 
 @router.post("/url", operation_id="add_job_from_url", status_code=status.HTTP_201_CREATED)

@@ -336,7 +336,14 @@ function DecisionForm({ item, onDone }: { item: ReplyInboxItem; onDone: (decisio
               onClick={() => setEventType(value)}
               className={cn(
                 'rounded-md border px-3 py-1.5 text-left text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
-                eventType === value ? 'border-primary/40 bg-accent' : 'border-input hover:bg-foreground/[0.03]',
+                // El rechazo, en rojo: cierra el proceso y no conviene marcarlo sin querer.
+                value === 'rejected'
+                  ? eventType === value
+                    ? 'border-destructive/50 bg-destructive/10 font-medium text-destructive'
+                    : 'border-destructive/30 text-destructive hover:bg-destructive/5'
+                  : eventType === value
+                    ? 'border-primary/40 bg-accent'
+                    : 'border-input hover:bg-foreground/[0.03]',
               )}
             >
               {REPLY_EVENT_LABEL[value]}

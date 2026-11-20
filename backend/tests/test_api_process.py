@@ -68,7 +68,31 @@ def test_board_moves_only_with_events(client: TestClient) -> None:
     closed = client.get("/board").json()["columns"][4]
     assert closed["total"] == 1 and closed["cards"][0]["reopen_to"] == "in_process"
     assert closed["cards"][0]["closed_by"] == "rejected"
+    assert closed["cards"][0]["reached"] == "interview"
     assert _event(client, job_id, type="reopened")["stage"] == "in_process"
+
+
+def test_closed_cards_and_job_sheet_say_how_far_it_got(client: TestClient) -> None:
+    """Descartada antes de enviar, rechazada sin entrevista y rechazada tras una oferta."""
+    discarded, early, late = _job(client, "Uno"), _job(client, "Dos"), _job(client, "Tres")
+    _event(client, discarded, type="discarded", reason="salary")
+    _event(client, early, type="applied_manually")
+    _event(client, early, type="rejected")
+    _event(client, late, type="applied_manually")
+    _event(client, late, type="offer_received")
+    _event(client, late, type="rejected")
+    cards = client.get("/board").json()["columns"][4]["cards"]
+    reached = {c["job_id"]: (c["closed_by"], c["reached"]) for c in cards}
+    assert reached == {
+        discarded: ("discarded", "before_applying"),
+        early: ("rejected", "applied"),
+        late: ("rejected", "offer"),
+    }
+    sheet = client.get(f"/jobs/{late}").json()
+    assert (sheet["closed_by"], sheet["reached"]) == ("rejected", "offer")
+    _event(client, late, type="reopened")
+    sheet = client.get(f"/jobs/{late}").json()
+    assert (sheet["closed_by"], sheet["reached"]) == (None, None)
 
 
 def test_events_into_in_process_are_also_valid_from_it(client: TestClient) -> None:

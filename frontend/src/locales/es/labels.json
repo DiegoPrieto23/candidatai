@@ -215,5 +215,10 @@
     "email_alerts": "Alertas por correo",
     "browser_capture": "Botón del navegador",
     "agent_browse": "Búsqueda con navegador"
+  },
+  "rejectedAfter": {
+    "applied": "Rechazada sin entrevista",
+    "interview": "Rechazada tras entrevista",
+    "offer": "Rechazada tras la oferta"
   }
 }

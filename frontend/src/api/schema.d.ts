@@ -24,6 +24,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/data/erase": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Erase All Jobs
+         * @description Borra todas las ofertas y candidaturas, tras copiar la base de datos. Solo desde la UI.
+         */
+        post: operations["erase_all_jobs"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/jobs": {
         parameters: {
             query?: never;
@@ -161,6 +181,26 @@ export interface paths {
         get: operations["get_job_salary_gap"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/jobs/{job_id}/erase": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Erase Job
+         * @description Borra la oferta con todo lo suyo, tras copiar la base de datos. Solo desde la UI.
+         */
+        post: operations["erase_job"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4569,6 +4609,8 @@ export interface components {
             days_waiting: number | null;
             /** Closed By */
             closed_by: string | null;
+            /** Reached */
+            reached: ("before_applying" | "applied" | "interview" | "offer") | null;
             reopen_to: components["schemas"]["Stage"] | null;
         };
         /** BoardColumn */
@@ -5784,6 +5826,36 @@ export interface components {
          * @description Cuerpo `{}` de las acciones de la UI sin datos: JSON, para que `require_ui` lo compruebe.
          */
         EmptyBody: Record<string, never>;
+        /** EraseAllBody */
+        EraseAllBody: {
+            /**
+             * Confirm
+             * @description «BORRAR», escrito por el usuario.
+             */
+            confirm: string;
+        };
+        /** EraseJobBody */
+        EraseJobBody: {
+            /**
+             * Confirm
+             * @description El nombre de la empresa, escrito por el usuario.
+             */
+            confirm: string;
+        };
+        /** EraseResult */
+        EraseResult: {
+            /**
+             * Ok
+             * @default true
+             */
+            ok: boolean;
+            /** Deleted Jobs */
+            deleted_jobs: number;
+            /** Backup */
+            backup: string;
+            /** Message */
+            message: string;
+        };
         /** ErrorDetail */
         ErrorDetail: {
             /** Field */
@@ -6645,6 +6717,10 @@ export interface components {
             /** Archive Folder */
             archive_folder?: string | null;
             reopening?: components["schemas"]["ReopeningOf"] | null;
+            /** Closed By */
+            closed_by?: string | null;
+            /** Reached */
+            reached?: ("before_applying" | "applied" | "interview" | "offer") | null;
         };
         /**
          * KeywordCoverage
@@ -10115,6 +10191,102 @@ export interface operations {
             };
         };
     };
+    erase_all_jobs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EraseAllBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EraseResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     list_jobs: {
         parameters: {
             query?: {
@@ -10713,6 +10885,104 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SalaryGapView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    erase_job: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EraseJobBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EraseResult"];
                 };
             };
             /** @description Unauthorized */

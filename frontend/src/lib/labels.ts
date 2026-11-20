@@ -62,6 +62,17 @@ export function eventLabel(type: string): string {
   return EVENT_LABEL[type as Schemas['EventType']] ?? type
 }
 
+/** Hasta dónde llegó una candidatura cerrada: «sin entrevista», «tras entrevista»… */
+export type Reached = NonNullable<Schemas['BoardCard']['reached']>
+
+const REJECTED_AFTER = translated<Exclude<Reached, 'before_applying'>>('rejectedAfter')
+
+/** Cómo se cerró: el evento de cierre y, si fue un rechazo tras enviarla, hasta dónde llegó. */
+export function closingLabel(closedBy: string, reached?: Reached | null): string {
+  if (closedBy === 'rejected' && reached && reached !== 'before_applying') return REJECTED_AFTER[reached]
+  return eventLabel(closedBy)
+}
+
 export const REMOTE_LABEL = translated<Extraction['remote_mode']>('remote')
 
 export const SENIORITY_LABEL = translated<Extraction['seniority']>('seniority')

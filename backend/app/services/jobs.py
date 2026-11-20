@@ -1,7 +1,7 @@
 """Consultas de ofertas. El texto crudo (no confiable) solo sale por `get_job`, envuelto."""
 
 from datetime import datetime
-from typing import Literal, get_args
+from typing import Any, Literal, get_args
 
 from pydantic import BaseModel
 from sqlalchemy import case, func, or_, select
@@ -12,7 +12,7 @@ from app.models import JobExtraction as JobExtractionRow
 from app.schemas.llm_io import JobExtraction, Salary
 from app.services import application_archive, extractions, network
 from app.services.events import EventOut, JobNotFoundError
-from app.services.pipeline import EventType, Stage, job_events
+from app.services.pipeline import TRANSITIONS, EventType, Reached, Stage, job_events, reached_step
 from app.services.reopenings import ReopeningOf, reopening_of
 from app.services.signals import JobSignals
 from app.services.signals import read as read_signals
@@ -402,6 +402,9 @@ class JobView(JobSummary):
     archive_folder: str | None = None
     # Si es una reapertura (fase 45), la oferta cerrada de la que viene.
     reopening: ReopeningOf | None = None
+    # Si está cerrada: con qué evento y hasta dónde llegó (p. ej. un rechazo tras entrevista).
+    closed_by: str | None = None
+    reached: Reached | None = None
 
 
 SENT_STAGES = frozenset({Stage.APPLIED, Stage.IN_PROCESS, Stage.CLOSED})
@@ -462,4 +465,13 @@ def get_job_view(session: Session, job_id: int) -> JobView:
         events=[EventOut.model_validate(e, from_attributes=True) for e in events],
         injection=injection,
         reopening=reopening_of(session, job),
+        **_closing(events) if job_stage == Stage.CLOSED else {},
     )
+
+
+def _closing(events: list[Event]) -> dict[str, Any]:
+    closing = [e.type for e in events if TRANSITIONS[EventType(e.type)].to == Stage.CLOSED]
+    return {
+        "closed_by": closing[-1] if closing else None,
+        "reached": reached_step(e.type for e in events),
+    }

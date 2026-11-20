@@ -1,0 +1,41 @@
+{
+  "job": {
+    "button": "Delete job",
+    "title": "Delete this job for good?",
+    "lead": "“{{title}}” disappears from the app with everything about it:",
+    "notDiscard": "Deleting is not discarding. Discarding closes it and keeps it in your history and in Results; deleting removes it from the app for good.",
+    "goes1": "its history and stage, which stop counting in Results",
+    "goes2": "the CVs, cover letters, answers and drafts made for it",
+    "goes3": "its interviews, tests and deadlines in the calendar",
+    "goes4": "the company's emails that were only about this application",
+    "stays": "Files already in your data folder (CV PDFs, the copy of what you sent) are kept. If it arrives again in an alert, it comes in as new.",
+    "backup": "A backup is saved first: it's the only way to get it back.",
+    "continue": "I understand, continue",
+    "confirmLabel": "To confirm, type the company name: {{company}}",
+    "erase": "Delete for good",
+    "erasing": "Deleting…",
+    "cancel": "Cancel",
+    "done": "Job deleted. Backup taken before: {{backup}}"
+  },
+  "all": {
+    "title": "Clear jobs and applications",
+    "intro": "To start from scratch: deletes every job with its history, CVs, cover letters, interviews and emails.",
+    "button": "Clear everything",
+    "step1Title": "Clear all your jobs and applications?",
+    "step2Title": "Last check",
+    "step2Body": "A backup of everything is saved first in your data folder: it's the only way to get it back. Files already there (CV PDFs, the copy of what you sent) are kept.",
+    "continue": "Yes, continue",
+    "confirmLabel": "To confirm, type {{word}}",
+    "erase": "Clear for good",
+    "erasing": "Clearing…",
+    "cancel": "Cancel",
+    "step1Body_one": "{{count}} job and everything about it is deleted, including what Results and the calendar show. It can't be undone from the app.",
+    "step1Body_other": "{{count}} jobs and everything about them are deleted, including what Results and the calendar show. It can't be undone from the app.",
+    "done_one": "Done: {{count}} job deleted. Backup taken before: {{backup}}",
+    "done_other": "Done: {{count}} jobs deleted. Backup taken before: {{backup}}",
+    "word": "DELETE",
+    "stays": "Your profile, templates, sources, mailboxes, contacts network and settings stay.",
+    "doneTitle": "Jobs and applications deleted",
+    "close": "Got it"
+  }
+}

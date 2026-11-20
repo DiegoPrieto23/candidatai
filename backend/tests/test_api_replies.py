@@ -6,7 +6,7 @@ la UI responde 403.
 
 import json
 from collections.abc import Iterator
-from datetime import timedelta
+from datetime import UTC, timedelta
 from typing import Any
 
 import pytest
@@ -211,6 +211,42 @@ def test_accepting_none_archives_without_events(
     assert response.json()["event_id"] is None and response.json()["stage"] == "applied"
     assert len(_events(job_id)) == before
     assert client.get("/replies").json()["counts"]["accepted"] == 1
+
+
+def test_accepting_what_was_already_recorded_links_the_mail_to_it(
+    client: TestClient, mail: dict[str, tuple[int, int]]
+) -> None:
+    """Rechazo anotado a mano horas después de llegar el correo: aceptar el correo como rechazo no
+    falla por el cierre posterior ni lo duplica; lo enlaza a ese registro."""
+    reply_id, job_id = mail["seleccion@castrolabs.example"]
+    with session_scope() as session:
+        received = session.get(Reply, reply_id).received_at  # type: ignore[union-attr]
+        manual = events.record(
+            session,
+            job_id,
+            "rejected",
+            "user",
+            occurred_at=received.replace(tzinfo=UTC) + timedelta(hours=3),
+        )
+        manual_id = manual.id
+    before = len(_events(job_id))
+    body = {"job_id": job_id, "event_type": "rejected"}
+    response = client.post(f"/replies/{reply_id}/accept", json=body, headers=JSON)
+    assert response.status_code == 200, response.text
+    data = response.json()
+    assert data["event_id"] == manual_id and data["stage"] == "closed"
+    assert data["message"].startswith("Ya estaba anotado")
+    assert len(_events(job_id)) == before
+
+    # Otro tipo que no encaja sigue fallando con el aviso de siempre.
+    other_id, other_job = mail["marta.lois@riassoftware.example"]
+    with session_scope() as session:
+        received = session.get(Reply, other_id).received_at  # type: ignore[union-attr]
+        early = received.replace(tzinfo=UTC) - timedelta(minutes=5)
+        events.record(session, other_job, "rejected", "user", occurred_at=early)
+    body = {"job_id": other_job, "event_type": "offer_received"}
+    response = client.post(f"/replies/{other_id}/accept", json=body, headers=JSON)
+    assert response.status_code >= 400 and _events(other_job)[-1].type == "rejected"
 
 
 def test_ignore_records_nothing(client: TestClient, mail: dict[str, tuple[int, int]]) -> None:

@@ -41,6 +41,13 @@ function reply(id: number, changes: Partial<ReplyInboxItem> = {}): ReplyInboxIte
   }
 }
 
+/** Otra candidatura (cada oferta agrupa sus correos en la lista). */
+const otherJob: Partial<ReplyInboxItem> = {
+  candidates: [{ job_id: 2, title: 'Analytics Engineer', company: 'Castro Labs', stage: 'applied', reason: 'domain' }],
+  job_id: 2,
+  proposal: { ...reply(0).proposal!, job_id: 2 },
+}
+
 function inbox(replies: ReplyInboxItem[]) {
   const counts = { new: 0, proposed: 0, accepted: 0, ignored: 0 }
   for (const r of replies) counts[r.status] += 1
@@ -72,7 +79,7 @@ function mockReplies(replies: ReplyInboxItem[], extra: Record<string, unknown> =
 
 describe('Respuestas', () => {
   it('con teclado, el correo con el foco se distingue del seleccionado (fase 36)', async () => {
-    mockReplies([reply(1), reply(2, { sender_name: 'Iago Souto', subject: 'Prueba técnica' })])
+    mockReplies([reply(1), reply(2, { ...otherJob, sender_name: 'Iago Souto', subject: 'Prueba técnica' })])
     renderApp('/respuestas')
     const row = (name: string) => screen.getAllByText(name).map((el) => el.closest<HTMLButtonElement>('li > button')).find(Boolean)!
     await screen.findAllByText('Iago Souto')
@@ -240,6 +247,42 @@ describe('Respuestas', () => {
     await waitFor(() => expect(calls.find((c) => c.path === '/replies/1/unignore')?.body).toEqual({}))
     expect(await screen.findByRole('button', { name: 'Aceptar' })).toBeInTheDocument()
     expect(screen.queryByText('Ignorada: no se ha registrado nada.')).not.toBeInTheDocument()
+  })
+
+  it('agrupa los correos de una misma candidatura bajo el más reciente', async () => {
+    mockReplies([
+      reply(3, { subject: 'No seguimos adelante', received_at: '2026-10-20T09:00:00Z' }),
+      reply(2, { ...otherJob, sender_name: 'Iago Souto', subject: 'Prueba técnica', received_at: '2026-10-10T09:00:00Z' }),
+      reply(1, { subject: 'Entrevista para Data Engineer' }),
+    ])
+    renderApp('/respuestas')
+    const list = await screen.findByRole('list', { name: 'Respuestas' })
+    // El más antiguo de Brétema va plegado bajo el más reciente, no en su propia fila.
+    expect(within(list).getByText('No seguimos adelante')).toBeInTheDocument()
+    expect(within(list).queryByText('Entrevista para Data Engineer')).not.toBeInTheDocument()
+    const toggle = within(list).getByRole('button', { name: '1 correo anterior de esta candidatura' })
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+
+    await userEvent.click(toggle)
+    expect(toggle).toHaveAttribute('aria-expanded', 'true')
+    await userEvent.click(within(list).getByText('Entrevista para Data Engineer'))
+    expect(await screen.findByRole('heading', { name: 'Entrevista para Data Engineer' })).toBeInTheDocument()
+
+    // J/K recorren la lista en el orden en que se ve: tras el grupo, la otra candidatura.
+    await userEvent.keyboard('j')
+    expect(await screen.findByRole('heading', { name: 'Prueba técnica' })).toBeInTheDocument()
+  })
+
+  it('un rechazo propuesto y la opción «Rechazo» se ven en rojo', async () => {
+    mockReplies([reply(1, { proposal: { ...reply(0).proposal!, event_type: 'rejected', milestone: null } })])
+    renderApp('/respuestas')
+    const list = await screen.findByRole('list', { name: 'Respuestas' })
+    expect(within(list).getByText('Rechazo')).toHaveClass('text-destructive')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Cambiar' }))
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByRole('radio', { name: 'Rechazo' })).toHaveClass('text-destructive')
+    expect(within(dialog).getByRole('radio', { name: 'Entrevista' })).not.toHaveClass('text-destructive')
   })
 
   it('sin ninguna respuesta, lleva a conectar el correo', async () => {

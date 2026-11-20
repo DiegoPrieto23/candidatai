@@ -432,6 +432,7 @@ export function boardCard(id: number, stage: BoardCard['stage'], changes: Partia
     days_waiting: null,
     closed_by: null,
     reopen_to: null,
+    reached: null,
     ...changes,
   }
 }

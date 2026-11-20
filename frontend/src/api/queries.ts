@@ -2261,3 +2261,30 @@ export function useDeleteProfilePhoto() {
     onSuccess: (info) => client.setQueryData(PROFILE_PHOTO, info),
   })
 }
+
+/** Borrar una oferta con todo lo suyo (tras una copia de la base de datos). Solo la UI. */
+export function useEraseJob() {
+  return useMutation({
+    mutationFn: ({ jobId, confirm }: { jobId: number; confirm: string }) =>
+      unwrap(api.POST('/jobs/{job_id}/erase', { params: { path: { job_id: jobId } }, body: { confirm } })),
+  })
+}
+
+/**
+ * Tras borrar una oferta: lo suyo se olvida (su ficha ya no existe) y el resto se vuelve a pedir.
+ * Se llama después de salir de la ficha, para que no la pida otra vez.
+ */
+export function forgetErasedJob(client: QueryClient, jobId: number) {
+  const ofJob = (query: { queryKey: readonly unknown[] }) => query.queryKey[1] === jobId
+  client.removeQueries({ predicate: ofJob })
+  return client.invalidateQueries({ predicate: (query) => !ofJob(query) })
+}
+
+/** Vaciar todas las ofertas y candidaturas (tras una copia de la base de datos). Solo la UI. */
+export function useEraseAll() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (confirm: string) => unwrap(api.POST('/data/erase', { body: { confirm } })),
+    onSuccess: () => client.invalidateQueries(),
+  })
+}

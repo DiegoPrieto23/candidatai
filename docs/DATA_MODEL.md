@@ -225,6 +225,17 @@ Proyección del estado de candidatura para consultas rápidas; se recalcula desd
 Índices: (`job_id`, `occurred_at`), el historial de una oferta, y (`type`, `job_id`,
 `occurred_at`), los eventos de un tipo en todas las ofertas o en una (embudo, kanban).
 
+**Borrar una oferta o todas** (solo desde la UI, con confirmación escrita: el nombre de la empresa o
+«BORRAR»): `POST /jobs/{id}/erase` y `POST /data/erase`. Antes se copia la base de datos con la API
+de copia de SQLite en `data/backups/` (se guardan las 10 últimas), que es la única forma de
+deshacerlo. Se borra la fila de `jobs` y, recorriendo las claves ajenas, lo que depende de ella: las
+filas con enlace obligatorio (eventos, CVs, hitos, borradores…) se borran, y las de enlace opcional
+(ejecuciones y encargos del agente) se quedan sin él. De `replies` se quita la oferta de
+`candidates` (y de la propuesta); un correo sin candidatas se borra. También se van las tareas en
+cola de esas ofertas y las empresas que se quedan sin ofertas. Vaciarlo todo deja el perfil, las
+plantillas, las fuentes, los buzones, la red de contactos y la configuración. Los ficheros de la
+carpeta de datos no se tocan, y una oferta borrada que vuelva a llegar entra como nueva.
+
 ### `tasks`
 Cola de trabajo del worker (sin Redis).
 `id, kind, payload JSON, status (queued|running|done|failed), attempts, run_after, last_error`.
@@ -676,7 +687,7 @@ candidatura enviada; de los demás no queda nada. Contenido no confiable.
 | proposal | JSON? | `ReplyProposal` (`AGENT_INTERFACE.md` §Respuestas) |
 | proposed_at, proposed_by | datetime?, str? | Cliente del agente |
 | job_id | FK? | La oferta de la propuesta (o la que eligió el usuario al aceptar) |
-| event_id | FK? | Evento registrado al aceptar |
+| event_id | FK? | Evento registrado al aceptar. Si ese evento ya estaba anotado por otro camino (p. ej. el rechazo, a mano y con fecha posterior al correo) y registrarlo otra vez no encaja, el correo se enlaza al último de ese tipo desde la última reapertura en vez de fallar |
 | resolved_at | datetime? | Al aceptar o ignorar (`null` otra vez al deshacer) |
 | created_at | datetime | |
 

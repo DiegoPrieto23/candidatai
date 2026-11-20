@@ -74,6 +74,35 @@ describe('Procesos (kanban)', () => {
     expect(within(upcoming).getByRole('link', { name: 'Ver el calendario' })).toHaveAttribute('href', '/calendario')
   })
 
+  it('las cerradas dicen hasta dónde llegaron y se filtran por cómo acabaron', async () => {
+    const closed = [
+      boardCard(5, 'closed', { closed_by: 'rejected', reached: 'interview' }),
+      boardCard(6, 'closed', { closed_by: 'rejected', reached: 'applied' }),
+      boardCard(7, 'closed', { closed_by: 'discarded', reached: 'before_applying' }),
+      boardCard(8, 'closed', { closed_by: 'withdrawn', reached: 'interview' }),
+    ]
+    mockApi(routes({ 'GET /board': board([...CARDS.slice(0, 3), ...closed]) }))
+    renderApp('/procesos')
+    const column = await screen.findByRole('region', { name: 'Cerrada' })
+    expect(within(column).getByText('Rechazada tras entrevista')).toHaveClass('text-destructive')
+    expect(within(column).getByText('Rechazada sin entrevista')).toBeInTheDocument()
+    expect(within(column).getByText('Descartada')).not.toHaveClass('text-destructive')
+
+    await userEvent.click(within(column).getByRole('combobox', { name: 'Mostrar' }))
+    await userEvent.click(await screen.findByRole('option', { name: 'Rechazadas tras entrevista' }))
+    expect(within(column).getByText('Oferta 5')).toBeInTheDocument()
+    for (const other of ['Oferta 6', 'Oferta 7', 'Oferta 8']) {
+      expect(within(column).queryByText(other)).not.toBeInTheDocument()
+    }
+    // Las demás columnas no se filtran.
+    expect(within(screen.getByRole('region', { name: 'Enviada' })).getByText('Oferta 2')).toBeInTheDocument()
+
+    await userEvent.click(within(column).getByRole('combobox', { name: 'Mostrar' }))
+    await userEvent.click(await screen.findByRole('option', { name: 'Descartadas por ti' }))
+    expect(within(column).getByText('Oferta 7')).toBeInTheDocument()
+    expect(within(column).queryByText('Oferta 5')).not.toBeInTheDocument()
+  })
+
   it('registra el envío con canal y fecha desde «Mover»', async () => {
     const calls = mockApi(routes({ 'POST /jobs/1/events': { ok: true, event_id: 9, stage: 'applied' } }))
     renderApp('/procesos')

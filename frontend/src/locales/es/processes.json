@@ -61,5 +61,13 @@
     "reset": "Restablecer",
     "cancel": "Cancelar",
     "save": "Guardar"
+  },
+  "closedFilter": {
+    "label": "Mostrar",
+    "all": "Todas",
+    "discarded": "Descartadas por ti",
+    "rejected_early": "Rechazadas sin entrevista",
+    "rejected_interview": "Rechazadas tras entrevista",
+    "other": "Retiradas, caducadas y aceptadas"
   }
 }

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router'
-import { ArrowsClockwiseIcon, CheckCircleIcon, EnvelopeSimpleIcon, ShieldWarningIcon, XIcon } from '@phosphor-icons/react'
+import { ArrowsClockwiseIcon, CaretRightIcon, CheckCircleIcon, EnvelopeSimpleIcon, ShieldWarningIcon, XIcon } from '@phosphor-icons/react'
 import type { RepliesPollResult, ReplyInboxItem } from '@/api/client'
 import { usePollReplies, useReplies, useReply, useUnignoreReply, type ReplyStatus } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
@@ -63,9 +63,42 @@ function PollResult({ result, onClose }: { result: RepliesPollResult; onClose: (
   )
 }
 
-function ReplyRow({ item, selected, onSelect }: { item: ReplyInboxItem; selected: boolean; onSelect: () => void }) {
+/** La oferta a la que va un correo, si se sabe: la propuesta, la asignada o la única candidata. */
+function jobOf(item: ReplyInboxItem): number | null {
+  return item.proposal?.job_id ?? item.job_id ?? (item.candidates.length === 1 ? item.candidates[0].job_id : null)
+}
+
+/**
+ * Los correos de una misma candidatura, juntos: el más reciente encabeza el grupo y los anteriores
+ * quedan plegados debajo. Llegan ya del más nuevo al más antiguo, y el grupo ocupa el puesto de su
+ * correo más nuevo. Sin oferta clara, cada correo va solo.
+ */
+function groupByJob(items: ReplyInboxItem[]): ReplyInboxItem[][] {
+  const groups = new Map<string, ReplyInboxItem[]>()
+  for (const item of items) {
+    const job = jobOf(item)
+    const key = job === null ? `reply-${item.reply_id}` : `job-${job}`
+    const group = groups.get(key)
+    if (group) group.push(item)
+    else groups.set(key, [item])
+  }
+  return [...groups.values()]
+}
+
+function ReplyRow({
+  item,
+  selected,
+  onSelect,
+  nested = false,
+}: {
+  item: ReplyInboxItem
+  selected: boolean
+  onSelect: () => void
+  nested?: boolean
+}) {
   const { t } = useTranslation('replies', { keyPrefix: 'page' })
   const job = item.candidates.find((c) => c.job_id === (item.proposal?.job_id ?? item.job_id)) ?? item.candidates[0]
+  const rejected = item.status === 'proposed' && item.proposal?.event_type === 'rejected'
   return (
     <li>
       <button
@@ -75,6 +108,7 @@ function ReplyRow({ item, selected, onSelect }: { item: ReplyInboxItem; selected
         className={cn(
           // El foco, un anillo; la selección, el fondo y la barra: con teclado se distinguen.
           'relative flex w-full flex-col gap-1 px-4 py-3 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset',
+          nested && 'py-2.5 pl-8',
           selected ? 'bg-accent/70' : 'hover:bg-foreground/[0.03]',
         )}
       >
@@ -96,11 +130,12 @@ function ReplyRow({ item, selected, onSelect }: { item: ReplyInboxItem; selected
         </span>
         <span className="truncate text-sm text-foreground/80">{item.subject || t('noSubject')}</span>
         <span className="flex items-center gap-2 text-xs text-muted-foreground">
-          <span className="truncate">{job ? `${job.title} · ${job.company}` : t('noJob')}</span>
+          {/* Dentro de un grupo la oferta ya la dice el primer correo. */}
+          <span className="truncate">{nested ? '' : job ? `${job.title} · ${job.company}` : t('noJob')}</span>
           <span
             className={cn(
               'ml-auto shrink-0 rounded-full border px-2 py-0.5 font-medium',
-              item.status === 'proposed' && 'border-primary/30 text-primary',
+              item.status === 'proposed' && (rejected ? 'border-destructive/30 text-destructive' : 'border-primary/30 text-primary'),
             )}
           >
             {item.status === 'proposed' && item.proposal
@@ -110,6 +145,56 @@ function ReplyRow({ item, selected, onSelect }: { item: ReplyInboxItem; selected
         </span>
       </button>
     </li>
+  )
+}
+
+/** Una candidatura: su correo más reciente y, plegados debajo, los anteriores. */
+function ReplyGroup({
+  items,
+  selectedId,
+  onSelect,
+}: {
+  items: ReplyInboxItem[]
+  selectedId: number | undefined
+  onSelect: (replyId: number) => void
+}) {
+  const { t } = useTranslation('replies', { keyPrefix: 'page' })
+  const [latest, ...older] = items
+  const [open, setOpen] = useState(false)
+  // Si el seleccionado es uno de los anteriores (con J/K o desde la ficha), el grupo se abre solo.
+  const expanded = open || older.some((r) => r.reply_id === selectedId)
+  const row = (item: ReplyInboxItem, nested: boolean) => (
+    <ReplyRow
+      key={item.reply_id}
+      item={item}
+      nested={nested}
+      selected={item.reply_id === selectedId}
+      onSelect={() => onSelect(item.reply_id)}
+    />
+  )
+  if (older.length === 0) return row(latest, false)
+  const listId = `reply-group-${latest.reply_id}`
+  return (
+    <>
+      {row(latest, false)}
+      <li>
+        <button
+          type="button"
+          aria-expanded={expanded}
+          aria-controls={listId}
+          onClick={() => setOpen(!expanded)}
+          className="flex w-full items-center gap-1.5 px-4 py-1.5 pl-8 text-left text-xs text-muted-foreground transition-colors outline-none hover:bg-foreground/[0.03] hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+        >
+          <CaretRightIcon className={cn('size-3 transition-transform', expanded && 'rotate-90')} weight="bold" />
+          {t('olderInGroup', { count: older.length })}
+        </button>
+        {expanded && (
+          <ul id={listId} aria-label={t('olderInGroup', { count: older.length })} className="divide-y border-t">
+            {older.map((item) => row(item, true))}
+          </ul>
+        )}
+      </li>
+    </>
   )
 }
 
@@ -262,10 +347,12 @@ export function RepliesPage() {
   const [resolved, setResolved] = useState<ReplyResolved | null>(null)
 
   const statuses = FILTERS.find((f) => f.value === filter)!.statuses
-  const items = useMemo(
-    () => (data?.replies ?? []).filter((r) => statuses.includes(r.status)),
+  // En el orden en que se ven: cada candidatura con sus correos seguidos (J/K los recorren así).
+  const groups = useMemo(
+    () => groupByJob((data?.replies ?? []).filter((r) => statuses.includes(r.status))),
     [data, statuses],
   )
+  const items = useMemo(() => groups.flat(), [groups])
   const selected = items.find((r) => r.reply_id === selectedId) ?? items[0]
   const counts = data?.counts ?? {}
   const unclassified = counts.new ?? 0
@@ -404,12 +491,12 @@ export function RepliesPage() {
         <div className="grid items-start gap-6 lg:grid-cols-[22rem_minmax(0,1fr)]">
           <section className="overflow-hidden rounded-xl border bg-card">
             <ul aria-label={t('list')} className="divide-y">
-              {items.map((item) => (
-                <ReplyRow
-                  key={item.reply_id}
-                  item={item}
-                  selected={item.reply_id === selected?.reply_id}
-                  onSelect={() => setSelectedId(item.reply_id)}
+              {groups.map((group) => (
+                <ReplyGroup
+                  key={group[0].reply_id}
+                  items={group}
+                  selectedId={selected?.reply_id}
+                  onSelect={setSelectedId}
                 />
               ))}
             </ul>

@@ -9,6 +9,7 @@ import {
   UserCircleIcon,
 } from '@phosphor-icons/react'
 import { useStatus } from '@/api/queries'
+import { EraseAllButton } from '@/components/EraseData'
 import { PageTabs } from '@/components/PageTabs'
 
 /**
@@ -43,6 +44,7 @@ export function InboxHubPage() {
             countLabel: t('withCount', { label: t('review'), count: toReview }),
           },
         ]}
+        actions={<EraseAllButton />}
       />
       <div className="min-w-0">
         <Outlet />
