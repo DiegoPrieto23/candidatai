@@ -23,7 +23,6 @@ import { Brand, MobileNav, Sidebar } from '@/components/Sidebar'
 function BackgroundRunReminder() {
   const { t } = useTranslation('nav')
   const { data } = useAgentRuns()
-  const { pathname } = useLocation()
   const client = useQueryClient()
   // La última que terminó (no un recuento: la lista solo trae las 20 más recientes).
   const lastFinished = (data?.runs ?? []).reduce(
@@ -41,7 +40,7 @@ function BackgroundRunReminder() {
   }, [lastFinished, client])
 
   const current = data?.runs.find((r) => r.status === 'running') ?? data?.runs.find((r) => r.status === 'queued')
-  if (!current || pathname === '/agente') return null
+  if (!current) return null
   return (
     <div
       role="status"
@@ -52,10 +51,7 @@ function BackgroundRunReminder() {
         weight="bold"
       />
       <p>
-        {current.status === 'running' ? t('reminders.running') : t('reminders.queued')}: «{current.label}».{' '}
-        <Link to="/agente" className="underline underline-offset-4">
-          {t('reminders.seeProgress')}
-        </Link>
+        {current.status === 'running' ? t('reminders.running') : t('reminders.queued')}: «{current.label}».
       </p>
     </div>
   )

@@ -61,6 +61,18 @@ describe('«Dónde buscar → Botón del navegador»', () => {
     expect(calls.find((c) => c.path === '/folders/open')?.body).toEqual({ folder: 'extension' })
   })
 
+  it('«Ver cómo se hace» va junto al título del paso 3 y abre la animación justo debajo', async () => {
+    mockApi({ 'GET /status': status(), 'GET /capture/extension': STATUS })
+    renderApp('/fuentes/extension')
+    const title = await screen.findByRole('heading', { name: 'Fíjala en la barra y úsala' })
+    const toggle = within(title.parentElement as HTMLElement).getByRole('button', { name: 'Ver cómo se hace' })
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.queryByRole('img', { name: /Enviar a CandidatAI/ })).not.toBeInTheDocument()
+    await userEvent.click(toggle)
+    expect(toggle).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByRole('img', { name: /Enviar a CandidatAI/ })).toBeInTheDocument()
+  })
+
   it('la conecta con un clic: pide la clave a la app y se la pasa a la extensión', async () => {
     let connected = false
     const sent = installExtension((message) => {

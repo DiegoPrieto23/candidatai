@@ -56,8 +56,7 @@
   },
   "reminders": {
     "running": "Tu agente trabaja en segundo plano",
-    "queued": "En cola en segundo plano",
-    "seeProgress": "Ver el progreso"
+    "queued": "En cola en segundo plano"
   },
   "demo": {
     "label": "Modo demo",
@@ -124,7 +123,6 @@
     "doneCount_other": "{{count}} hechas.",
     "counts": "{{done}} de {{total}}",
     "see": "Ver",
-    "seeAgent": "Ver en «Agente»",
     "notification": "Tu agente ha terminado.",
     "minimize": "Minimizar el aviso",
     "expand": "Abrir el aviso: {{title}}",

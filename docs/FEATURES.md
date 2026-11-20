@@ -96,7 +96,7 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 
 | Feature | Where | Screenshot |
 |---|---|---|
-| **Your funnel**, also on the home page: from sent to accepted, with a branch for each group that stopped at a step and how it stands now (waiting, rejected, interviewing…); each branch takes you to those applications | `/` · `/resultados` | |
+| **How are my applications going?**, also on the home page: from sent to accepted, with a branch for each group that stopped at a step and how it stands now (waiting, rejected, interviewing…); each branch takes you to those applications | `/` · `/resultados` | |
 | **Results**: what works for you, in sentences (which channel gets more replies, how long companies take, where they reply sooner, your best source), and below, by question: reply rate and time by channel, conversion by source, role, week and referral, and discard reasons | `/resultados` | <!-- media:provisional --> [Funnel](img/en/funnel.webp) |
 | **"Is the fit right?"**: reply and interview rates by fit, verdict, source, template, letter and referral, with 95 % intervals, under "More analysis" in Results | `/resultados` | |
 | **Your search in numbers**, ready to share (figures only, never companies), under "More analysis" in Results | `/resultados` · `cai stats story` | |
@@ -116,7 +116,7 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 
 | Feature | Where | Screenshot |
 |---|---|---|
-| **Agent**: at the top, whether your agent is ready or how to install one, and what sets Claude (the chat) apart from Claude Code; folded away, default agent and one per action, background runs with progress, questions and Cancel, cost by action and model, spending levels and the score's meaning-based comparison | `/agente` | <!-- media:provisional --> [Agent](img/en/agent.webp) |
+| **Agent**: at the top, whether your agent is ready (with its logo) or how to install one, and what you leave for your next session; folded away, default agent and one per action, cost by action and model, spending levels and the score's meaning-based comparison | `/agente` | <!-- media:provisional --> [Agent](img/en/agent.webp) |
 | **Every agent button explains itself**: what the skill does, what it changes and what it needs, on hover or keyboard focus | Every page | |
 | **Keyboard navigation**: the first Tab shows “Skip to content”, which skips the menu, and focus is always visible, in light and dark. A row of filters (the Inbox stages, the replies) is a single Tab stop, moved through with the arrows | Every page | |
 | **Leave it for your next session**: any button saves the order for your agent | `handle-requests` | |

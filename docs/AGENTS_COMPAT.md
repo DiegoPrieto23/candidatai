@@ -410,9 +410,8 @@ la orden para que la pegues tú. Probado con Claude Code; Codex, sin probar.
 ### En segundo plano y cola de encargos (fase 19; varios agentes en la 24.5)
 El desplegable de cada botón ofrece **«En segundo plano»** en `process-jobs`, `assess-fit`,
 `generate-cv`, `correct-cv`, `verify-cv`, `generate-cover-letter` y `translate-summary` (en OpenCode, solo en las dos
-primeras: las demás delegan en el rol `verifier`, que lee ficheros): el worker lanza tu agente sin ventana y la página «Agente» enseña el progreso, el
-resultado, el uso (turnos, tokens y coste si el agente lo da) y, si el skill necesita algo, sus
-preguntas, con «Contestar en terminal» para seguir en la misma sesión. Sale de `launch.headless`
+primeras: las demás delegan en el rol `verifier`, que lee ficheros): el worker lanza tu agente sin ventana y un aviso
+dice cuándo termina; la sección «Coste» de la página «Agente» suma lo que gasta. Sale de `launch.headless`
 del manifiesto, con el mismo `unset_env`. La garantía es el **techo de herramientas**: la
 ejecución solo tiene las herramientas MCP de su acción, sin terminal, edición ni web, y sus
 subagentes no tienen más. Hay dos formas de ponerlo (`ceiling`):

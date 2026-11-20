@@ -6,7 +6,7 @@ import {
   CompassIcon,
   EnvelopeSimpleIcon,
   MagnifyingGlassIcon,
-  MapTrifoldIcon,
+  GlobeIcon,
   PuzzlePieceIcon,
 } from '@phosphor-icons/react'
 import { Hint } from '@/components/Hint'
@@ -91,7 +91,7 @@ export function SearchHubPage() {
         label={t('nav.label')}
         tabs={[
           { to: '/buscar', label: t('nav.search'), icon: MagnifyingGlassIcon },
-          { to: '/fuentes', label: t('nav.where'), icon: MapTrifoldIcon },
+          { to: '/fuentes', label: t('nav.where'), icon: GlobeIcon },
         ]}
       />
       {/* Si la pestaña falla, el título y las pestañas siguen: puedes ir a la otra. */}

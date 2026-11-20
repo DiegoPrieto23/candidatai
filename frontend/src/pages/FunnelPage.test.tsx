@@ -5,7 +5,7 @@ import type { Calibration, CalibrationGroup, FunnelStats } from '@/api/client'
 import { i18n } from '@/lib/i18n'
 import { mockApi as mockRoutes, pickDate, renderApp, status } from '@/test/utils'
 
-/** «Tu embudo» pide sus cifras aparte: las mismas que las del embudo simulado. */
+/** «¿Cómo van mis candidaturas?» pide sus cifras aparte: las mismas que las del embudo simulado. */
 function mockApi(routes: Record<string, unknown>) {
   const funnel = routes['GET /stats/funnel'] as { steps?: unknown; duplicates_excluded?: number } | undefined
   return mockRoutes({
@@ -319,7 +319,7 @@ describe('Resultados', () => {
     await userEvent.click(screen.getByRole('button', { name: '30 días' }))
     await waitFor(() => expect(funnelCalls()).toHaveLength(2))
     expect(funnelCalls()[1].search.get('since')).toMatch(/^\d{4}-\d{2}-\d{2}$/)
-    // «Tu embudo» sigue el mismo periodo.
+    // «¿Cómo van mis candidaturas?» sigue el mismo periodo.
     await waitFor(() => expect(calls.filter((c) => c.path === '/stats/flow').at(-1)?.search.get('since')).toBe(funnelCalls()[1].search.get('since')))
     expect(screen.getByRole('button', { name: '30 días' })).toHaveAttribute('aria-pressed', 'true')
 

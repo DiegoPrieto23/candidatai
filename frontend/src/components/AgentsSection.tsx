@@ -9,6 +9,7 @@ import type {
   LocalModelsStatus,
 } from '@/api/client'
 import { useAgentsOverview, useLocalModels, useSaveAgentPreferences, type AgentAction } from '@/api/queries'
+import { AgentLogo } from '@/components/AgentLogo'
 import { LocalModels } from '@/components/LocalModels'
 import { SpendTiers } from '@/components/SpendTiers'
 import { ErrorState, InlineCode } from '@/components/States'
@@ -212,7 +213,8 @@ function AgentCard({
   const install = entry.info.install[platform]
   return (
     <li className="min-w-0 rounded-xl border bg-card p-4" aria-label={entry.info.display_name}>
-      <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+        <AgentLogo name={entry.name} className="size-8" />
         <h3 className="font-medium">{entry.info.display_name}</h3>
         <span className={cn('text-xs tabular', entry.installed ? 'text-muted-foreground' : 'text-destructive')}>
           {entry.installed ? (entry.version ?? '') : t('notInstalled')}

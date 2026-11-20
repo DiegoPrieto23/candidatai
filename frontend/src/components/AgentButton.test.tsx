@@ -136,7 +136,7 @@ describe('Botones «en tu agente»', () => {
     expect(screen.queryByRole('button', { name: 'Valorar las ofertas nuevas' })).not.toBeInTheDocument()
   })
 
-  it('«En segundo plano» deja la ejecución en cola y enlaza a «Agente» (fase 19)', async () => {
+  it('«En segundo plano» deja la ejecución en cola, sin enlace a «Agente» (fase 19)', async () => {
     const calls = home({
       'GET /status': status(2, 0),
       'POST /agent/runs': { status: 202, body: { id: 1, status: 'queued' } },
@@ -146,7 +146,7 @@ describe('Botones «en tu agente»', () => {
     await userEvent.click(within(group(main)).getByRole('button', { name: 'Más formas de lanzarlo' }))
     await userEvent.click(await screen.findByRole('menuitem', { name: /En segundo plano/ }))
     expect(await screen.findByText('En cola en segundo plano.', { exact: false })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Ver en «Agente»' })).toHaveAttribute('href', '/agente')
+    expect(screen.queryByRole('link', { name: 'Ver en «Agente»' })).not.toBeInTheDocument()
     expect(calls.find((c) => c.method === 'POST' && c.path === '/agent/runs')?.body).toEqual({ action: 'process-jobs' })
   })
 

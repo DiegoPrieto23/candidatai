@@ -1759,7 +1759,7 @@ export interface paths {
         };
         /**
          * Get Funnel Flow
-         * @description «Tu embudo», en la portada y en «Resultados»: los pasos y dónde se quedó cada candidatura.
+         * @description «¿Cómo van mis candidaturas?», en la portada y en «Resultados»: dónde se quedó cada una.
          */
         get: operations["get_funnel_flow"];
         put?: never;

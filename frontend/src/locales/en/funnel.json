@@ -261,7 +261,7 @@
   },
   "more": "More analysis",
   "flow": {
-    "title": "Your funnel",
+    "title": "How are my applications going?",
     "hint": "How far each application you've sent has made it, and where the ones that stopped are now.",
     "everything": "Everything you've sent",
     "noneYet": "None yet",

@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import type { AgentTaskView } from '@/api/client'
@@ -85,11 +85,11 @@ describe('Avisos de lo que lanzan los botones', () => {
     expect(await screen.findByText(/Sin noticias desde hace 30 minutos/)).toBeInTheDocument()
   })
 
-  it('en segundo plano no te manda a ninguna ventana y, si falla, lleva a «Agente»', async () => {
+  it('en segundo plano no te manda a ninguna ventana ni, si falla, a «Agente»', async () => {
     mockApi(routes([task({ background: true, status: 'finished', outcome: 'failed' })]))
     renderApp('/como-funciona')
-    expect(await screen.findByText('No ha salido bien')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Ver en «Agente»' })).toHaveAttribute('href', '/agente')
+    const notice = (await screen.findByText('No ha salido bien')).closest('[role="status"]') as HTMLElement
+    expect(within(notice).queryByRole('link')).not.toBeInTheDocument()
   })
 
   it('se minimiza y se vuelve a abrir, y cerrarlo avisa a la app', async () => {

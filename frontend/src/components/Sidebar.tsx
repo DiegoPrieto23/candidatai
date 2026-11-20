@@ -23,7 +23,7 @@ import {
   type IconProps,
 } from '@phosphor-icons/react'
 import { Dialog as DialogPrimitive } from 'radix-ui'
-import { useAgentRuns, useEditableProfile, useFollowups, useReplies, useStatus } from '@/api/queries'
+import { useEditableProfile, useFollowups, useReplies, useStatus } from '@/api/queries'
 import { LanguageFlag } from '@/components/LanguageFlag'
 import { Button } from '@/components/ui/button'
 import {
@@ -61,14 +61,10 @@ function useRepliesCount(): Count {
   return { value: data?.counts.proposed ?? 0, strong: true, label: 'toReview' }
 }
 
-/** Ejecuciones en curso (fase 19), las que esperan una respuesta tuya y los encargos pendientes. */
+/** Los encargos pendientes para tu próxima sesión. */
 function useAgentCount(): Count {
-  const runs = useAgentRuns()
   const { data } = useStatus()
-  const active = runs.data?.active ?? 0
-  const waiting = runs.data?.runs.filter((r) => r.status === 'needs_user').length ?? 0
-  const requests = data?.agent_requests ?? 0
-  return { value: active + waiting + requests, strong: active + waiting > 0, label: 'agent' }
+  return { value: data?.agent_requests ?? 0, strong: false, label: 'agent' }
 }
 
 /** Sin perfil no hay encaje ni CV, y unos cambios sin guardar se pierden al salir. */

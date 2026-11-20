@@ -139,7 +139,7 @@ tuyo como agente por defecto en **Configurar agentes**. Desde ese momento, boton
 **Valorar las ofertas nuevas** o **Generar CV** lo abren en una ventana aparte con la orden
 ya escrita: ves lo que hace y lo apruebas. Si no puede abrirlo, el botón te enseña la orden entera,
 con **Copiar**, para que la pegues en tu agente. Su flechita ofrece además **En segundo plano** (sin ventana;
-lo sigues en «Agente») y **Dejar para mi próxima sesión**.
+un aviso te dice cuándo termina) y **Dejar para mi próxima sesión**.
 
 <!-- media:provisional -->
 <img src="img/es/agent.webp" alt="Página Agente: agente por defecto, uno por acción y ejecuciones en segundo plano" width="88%">

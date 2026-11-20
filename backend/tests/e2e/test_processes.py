@@ -471,7 +471,8 @@ def _funnel_since(page: Page, preset: str) -> str | None:
 
 def _check_against_agent_interface(page: Page, server: AppServer, since: str | None) -> list[int]:
     stats = cai(server, "stats", "funnel", *(["--since", since] if since else []))
-    # Las cifras van plegadas en «Tu embudo»; cada periodo o recarga las puede volver a plegar.
+    # Las cifras van plegadas en «¿Cómo van mis candidaturas?»; cada periodo o recarga las puede
+    # volver a plegar.
     numbers = page.get_by_role("button", name=t("funnel.flow.numbers"))
     expect(numbers).to_be_visible()
     if numbers.get_attribute("aria-expanded") == "false":

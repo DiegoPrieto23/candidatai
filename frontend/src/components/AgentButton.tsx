@@ -186,7 +186,6 @@ export function AgentButton({
         show({
           tone: 'ok',
           text: result.status === 'running' ? t('alreadyRunning') : t('queued'),
-          link: true,
         })
         watchFor(action, result.job_id ?? jobId, milestoneId)
         onStarted?.()

@@ -96,7 +96,7 @@ FEATURES.md dejan de coincidir fila a fila. -->
 
 | Funcionalidad | Dónde | Captura |
 |---|---|---|
-| **Tu embudo**, también en la portada: de lo enviado a lo aceptado, con una rama por cada grupo que se quedó en un paso y cómo está ahora (esperando, rechazada, en entrevistas…); cada rama lleva a esas candidaturas | `/` · `/resultados` | |
+| **¿Cómo van mis candidaturas?**, también en la portada: de lo enviado a lo aceptado, con una rama por cada grupo que se quedó en un paso y cómo está ahora (esperando, rechazada, en entrevistas…); cada rama lleva a esas candidaturas | `/` · `/resultados` | |
 | **Resultados**: qué te funciona, en frases (por qué canal te responden más, cuánto tardan, por dónde responden antes, tu mejor fuente), y debajo, por pregunta: tasa y tiempo de respuesta por canal, conversión por fuente, puesto, semana y referencia, y motivos de descarte | `/resultados` | <!-- media:provisional --> [Embudo](img/es/funnel.webp) |
 | **«¿Acierta el encaje?»**: tasas de respuesta y de entrevista por encaje, veredicto, fuente, plantilla, carta y referencia, con intervalos al 95 %, en «Más análisis» de Resultados | `/resultados` | |
 | **Tu búsqueda en números**, lista para compartir (solo cifras, nunca empresas), en «Más análisis» de Resultados | `/resultados` · `cai stats story` | |
@@ -116,7 +116,7 @@ FEATURES.md dejan de coincidir fila a fila. -->
 
 | Funcionalidad | Dónde | Captura |
 |---|---|---|
-| **Agente**: arriba, si tu agente está listo o cómo instalar uno, y qué distingue a Claude (el chat) de Claude Code; plegados, agente por defecto y uno por acción, ejecuciones en segundo plano con progreso, preguntas y Cancelar, coste por acción y modelo, niveles de gasto y la comparación por significado del score | `/agente` | <!-- media:provisional --> [Agente](img/es/agent.webp) |
+| **Agente**: arriba, si tu agente está listo (con su logo) o cómo instalar uno, y lo que dejas para tu próxima sesión; plegados, agente por defecto y uno por acción, coste por acción y modelo, niveles de gasto y la comparación por significado del score | `/agente` | <!-- media:provisional --> [Agente](img/es/agent.webp) |
 | **Cada botón de agente se explica**: qué hace el skill, qué cambia y qué necesita, al pasar el ratón o con el foco del teclado | Todas las páginas | |
 | **Navegar con teclado**: el primer Tab enseña «Saltar al contenido», que se salta el menú, y el foco se ve siempre, también en claro y en oscuro. Una fila de filtros (las etapas de la Bandeja, las respuestas) es una sola parada de Tab, y se recorre con las flechas | Todas las páginas | |
 | **Dejar para tu próxima sesión**: cualquier botón guarda la orden para tu agente | `handle-requests` | |

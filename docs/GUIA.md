@@ -470,7 +470,7 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
   las empresas en responder, por dónde responden antes y tu mejor fuente. Cada frase sale cuando hay
   datos suficientes (unas 10 candidaturas enviadas por grupo; 5 respuestas para los tiempos) y una diferencia clara. Debajo,
   agrupado por pregunta: «¿Por dónde me responden más y antes?» (por canal, con la tasa y la mediana
-  de días, por fuente y por referencia); «¿Dónde se quedan mis candidaturas?» («Tu embudo», también
+  de días, por fuente y por referencia); «¿Dónde se quedan mis candidaturas?» («¿Cómo van mis candidaturas?», también
   en Inicio, con una rama por cada grupo que paró, la primera respuesta y la gráfica por semana);
   «¿Qué puestos me responden?» y «¿Por qué descarto?». En «Más análisis», plegado al final:
   «¿Acierta el encaje?» (por encaje, veredicto, plantilla, carta…), el coste del agente y «Tu
@@ -527,7 +527,7 @@ Muchas pantallas tienen botones que abren tu agente con la orden ya escrita:
 - **En segundo plano** (Claude Code; OpenCode solo en `process-jobs` y `assess-fit`): para los skills que no preguntan
   (`process-jobs`, `assess-fit`, `generate-cv`, `correct-cv`, `verify-cv`,
   `generate-cover-letter` y el resumen en inglés). Corre sin ventana, solo con las herramientas de la app que necesita, y
-  ves el progreso y el uso en la página «Agente». Si tu agente no puede, el desplegable propone
+  un aviso te dice cuándo termina. Si tu agente no puede, el desplegable propone
   uno que sí. Necesita `cai worker` en marcha.
   - **Coste:** la sección «Coste» de la página «Agente» suma tokens, tiempo y, si el agente lo da,
     dinero, por acción, agente y modelo (7 y 30 días), con lo que pesa cada skill; la ficha dice lo

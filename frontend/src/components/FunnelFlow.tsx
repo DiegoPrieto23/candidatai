@@ -251,7 +251,7 @@ function Numbers({ flow }: { flow: Flow }) {
 }
 
 /**
- * «Tu embudo»: hasta dónde ha llegado cada candidatura enviada y dónde están las que pararon. Cada
+ * «¿Cómo van mis candidaturas?»: hasta dónde ha llegado cada candidatura enviada y dónde están las que pararon. Cada
  * rama lleva a esas candidaturas. Sin `since`, tiene su propio selector de periodo (la portada); con
  * él, el periodo lo decide quien lo pinta (la página «Resultados», que lo pone bajo una pregunta:
  * `level` 3).

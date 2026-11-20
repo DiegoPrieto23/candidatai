@@ -959,7 +959,7 @@ export function useDeleteContact(jobId: number) {
   })
 }
 
-/** «Tu embudo»: los pasos y dónde se quedó cada candidatura. Conserva la cifra anterior al cambiar de periodo. */
+/** «¿Cómo van mis candidaturas?»: los pasos y dónde se quedó cada candidatura. Conserva la cifra anterior al cambiar de periodo. */
 export function useFunnelFlow(since: string | null) {
   return useQuery({
     queryKey: keys.flow(since),

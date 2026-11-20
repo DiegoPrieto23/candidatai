@@ -138,7 +138,7 @@ as the default agent in **Configure agents**. From then on, buttons such as **As
 or **Generate CV** open it in a separate window with the instruction already typed:
 you watch what it does and approve it. If it can't be opened, the button shows you the whole
 instruction, with **Copy**, so you can paste it into your agent. Their small arrow also offers **In the background**
-(no window; you follow it in "Agent") and **Leave for my next session**.
+(no window; a notice tells you when it's done) and **Leave for my next session**.
 
 <!-- media:provisional -->
 <img src="img/en/agent.webp" alt="Agent page: default agent, one per action and background runs" width="88%">

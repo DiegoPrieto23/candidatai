@@ -197,6 +197,12 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   puesto ya no desaparece mientras la editas.
 
 ### Cambiado
+- **Página «Agente» más clara:** cada agente lleva su logo, arriba en «Tu agente» y en su tarjeta de
+  «Configurar agentes». Ya no está la sección «En segundo plano» con cada ejecución ni la nota sobre
+  Claude y Claude Code: un aviso te dice cuándo termina lo que lanzas sin ventana.
+- **«Tu embudo» se llama ahora «¿Cómo van mis candidaturas?»**, en Inicio y en «Resultados».
+- **«Dónde buscar»** tiene un icono nuevo, y en «Botón del navegador» el enlace **Ver cómo se hace**
+  va junto al paso 3, a la vista sin bajar.
 - **Qué trajo cada búsqueda, de un vistazo:** cada portal de «Buscar» enseña una barra con las
   **vistas**, las que **pasan tus filtros**, las que **ya tenías** y las **nuevas** (de ellas, las
   **reabiertas**), con la leyenda de esas mismas cifras, y una nota de por qué paró: «Llegó a lo de la

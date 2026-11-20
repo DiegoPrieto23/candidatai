@@ -229,7 +229,7 @@ _CLOSING: dict[str, StopOutcome] = {
     EventType.WITHDRAWN: "withdrawn",
     EventType.EXPIRED: "expired",
 }
-# De lo enviado a lo aceptado, en orden: lo que dibuja «Tu embudo».
+# De lo enviado a lo aceptado, en orden: lo que dibuja «¿Cómo van mis candidaturas?».
 FLOW_STEPS: tuple[FunnelStepName, ...] = ("applied", "replied", "interview", "offer", "accepted")
 
 

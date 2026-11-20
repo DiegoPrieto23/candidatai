@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useId, useState, type ReactNode } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { Trans, useTranslation } from 'react-i18next'
 import { CheckCircleIcon, CircleNotchIcon, PlugsConnectedIcon, WarningIcon } from '@phosphor-icons/react'
@@ -11,13 +11,25 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { errorMessage } from '@/lib/errors'
 import { BrowserPicker } from '@/components/BrowserPicker'
 import { supportsExtension, useBrowserChoice, type BrowserId } from '@/lib/browser'
-import { ExtensionDemo } from '@/components/ExtensionDemo'
+import { DemoToggle, ExtensionDemo } from '@/components/ExtensionDemo'
 import { askExtension, compareVersions, desktopOs, useExtensionReply, type ExtensionReply } from '@/lib/extension'
 import { cn } from '@/lib/utils'
 
 const strong = { strong: <strong className="font-medium text-foreground" /> }
 
-function Step({ n, done, title, children }: { n: number; done: boolean; title: string; children: ReactNode }) {
+function Step({
+  n,
+  done,
+  title,
+  aside,
+  children,
+}: {
+  n: number
+  done: boolean
+  title: string
+  aside?: ReactNode
+  children: ReactNode
+}) {
   return (
     <li className="flex gap-3">
       {done ? (
@@ -28,7 +40,10 @@ function Step({ n, done, title, children }: { n: number; done: boolean; title: s
         </span>
       )}
       <div className="min-w-0 flex-1 space-y-3 pt-0.5">
-        <h4 className={cn('font-medium', done && 'text-muted-foreground')}>{title}</h4>
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <h4 className={cn('font-medium', done && 'text-muted-foreground')}>{title}</h4>
+          {aside}
+        </div>
         {children}
       </div>
     </li>
@@ -165,6 +180,9 @@ export function ExtensionPage() {
   const { browser, detected, choose } = useBrowserChoice()
   const supported = supportsExtension(browser)
   const name = t(`browser.names.${browser}`)
+  // «Ver cómo se hace» va junto al título del paso 3, a la vista; la animación se abre justo debajo.
+  const [demoOpen, setDemoOpen] = useState(false)
+  const demoId = useId()
 
   let body
   if (status.isPending) {
@@ -222,7 +240,13 @@ export function ExtensionPage() {
               onConnected={() => void client.invalidateQueries({ queryKey: ['extension'] })}
             />
           </Step>
-          <Step n={3} done={false} title={t('steps.use')}>
+          <Step
+            n={3}
+            done={false}
+            title={t('steps.use')}
+            aside={<DemoToggle open={demoOpen} onToggle={() => setDemoOpen(!demoOpen)} controls={demoId} />}
+          >
+            <ExtensionDemo controlled={{ open: demoOpen, id: demoId }} />
             <ul className="grid list-disc gap-1.5 pl-5 text-muted-foreground">
               <li>
                 <Trans t={t} i18nKey={browser === 'edge' ? 'use.pinEdge' : 'use.pin'} components={strong} />
@@ -232,7 +256,6 @@ export function ExtensionPage() {
               </li>
               <li>{t('use.selection')}</li>
             </ul>
-            <ExtensionDemo />
           </Step>
         </ol>
         )}

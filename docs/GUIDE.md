@@ -474,7 +474,7 @@ The worker runs the automatic sources every day at `connectors.daily_at`
   companies take to reply, where they reply sooner and your best source. Each sentence appears once
   there's enough data (about 10 sent applications per group; 5 replies for the times) and a clear difference. Below,
   grouped by question: "Where do I get more replies, and sooner?" (by channel, with the rate and the
-  median days, by source and by referral); "Where do my applications stall?" (**Your funnel**, also
+  median days, by source and by referral); "Where do my applications stall?" (**How are my applications going?**, also
   on Home, with a branch for each group that stopped, the first reply and the weekly chart); "Which
   roles reply to me?" and "Why do I discard jobs?". Under **More analysis**, folded at the end: "Is
   the fit right?" (by fit, verdict, template, cover letter…), the agent's cost and **Your search in
@@ -532,8 +532,8 @@ Many pages have buttons that open your agent with the instruction already writte
   requests and conversations (a mock interview, say) stay in its window.
 - **In the background** (Claude Code; OpenCode only for `process-jobs` and `assess-fit`): for skills that don't ask
   questions (`process-jobs`, `assess-fit`, `generate-cv`, `correct-cv`, `verify-cv`,
-  `generate-cover-letter` and the English summary). It runs without a window, only with the app tools it needs, and you
-  follow its progress and usage on the **Agent** page. If your agent can't, the menu suggests one
+  `generate-cover-letter` and the English summary). It runs without a window, only with the app tools it needs, and a
+  notice tells you when it's done. If your agent can't, the menu suggests one
   that can. Requires `cai worker`.
   - **Cost:** the **Cost** section of the **Agent** page adds up tokens, time and, if the agent
     reports it, money, by action, agent and model (7 and 30 days), with how much each skill

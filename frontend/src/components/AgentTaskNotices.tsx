@@ -104,7 +104,7 @@ function TaskNotice({ task }: { task: AgentTaskView }) {
   else if (good) body = counted ? t('doneCount', { count: task.done }) : t('doneBody')
   else body = t(`${task.outcome ?? 'stopped'}.body` as never)
 
-  const to = good ? resultLink(task) : task.background && !running ? '/agente' : null
+  const to = good ? resultLink(task) : null
   return (
     <div
       role="status"
@@ -124,7 +124,7 @@ function TaskNotice({ task }: { task: AgentTaskView }) {
         {to && (
           <div className="mt-2.5">
             <Button asChild size="sm" variant="outline" onClick={() => dismiss.mutate(task.id)}>
-              <Link to={to}>{good ? t('see') : t('seeAgent')}</Link>
+              <Link to={to}>{t('see')}</Link>
             </Button>
           </div>
         )}
