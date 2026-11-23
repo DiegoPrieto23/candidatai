@@ -299,6 +299,136 @@ describe('Editar el texto del CV', () => {
   })
 })
 
+describe('Editar logros y skills del CV', () => {
+  const richCv = () =>
+    jobCv([renderResult(1)], {
+      content: {
+        language: 'es',
+        subtitle: 'Data Engineer',
+        summary: 'Resumen ficticio.',
+        projects: [],
+        education_ids: [],
+        certification_ids: [],
+        extra_sections: [],
+        languages: [],
+        include_regional_language: false,
+        keywords_targeted: [],
+        experience: [
+          {
+            experience_id: 'exp-1',
+            bullets: [
+              { text: 'Primer logro.', evidence: ['exp-1/a1'] },
+              { text: 'Segundo logro.', evidence: ['exp-1/a2'] },
+            ],
+          },
+        ],
+        skills: [
+          { group: 'Lenguajes', items: ['Python', 'SQL'] },
+          { group: 'Datos', items: ['dbt'] },
+        ],
+      },
+    })
+
+  async function openEditor() {
+    const cv = await section()
+    await userEvent.click(await within(cv).findByRole('tab', { name: 'Editar texto' }))
+    return within(cv).findByRole('form', { name: 'Editar el texto del CV' })
+  }
+
+  type Sent = { content: { experience: { bullets: { text: string; evidence: string[] }[] }[]; skills: unknown } }
+  const sent = (calls: { path: string; body?: unknown }[]) =>
+    calls.find((c) => c.path === '/jobs/1/cv/edit')?.body as Sent
+
+  it('reordena y quita logros con sus evidencias, sin dejar ninguna experiencia vacía', async () => {
+    const calls = mockApi(
+      routes({
+        'GET /jobs/1/cv': richCv(),
+        'POST /jobs/1/cv/edit': { ok: true, job_id: 1, document_id: 2, render: renderResult(1), warnings: [] },
+      }),
+    )
+    const form = await openEditor()
+    expect(within(form).getByRole('button', { name: 'Subir la viñeta 1 de Data Engineer · Acme' })).toBeDisabled()
+    await userEvent.click(within(form).getByRole('button', { name: 'Bajar la viñeta 1 de Data Engineer · Acme' }))
+    expect(within(form).getByRole('textbox', { name: /viñeta 1$/ })).toHaveValue('Segundo logro.')
+    // Abajo del todo, «Bajar» se desactiva y el foco sigue al logro en su «Subir».
+    expect(within(form).getByRole('button', { name: 'Subir la viñeta 2 de Data Engineer · Acme' })).toHaveFocus()
+    await userEvent.click(within(form).getByRole('button', { name: 'Quitar la viñeta 2 de Data Engineer · Acme' }))
+    expect(within(form).getByRole('button', { name: 'Quitar la viñeta 1 de Data Engineer · Acme' })).toBeDisabled()
+    await userEvent.click(within(form).getByRole('button', { name: 'Guardar versión nueva' }))
+    await waitFor(() => expect(sent(calls)).toBeDefined())
+    expect(sent(calls).content.experience[0].bullets).toEqual([{ text: 'Segundo logro.', evidence: ['exp-1/a2'] }])
+  })
+
+  it('añade y quita skills como etiquetas, sin repetirlas', async () => {
+    const calls = mockApi(
+      routes({
+        'GET /jobs/1/cv': richCv(),
+        'POST /jobs/1/cv/edit': { ok: true, job_id: 1, document_id: 2, render: renderResult(1), warnings: [] },
+      }),
+    )
+    const form = await openEditor()
+    const chips = within(form).getByRole('list', { name: 'Skills de «Lenguajes»' })
+    expect(within(chips).getAllByRole('listitem').map((li) => li.textContent)).toEqual(['Python', 'SQL'])
+    const add = within(form).getByRole('textbox', { name: 'Añadir una skill a «Lenguajes»' })
+    await userEvent.type(add, 'python{Enter}')
+    expect(within(form).getByText('«python» ya está en este grupo.')).toBeInTheDocument()
+    await userEvent.clear(add)
+    // Intro añade la skill y no guarda la versión.
+    await userEvent.type(add, 'Scala{Enter}')
+    expect(calls.some((c) => c.path === '/jobs/1/cv/edit')).toBe(false)
+    expect(add).toHaveValue('')
+    await userEvent.type(add, 'Go')
+    expect(within(form).getByText('Pulsa Intro para añadir «Go»; si no, no se guarda.')).toBeInTheDocument()
+    await userEvent.clear(add)
+    await userEvent.click(within(form).getByRole('button', { name: 'Quitar «SQL» de «Lenguajes»' }))
+    expect(add).toHaveFocus()
+    await userEvent.click(within(form).getByRole('button', { name: 'Guardar versión nueva' }))
+    await waitFor(() => expect(sent(calls)).toBeDefined())
+    expect(sent(calls).content.skills).toEqual([
+      { group: 'Lenguajes', items: ['Python', 'Scala'] },
+      { group: 'Datos', items: ['dbt'] },
+    ])
+  })
+
+  it('añade, renombra, reordena y quita grupos; quitar uno con skills pide confirmación', async () => {
+    const calls = mockApi(
+      routes({
+        'GET /jobs/1/cv': richCv(),
+        'POST /jobs/1/cv/edit': { ok: true, job_id: 1, document_id: 2, render: renderResult(1), warnings: [] },
+      }),
+    )
+    const form = await openEditor()
+    const save = within(form).getByRole('button', { name: 'Guardar versión nueva' })
+    await userEvent.click(within(form).getByRole('button', { name: 'Añadir grupo' }))
+    const name = within(form).getByRole('textbox', { name: 'Nombre del grupo 3' })
+    expect(name).toHaveFocus()
+    // Sin nombre ni skills no se puede guardar.
+    expect(save).toBeDisabled()
+    expect(within(form).getByText(/cada grupo necesita un nombre/)).toBeInTheDocument()
+    // Intro en el nombre no guarda.
+    await userEvent.type(name, 'Nube{Enter}')
+    expect(calls.some((c) => c.path === '/jobs/1/cv/edit')).toBe(false)
+    await userEvent.type(within(form).getByRole('textbox', { name: 'Añadir una skill a «Nube»' }), 'AWS{Enter}')
+    expect(save).toBeEnabled()
+    await userEvent.click(within(form).getByRole('button', { name: 'Subir el grupo «Nube»' }))
+
+    await userEvent.click(within(form).getByRole('button', { name: 'Quitar el grupo «Lenguajes»' }))
+    const confirm = within(form).getByRole('group', { name: 'Quitar el grupo «Lenguajes»' })
+    expect(confirm).toHaveTextContent('¿Quitar el grupo «Lenguajes» y sus 2 skills del CV?')
+    await userEvent.click(within(confirm).getByRole('button', { name: 'Cancelar' }))
+    expect(within(form).getByRole('textbox', { name: 'Nombre del grupo 1' })).toHaveValue('Lenguajes')
+    await userEvent.click(within(form).getByRole('button', { name: 'Quitar el grupo «Lenguajes»' }))
+    await userEvent.click(within(form).getByRole('button', { name: 'Quitar grupo' }))
+
+    await userEvent.click(save)
+    await waitFor(() => expect(sent(calls)).toBeDefined())
+    expect(sent(calls).content.skills).toEqual([
+      { group: 'Nube', items: ['AWS'] },
+      { group: 'Datos', items: ['dbt'] },
+    ])
+  })
+})
+
 describe('Verificar el CV', () => {
   it('sin verificar ofrece hacerlo; verificado, no', async () => {
     mockApi(routes({ 'GET /jobs/1/cv': jobCv([renderResult(1)], { verification: null }) }))

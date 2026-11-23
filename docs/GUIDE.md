@@ -422,9 +422,11 @@ The worker runs the automatic sources every day at `connectors.daily_at`
    - **Ask for changes:** write what to change ("a shorter summary", "drop project X") and your
      agent (`correct-cv`) changes only that, without inventing anything, and verifies it. If you
      ask for one page, a version that doesn't fit isn't saved.
-   - **Edit text:** change the summary, bullets or skills yourself, with no agent. The app warns you
-     about anything your profile doesn't back, and that version stays unverified until you press
-     **Verify this version** (`verify-cv`).
+   - **Edit text:** change the summary and bullets yourself, remove or reorder achievements with
+     their arrows and organise the skills in groups: each group with its name and its skills as tags
+     (× to remove, Enter to add), plus **Add group** and moving or removing groups. All with no agent.
+     To add an achievement, ask for changes. The app warns you about anything your profile doesn't
+     back, and that version stays unverified until you press **Verify this version** (`verify-cv`).
    - **Design:** template, photo, colour and hidden sections, without spending agent time.
 
    Every correction or edit is a new version: the job page shows what changed, section by

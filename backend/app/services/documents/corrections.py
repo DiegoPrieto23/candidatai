@@ -27,7 +27,7 @@ from sqlalchemy.orm import Session
 
 from app.models import AgentRequest, CvCorrection, Document
 from app.models.base import utcnow
-from app.schemas.cv import CvContent, CvRenderOptions
+from app.schemas.cv import CvBullet, CvContent, CvRenderOptions
 from app.schemas.llm_io import JobExtraction
 from app.schemas.profile import CandidateProfile
 from app.services import events
@@ -435,13 +435,32 @@ def restore_version(session: Session, document_id: int) -> service.JobCv:
 
 
 def _shape(content: CvContent) -> dict[str, Any]:
-    """El contenido sin sus textos editables: lo que una edición directa no puede tocar."""
-    shape = content.model_dump(mode="json", exclude={"subtitle", "summary"})
+    """Lo que una edición directa no puede tocar: todo menos los textos, las skills y qué logros
+    salen de cada bloque y en qué orden (eso lo comprueba `_kept_bullets`)."""
+    shape = content.model_dump(mode="json", exclude={"subtitle", "summary", "skills"})
     for block in (*shape["experience"], *shape["projects"]):
-        for bullet in block["bullets"]:
-            bullet["text"] = ""
-    shape["skills"] = [len(group["items"]) for group in shape["skills"]]
+        block["bullets"] = None
     return shape
+
+
+def _evidence(bullet: CvBullet) -> tuple[str, ...]:
+    return tuple(bullet.evidence)
+
+
+def _kept_bullets(old: CvContent, new: CvContent) -> bool:
+    """Cada logro sale de uno que ya estaba en su bloque, con las mismas evidencias, y ninguno se
+    repite: se pueden quitar y reordenar, no añadir, porque uno nuevo necesita su evidencia."""
+    pairs = [
+        *zip(old.experience, new.experience, strict=True),
+        *zip(old.projects, new.projects, strict=True),
+    ]
+    for before, after in pairs:
+        available = [_evidence(b) for b in before.bullets]
+        for bullet in after.bullets:
+            if _evidence(bullet) not in available:
+                return False
+            available.remove(_evidence(bullet))
+    return True
 
 
 def _editable_texts(content: CvContent) -> Iterable[tuple[str, str]]:
@@ -460,15 +479,48 @@ def _editable_texts(content: CvContent) -> Iterable[tuple[str, str]]:
 
 
 def _check_edit(old: CvContent, new: CvContent) -> None:
-    if _shape(old) != _shape(new):
+    if _shape(old) != _shape(new) or not _kept_bullets(old, new):
         raise CvEditNotAllowedError(
-            "Aquí solo se cambian textos. Para añadir, quitar o reordenar, pide una corrección."
+            "Aquí se cambian textos y skills, y se quitan o reordenan logros. Para añadir un "
+            "logro o cambiar las secciones, pide una corrección."
         )
     blank = [field for field, text in _editable_texts(new) if not text.strip()]
     if blank:
         raise CvEditNotAllowedError(f"Hay textos vacíos: {', '.join(blank)}.")
+    # Solo en los grupos tocados: una versión anterior con una repetida no bloquea otros cambios.
+    untouched = [group.items for group in old.skills]
+    repeated = [
+        group.group
+        for group in new.skills
+        if group.items not in untouched
+        and len({item.strip().lower() for item in group.items}) < len(group.items)
+    ]
+    if repeated:
+        raise CvEditNotAllowedError(f"Hay skills repetidas en: {', '.join(repeated)}.")
     if old == new:
         raise CvEditNotAllowedError("No hay cambios que guardar.")
+
+
+def _previous_texts(old: CvContent, new: CvContent) -> dict[str, str]:
+    """El texto que tenía antes cada viñeta de `new`, por sus evidencias y no por su posición: un
+    logro que solo cambia de sitio no ha cambiado."""
+    before = dict(_editable_texts(old))
+    blocks = [
+        ("experience", old.experience, new.experience),
+        ("projects", old.projects, new.projects),
+    ]
+    for kind, old_blocks, new_blocks in blocks:
+        for i, (was, now) in enumerate(zip(old_blocks, new_blocks, strict=True)):
+            # Con evidencias repetidas, cada viñeta toma su mismo texto si sigue igual o, si no, la
+            # primera que quede con esas evidencias.
+            left = list(was.bullets)
+            for b, bullet in enumerate(now.bullets):
+                same = [o for o in left if _evidence(o) == _evidence(bullet)]
+                match = next((o for o in same if o.text == bullet.text), same[0] if same else None)
+                if match is not None:
+                    left.remove(match)
+                before[f"{kind}.{i}.bullets.{b}"] = match.text if match else ""
+    return before
 
 
 _NUMBER = re.compile(r"\d+(?:[.,]\d+)*")
@@ -494,7 +546,7 @@ def _edit_warnings(
                 field = issue.field.replace("[", ".").replace("]", "")
                 warnings.append(EditWarning(code="skill", field=field, value=issue.received or ""))
     known_numbers = _numbers(" ".join(profile.evidence_refs().values()))
-    before = dict(_editable_texts(old))
+    before = _previous_texts(old, new)
     for field, text in _editable_texts(new):
         if field.startswith("skills.") or text == before.get(field):
             continue

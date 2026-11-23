@@ -418,9 +418,11 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
    - **Pedir cambios:** escribe qué cambiar («el resumen más corto», «quita el proyecto X») y tu
      agente (`correct-cv`) toca solo eso, sin inventar nada, y lo verifica. Si pides que ocupe una
      página, una versión que no cabe no se guarda.
-   - **Editar texto:** cambia tú el resumen, las viñetas o las skills, sin agente. La app avisa de
-     lo que tu perfil no respalda, y esa versión queda sin verificar hasta que pulses «Verificar
-     esta versión» (`verify-cv`).
+   - **Editar texto:** cambia tú el resumen y las viñetas, quita o reordena logros con sus flechas
+     y organiza las skills por grupos: cada grupo con su nombre y sus skills como etiquetas (× para
+     quitar, Intro para añadir), y «Añadir grupo», subir, bajar o quitar grupos. Todo sin agente.
+     Para añadir un logro, pide cambios. La app avisa de lo que tu perfil no respalda, y esa versión
+     queda sin verificar hasta que pulses «Verificar esta versión» (`verify-cv`).
    - **Diseño:** plantilla, foto, color y secciones ocultas, sin gastar agente.
 
    Cada corrección o edición es una versión nueva: la ficha enseña qué cambió, sección a sección,

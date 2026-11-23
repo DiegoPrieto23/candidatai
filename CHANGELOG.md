@@ -227,6 +227,12 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   puesto ya no desaparece mientras la editas.
 
 ### Cambiado
+- **Editar el CV tú, con más margen:** en «Editar texto», las skills se ven por grupos: el nombre del
+  grupo arriba y cada skill como una etiqueta con «×» para quitarla y un campo para añadir otra con
+  Intro. Hay «Añadir grupo» y botones para subir, bajar o quitar cada grupo (con confirmación si tiene
+  skills). Los logros de cada experiencia y proyecto también se quitan o reordenan con sus flechas;
+  para añadir uno, «Pedir cambios». Como antes, la versión queda sin verificar hasta «Verificar esta
+  versión».
 - **Tus empresas, a la vista en «Buscar»:** bajo los portales, las empresas con portal propio salen
   en tarjetas compactas (logo, Activa o Pausada y su último recorrido), las activas primero y hasta
   ocho; el resto y su gestión, en «Dónde buscar». La dirección de cada portal y de la web de cada
