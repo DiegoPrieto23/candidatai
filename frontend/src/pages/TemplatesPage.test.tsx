@@ -204,6 +204,7 @@ describe('Galería de plantillas', () => {
       await userEvent.click(within(card).getByRole('button', { name: 'Convertir en plantilla' }))
       await waitFor(() =>
         expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({
+          lang: 'es',
           action: 'import-cv-template',
           upload: 'mi-cv.docx',
         }),

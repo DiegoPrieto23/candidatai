@@ -17390,6 +17390,118 @@
         }
       }
     },
+    "/agent/language": {
+      "put": {
+        "tags": [
+          "agent"
+        ],
+        "summary": "Set Ui Language",
+        "description": "El idioma elegido en el portal: el de las órdenes al agente y sus ventanas, también de lo\nque se lanza sin la UI. El CV y la carta siguen el idioma de la oferta.",
+        "operationId": "set_ui_language",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LanguageBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LanguageView"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/search/run": {
       "post": {
         "tags": [
@@ -25581,6 +25693,21 @@
               }
             ],
             "title": "Conversation Id"
+          },
+          "lang": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "es",
+                  "en"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lang"
           }
         },
         "additionalProperties": false,
@@ -32635,6 +32762,24 @@
         "title": "KeywordCoverage",
         "description": "Keywords de la oferta (skills obligatorias y deseables) en el texto del PDF."
       },
+      "LanguageBody": {
+        "properties": {
+          "lang": {
+            "type": "string",
+            "enum": [
+              "es",
+              "en"
+            ],
+            "title": "Lang"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "lang"
+        ],
+        "title": "LanguageBody"
+      },
       "LanguageRequirement": {
         "properties": {
           "language": {
@@ -32660,6 +32805,23 @@
           "language"
         ],
         "title": "LanguageRequirement"
+      },
+      "LanguageView": {
+        "properties": {
+          "lang": {
+            "type": "string",
+            "enum": [
+              "es",
+              "en"
+            ],
+            "title": "Lang"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lang"
+        ],
+        "title": "LanguageView"
       },
       "LaunchBody": {
         "properties": {
@@ -32735,6 +32897,21 @@
                 "type": "null"
               }
             ]
+          },
+          "lang": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "es",
+                  "en"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lang"
           },
           "agent": {
             "anyOf": [
@@ -38679,6 +38856,21 @@
                 "type": "null"
               }
             ]
+          },
+          "lang": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "es",
+                  "en"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lang"
           }
         },
         "additionalProperties": false,

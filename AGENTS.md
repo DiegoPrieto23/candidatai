@@ -162,6 +162,8 @@ Los skills de `.agents/skills/` siguen `docs/POLICIES.md` y usan estas convencio
 - **Argumentos**: cuando un skill habla de "los argumentos", son los que el usuario escribió al
   invocarlo (un `job_id`, una plantilla…).
 - **Idioma**: habla con el usuario en el idioma en que te escribe, aunque el skill, los documentos
-  o los mensajes de la app estén en otro.
+  o los mensajes de la app estén en otro. Si la orden pide un idioma (lo que lanza la app desde el
+  portal lo pide en el del portal), ese manda en la conversación; el CV y la carta siguen el idioma
+  de la oferta.
 - **Invocación**: cada agente tiene su sintaxis (`/generate-cv 42` en Claude Code,
   `$generate-cv 42` en Codex); también basta con pedirlo en lenguaje natural.

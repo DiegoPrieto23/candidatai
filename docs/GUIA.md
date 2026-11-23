@@ -564,7 +564,8 @@ clasificar respuestas, y tu agente más capaz para el CV. Rellénalos una vez y 
   Adzuna, IMAP (`CAI_IMAP_HOST`, `CAI_IMAP_PORT`, `CAI_IMAP_USER`, `CAI_IMAP_PASSWORD`,
   `CAI_IMAP_FOLDER`, `CAI_IMAP_REPLIES_FOLDER`), `CAI_BROWSER_CHANNEL` (`chrome` o `msedge` para la
   candidatura asistida), `CAI_EMBEDDINGS=off`, `UV_PATH` (uv fuera del PATH), `CAI_LANG` (`es` o
-  `en`: idioma de los mensajes de `cai start` en la terminal; sin ella, el del sistema). Nada es
+  `en`: idioma de los mensajes de `cai start` en la terminal y de las órdenes a tu agente mientras no
+  elijas idioma en el portal; sin ella, el del sistema). Nada es
   obligatorio. Las contraseñas y claves (`CAI_IMAP_PASSWORD`, `CAI_ADZUNA_APP_KEY`,
   `CAI_INFOJOBS_CLIENT_SECRET`) mejor en el llavero del sistema: si las pones en `.env`, la app
   ofrece moverlas allí.

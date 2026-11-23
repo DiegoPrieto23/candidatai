@@ -26,6 +26,7 @@ import os
 import shutil
 import signal
 import socket
+import sqlite3
 import subprocess
 import sys
 import time
@@ -33,7 +34,7 @@ import urllib.error
 import urllib.request
 import webbrowser
 from collections.abc import Callable, Iterator
-from contextlib import contextmanager
+from contextlib import closing, contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
 from types import FrameType
@@ -102,7 +103,32 @@ MESSAGES: dict[str, dict[Lang, str]] = {
 
 
 def console_language() -> Lang:
-    """`CAI_LANG` si está; si no, español con el sistema en español e inglés con cualquier otro."""
+    """El idioma del portal guardado (ver `ui_language`); si no hay (o no se puede leer), `CAI_LANG`
+    si está y, si no, español con el sistema en español e inglés con cualquier otro."""
+    return _saved_language() or _system_language()
+
+
+def _saved_language() -> Lang | None:
+    """La preferencia `ui_lang`, leída en solo lectura con `sqlite3`: `cai start` arranca ligero y
+    no debe crear una base de datos vacía si aún no existe. La misma consulta que `ui_language`."""
+    url = get_settings().db_url or ""
+    if not url.startswith("sqlite:///"):
+        return None
+    path = Path(url.removeprefix("sqlite:///")).resolve()
+    if not path.is_file():
+        return None
+    try:
+        with closing(sqlite3.connect(f"{path.as_uri()}?mode=ro", uri=True)) as con:
+            row = con.execute(
+                "SELECT model FROM agent_preferences WHERE scope = 'setting' AND key = 'ui_lang'"
+            ).fetchone()
+    except (sqlite3.Error, ValueError, OSError):  # sin migrar o bloqueada: el idioma de siempre
+        return None
+    value = row[0] if row else None
+    return value if value in ("es", "en") else None
+
+
+def _system_language() -> Lang:
     chosen = get_settings().lang
     if chosen is not None:
         return chosen

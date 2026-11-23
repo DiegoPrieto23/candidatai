@@ -222,6 +222,11 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   puesto ya no desaparece mientras la editas.
 
 ### Cambiado
+- **Tu agente, en el idioma del portal:** con el portal en inglés, lo que lanzas («Generar CV»,
+  «Buscar ofertas», el Asistente, «En segundo plano», «Dejar para mi próxima sesión») abre la
+  ventana con la orden y el título en inglés, y tu agente te contesta en inglés. La app recuerda el
+  idioma elegido para lo que se lanza sin el portal (tareas en segundo plano y programadas) y para
+  los mensajes de `cai start`. El CV y la carta siguen saliendo en el idioma de la oferta.
 - **La misma vacante con un título casi igual ya no se da de alta otra vez:** en lugar de guardarse
   como oferta nueva y cerrarse como duplicada, se anota como una publicación más de la original,
   venga de un alta manual, de la extensión, de un conector, de una alerta o de una búsqueda de tu

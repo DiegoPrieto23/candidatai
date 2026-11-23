@@ -38,7 +38,7 @@ describe('Botones «en tu agente»', () => {
     renderApp('/')
     await userEvent.click(await screen.findByRole('button', { name: 'Buscar ofertas' }))
     expect(await screen.findByText('Abierto en claude: sigue en la ventana que se acaba de abrir.')).toBeInTheDocument()
-    expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ action: 'search-jobs' })
+    expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ lang: 'es', action: 'search-jobs' })
   })
 
   it('si no puede abrir el agente, enseña la orden entera para copiarla y dónde pegarla', async () => {
@@ -147,7 +147,7 @@ describe('Botones «en tu agente»', () => {
     await userEvent.click(await screen.findByRole('menuitem', { name: /En segundo plano/ }))
     expect(await screen.findByText('En cola en segundo plano.', { exact: false })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Ver en «Agente»' })).not.toBeInTheDocument()
-    expect(calls.find((c) => c.method === 'POST' && c.path === '/agent/runs')?.body).toEqual({ action: 'process-jobs' })
+    expect(calls.find((c) => c.method === 'POST' && c.path === '/agent/runs')?.body).toEqual({ lang: 'es', action: 'process-jobs' })
   })
 
   it('los skills que preguntan no ofrecen segundo plano, pero sí dejarlo para luego', async () => {
@@ -159,7 +159,7 @@ describe('Botones «en tu agente»', () => {
     expect(screen.queryByRole('menuitem', { name: /En segundo plano/ })).not.toBeInTheDocument()
     await userEvent.click(screen.getByRole('menuitem', { name: /Dejar para mi próxima sesión/ }))
     expect(await screen.findByText(/Encargo guardado/)).toBeInTheDocument()
-    expect(calls.find((c) => c.method === 'POST' && c.path === '/agent/requests')?.body).toEqual({ action: 'search-jobs' })
+    expect(calls.find((c) => c.method === 'POST' && c.path === '/agent/requests')?.body).toEqual({ lang: 'es', action: 'search-jobs' })
   })
 
   describe('elegir agente (fase 24.4)', () => {
@@ -207,7 +207,7 @@ describe('Botones «en tu agente»', () => {
       expect(screen.getByText('Qwen Code no está instalado.')).toBeInTheDocument()
       await userEvent.click(screen.getByRole('menuitem', { name: /Abrir con Codex/ }))
       expect(await screen.findByText('Abierto en codex: sigue en la ventana que se acaba de abrir.')).toBeInTheDocument()
-      expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ action: 'search-jobs', agent: 'codex' })
+      expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ lang: 'es', action: 'search-jobs', agent: 'codex' })
     })
 
     it('si al agente le falta una capacidad, el botón se deshabilita y dice por qué', async () => {
@@ -262,6 +262,7 @@ describe('Botones «en tu agente»', () => {
       await userEvent.click(screen.getByRole('menuitem', { name: /En segundo plano con Claude Code/ }))
       expect(await screen.findByText('En cola en segundo plano.', { exact: false })).toBeInTheDocument()
       expect(calls.find((c) => c.method === 'POST' && c.path === '/agent/runs')?.body).toEqual({
+        lang: 'es',
         action: 'process-jobs',
         agent: 'claude',
       })

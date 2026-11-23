@@ -30,9 +30,11 @@ from app.services import (
     local_models,
     search_runs,
     spend_tiers,
+    ui_language,
 )
 from app.services.agent_launch import ActionId, LaunchError
 from app.services.agent_prefs import Preferences, Resolution
+from app.services.ui_language import Lang
 
 router = APIRouter(prefix="/agent", tags=["agent"])
 
@@ -68,6 +70,9 @@ class RequestBody(BaseModel):
     job_id: int | None = Field(default=None, ge=1)
     milestone_id: int | None = Field(default=None, ge=1)  # acciones de una entrevista (fase 17)
     search: agent_launch.SearchScope | None = None  # «Buscar ofertas»: portales y búsqueda puntual
+    # Fase 47.3: el idioma del portal. Decide el de la orden y el de la ventana, y se guarda para lo
+    # que se lanza sin la UI (worker, tareas programadas). El CV y la carta siguen el de la oferta.
+    lang: Lang | None = None
 
 
 class LaunchBody(RequestBody):
@@ -98,6 +103,7 @@ def get_agent_launcher(session: SessionDep) -> AgentStatus:
     """Qué agente abren los botones (o por qué no se puede) y las órdenes disponibles, con el
     agente de cada una según tus preferencias (fase 24.4)."""
     ctx = agent_launch.Context(session)
+    lang = ui_language.current(session)
     actions = []
     for action_id, spec in agent_launch.ACTIONS.items():
         if spec.hidden:
@@ -124,7 +130,7 @@ def get_agent_launcher(session: SessionDep) -> AgentStatus:
                 needs_upload=spec.upload,
                 prompt=None
                 if spec.needs_job or spec.profile_item or spec.upload or spec.assistant
-                else agent_launch.prompt_for(action_id),
+                else agent_launch.prompt_for(action_id, lang=lang),
                 background=bool(spec.background),
                 agent=res,
                 alternatives=[
@@ -274,6 +280,8 @@ def _raise(exc: LaunchError) -> None:
 )
 def launch_agent(session: SessionDep, body: LaunchBody) -> agent_launch.LaunchResult:
     """Abre tu agente en una terminal con la orden ya escrita. Tú ves y apruebas lo que haga."""
+    if body.lang is not None:
+        ui_language.save(session, body.lang)
     try:
         return agent_launch.launch(
             session,
@@ -354,6 +362,8 @@ def dismiss_search_run(
 )
 def start_agent_run(session: SessionDep, body: LaunchBody) -> agent_runs.AgentRunView:
     """Deja en cola una ejecución en segundo plano (la ejecuta `cai worker`, de una en una)."""
+    if body.lang is not None:
+        ui_language.save(session, body.lang)
     try:
         return agent_runs.start(
             session,
@@ -439,6 +449,8 @@ def list_agent_requests(
 )
 def create_agent_request(session: SessionDep, body: RequestBody) -> agent_requests.AgentRequestView:
     """«Dejar para mi próxima sesión»: el agente lo verá con `list_agent_requests`."""
+    if body.lang is not None:
+        ui_language.save(session, body.lang)
     try:
         return agent_requests.create(
             session, body.action, body.job_id, body.milestone_id, body.search
@@ -478,6 +490,7 @@ class AssistantBody(BaseModel):
     text: assistant.RequestText
     mode: assistant.Mode
     conversation_id: int | None = None
+    lang: Lang | None = None  # el idioma del portal, como al lanzar una acción
 
 
 @router.get("/assistant", operation_id="list_assistant_requests")
@@ -496,6 +509,8 @@ def list_assistant_requests(
 )
 def create_assistant_request(session: SessionDep, body: AssistantBody) -> assistant.AssistantView:
     """Guarda el texto y se lo pasa a tu agente. La orden del agente solo lleva el id."""
+    if body.lang is not None:
+        ui_language.save(session, body.lang)
     try:
         return assistant.create(session, body.text, body.mode, conversation_id=body.conversation_id)
     except assistant.ConversationNotFoundError as exc:
@@ -562,3 +577,23 @@ def cancel_assistant_request(
     except LaunchError as exc:
         _raise(exc)
         raise
+
+
+# --- El idioma del portal (fase 47.3) ------------------------------------------------------------
+
+
+class LanguageBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    lang: Lang
+
+
+class LanguageView(BaseModel):
+    lang: Lang
+
+
+@router.put("/language", operation_id="set_ui_language", dependencies=[Depends(require_ui)])
+def set_ui_language(session: SessionDep, body: LanguageBody) -> LanguageView:
+    """El idioma elegido en el portal: el de las órdenes al agente y sus ventanas, también de lo
+    que se lanza sin la UI. El CV y la carta siguen el idioma de la oferta."""
+    return LanguageView(lang=ui_language.save(session, body.lang))

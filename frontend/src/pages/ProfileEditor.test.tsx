@@ -568,7 +568,7 @@ describe('Mi perfil editable', () => {
     await waitFor(() => expect(improve).toBeEnabled())
     await userEvent.click(improve)
     await waitFor(() => expect(calls.some((c) => c.path === '/agent/launch')).toBe(true))
-    expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ action: 'improve-profile-item', profile_item: 'exp-norte/a1' })
+    expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ lang: 'es', action: 'improve-profile-item', profile_item: 'exp-norte/a1' })
     await userEvent.click(within(improve.closest<HTMLElement>('[data-slot="agent-button"]')!).getByRole('button', { name: /con Claude Code/ }))
     expect(screen.queryByRole('menuitem', { name: /Dejar para mi próxima sesión/ })).not.toBeInTheDocument()
   })
@@ -622,7 +622,7 @@ describe('Mi perfil editable', () => {
     await waitFor(() => expect(create).toBeEnabled())
     await userEvent.click(create)
     await waitFor(() => expect(calls.some((c) => c.path === '/agent/launch')).toBe(true))
-    expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ action: 'create-profile' })
+    expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ lang: 'es', action: 'create-profile' })
   })
 
   it('la vista previa del contexto no interpreta HTML', async () => {
@@ -867,7 +867,7 @@ describe('Mi perfil editable', () => {
     renderApp('/perfil')
     await userEvent.click(await screen.findByRole('button', { name: /Generar resumen en inglés/ }))
     await waitFor(() =>
-      expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ action: 'translate-summary' }),
+      expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ lang: 'es', action: 'translate-summary' }),
     )
   })
 

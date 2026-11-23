@@ -122,7 +122,7 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 | **Leave it for your next session**: any button saves the order for your agent | `handle-requests` | |
 | **Delete a job or clear everything**: at the top of the job page, one job with everything about it (deleting is not discarding: discarding keeps it in your history); in the Inbox bar, all jobs and applications (your profile, templates, sources and settings stay). With warnings, typed confirmation and a backup first in your data folder. **Duplicate jobs** saved earlier (they are no longer created) are deleted from an Inbox notice, with a preview and a short confirmation; those with their own work stay | `/jobs/:id`, `/bandeja` | |
 | **Daily summary**: pending jobs (flagging any with text aimed at an AI), overdue follow-ups, next milestones and company replies to review | `daily-summary` | |
-| **Sidebar** grouped and collapsible with what's waiting, light and dark theme, English and Spanish | `/` | <!-- media:provisional --> [Sidebar](img/en/sidebar-collapsed.webp) |
+| **Sidebar** grouped and collapsible with what's waiting, light and dark theme, English and Spanish (the chosen language is also the one of the orders to your agent, its window and its answers; the CV and the letter, in the job's) | `/` | <!-- media:provisional --> [Sidebar](img/en/sidebar-collapsed.webp) |
 | **Demo mode** with a fictitious search where every page has something | `cai demo seed` | |
 | **Install** with one line on Windows, macOS and Linux, or with Docker; `cai doctor` checks everything | [Guide](GUIDE.md) | |
 | **Five agents**: Claude Code, Codex, Antigravity CLI, OpenCode and Qwen Code, over MCP or with `cai … --json`; free and local models | [`AGENTS_COMPAT.md`](AGENTS_COMPAT.md) | |

@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from typing import Literal
 
 from app.services.pipeline import Stage
+from app.services.ui_language import Lang
 
 ActionId = Literal[
     "search-jobs",
@@ -472,3 +473,163 @@ ACTIONS: dict[ActionId, Action] = {
         ),
     ),
 }
+
+
+# --- La orden en inglés (fase 47.3) -----------------------------------------------------------
+# Con el portal en inglés, la orden y el título de la ventana van en inglés y piden contestar en
+# inglés. Los mismos marcadores que en español (un test lo comprueba). El CV y la carta siguen el
+# idioma de la oferta: lo dice cada skill.
+ENGLISH: dict[ActionId, tuple[str, str]] = {
+    "search-jobs": (
+        "Search for jobs",
+        "Use the CandidatAI search-jobs skill to search for jobs on the active platforms.",
+    ),
+    "configure-platforms": (
+        "Set up with my agent",
+        "Use the CandidatAI search-jobs skill in configure mode: help me choose which job boards "
+        "to search and prepare their searches from the roles and locations in my profile.",
+    ),
+    "process-jobs": (
+        "Assess the new jobs",
+        "Use the CandidatAI process-jobs skill: read the jobs waiting to be read and assess which "
+        "ones fit me.",
+    ),
+    "assess-fit": (
+        "Assess the ones to review",
+        "Use the CandidatAI assess-fit skill with the jobs waiting for review.",
+    ),
+    "assess-fit-job": (
+        "Assess this job",
+        "Use the CandidatAI assess-fit skill for job {job_id}. If it already has an assessment, "
+        "assess it again.",
+    ),
+    "generate-cv": ("Generate CV", "Use the CandidatAI generate-cv skill for job {job_id}."),
+    "correct-cv": ("Correct CV", "Use the CandidatAI correct-cv skill for job {job_id}."),
+    "verify-cv": ("Verify CV", "Use the CandidatAI verify-cv skill for job {job_id}."),
+    "generate-cover-letter": (
+        "Write cover letter",
+        "Use the CandidatAI generate-cover-letter skill for job {job_id}.",
+    ),
+    "add-skills": (
+        "Add the ones I have to my profile",
+        "Use the CandidatAI update-profile skill to add to my profile the skills I marked as "
+        "“I have it” on the “Skills to develop” page (get_skill_gaps with status have).",
+    ),
+    "expand": (
+        "Improve profile",
+        "Use the CandidatAI expand skill to review my whole profile and suggest improvements "
+        "(more concrete achievements, gaps, missing data) and, from the public links in my "
+        "profile, projects, skills, achievements and certifications.",
+    ),
+    "create-profile": (
+        "Create my profile from my CV",
+        "Use the CandidatAI update-profile skill to create my profile from the CV I uploaded to "
+        "data/documentos/cv/.",
+    ),
+    "import-profile-from-cv": (
+        "Import information from a CV",
+        "Use the CandidatAI update-profile skill to add to my profile whatever it is missing "
+        "according to the CV I uploaded to data/documentos/cv/ (experience, skills, achievements, "
+        "education…). I already have a profile: do not change or delete what is there without "
+        "asking me, and show me the differences before saving.",
+    ),
+    "improve-profile-item": (
+        "Improve with my agent",
+        "Use the CandidatAI update-profile skill in “Improve an item” mode with {profile_item} "
+        "from my profile.",
+    ),
+    "import-cv-template": (
+        "Turn into a template",
+        "Use the CandidatAI import-cv-template skill to turn {upload} into a template.",
+    ),
+    "translate-summary": (
+        "Generate English summary",
+        "Use the CandidatAI update-profile skill in “English summary” mode: translate the Spanish "
+        "summary of my profile and leave it as a suggestion.",
+    ),
+    "propose-stories": (
+        "Suggest stories from my experience",
+        "Use the CandidatAI update-profile skill in “Suggest stories from my experience” mode.",
+    ),
+    "training-plan": (
+        "Training plan",
+        "Use the CandidatAI training-plan skill with the skill gaps I marked as “I don't have it”.",
+    ),
+    "review-replies": (
+        "Review replies",
+        "Use the CandidatAI review-replies skill with the unclassified emails from companies.",
+    ),
+    "draft-follow-ups": (
+        "Draft follow-ups",
+        "Use the CandidatAI draft-follow-up skill with the pending follow-ups and thank-you notes.",
+    ),
+    "broaden-search": (
+        "Broaden search",
+        "Use the CandidatAI broaden-search skill to suggest job titles close to the ones I "
+        "approve.",
+    ),
+    "review-search": (
+        "Review my search",
+        "Use the CandidatAI review-search skill to run the retrospective of my search: what works "
+        "and what to change.",
+    ),
+    "draft-follow-up": (
+        "Draft follow-up",
+        "Use the CandidatAI draft-follow-up skill for job {job_id}.",
+    ),
+    "prepare-interview": (
+        "Prepare",
+        "Use the CandidatAI prepare-interview skill for interview {milestone_id} of job {job_id}.",
+    ),
+    "correct-interview-guide": (
+        "Change guide",
+        "Use the CandidatAI correct-interview-guide skill for interview {milestone_id} of job "
+        "{job_id}.",
+    ),
+    "mock-interview": (
+        "Mock interview",
+        "Use the CandidatAI mock-interview skill for interview {milestone_id} of job {job_id}.",
+    ),
+    "debrief-interview": (
+        "Debrief",
+        "Use the CandidatAI debrief-interview skill to debrief interview {milestone_id} of job "
+        "{job_id}.",
+    ),
+    "draft-message": ("Draft message", "Use the CandidatAI draft-message skill for job {job_id}."),
+    "research-company": (
+        "Research company",
+        "Use the CandidatAI research-company skill for the company of job {job_id}.",
+    ),
+    "handle-requests": (
+        "Handle requests",
+        "Use the CandidatAI handle-requests skill with the pending requests.",
+    ),
+    "offer-questions": (
+        "Questions before accepting",
+        "Use the CandidatAI debrief-interview skill to review the questions before accepting the "
+        "offer for job {job_id}.",
+    ),
+    "prepare-negotiation": (
+        "Prepare negotiation",
+        "Use the CandidatAI prepare-negotiation skill for job {job_id}.",
+    ),
+    "assistant": (
+        "Assistant",
+        "Use the CandidatAI assistant skill for request {assistant_id}.",
+    ),
+}
+
+# Al final de cada orden en inglés: así contesta en inglés aunque los skills estén en español.
+ENGLISH_REPLY = (
+    " Talk to me in English. Documents (CV, cover letter) keep the language of the job posting."
+)
+
+
+def label(action: ActionId, lang: Lang = "es") -> str:
+    """El nombre de la acción en ese idioma (para el título de la ventana)."""
+    return ENGLISH[action][0] if lang == "en" else ACTIONS[action].label
+
+
+def prompt_template(action: ActionId, lang: Lang = "es") -> str:
+    """La orden sin rellenar, en ese idioma."""
+    return ENGLISH[action][1] if lang == "en" else ACTIONS[action].prompt

@@ -693,7 +693,17 @@ todas) las preferencias: `default_agent`, `agents` (`{agente: {model | preset}}`
 preset existir y el modelo tener caracteres seguros, no empezar por `-` y, si el agente tiene
 `models.pattern`, cumplirlo (OpenCode: `proveedor/modelo`); si no, 422 con el `field` que falla.
 `POST /agent/launch` y `POST /agent/runs` aceptan `agent`, `model` y `preset` para una sola
-ejecución. La precedencia (botón > acción > por defecto > `CAI_AGENT` > el primero instalado) y las
+ejecución.
+
+**El idioma del portal (fase 47.3, solo la UI).** `POST /agent/launch`, `POST /agent/runs`,
+`POST /agent/requests` y `POST /agent/assistant` aceptan `lang` (`es` o `en`), y
+`PUT /agent/language` lo guarda al cambiarlo en el portal. Se guarda como preferencia (`ui_lang`) y
+decide el idioma de la orden, del título de la ventana y de los añadidos de segundo plano, también
+en lo que se lanza sin la UI. Prioridad: `lang` de la petición > preferencia guardada > `CAI_LANG` >
+sistema. En inglés, la orden termina pidiendo contestar en inglés, y las preguntas en segundo plano
+empiezan por `QUESTION:` en vez de `PREGUNTA:`. El CV y la carta siguen el idioma de la oferta.
+
+La precedencia de agente y modelo (botón > acción > por defecto > `CAI_AGENT` > el primero instalado) y las
 comprobaciones por capacidad y por nivel viven en `services/agent_prefs.py`. El modelo va con
 `models.flag` (o el preset) justo detrás del programa (o donde diga `{model}` en la orden de
 segundo plano, fase 24.5), en terminal y en segundo plano. El agente

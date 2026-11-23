@@ -226,7 +226,7 @@ describe('Mi perfil', () => {
     await waitFor(() => expect(button).toBeEnabled())
     await userEvent.click(button)
     expect(await screen.findByText('Abierto en claude: sigue en la ventana que se acaba de abrir.')).toBeInTheDocument()
-    expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ action: 'expand' })
+    expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ lang: 'es', action: 'expand' })
     view.unmount()
 
     const noAgent = 'Codex no tiene visión, y esta acción lo necesita.'
@@ -287,7 +287,7 @@ describe('Mi perfil', () => {
     await waitFor(() => expect(launch).toBeEnabled())
     await userEvent.click(launch)
     await screen.findByText('Abierto en claude: sigue en la ventana que se acaba de abrir.')
-    expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ action: 'import-profile-from-cv' })
+    expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ lang: 'es', action: 'import-profile-from-cv' })
   })
 
   it('sin perfil, el CV se sube arrastrándolo a la caja; un formato que no vale no se sube', async () => {

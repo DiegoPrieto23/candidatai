@@ -23,7 +23,7 @@ from sqlalchemy.orm import Session
 
 from app.models import AgentRun, AssistantRequest, SkillGapMark
 from app.models.base import utcnow
-from app.services import agent_launch, agent_tasks, assess_threshold
+from app.services import agent_launch, agent_tasks, assess_threshold, ui_language
 from app.services.agent_launch import ACTIONS, ActionId, LaunchError, LaunchResult
 from app.services.agent_usage import normalize_usage
 from app.services.matching import service as matching
@@ -121,7 +121,7 @@ def _cv_gaps_note(session: Session, job_id: int) -> str:
             "tienes: usa «En terminal», o márcalas antes en la página «Habilidades por "
             "desarrollar».",
         )
-    return agent_launch.GAPS_MARKED_NOTE
+    return agent_launch.gaps_marked_note(ui_language.current(session))
 
 
 def _assess_prompt(session: Session, min_score: int | None = None) -> str:
@@ -138,7 +138,7 @@ def _assess_prompt(session: Session, min_score: int | None = None) -> str:
             else ""
         )
         raise LaunchError("invalid_request", f"No hay ofertas pendientes de valorar.{detail}")
-    return assess_threshold.prompt(plan)
+    return assess_threshold.prompt(plan, ui_language.current(session))
 
 
 def _threshold_note(session: Session, min_score: int | None = None) -> str:
@@ -148,6 +148,11 @@ def _threshold_note(session: Session, min_score: int | None = None) -> str:
     threshold = (
         min_score if min_score is not None else assess_threshold.get_threshold(session).value
     )
+    if ui_language.current(session) == "en":
+        return (
+            f" When assessing (step 2), only the jobs with a score of {threshold} or more: the "
+            "others are not assessed in the background."
+        )
     return (
         f" Al valorar (fase 2), solo las ofertas con un score de {threshold} o más: las demás "
         "no se valoran en segundo plano."
@@ -199,7 +204,10 @@ def start(
     elif action == "process-jobs":  # su fase 2 valora, con el mismo umbral
         prompt += _threshold_note(session, min_score)
     note = _cv_gaps_note(session, job_id) if action == "generate-cv" and job_id else ""
-    closing = agent_launch.ASSISTANT_NOTE if spec.assistant else agent_launch.BACKGROUND_NOTE
+    lang = ui_language.current(session)
+    closing = (
+        agent_launch.assistant_note(lang) if spec.assistant else agent_launch.background_note(lang)
+    )
     full_prompt = prompt + note + closing
     assert picked.headless is not None  # lo garantiza `pick_headless`
     row = AgentRun(
@@ -277,7 +285,13 @@ def open_in_terminal(session: Session, run_id: int) -> LaunchResult:
         raise LaunchError("invalid_request", "Espera a que termine o cancélala antes.")
     action: ActionId = row.action  # validado al crearla
     asked = session.scalar(select(AssistantRequest.id).where(AssistantRequest.run_id == row.id))
-    prompt = agent_launch.prompt_for(action, row.job_id, row.milestone_id, assistant_id=asked)
+    prompt = agent_launch.prompt_for(
+        action,
+        row.job_id,
+        row.milestone_id,
+        assistant_id=asked,
+        lang=ui_language.current(session),
+    )
     return agent_launch.resume_in_terminal(
         session, action, prompt, row.agent, row.session_id, row.model, row.preset
     )

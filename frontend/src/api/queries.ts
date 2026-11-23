@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import { keepPreviousData, useInfiniteQuery, useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { ApiError, api, unwrap, type CvEditInput, type CvRenderOptions, type ReferralStatus, type Schemas, type Stage } from './client'
 import type { operations } from './schema'
+import { portalLang } from '@/lib/i18n'
 
 /** Ofertas por página en la Bandeja: 25, como el resto de listas largas. */
 export const PAGE_SIZE = 25
@@ -1225,7 +1226,8 @@ export function useAgentLauncher() {
 export function useLaunchAgent() {
   const client = useQueryClient()
   return useMutation({
-    mutationFn: (body: LaunchTarget & { agent?: string }) => unwrap(api.POST('/agent/launch', { body })),
+    mutationFn: (body: LaunchTarget & { agent?: string }) =>
+      unwrap(api.POST('/agent/launch', { body: { ...body, lang: portalLang() } })),
     onSuccess: (_result, body) => {
       if (body.action === 'search-jobs') void client.invalidateQueries({ queryKey: keys.searchRun })
       void client.invalidateQueries({ queryKey: keys.agentTasks })
@@ -1439,7 +1441,8 @@ export function useAgentRuns() {
 export function useStartAgentRun() {
   const client = useQueryClient()
   return useMutation({
-    mutationFn: (body: LaunchTarget & { agent?: string }) => unwrap(api.POST('/agent/runs', { body })),
+    mutationFn: (body: LaunchTarget & { agent?: string }) =>
+      unwrap(api.POST('/agent/runs', { body: { ...body, lang: portalLang() } })),
     onSuccess: () => client.invalidateQueries({ queryKey: keys.agentRuns }),
   })
 }
@@ -1497,7 +1500,7 @@ export function useAskAssistant() {
   const client = useQueryClient()
   return useMutation({
     mutationFn: (body: { text: string; mode: 'background' | 'terminal' | 'session'; conversation_id?: number | null }) =>
-      unwrap(api.POST('/agent/assistant', { body })),
+      unwrap(api.POST('/agent/assistant', { body: { ...body, lang: portalLang() } })),
     onSuccess: (view) => {
       // Una conversación nueva se ve ya con su primera pregunta, sin esperar a pedirla.
       const key = keys.assistantConversation(view.conversation_id)
@@ -1569,7 +1572,7 @@ export function useAgentRequests() {
 export function useCreateAgentRequest() {
   const client = useQueryClient()
   return useMutation({
-    mutationFn: (body: LaunchTarget) => unwrap(api.POST('/agent/requests', { body })),
+    mutationFn: (body: LaunchTarget) => unwrap(api.POST('/agent/requests', { body: { ...body, lang: portalLang() } })),
     onSuccess: () =>
       Promise.all([
         client.invalidateQueries({ queryKey: keys.agentRequests }),

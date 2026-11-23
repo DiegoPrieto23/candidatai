@@ -137,7 +137,7 @@ describe('Asistente', () => {
 
     await userEvent.keyboard('{Enter}')
     const post = calls.find((call) => call.method === 'POST' && call.path === '/agent/assistant')
-    expect(post?.body).toEqual({ text: '¿Qué tengo\npendiente?', mode: 'background', conversation_id: null })
+    expect(post?.body).toEqual({ text: '¿Qué tengo\npendiente?', mode: 'background', conversation_id: null, lang: 'es' })
     expect(field).toHaveValue('')
   })
 
@@ -149,7 +149,7 @@ describe('Asistente', () => {
     expect(within(panel).getByRole('button', { name: 'Enviar' })).toBeDisabled()
     await userEvent.type(field, 'Resume mis procesos')
     await userEvent.click(within(panel).getByRole('button', { name: 'Enviar' }))
-    expect(calls.find((call) => call.method === 'POST')?.body).toEqual({ text: 'Resume mis procesos', mode: 'background', conversation_id: null })
+    expect(calls.find((call) => call.method === 'POST')?.body).toEqual({ text: 'Resume mis procesos', mode: 'background', conversation_id: null, lang: 'es' })
   })
 
   it('enseña la respuesta con enlaces a la oferta y a la pantalla', async () => {
@@ -233,7 +233,7 @@ describe('Asistente', () => {
     })
     await userEvent.type(within(panel).getByRole('textbox'), 'Resume mis procesos{Enter}')
     await waitFor(() => expect(calls.some((call) => call.method === 'POST')).toBe(true))
-    expect(calls.find((call) => call.method === 'POST')?.body).toEqual({ text: 'Resume mis procesos', mode: 'session', conversation_id: null })
+    expect(calls.find((call) => call.method === 'POST')?.body).toEqual({ text: 'Resume mis procesos', mode: 'session', conversation_id: null, lang: 'es' })
     expect(await within(panel).findByText('Se lo pasaré a tu agente en tu próxima sesión')).toBeInTheDocument()
   })
 
@@ -250,7 +250,7 @@ describe('Asistente', () => {
     })
     await userEvent.type(within(panel).getByRole('textbox'), 'Resume mis procesos{Enter}')
     await waitFor(() => expect(calls.some((call) => call.method === 'POST')).toBe(true))
-    expect(calls.find((call) => call.method === 'POST')?.body).toEqual({ text: 'Resume mis procesos', mode: 'terminal', conversation_id: null })
+    expect(calls.find((call) => call.method === 'POST')?.body).toEqual({ text: 'Resume mis procesos', mode: 'terminal', conversation_id: null, lang: 'es' })
     expect(
       await within(panel).findByText('Tu agente está trabajando en la terminal que se ha abierto: la respuesta aparecerá aquí'),
     ).toBeInTheDocument()
@@ -274,7 +274,7 @@ describe('Asistente', () => {
     expect(field).toHaveValue('Hola')
     release(launcher())
     await waitFor(() => expect(calls.some((call) => call.method === 'POST')).toBe(true))
-    expect(calls.find((call) => call.method === 'POST')?.body).toEqual({ text: 'Hola', mode: 'background', conversation_id: null })
+    expect(calls.find((call) => call.method === 'POST')?.body).toEqual({ text: 'Hola', mode: 'background', conversation_id: null, lang: 'es' })
     expect(field).toHaveValue('')
   })
 
@@ -345,7 +345,7 @@ describe('Asistente', () => {
     const field = within(panel).getByRole('textbox', { name: 'Qué quieres pedirle a tu agente' })
     await userEvent.type(field, '¿Y mañana?{Enter}')
     await waitFor(() => expect(calls.some((call) => call.method === 'POST')).toBe(true))
-    expect(calls.find((call) => call.method === 'POST')?.body).toEqual({ text: '¿Y mañana?', mode: 'background', conversation_id: 1 })
+    expect(calls.find((call) => call.method === 'POST')?.body).toEqual({ text: '¿Y mañana?', mode: 'background', conversation_id: 1, lang: 'es' })
 
     // El de la cabecera (la barra tiene otro igual).
     await userEvent.click(within(panel.querySelector('header')!).getByRole('button', { name: 'Nueva conversación' }))

@@ -2814,6 +2814,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/agent/language": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Ui Language
+         * @description El idioma elegido en el portal: el de las órdenes al agente y sus ventanas, también de lo
+         *     que se lanza sin la UI. El CV y la carta siguen el idioma de la oferta.
+         */
+        put: operations["set_ui_language"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/search/run": {
         parameters: {
             query?: never;
@@ -4449,6 +4470,8 @@ export interface components {
             mode: "background" | "terminal" | "session";
             /** Conversation Id */
             conversation_id?: number | null;
+            /** Lang */
+            lang?: ("es" | "en") | null;
         };
         /** AssistantList */
         AssistantList: {
@@ -6836,12 +6859,28 @@ export interface components {
             /** Missing */
             missing: string[];
         };
+        /** LanguageBody */
+        LanguageBody: {
+            /**
+             * Lang
+             * @enum {string}
+             */
+            lang: "es" | "en";
+        };
         /** LanguageRequirement */
         LanguageRequirement: {
             /** Language */
             language: string;
             /** Level */
             level?: string | null;
+        };
+        /** LanguageView */
+        LanguageView: {
+            /**
+             * Lang
+             * @enum {string}
+             */
+            lang: "es" | "en";
         };
         /**
          * LaunchBody
@@ -6858,6 +6897,8 @@ export interface components {
             /** Milestone Id */
             milestone_id?: number | null;
             search?: components["schemas"]["SearchScope"] | null;
+            /** Lang */
+            lang?: ("es" | "en") | null;
             /** Agent */
             agent?: string | null;
             /** Model */
@@ -8832,6 +8873,8 @@ export interface components {
             /** Milestone Id */
             milestone_id?: number | null;
             search?: components["schemas"]["SearchScope"] | null;
+            /** Lang */
+            lang?: ("es" | "en") | null;
         };
         /** ResearchSource */
         ResearchSource: {
@@ -24414,6 +24457,102 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AssistantView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    set_ui_language: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LanguageBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LanguageView"];
                 };
             };
             /** @description Unauthorized */

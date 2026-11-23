@@ -63,6 +63,7 @@ describe('Sección Carta de presentación', () => {
     await userEvent.click(screen.getByRole('menuitem', { name: /En segundo plano/ }))
     await waitFor(() =>
       expect(calls.find((c) => c.method === 'POST' && c.path === '/agent/runs')?.body).toEqual({
+        lang: 'es',
         action: 'generate-cover-letter',
         job_id: 1,
       }),
