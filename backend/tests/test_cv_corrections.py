@@ -84,7 +84,7 @@ def _edit(client: TestClient, job_id: int, base: int, **changes: Any) -> Any:
 
 def test_action_exists_and_needs_a_pending_correction(client: TestClient, job_id: int) -> None:
     assert {"correct-cv", "verify-cv"} <= set(agent_launch.ACTIONS)
-    with session_scope() as session, pytest.raises(agent_launch.LaunchError, match="qué quieres"):
+    with session_scope() as session, pytest.raises(agent_launch.LaunchError, match="qué se quiere"):
         agent_launch.check_target(session, "correct-cv", job_id)
     _correct(client, job_id, "cambia «lideré» por «participé»")
     with session_scope() as session:
