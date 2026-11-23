@@ -544,6 +544,11 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   conserva en tu perfil y tus CVs lo siguen teniendo en cuenta.
 
 ### Corregido
+- **El Asistente y la Ayuda ya no cambian de tamaño:** el panel mide lo mismo en las dos pestañas y
+  con la barra de conversaciones abierta o cerrada, así que no se mueve al cambiar. Solo su cuerpo
+  hace scroll (la cabecera, las pestañas y la caja de escribir quedan fijas), también con el
+  teclado, y una conversación larga se lee entera. Con avisos encima, el panel encoge en lugar de
+  salirse de la pantalla.
 - **Aceptar un correo que cuenta algo ya anotado:** si marcabas como «Rechazo» el correo de una
   candidatura que ya habías cerrado a mano como rechazada, salía un error de fechas. Ahora el correo
   se enlaza a ese registro, sin duplicarlo.

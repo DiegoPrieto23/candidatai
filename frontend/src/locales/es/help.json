@@ -71,7 +71,8 @@
         "week": "Últimos 7 días",
         "older": "Antes"
       }
-    }
+    },
+    "conversationLabel": "Conversación"
   },
   "screens": {
     "home": "Inicio",
@@ -355,5 +356,6 @@
       "a": "En las Discussions de CandidatAI en GitHub, o abriendo allí una incidencia. Para enseñar un fallo, usa los datos de la demo en lugar de los tuyos.",
       "keywords": "soporte contacto error bug incidencia github comunidad"
     }
-  }
+  },
+  "bodyLabel": "Preguntas frecuentes y guía"
 }

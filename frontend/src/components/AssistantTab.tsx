@@ -246,7 +246,12 @@ export function AssistantTab({
 
   if (noAgent) {
     return (
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 text-sm text-pretty">
+      <div
+        role="region"
+        aria-label={t('assistant.conversationLabel')}
+        tabIndex={0}
+        className="min-h-0 flex-1 overflow-y-auto px-4 py-4 text-sm text-pretty outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:ring-inset"
+      >
         <p className="font-medium">{t('assistant.noAgentTitle')}</p>
         <p className="mt-1 text-muted-foreground">{t('assistant.noAgentBody')}</p>
         <Link to={HELP_SCREENS.agent!} onClick={onGo} className={cn(linkClass, 'mt-2')}>
@@ -272,7 +277,11 @@ export function AssistantTab({
           const box = event.currentTarget
           seen.current.atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 40
         }}
-        className="min-h-0 flex-1 overflow-y-auto bg-muted/50 px-4 py-3 dark:bg-muted/30"
+        // Enfocable, para leer una conversación larga también con el teclado.
+        role="region"
+        aria-label={t('assistant.conversationLabel')}
+        tabIndex={0}
+        className="min-h-0 flex-1 overflow-y-auto bg-muted/50 px-4 py-3 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:ring-inset dark:bg-muted/30"
       >
         {conversationId !== null && conversation.isError ? (
           <p role="alert" className="text-sm text-destructive">
@@ -322,7 +331,7 @@ export function AssistantTab({
       </div>
 
       <form
-        className="border-t bg-card p-3"
+        className="shrink-0 border-t bg-card p-3"
         onSubmit={(event) => {
           event.preventDefault()
           send()

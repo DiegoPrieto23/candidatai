@@ -71,7 +71,8 @@
         "week": "Last 7 days",
         "older": "Earlier"
       }
-    }
+    },
+    "conversationLabel": "Conversation"
   },
   "screens": {
     "home": "Home",
@@ -355,5 +356,6 @@
       "a": "In the CandidatAI Discussions on GitHub, or by opening an issue there. To show a failure, use the demo data instead of your own.",
       "keywords": "support contact error bug issue github community"
     }
-  }
+  },
+  "bodyLabel": "FAQ and guide"
 }

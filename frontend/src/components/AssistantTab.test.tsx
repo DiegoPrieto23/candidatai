@@ -97,7 +97,34 @@ async function openFromHistory(panel: HTMLElement, title: string | RegExp) {
   return sidebar
 }
 
+/** Las clases que dan el tamaño al panel: alto, ancho y su tope. */
+const sizeOf = (panel: HTMLElement) =>
+  panel.className
+    .split(/\s+/)
+    .filter((c) => /^(h|w|max-w|max-h)-/.test(c))
+    .sort()
+    .join(' ')
+
 describe('Asistente', () => {
+  it('el panel mide lo mismo en las dos pestañas y con la barra abierta; solo el cuerpo hace scroll', async () => {
+    const { panel } = await openAssistant({})
+    const size = sizeOf(panel)
+    expect(size).toContain('h-[min(36rem,calc(100dvh-6rem))]')
+    const conversation = within(panel).getByRole('region', { name: 'Conversación' })
+    expect(conversation).toHaveAttribute('tabindex', '0')
+    expect(conversation).toHaveClass('overflow-y-auto', 'min-h-0', 'flex-1')
+
+    await userEvent.click(within(panel).getByRole('button', { name: 'Conversaciones anteriores' }))
+    expect(sizeOf(screen.getByRole('dialog', { name: 'Tu asistente' }))).toBe(size)
+
+    await userEvent.click(within(panel).getByRole('tab', { name: 'Ayuda' }))
+    const help = screen.getByRole('dialog', { name: 'Ayuda' })
+    expect(sizeOf(help)).toBe(size)
+    const body = within(help).getByRole('region', { name: 'Preguntas frecuentes y guía' })
+    expect(body).toHaveAttribute('tabindex', '0')
+    expect(body).toHaveClass('overflow-y-auto')
+  })
+
   it('la primera vez propone ejemplos que se escriben en la caja sin enviarse', async () => {
     const { calls, panel } = await openAssistant({})
     const examples = await within(panel).findByRole('region', { name: 'Ejemplos de peticiones' })
