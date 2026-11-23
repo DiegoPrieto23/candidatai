@@ -251,7 +251,7 @@ def test_contacts_and_a_message_that_is_only_copied(page: Page, fresh_demo_app: 
     # No hay ningún «Enviar»: solo copiar, marcarlo enviado o descartarlo.
     expect(drafts.get_by_role("button", name=re.compile(r"^Enviar"))).to_have_count(0)
 
-    # «Ya lo he enviado» solo cambia el borrador: no registra eventos ni llama fuera.
+    # «Marcar como enviado» solo cambia el borrador: no registra eventos ni llama fuera.
     drafts.get_by_role("button", name=t("drafts.sent")).click()
     expect(drafts.get_by_text(body)).to_be_hidden()
     page.remove_listener("request", on_request)
@@ -604,7 +604,7 @@ def test_the_stage_shown_follows_the_projection_from_new_to_accepted(
     save_verified_cv(server, job_id)
     check(job_id, "cv_ready")
 
-    # Enviada por tu cuenta, desde Procesos.
+    # Enviada a mano, desde Procesos.
     page.goto("/procesos")
     column = page.get_by_role("region", name=_stage_label("cv_ready"), exact=True)
     card = column.locator("li").filter(has_text=COMPANY)
@@ -629,7 +629,7 @@ def test_the_stage_shown_follows_the_projection_from_new_to_accepted(
     check(job_id, "in_process")
 
     # En «En proceso», «¿Qué ha pasado?» también registra lo que no cambia de etapa: otra
-    # prueba y la oferta. «Acepto la oferta» solo sale con una oferta registrada.
+    # prueba y la oferta. «Aceptar la oferta» solo sale con una oferta registrada.
     status = job_tab(page, job_id, "process").get_by_role("region", name=t("status.label"))
     expect(status.get_by_role("button", name=t("status.steps.accepted"))).to_have_count(0)
     _status_step(page, server, job_id, "test_assigned")

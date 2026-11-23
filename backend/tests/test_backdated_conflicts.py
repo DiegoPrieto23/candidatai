@@ -59,8 +59,8 @@ def test_a_later_follow_up_blocks_the_close_with_a_clear_message(
 
     message = str(raised.value)
     assert "después hay anotado «followup_sent» (07/09/2026 11:00)" in message
-    assert "Pon una fecha posterior al 07/09/2026 11:00" in message
-    assert "allí te propone quitarlo" in message
+    assert "Hace falta una fecha posterior al 07/09/2026 11:00" in message
+    assert "allí se propone quitarlo" in message
     assert [c.type for c in raised.value.conflicts] == ["followup_sent"]
     assert events.current_stage(session, job.id) == Stage.IN_PROCESS
     assert "rejected" not in _types(session, job.id)

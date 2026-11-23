@@ -43,8 +43,8 @@ const launched = { label: 'Buscar ofertas', prompt: 'x', agent: 'Claude Code', j
 const started = { run_id: 5, portals: 2, companies: 0, companies_skipped: 0, message: '' }
 
 /** La franja de arriba: lo que buscas, la columna de «Buscar ahora» y «Más ajustes». */
-const strip = () => screen.getByRole('region', { name: 'Lo que vas a buscar' })
-const findStrip = () => screen.findByRole('region', { name: 'Lo que vas a buscar' })
+const strip = () => screen.getByRole('region', { name: 'Qué se va a buscar' })
+const findStrip = () => screen.findByRole('region', { name: 'Qué se va a buscar' })
 
 describe('Buscar ofertas', () => {
   it('lanza a tu agente en todos los portales activos, sin añadir nada a la orden', async () => {
@@ -72,7 +72,7 @@ describe('Buscar ofertas', () => {
     expect(within(list).queryByText('LinkedIn')).not.toBeInTheDocument()
     const off = screen.getByRole('list', { name: 'Portales en los que ahora no se busca' })
     expect(within(off).getByText('LinkedIn')).toBeInTheDocument()
-    expect(within(off).getByText('Sin permiso para tu agente')).toBeInTheDocument()
+    expect(within(off).getByText('Sin permiso para el agente')).toBeInTheDocument()
     expect(within(off).getByRole('link', { name: 'Cambiar en «Dónde buscar»' })).toHaveAttribute('href', '/fuentes/plataformas')
     // La última búsqueda, al pie, con la bandeja a un clic.
     expect(screen.getByText(/1 oferta nueva de 9 vistas|4 ofertas nuevas de 9 vistas/)).toBeInTheDocument()
@@ -108,12 +108,12 @@ describe('Buscar ofertas', () => {
     expect(infojobs).toHaveTextContent('15 nuevas de 40 vistas · 2 reabiertas')
     expect(within(infojobs).getByText('Alcanzó el límite: quedan 5 sin abrir')).toBeInTheDocument()
     expect(
-      within(infojobs).getByText('40 vistas · 25 pasan tus filtros · 5 ya las tenías · 15 nuevas (de ellas, 2 reabiertas)'),
+      within(infojobs).getByText('40 vistas · 25 pasan los filtros · 5 ya estaban · 15 nuevas (de ellas, 2 reabiertas)'),
     ).toHaveClass('sr-only')
     const tecno = within(list).getByRole('checkbox', { name: /Tecnoempleo/ }).closest('label')!
     expect(within(tecno).getByText('Llegó a lo de la búsqueda anterior')).toBeInTheDocument()
     expect(tecno).not.toHaveTextContent('reabierta')
-    for (const item of ['Vistas', 'Pasan tus filtros', 'Ya las tenías', 'Nuevas', 'Reabiertas']) {
+    for (const item of ['Vistas', 'Pasan los filtros', 'Ya estaban', 'Nuevas', 'Reabiertas']) {
       expect(screen.getByText(item)).toBeInTheDocument()
     }
   })
@@ -139,12 +139,42 @@ describe('Buscar ofertas', () => {
     const box = await screen.findByRole('checkbox', { name: /InfoJobs/ })
     expect(within(strip()).queryByRole('button', { name: 'Cambiar' })).not.toBeInTheDocument()
     await userEvent.click(box)
-    expect(screen.getByText('Elige al menos un portal.')).toBeInTheDocument()
+    expect(screen.getByText('Hace falta al menos un portal.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /^Buscar ahora/ })).toBeDisabled()
     await userEvent.click(box)
     expect(screen.getByRole('button', { name: /^Buscar ahora/ })).toBeEnabled()
-    const portals = screen.getByRole('region', { name: /^Portales ·/ })
-    expect(within(portals).getByRole('link', { name: 'Empresas con portal propio' })).toHaveAttribute('href', '/fuentes/empresas')
+    // Sin empresas, bajo los portales, el texto de siempre con su enlace.
+    const companies = await screen.findByRole('region', { name: 'Empresas con portal propio' })
+    expect(companies).toHaveTextContent('Ninguna todavía.')
+    expect(within(companies).getByRole('link', { name: 'Gestionar en «Dónde buscar»' })).toHaveAttribute('href', '/fuentes/empresas')
+  })
+
+  it('enseña las empresas con portal propio bajo los portales, activas primero, sin cambiar de página', async () => {
+    const company = (id: number, name: string, overrides: Record<string, unknown> = {}) => ({
+      ...platform(id, name),
+      kind: 'greenhouse',
+      kind_label: 'Greenhouse',
+      browse: null,
+      ...overrides,
+    })
+    const companies = [
+      company(20, 'Pausada SL', { active: false }),
+      company(21, 'Acme', { last_run: { started_at: new Date().toISOString(), finished_at: null, found: 5, created: 2, errors: [] } }),
+      ...Array.from({ length: 8 }, (_, i) => company(30 + i, `Empresa ${i}`)),
+    ]
+    mockApi(routes([platform(1, 'InfoJobs'), ...companies]))
+    renderApp('/buscar')
+    const region = await screen.findByRole('region', { name: /^Empresas con portal propio/ })
+    expect(region).toHaveTextContent('9 activas de 10')
+    const cards = await within(region).findAllByRole('listitem')
+    // Ocho como mucho; la pausada, al final, queda fuera.
+    expect(cards).toHaveLength(8)
+    expect(cards[0]).toHaveTextContent('Acme')
+    expect(cards[0]).toHaveTextContent('Activa')
+    expect(cards[0]).toHaveTextContent('Hoy: 2 ofertas nuevas que encajan')
+    expect(cards[1]).toHaveTextContent('Aún no se ha revisado')
+    expect(within(region).queryByText('Pausada SL')).not.toBeInTheDocument()
+    expect(within(region).getByRole('link', { name: 'Ver las 10 en «Dónde buscar»' })).toHaveAttribute('href', '/fuentes/empresas')
   })
 
   it('con el mismo clic revisa las empresas y, sin portales elegidos, solo ellas (fase 45)', async () => {
@@ -194,7 +224,7 @@ describe('Buscar ofertas', () => {
     await userEvent.click(all)
     expect(screen.getByRole('checkbox', { name: /InfoJobs/ })).not.toBeChecked()
     expect(screen.getByRole('checkbox', { name: /Tecnoempleo/ })).not.toBeChecked()
-    expect(screen.getByText('Elige al menos un portal.')).toBeInTheDocument()
+    expect(screen.getByText('Hace falta al menos un portal.')).toBeInTheDocument()
     // Con uno solo, la casilla queda a medias.
     await userEvent.click(screen.getByRole('checkbox', { name: /InfoJobs/ }))
     const some = screen.getByRole('checkbox', { name: 'Seleccionar todos' })
@@ -227,9 +257,9 @@ describe('Buscar ofertas', () => {
     page.querySelectorAll('[data-slot="agent-button"]').forEach((button) => button.remove())
     expect(page.textContent).not.toMatch(/Claude|Codex|Chrome/)
     expect(within(list).getByText('Pide sesión')).toBeInTheDocument()
-    expect(screen.getByText('Inicia sesión en Glassdoor')).toBeInTheDocument()
+    expect(screen.getByText('Iniciar sesión en Glassdoor')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('checkbox', { name: /Glassdoor/ }))
-    expect(screen.queryByText('Inicia sesión en Glassdoor')).not.toBeInTheDocument()
+    expect(screen.queryByText('Iniciar sesión en Glassdoor')).not.toBeInTheDocument()
   })
 
   it('cambia a la vez las ofertas por portal de los elegidos', async () => {
@@ -262,14 +292,14 @@ describe('Buscar ofertas', () => {
     await screen.findByRole('list', { name: 'Portales en los que buscar' })
     const control = screen.getByRole('combobox', { name: /ofertas por portal/i })
     expect(control).toHaveTextContent('varía')
-    expect(screen.getByText('Cada portal tiene el suyo (de 5 a 40): elige un número para igualarlos.')).toBeInTheDocument()
+    expect(screen.getByText('Cada portal tiene el suyo (de 5 a 40): al elegir un número aquí, se igualan todos.')).toBeInTheDocument()
     await userEvent.click(control)
     await userEvent.click(await screen.findByRole('option', { name: '15' }))
     await waitFor(() => expect(calls.find((c) => c.path === '/sources/browse/max-offers')?.body).toEqual({ source_ids: [1, 2], max_offers: 15 }))
   })
 
   it('sin navegador, consulta las fuentes con API una a una', async () => {
-    const result = (id: number, created: number) => ({ source_id: id, name: 'x', kind: 'lever', run_id: 1, skipped: null, found: 3, after_filters: 3, created, existing: 0, duplicates: 0, job_ids: [], errors: [], message: '' })
+    const result = (id: number, created: number) => ({ source_id: id, name: 'x', kind: 'lever', run_id: 1, skipped: null, found: 3, after_filters: 3, created, existing: 0, job_ids: [], errors: [], message: '' })
     const calls = mockApi(
       routes(
         [
@@ -361,10 +391,10 @@ describe('Buscar ofertas: tus puestos y lugares en la franja', () => {
     const places = within(strip()).getByRole('group', { name: 'Dónde' })
     expect(within(places).getByText('Vigo')).toBeInTheDocument()
     expect(within(places).getByText('solo híbrido o remoto')).toBeInTheDocument()
-    expect(strip()).toHaveTextContent('Se guarda en tu perfil, para esta y las próximas búsquedas.')
+    expect(strip()).toHaveTextContent('Se guarda en el perfil, para esta y las próximas búsquedas.')
 
     await userEvent.click(within(roles).getByRole('button', { name: 'Quitar Data Analyst' }))
-    expect(await within(strip()).findByText('Quitado «Data Analyst»: guardado en tu perfil.')).toBeInTheDocument()
+    expect(await within(strip()).findByText('Quitado «Data Analyst»: guardado en el perfil.')).toBeInTheDocument()
     expect(puts()[0].body.file_hash).toBe('h1')
     expect(puts()[0].body.content.roles).toEqual(['Data Engineer'])
     // El resto de tus preferencias va tal cual.
@@ -387,13 +417,13 @@ describe('Buscar ofertas: tus puestos y lugares en la franja', () => {
     const add = () => within(roles).getByRole('button', { name: 'Añadir puesto' })
     await userEvent.click(add())
     expect(within(roles).getByRole('combobox', { name: 'Añadir puesto' })).toHaveFocus()
-    const list = await within(roles).findByRole('listbox', { name: 'De ofertas que has aprobado' })
+    const list = await within(roles).findByRole('listbox', { name: 'De las ofertas aprobadas' })
     expect(within(list).getByRole('option', { name: /BI Engineer/ })).toHaveTextContent('3 aprobadas')
     // Flecha abajo y arriba recorren la lista; Intro elige.
     await userEvent.keyboard('{ArrowDown}{ArrowUp}{Enter}')
     await waitFor(() => expect(puts()).toHaveLength(1))
     expect(puts()[0].body.content.roles).toEqual(['Data Engineer', 'Data Analyst', 'BI Engineer'])
-    expect(await within(strip()).findByText('Añadido «BI Engineer»: guardado en tu perfil.')).toBeInTheDocument()
+    expect(await within(strip()).findByText('Añadido «BI Engineer»: guardado en el perfil.')).toBeInTheDocument()
 
     // Lo que escribes va primero; sin tildes ni mayúsculas, filtra las sugerencias.
     await waitFor(() => expect(add()).toBeEnabled())
@@ -433,7 +463,7 @@ describe('Buscar ofertas: tus puestos y lugares en la franja', () => {
     renderApp('/buscar')
     const roles = await within(await findStrip()).findByRole('group', { name: 'Puestos' })
     await userEvent.click(within(roles).getByRole('button', { name: 'Quitar Data Analyst' }))
-    expect(await within(strip()).findByText('Quitado «Data Analyst»: guardado en tu perfil.')).toBeInTheDocument()
+    expect(await within(strip()).findByText('Quitado «Data Analyst»: guardado en el perfil.')).toBeInTheDocument()
     await waitFor(() => expect(within(roles).getByRole('button', { name: 'Añadir puesto' })).toHaveAttribute('aria-disabled', 'false'))
   })
 
@@ -464,7 +494,7 @@ describe('Buscar ofertas: tus puestos y lugares en la franja', () => {
     await userEvent.click(remote)
     await waitFor(() => expect(puts()).toHaveLength(1))
     expect(puts()[0].body.content.remote_modes).toEqual(['remote'])
-    expect(await within(strip()).findByText('Añadido «Remoto»: guardado en tu perfil.')).toBeInTheDocument()
+    expect(await within(strip()).findByText('Añadido «Remoto»: guardado en el perfil.')).toBeInTheDocument()
     await waitFor(() => expect(within(modes).getByRole('checkbox', { name: 'Remoto' })).toBeChecked())
 
     const levels = within(strip()).getByRole('group', { name: 'Nivel' })
@@ -480,11 +510,11 @@ describe('Buscar ofertas: tus puestos y lugares en la franja', () => {
     const puts = withProfile()
     renderApp('/buscar')
     const places = await within(await findStrip()).findByRole('group', { name: 'Dónde' })
-    await userEvent.click(within(places).getByRole('button', { name: 'Qué aceptas en Vigo' }))
+    await userEvent.click(within(places).getByRole('button', { name: 'Qué se acepta en Vigo' }))
     await userEvent.click(await screen.findByRole('menuitemradio', { name: 'Descartar' }))
     await waitFor(() => expect(puts()).toHaveLength(1))
     expect(puts()[0].body.content.locations).toEqual({ preferred: [], allowed: ['Madrid'], excluded: ['Vigo'] })
-    expect(await within(strip()).findByText('Cambiado «Vigo: descartar»: guardado en tu perfil.')).toBeInTheDocument()
+    expect(await within(strip()).findByText('Cambiado «Vigo: descartar»: guardado en el perfil.')).toBeInTheDocument()
     // Lo descartado se sigue viendo, con su nota.
     expect(await within(places).findByText('descartar')).toBeInTheDocument()
   })
@@ -622,7 +652,7 @@ describe('Buscar ofertas: «Más ajustes»', () => {
     const salary = within(more()).getByRole('spinbutton', { name: 'Sueldo mínimo' })
     await userEvent.clear(salary)
     await userEvent.type(salary, '35000')
-    expect(within(more()).getByText('Al guardar se recalcula el encaje de tus ofertas abiertas.')).toBeInTheDocument()
+    expect(within(more()).getByText('Al guardar se recalcula el encaje de las ofertas abiertas.')).toBeInTheDocument()
     await userEvent.click(save)
 
     await waitFor(() => expect(puts()).toHaveLength(2))
@@ -637,7 +667,7 @@ describe('Buscar ofertas: «Más ajustes»', () => {
     })
     // El sueldo va después, con el `file_hash` que dejó lo anterior.
     expect(puts()[1]).toMatchObject({ path: '/profile/salary-floor', body: { file_hash: 'h2', salary_floor_eur: 35000 } })
-    expect(await within(more()).findByText('Guardado en tu perfil.')).toBeInTheDocument()
+    expect(await within(more()).findByText('Guardado en el perfil.')).toBeInTheDocument()
 
     await waitFor(() => expect(within(more()).getByRole('button', { name: 'Deshacer' })).toBeEnabled())
     await userEvent.click(within(more()).getByRole('button', { name: 'Deshacer' }))
@@ -645,7 +675,7 @@ describe('Buscar ofertas: «Más ajustes»', () => {
     expect(puts()[2].body.file_hash).toBe('h3')
     expect(puts()[2].body.content).toMatchObject({ min_years_required: null, employment_types: [] })
     expect(puts()[3].body).toEqual({ file_hash: 'h4', salary_floor_eur: 30000 })
-    expect(await within(more()).findByText('Deshecho: tus ajustes vuelven a estar como antes.')).toBeInTheDocument()
+    expect(await within(more()).findByText('Deshecho: los ajustes vuelven a estar como antes.')).toBeInTheDocument()
   })
 
   it('el «Deshacer» de la franja solo devuelve lo que cambió en ella, no lo guardado después en «Más ajustes»', async () => {
@@ -711,7 +741,7 @@ describe('Buscar ofertas: «Más ajustes»', () => {
     await userEvent.clear(salary)
     await userEvent.type(salary, '35000')
     await userEvent.click(within(more()).getByRole('button', { name: 'Guardar cambios' }))
-    expect(await within(more()).findByRole('alert')).toHaveTextContent('Tu perfil ha cambiado')
+    expect(await within(more()).findByRole('alert')).toHaveTextContent('El perfil ha cambiado')
     // Solo el sueldo cambió: no se toca la sección.
     expect(calls.some((c) => c.path === '/profile/sections/preferences')).toBe(false)
     const reads = () => calls.filter((c) => c.path === '/profile/editable').length

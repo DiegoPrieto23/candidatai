@@ -84,7 +84,7 @@ def _edit(client: TestClient, job_id: int, base: int, **changes: Any) -> Any:
 
 def test_action_exists_and_needs_a_pending_correction(client: TestClient, job_id: int) -> None:
     assert {"correct-cv", "verify-cv"} <= set(agent_launch.ACTIONS)
-    with session_scope() as session, pytest.raises(agent_launch.LaunchError, match="qué quieres"):
+    with session_scope() as session, pytest.raises(agent_launch.LaunchError, match="qué se quiere"):
         agent_launch.check_target(session, "correct-cv", job_id)
     _correct(client, job_id, "cambia «lideré» por «participé»")
     with session_scope() as session:
@@ -441,22 +441,109 @@ def test_edit_cannot_change_the_structure(
 ) -> None:
     response = _edit(client, job_id, _current_id(client, job_id), **changes)
     assert response.status_code == 422
-    assert "solo se cambian textos" in response.json()["error"]["message"]
+    assert "pide una corrección" in response.json()["error"]["message"]
 
 
-def test_edit_cannot_change_blocks_evidence_or_counts(client: TestClient, job_id: int) -> None:
+def test_edit_cannot_change_blocks_add_bullets_or_change_evidence(
+    client: TestClient, job_id: int
+) -> None:
     original = _current_id(client, job_id)
     reordered = demo_content_data()
     reordered["experience"].reverse()
     evidence = demo_content_data()
-    evidence["experience"][0]["bullets"][0]["evidence"] = ["exp-norteconsulting/a2"]
-    fewer = demo_content_data()
-    fewer["experience"][0]["bullets"].pop()
-    skills = demo_content_data()
-    skills["skills"][0]["items"].pop()
-    for data in (reordered, evidence, fewer, skills):
+    evidence["experience"][0]["bullets"][0]["evidence"] = ["exp-norteconsulting/a3"]
+    added = demo_content_data()
+    added["experience"][1]["bullets"].append(
+        {"text": "Otro logro.", "evidence": ["exp-datagal/a2"]}
+    )
+    moved = demo_content_data()
+    moved["experience"][1]["bullets"].append(moved["experience"][0]["bullets"].pop())
+    repeated = demo_content_data()
+    repeated["experience"][0]["bullets"][1] = repeated["experience"][0]["bullets"][0]
+    for data in (reordered, evidence, added, moved, repeated):
         response = _edit(client, job_id, original, **data)
         assert response.status_code == 422
+        assert "pide una corrección" in response.json()["error"]["message"]
+
+
+def test_edit_removes_and_reorders_bullets_without_new_warnings(
+    client: TestClient, job_id: int
+) -> None:
+    original = _current_id(client, job_id)
+    data = demo_content_data()
+    data["experience"][0]["bullets"].reverse()
+    response = _edit(client, job_id, original, experience=data["experience"])
+    assert response.status_code == 201
+    # Las cifras de un logro que solo cambia de sitio no avisan.
+    assert response.json()["warnings"] == []
+    data["experience"][0]["bullets"].pop()
+    response = _edit(client, job_id, response.json()["document_id"], experience=data["experience"])
+    assert response.status_code == 201
+    with session_scope() as session:
+        doc = session.get(Document, response.json()["document_id"])
+        assert [b["evidence"] for b in doc.content["experience"][0]["bullets"]] == [
+            ["exp-norteconsulting/a2"]
+        ]
+
+
+def test_edit_adds_removes_and_reorders_skill_groups(client: TestClient, job_id: int) -> None:
+    original = _current_id(client, job_id)
+    skills = [
+        {"group": "Datos", "items": ["Snowflake", "Modelado dimensional"]},
+        {"group": "Programación", "items": ["SQL", "Python"]},
+        {"group": "Nube", "items": ["Cobol"]},
+    ]
+    response = _edit(client, job_id, original, skills=skills)
+    assert response.status_code == 201
+    warnings = {(w["code"], w["field"], w["value"]) for w in response.json()["warnings"]}
+    # Solo avisa lo nuevo: las skills que ya estaban siguen sin aviso aunque cambien de grupo.
+    assert warnings == {("skill", "skills.2.items.0", "Cobol")}
+    after_add = response.json()["document_id"]
+    response = _edit(client, job_id, after_add, skills=[])
+    assert response.status_code == 201
+
+
+def test_edit_rejects_repeated_skills_and_empty_groups(client: TestClient, job_id: int) -> None:
+    original = _current_id(client, job_id)
+    repeated = [{"group": "Lenguajes", "items": ["Python", "python "]}]
+    response = _edit(client, job_id, original, skills=repeated)
+    assert response.status_code == 422
+    assert "repetidas" in response.json()["error"]["message"]
+    empty = [{"group": "Lenguajes", "items": []}]
+    assert _edit(client, job_id, original, skills=empty).status_code == 422
+
+
+def test_edit_tolerates_repeats_it_did_not_touch(client: TestClient, job_id: int) -> None:
+    with session_scope() as session:
+        doc = session.get(Document, _current_id(client, job_id))
+        content = dict(doc.content)
+        content["skills"] = [{"group": "Lenguajes", "items": ["Python", "python"]}]
+        doc.content = content
+    response = _edit(
+        client, job_id, _current_id(client, job_id), summary=SHORTER, skills=content["skills"]
+    )
+    assert response.status_code == 201
+
+
+def test_edit_pairs_bullets_with_the_same_evidence_by_text(client: TestClient, job_id: int) -> None:
+    with session_scope() as session:
+        doc = session.get(Document, _current_id(client, job_id))
+        content = dict(doc.content)
+        bullets = [
+            {"text": "Primero sin cifras.", "evidence": ["exp-norteconsulting/a1"]},
+            {"text": "Segundo con 77 cosas.", "evidence": ["exp-norteconsulting/a1"]},
+        ]
+        content["experience"] = [
+            {**content["experience"][0], "bullets": bullets},
+            content["experience"][1],
+        ]
+        doc.content = content
+    data = demo_content_data()
+    data["experience"][0]["bullets"] = list(reversed(bullets))
+    response = _edit(client, job_id, _current_id(client, job_id), experience=data["experience"])
+    assert response.status_code == 201
+    # Solo cambian de sitio: el 77 ya estaba y no avisa.
+    assert response.json()["warnings"] == []
 
 
 def test_edit_rejects_blank_text_and_no_changes(client: TestClient, job_id: int) -> None:

@@ -290,7 +290,7 @@ hayas aprobado. Skill `search-jobs`.
 - **Plataformas** = fuentes de tipo `agent_browse`:
   `{name, platform, search_urls[], priority (1 = primera), access: free|login|blocked,
   allow_agent_browsing, max_offers, notes}`. Las da de alta el agente con
-  `search-jobs configurar` (botón «Configurar con mi agente»; como la etapa 1 del original) o el
+  `search-jobs configurar` (botón «Configurar con el agente»; como la etapa 1 del original) o el
   usuario con «Añadir portal»: en InfoJobs, Tecnoempleo, Indeed y LinkedIn la UI genera las
   `search_urls` con los puestos (`preferences.roles`), las dos primeras ubicaciones preferidas y,
   si acepta remoto, una búsqueda en remoto, hasta 10 (Glassdoor y Manfred usan ids que no se

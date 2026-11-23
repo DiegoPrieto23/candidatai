@@ -4,7 +4,16 @@ from fastapi import APIRouter, Depends, Query, Request, status
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 
 from app.api.deps import EmptyBody, SessionDep, require_ui, require_ui_read
-from app.services import agent_costs, erase, events, ingest, jobs, liveness, reopenings
+from app.services import (
+    agent_costs,
+    duplicates,
+    erase,
+    events,
+    ingest,
+    jobs,
+    liveness,
+    reopenings,
+)
 from app.services.matching import service as matching
 from app.services.pipeline import EventType, Stage
 
@@ -29,6 +38,12 @@ class AddFromTextBody(_Body):
 
 class EraseJobBody(_Body):
     confirm: str = Field(description="El nombre de la empresa, escrito por el usuario.")
+
+
+class EraseDuplicatesBody(_Body):
+    job_ids: list[int] = Field(
+        min_length=1, max_length=100_000, description="Las duplicadas de la vista previa."
+    )
 
 
 class CheckOpenBody(_Body):
@@ -80,10 +95,17 @@ def list_jobs(
     min_score: Annotated[
         int | None, Query(ge=0, le=100, description="Encaje (score) mínimo.")
     ] = None,
+    stages: Annotated[
+        list[Stage] | None,
+        Query(description="Varias etapas a la vez (`?stages=cv_ready&stages=closed`)."),
+    ] = None,
+    close_reason: Annotated[
+        jobs.CloseReason | None, Query(description="Solo las cerradas con este motivo.")
+    ] = None,
 ) -> jobs.JobPage:
-    """Bandeja: filtrada por etapa, texto (título o empresa), modalidad, salario y encaje, ordenada
-    por fecha de alta, score o salario anualizado (por defecto, las más recientes primero; sin el
-    dato, al final)."""
+    """Bandeja: filtrada por etapa (una o varias), texto (título o empresa), modalidad, salario,
+    encaje y motivo de cierre, ordenada por fecha de alta, score o salario anualizado (por
+    defecto, las más recientes primero; sin el dato, al final)."""
     return jobs.search_jobs(
         session,
         stage=stage.value if stage else None,
@@ -97,6 +119,8 @@ def list_jobs(
         has_salary=has_salary,
         has_score=has_score,
         min_score=min_score,
+        stages=[value.value for value in stages] if stages is not None else None,
+        reason=close_reason,
     )
 
 
@@ -108,6 +132,23 @@ def list_jobs(
 def list_republished_jobs(session: SessionDep) -> reopenings.RepublishedList:
     """Ofertas que cerraste tú y han vuelto a publicarse (fase 45): el aviso de la Bandeja."""
     return reopenings.list_republished(session)
+
+
+@router.get("/duplicates", operation_id="list_duplicates")
+def list_duplicates(session: SessionDep) -> duplicates.DuplicateList:
+    """Ofertas guardadas como duplicadas de otra, con su original y si se pueden borrar."""
+    return duplicates.list_duplicates(session)
+
+
+@router.post(
+    "/duplicates/erase",
+    operation_id="erase_duplicates",
+    dependencies=[Depends(require_ui)],
+)
+def erase_duplicates(session: SessionDep, body: EraseDuplicatesBody) -> duplicates.DuplicatesErased:
+    """Borra las duplicadas de la vista previa que no tienen nada propio, tras copiar la base de
+    datos. Solo desde la UI."""
+    return duplicates.erase_duplicates(session, body.job_ids)
 
 
 @router.post(

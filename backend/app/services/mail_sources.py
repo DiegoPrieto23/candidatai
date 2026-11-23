@@ -193,7 +193,7 @@ def _check_label(session: Session, label: str, exclude: int | None = None) -> st
     label = " ".join(label.split())
     for row in session.scalars(select(MailSource)):
         if row.id != exclude and row.label.casefold() == label.casefold():
-            raise MailSourceExistsError(f"Ya hay un buzón «{row.label}»: elige otro nombre.")
+            raise MailSourceExistsError(f"Ya hay un buzón «{row.label}»: hace falta otro nombre.")
     return label
 
 
@@ -259,7 +259,7 @@ def update_mail_source(session: Session, source_id: int, patch: MailSourcePatch)
         raise MailSourceNotAllowedError(
             f"«{row.label}» es la cuenta configurada al instalar: su servidor, su usuario y sus "
             "carpetas se cambian en la configuración de la instalación (ver la guía del correo). "
-            "Aquí puedes cambiar su nombre, su contraseña y si se lee."
+            "Aquí se cambian su nombre, su contraseña y si se lee."
         )
     if "label" in changes:
         changes["label"] = _check_label(session, changes["label"], exclude=row.id)
@@ -305,7 +305,7 @@ def delete_mail_source(session: Session, source_id: int) -> str:
     row = _get(session, source_id)
     if row.from_env:
         raise MailSourceNotAllowedError(
-            f"«{row.label}» es la cuenta configurada al instalar: desactívala aquí o quítala de "
+            f"«{row.label}» es la cuenta configurada al instalar: se desactiva aquí o se quita de "
             "la configuración de la instalación (ver la guía del correo)."
         )
     message = f"Buzón «{row.label}» quitado."
@@ -339,8 +339,8 @@ def check_host(host: str, allow_private: bool) -> None:
         if not ipaddress.ip_address(address).is_global:
             raise MailboxError(
                 "host_not_allowed",
-                f"{host} es una dirección privada o local. Si es tu propio servidor, "
-                "marca «Servidor en mi equipo o mi red».",
+                f"{host} es una dirección privada o local. Si es un servidor propio, "
+                "se marca «Servidor en este equipo o en la red local».",
             )
 
 

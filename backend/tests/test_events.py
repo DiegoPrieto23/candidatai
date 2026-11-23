@@ -91,7 +91,7 @@ def test_backdated_event_is_placed_in_order(session: Session, make_job: MakeJob)
 def test_a_step_in_the_same_minute_goes_after_the_last_event(
     session: Session, make_job: MakeJob
 ) -> None:
-    """La UI pide la hora sin segundos: «Me han respondido» a las 10:00, registrado segundos
+    """La UI pide la hora sin segundos: «Respuesta de la empresa» a las 10:00, registrado segundos
     después del envío de las 10:00:40, es ahora mismo y va detrás (antes se rechazaba)."""
     job = make_job()
     minute = T0.replace(second=0, microsecond=0)

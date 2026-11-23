@@ -32,13 +32,13 @@ how well each one fits you, writes a tailored CV and cover letter with nothing m
 application form and waits for you to press Send, and then tracks every process with its
 interviews, replies and follow-ups.
 
-It's for anyone looking for a job who wants their search in one place, with their data on their own
+It is for anyone looking for a job who wants their search in one place, with their data on their own
 computer. The reading and writing is done by an AI agent you already use (Claude Code, Codex,
-Antigravity CLI…), which the app doesn't include. It's a young project with one maintainer, most
+Antigravity CLI…), which the app does not include. It is a young project with one maintainer, most
 tested on Windows 11 with Claude Code: see the [known limitations](#known-limitations).
 
 **Get started:** [install it](#run-it-on-your-computer) · [Start here](docs/START_HERE.md), if
-you're not technical.
+you are not technical.
 
 ## Demo
 
@@ -54,7 +54,7 @@ you're not technical.
 
 - **Jobs from many sources:** paste a link or the text, follow companies through their own career sites through their
   public job boards (Greenhouse, Lever, Ashby and five more), read your email job alerts, send the
-  page you're on with a browser button, or let your agent search the job boards you choose.
+  page you are on with a browser button, or let your agent search the job boards you choose.
   Duplicates are merged.
 - **Text aimed at an AI is caught:** posting text is only ever data. Hidden instructions are
   detected and flagged, and such a job can never come out as a strong fit.
@@ -88,9 +88,9 @@ you're not technical.
 <!-- media:provisional -->
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/img/en/dark/home.webp">
-  <img src="docs/img/en/home.webp" alt="Home: what's waiting for you today, the journey of your jobs and the best fits to review" width="100%">
+  <img src="docs/img/en/home.webp" alt="Home: what is waiting for you today, the journey of your jobs and the best fits to review" width="100%">
 </picture>
-<p align="center"><sub>Home tells you what's waiting for you and for your agent, and the next step.</sub></p>
+<p align="center"><sub>Home tells you what is waiting for you and for your agent, and the next step.</sub></p>
 
 <table>
   <tr>
@@ -111,7 +111,7 @@ you're not technical.
   </tr>
 </table>
 
-<sub>All screenshots use the demo's fictional data. The short animations of each feature are in
+<sub>All screenshots use the demo's fictional data and are provisional: some still show the texts from before the change to a formal tone. The short animations of each feature are in
 [`docs/FEATURES.md`](docs/FEATURES.md).</sub>
 
 ## Run it on your computer
@@ -141,12 +141,12 @@ you're not technical.
 
    The installers download the [latest release](https://github.com/DiegoPrieto23/candidatai/releases/latest),
    **check its SHA-256 checksum** and create a "CandidatAI" shortcut. To update, run them again:
-   your data isn't touched. To see first what they'd do, add `-WhatIf` to the second Windows line
+   your data is not touched. To see first what they would do, add `-WhatIf` to the second Windows line
    or use `| bash -s -- --dry-run`.
 3. **Open it.** Use the "CandidatAI" shortcut: on the desktop and in the Start menu on Windows, in
    `~/Applications` on macOS (Spotlight finds it) and in the applications menu on Linux. A terminal
    window starts the app and your browser opens at `http://127.0.0.1:8000`, which is your own
-   computer. Keep that window open while you use it. From a terminal, it's `uv run cai start` in
+   computer. Keep that window open while you use it. From a terminal, it is `uv run cai start` in
    the app's `backend` folder:
 
    ```bash
@@ -168,7 +168,7 @@ you're not technical.
 - [User guide](docs/GUIDE.md): every page and how to use it day to day.
 - [Features](docs/FEATURES.md): everything the app does, page by page and skill by skill.
 - [Policies](docs/POLICIES.md): the rules on truthfulness, privacy and applying.
-- [Agents](docs/AGENTS_COMPAT.md): which agents are supported and how well they've been tested.
+- [Agents](docs/AGENTS_COMPAT.md): which agents are supported and how well they have been tested.
 - [All documents](docs/README.md), grouped. Technical documents are in Spanish; the guides
   exist in English and Spanish.
 - [Changelog](CHANGELOG.md): what changed in each version.
@@ -191,14 +191,14 @@ checks and automates. The agent works through a dedicated interface (MCP tools p
 Two well-known open projects also use an AI agent for the job search, and both inspired this one:
 [AI Job Search](https://github.com/ai-job-search-dev/ai-job-search) and
 [career-ops](https://github.com/career-ops-hq/career-ops). CandidatAI is different in three ways:
-it's an **app** you install like any program and can use without opening your agent; its rules
+it is an **app** you install like any program and can use without opening your agent; its rules
 (no made-up CV lines, nothing sent without you, posting text is only data) are **enforced by
 code**, whichever agent you use; and it covers the whole search, **up to the offer**, in one place.
 
 **What they do better, today:** career-ops works with more agents and models, covers more job
 sources and countries and is far more battle-tested; AI Job Search is simpler (fork it and run
 `/setup`) and has a real hiring story behind it. Both have large communities that this project
-doesn't have yet.
+does not have yet.
 
 <details>
 <summary><b>Side by side</b> (checked on 6 November 2026)</summary>
@@ -219,16 +219,16 @@ The full comparison, feature by feature and with its sources, is in
 
 ## Known limitations
 
-- **Desktop only.** The app is made for a computer screen; it isn't designed for a phone.
+- **Desktop only.** The app is made for a computer screen; it is not designed for a phone.
 - **One person, one computer.** It runs on your own machine at `127.0.0.1`, with no accounts and
   no sync between devices.
 - **You need an AI agent.** Without one you can review jobs, track processes and change CV designs,
   but reading jobs and writing CVs, letters or interview guides needs an agent, which the app
-  doesn't include.
+  does not include.
 - **What has really been tested:** Windows 11 the most, including a clean install from the release;
-  macOS and Linux have an installer and run the tests in CI, but haven't been installed by hand from
+  macOS and Linux have an installer and run the tests in CI, but have not been installed by hand from
   a release. Claude Code is tested end to end, Codex with one job and Antigravity CLI in part;
-  OpenCode was only tried with a small local model, which didn't finish the test, and Qwen Code is
+  OpenCode was only tried with a small local model, which did not finish the test, and Qwen Code is
   configured but untested. Details in [`docs/AGENTS_COMPAT.md`](docs/AGENTS_COMPAT.md).
 - **English and Spanish only**, in the app and in the guides.
 - **No scraping of job boards without an API** and no automated LinkedIn applications, by design:
@@ -250,7 +250,7 @@ graphics card, running Windows 11, with the app already opened once before (medi
 | Job inbox, first load / reload, with the demo | 0.49 s / 0.31 s |
 | Job inbox, first load / reload, with 650 jobs | 0.53 s / 0.31 s |
 
-Your agent's work (reading a job, writing a CV) isn't included: it depends on the agent and its
+Your agent's work (reading a job, writing a CV) is not included: it depends on the agent and its
 model. As a reference, Claude Code took 8.5 minutes to read, assess and write a verified CV for five
 jobs in the [agent matrix](evals/compat/REPORT.md).
 

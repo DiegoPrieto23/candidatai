@@ -39,7 +39,7 @@ def save_cover_letter_brief(
 def save_user_cover_letter(
     session: SessionDep, job_id: int, body: CoverLetterContent
 ) -> cover_letter.SaveLetterResult:
-    """Edición a mano: documento nuevo «Editada por ti», sin verificación, y su render."""
+    """Edición a mano: documento nuevo «Editada a mano», sin verificación, y su render."""
     return cover_letter.save_user_letter(session, job_id, body)
 
 

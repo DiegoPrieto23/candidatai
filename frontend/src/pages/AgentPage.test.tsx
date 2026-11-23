@@ -82,7 +82,7 @@ describe('Lo primero de «Agente» (fase 31)', () => {
       'GET /agent/agents': { agents: [entry('claude', 'Claude Code', true)], launchable: ['claude'], preferences: {}, effective: [] },
     })
     renderApp('/agente')
-    expect(await screen.findByRole('heading', { name: 'Tu agente: Claude Code, listo' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Agente: Claude Code, listo' })).toBeInTheDocument()
     const details = screen.getByRole('button', { name: /^Configurar agentes/ })
     expect(details).toHaveAttribute('aria-expanded', 'false')
     expect(screen.queryByLabelText('Agente por defecto')).not.toBeInTheDocument()
@@ -95,7 +95,7 @@ describe('Lo primero de «Agente» (fase 31)', () => {
       'GET /agent/agents': { agents: [entry('claude', 'Claude Code', false)], launchable: ['claude'], preferences: {}, effective: [] },
     })
     renderApp('/agente')
-    const notice = await screen.findByRole('region', { name: 'Necesitas un agente de IA' })
+    const notice = await screen.findByRole('region', { name: 'Hace falta un agente de IA' })
     expect(await within(notice).findByLabelText('Orden para instalar Claude Code')).toHaveTextContent('instala claude')
     // Ya está en «Agente»: no se enlaza a sí misma.
     expect(within(notice).queryByRole('link', { name: /Otros agentes/ })).not.toBeInTheDocument()
@@ -112,7 +112,7 @@ describe('Página «Agente» (fase 19)', () => {
       'GET /agent/requests': { pending: 0, requests: [] },
     })
     renderApp('/agente')
-    expect(await screen.findByRole('heading', { name: 'Para tu próxima sesión' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Para la próxima sesión' })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'En segundo plano' })).not.toBeInTheDocument()
     expect(screen.queryByText('Subagente «extractor»')).not.toBeInTheDocument()
   })
@@ -206,7 +206,7 @@ describe('Página «Agente» (fase 19)', () => {
       expect(within(assess).getAllByRole('cell')[3]).toHaveTextContent('—')  // sin coste: no se estima
       expect(screen.getByRole('table', { name: 'Por agente' })).toHaveTextContent('opencode')
       expect(screen.getByRole('tab', { name: 'Últimos 30 días' })).toBeInTheDocument()
-      expect(screen.getByText(/lo que haces en una terminal no llega a la app/)).toBeInTheDocument()
+      expect(screen.getByText(/lo que se hace en una terminal no llega a la app/)).toBeInTheDocument()
     })
 
     it('sin ejecuciones lo dice una sola vez, sin cifras ni tablas vacías', async () => {
@@ -228,7 +228,7 @@ describe('Página «Agente» (fase 19)', () => {
       await userEvent.clear(input)
       await userEvent.type(input, '60')
       await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
-      expect(await screen.findByText('Lo has cambiado aquí.')).toBeInTheDocument()
+      expect(await screen.findByText('Cambiado aquí.')).toBeInTheDocument()
       expect(calls.find((c) => c.method === 'PUT' && c.path === '/agent/assess-threshold')?.body).toEqual({ value: 60 })
     })
   })
@@ -249,6 +249,6 @@ describe('Página «Agente» (fase 19)', () => {
     await userEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Instalar' }))
     expect(calls.some((c) => c.method === 'POST' && c.path === '/matching/semantic/install')).toBe(true)
     expect(await within(section).findByText('Instalando la comparación por significado…')).toBeInTheDocument()
-    expect(within(section).getByText(/puedes seguir usando la app/)).toBeInTheDocument()
+    expect(within(section).getByText(/la app se puede seguir usando/)).toBeInTheDocument()
   })
 })

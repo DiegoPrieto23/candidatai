@@ -47,7 +47,8 @@ class RecruiteeConnector:
             API.format(slug=config.slug),
             label=self.label,
             not_found=(
-                f"No existe la empresa «{config.slug}» en Recruitee (404). Revisa el slug: es lo "
+                f"No existe la empresa «{config.slug}» en Recruitee (404). Conviene revisar el "
+                f"slug: es lo "
                 "que va antes de `.recruitee.com`."
             ),
         )

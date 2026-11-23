@@ -75,7 +75,7 @@ describe('Empresas objetivo', () => {
 
     expect(await screen.findByRole('heading', { name: 'Acme Datos' })).toBeInTheDocument()
     // Solo lo nuevo que encaja contigo: nada de «encontradas» ni «tras filtros».
-    expect(screen.getByText(/2 ofertas nuevas para ti/)).toBeInTheDocument()
+    expect(screen.getByText(/2 ofertas nuevas que encajan/)).toBeInTheDocument()
     expect(screen.queryByText(/tras filtros|encontradas/)).not.toBeInTheDocument()
     expect(screen.getByText('Solo Madrid')).toBeInTheDocument()
     expect(screen.queryByText('Manual')).not.toBeInTheDocument()
@@ -100,7 +100,7 @@ describe('Empresas objetivo', () => {
     })
     renderApp('/empresas')
     // Sin ninguna, lo explica y el formulario sale abierto de entrada.
-    expect(await screen.findByText('Aún no sigues ninguna empresa')).toBeInTheDocument()
+    expect(await screen.findByText('Aún no se sigue ninguna empresa')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Añadir empresa' })).not.toBeInTheDocument()
     const form = screen.getByRole('form', { name: 'Añadir fuente' })
     // Solo dos campos: nada de ATS ni de slug a la vista.
@@ -110,7 +110,7 @@ describe('Empresas objetivo', () => {
     await userEvent.type(within(form).getByLabelText('Dirección de su web de empleo'), URL)
     await userEvent.click(within(form).getByRole('button', { name: 'Probar' }))
 
-    expect(await within(form).findByText('Encontrada: usa Greenhouse · 1 oferta para ti')).toBeInTheDocument()
+    expect(await within(form).findByText('Encontrada: usa Greenhouse · 1 oferta que encaja')).toBeInTheDocument()
     expect(within(form).getByText('Solo Vigo')).toBeInTheDocument()
     expect(within(form).getByText(/Greenhouse · bretema, enlazado desde su web/)).toBeInTheDocument()
     expect(within(form).getByRole('link', { name: 'Data Engineer' })).toHaveAttribute('href', 'https://example.com/1')
@@ -159,9 +159,9 @@ describe('Empresas objetivo', () => {
     await userEvent.type(within(form).getByLabelText('Empresa'), 'Brétema')
     await userEvent.type(within(form).getByLabelText('Dirección de su web de empleo'), URL)
     await userEvent.click(within(form).getByRole('button', { name: 'Probar' }))
-    expect(await within(form).findByText(/No reconocemos el sistema de empleo/)).toBeInTheDocument()
+    expect(await within(form).findByText(/No se reconoce el sistema de empleo/)).toBeInTheDocument()
     await userEvent.click(within(form).getByRole('button', { name: 'Añadir' }))
-    expect(await within(form).findByText(/añadida a tus portales/)).toBeInTheDocument()
+    expect(await within(form).findByText(/añadida a los portales/)).toBeInTheDocument()
   })
 
   it('sin ofertas que encajen, lo dice', async () => {
@@ -175,8 +175,8 @@ describe('Empresas objetivo', () => {
     await userEvent.type(within(form).getByLabelText('Empresa'), 'Brétema')
     await userEvent.type(within(form).getByLabelText('Dirección de su web de empleo'), URL)
     await userEvent.click(within(form).getByRole('button', { name: 'Probar' }))
-    expect(await screen.findByText('0 ofertas para ti')).toBeInTheDocument()
-    expect(screen.getByText('Ninguna oferta encaja ahora con tu búsqueda; se revisa cada día.')).toBeInTheDocument()
+    expect(await screen.findByText('0 ofertas que encajan')).toBeInTheDocument()
+    expect(screen.getByText('Ninguna oferta encaja ahora con la búsqueda; se revisa cada día.')).toBeInTheDocument()
     expect(screen.queryByText('Account Executive')).not.toBeInTheDocument()
   })
 
@@ -275,7 +275,6 @@ describe('Empresas objetivo', () => {
       after_filters: 3,
       created: 2,
       existing: 1,
-      duplicates: 0,
       job_ids: [7, 8],
       errors: [],
       message: 'Greenhouse · Acme Datos: 12 ofertas encontradas, 3 tras filtros, 2 nuevas, 1 ya estaba',
@@ -290,7 +289,7 @@ describe('Empresas objetivo', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Más acciones de Acme Datos' }))
     await userEvent.click(await screen.findByRole('menuitem', { name: 'Buscar ahora' }))
     expect(calls.some((c) => c.path === '/sources/1/run')).toBe(true)
-    expect(await screen.findByText('2 ofertas nuevas para ti.')).toBeInTheDocument()
+    expect(await screen.findByText('2 ofertas nuevas que encajan.')).toBeInTheDocument()
     expect(screen.queryByText(/tras filtros/)).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Verlas' })).toHaveAttribute('href', '/bandeja?stage=pending_extraction')
 
@@ -384,7 +383,7 @@ describe('Empresas objetivo', () => {
     await userEvent.type(country, 'PT')
     await userEvent.click(within(form).getByLabelText('Solo ofertas en remoto'))
     await userEvent.click(within(form).getByRole('button', { name: 'Probar' }))
-    expect(await within(form).findByText('1 oferta para ti')).toBeInTheDocument()
+    expect(await within(form).findByText('1 oferta que encaja')).toBeInTheDocument()
     expect(calls.find((c) => c.method === 'POST')?.body).toMatchObject({
       kind: 'freehire',
       query: 'data engineer',

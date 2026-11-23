@@ -68,7 +68,7 @@ describe('Sección CV de la ficha', () => {
     const box = await within(section).findByLabelText('Indicaciones para este CV (opcional)')
     await userEvent.type(box, 'Destaca Airflow.')
     await userEvent.tab()
-    expect(await within(section).findByText(/Guardadas: tu agente las usará/)).toBeInTheDocument()
+    expect(await within(section).findByText(/Guardadas: el agente las usará/)).toBeInTheDocument()
     expect(calls.find((c) => c.method === 'POST' && c.path === '/jobs/1/cv/brief')?.body).toEqual({ instructions: 'Destaca Airflow.' })
   })
 
@@ -91,7 +91,7 @@ describe('Sección CV de la ficha', () => {
     renderApp('/jobs/1?tab=application')
     const section = await screen.findByRole('region', { name: 'CV' })
     const render = await within(section).findByRole('listitem', { name: 'Diseño 1' })
-    expect(within(render).getByText('Página 1 · Prueba otra plantilla en «Diseño», sin agente.')).toBeInTheDocument()
+    expect(within(render).getByText('Página 1 · Otra plantilla en «Diseño», sin agente.')).toBeInTheDocument()
     expect(within(render).getByText(/Página 1 · Hay que recortar contenido/)).toBeInTheDocument()
     expect(within(render).getAllByText(/^Página \d/)).toHaveLength(2) // `pdf_only` no lleva página
     expect(within(render).getByText('Para enviar')).toBeInTheDocument() // no bloquea la selección
@@ -255,7 +255,7 @@ describe('Sección CV de la ficha', () => {
     await screen.findByRole('listitem', { name: 'Diseño 1' })
     await userEvent.click(screen.getByRole('tab', { name: 'Diseño' }))
     await userEvent.click(box(1))
-    expect(screen.getByText('Marca otro diseño para verlos lado a lado.')).toBeInTheDocument()
+    expect(screen.getByText('Al marcar otro diseño, se ven lado a lado.')).toBeInTheDocument()
     await userEvent.click(box(3))
     const compare = screen.getByRole('region', { name: 'Comparar diseños' })
     expect(within(compare).getByTitle('PDF del diseño 1')).toHaveAttribute(

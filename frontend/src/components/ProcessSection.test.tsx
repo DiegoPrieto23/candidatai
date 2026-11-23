@@ -45,7 +45,7 @@ describe('Sección Proceso de la ficha', () => {
       'http://127.0.0.1:8000/renders/3/pdf',
     )
     expect(within(section).getByText(/7 oct · 10:30/)).toBeInTheDocument()
-    expect(within(section).getByRole('link', { name: 'Descargar «Entrevista» para tu calendario' })).toHaveAttribute(
+    expect(within(section).getByRole('link', { name: 'Descargar «Entrevista» para el calendario' })).toHaveAttribute(
       'href',
       'http://127.0.0.1:8000/milestones/5/ics',
     )
@@ -142,7 +142,7 @@ describe('Sección Proceso de la ficha', () => {
     const dialog = await screen.findByRole('dialog')
     expect(dialog).toHaveTextContent('desaparece también del historial y del embudo')
     expect(dialog).toHaveTextContent('el plan de preparación')
-    expect(dialog).toHaveTextContent('tus indicaciones para preparar y ensayar')
+    expect(dialog).toHaveTextContent('las indicaciones para preparar y ensayar')
     expect(dialog).not.toHaveTextContent('el repaso')
 
     await userEvent.click(within(dialog).getByRole('button', { name: 'No borrar' }))
@@ -169,7 +169,7 @@ describe('Sección Proceso de la ficha', () => {
     renderApp('/jobs/1?tab=process')
     const section = await screen.findByRole('region', { name: 'Proceso' })
     const later = await within(section).findByRole('button', {
-      name: 'Podrás marcarla como hecha a partir del día de la entrevista',
+      name: 'Se puede marcar como hecha a partir del día de la entrevista',
     })
     expect(later).toBeDisabled()
     expect(within(section).getByRole('button', { name: 'Marcar «RR. HH.» como hecho' })).toBeEnabled()

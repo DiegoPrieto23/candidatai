@@ -20,11 +20,10 @@
     "accepted": "Aceptadas"
   },
   "funnel": {
-    "duplicates": " Sin contar {{count}} duplicadas.",
+    "duplicates": "Sin contar {{count}} duplicadas.",
     "caption": "Ofertas por paso del embudo",
     "countHead": "Ofertas",
-    "fromPreviousHead": "% sobre el paso anterior",
-    "fromStartHead": "% sobre el total"
+    "fromPreviousHead": "% sobre el paso anterior"
   },
   "week": {
     "title": "Por semana",
@@ -45,7 +44,7 @@
   "response": {
     "title": "Primera respuesta",
     "hint": "Desde el envío hasta la primera respuesta, entrevista, prueba, oferta o rechazo.",
-    "none": "Aún no has enviado ninguna candidatura en este periodo.",
+    "none": "Aún no hay ninguna candidatura enviada en este periodo.",
     "median": "Mediana",
     "mean": "Media",
     "replied": "Con respuesta",
@@ -57,7 +56,7 @@
     "title": "Motivos de descarte",
     "hint": "Ofertas por motivo; una oferta puede fallar varios filtros a la vez.",
     "unspecified": "Sin motivo",
-    "byYou": "Descartadas por ti",
+    "byYou": "Descartadas a mano",
     "byYouCaption": "Descartes por motivo",
     "jobs": "Ofertas",
     "noDiscards": "Ningún descarte en este periodo.",
@@ -77,12 +76,12 @@
     "caption": "Embudo por tipo de puesto",
     "head": "Puesto",
     "others": "Otros",
-    "notExtracted_one": "Falta que tu agente lea {{count}} oferta: no cuenta aquí hasta entonces.",
-    "notExtracted_other": "Falta que tu agente lea {{count}} ofertas: no cuentan aquí hasta entonces."
+    "notExtracted_one": "Falta que el agente lea {{count}} oferta: no cuenta aquí hasta entonces.",
+    "notExtracted_other": "Falta que el agente lea {{count}} ofertas: no cuentan aquí hasta entonces."
   },
   "byReferral": {
     "title": "Por referencia",
-    "hint": "Si algún contacto del proceso te dio una referencia, o solo se la pediste. Lo marcas en la ficha.",
+    "hint": "Si algún contacto del proceso dio una referencia, o solo se le pidió. Se marca en la ficha.",
     "caption": "Embudo por referencia",
     "head": "Referencia",
     "groups": {
@@ -93,7 +92,7 @@
   },
   "byChannel": {
     "title": "Por canal",
-    "hint": "Referencia: algún contacto del proceso te la dio. Añadidas por ti: con un enlace, el texto o la extensión.",
+    "hint": "Referencia: algún contacto del proceso la dio. Añadidas a mano: con un enlace, el texto o la extensión.",
     "caption": "Respuesta por canal",
     "head": "Canal",
     "median": "Mediana hasta la respuesta",
@@ -101,21 +100,21 @@
       "referral": "Referencia",
       "company": "Web de la empresa",
       "portal": "Portales de empleo",
-      "manual": "Añadidas por ti"
+      "manual": "Añadidas a mano"
     },
     "in": {
       "referral": "por referencia",
       "company": "en la web de la empresa",
       "portal": "en los portales de empleo",
-      "manual": "en las ofertas que añades tú"
+      "manual": "en las ofertas añadidas a mano"
     }
   },
   "calibration": {
     "title": "¿Acierta el encaje?",
-    "hint": "Respuesta y entrevista de tus candidaturas enviadas (en el periodo elegido, por fecha de envío) según lo que sabías al enviarlas.",
-    "note": "Orientativo. Entre paréntesis, el intervalo al 95 %: si los de dos grupos se solapan, no hay una diferencia clara. Los pesos y filtros no cambian solos: tu agente propone y tú decides.",
-    "review": "Revisar mi búsqueda",
-    "none": "Aún no has enviado ninguna candidatura en este periodo. Tiene sentido a partir de unas {{min}}-30 enviadas.",
+    "hint": "Respuesta y entrevista de las candidaturas enviadas (en el periodo elegido, por fecha de envío) según lo que se sabía al enviarlas.",
+    "note": "Orientativo. Entre paréntesis, el intervalo al 95 %: si los de dos grupos se solapan, no hay una diferencia clara. Los pesos y filtros no cambian solos: el agente propone y la decisión es manual.",
+    "review": "Revisar la búsqueda",
+    "none": "Aún no hay ninguna candidatura enviada en este periodo. Tiene sentido a partir de unas {{min}}-30 enviadas.",
     "summary": "<strong>{{applied}}</strong> enviadas · respuesta <strong>{{reply}}</strong> · entrevista <strong>{{interview}}</strong>",
     "caution": " · con menos de {{min}}, tómalo con mucha cautela",
     "lowData": "pocos datos",
@@ -155,11 +154,11 @@
       },
       "referral": {
         "label": "Referencia",
-        "hint": "Si algún contacto del proceso te dio una referencia o se la pediste."
+        "hint": "Si algún contacto del proceso dio una referencia o se le pidió."
       },
       "days": {
         "label": "Rapidez",
-        "hint": "Días entre que entró la oferta y la enviaste."
+        "hint": "Días entre la entrada de la oferta y su envío."
       },
       "signal": {
         "label": "Puntos a revisar",
@@ -209,32 +208,32 @@
   },
   "loading": "Cargando",
   "title": "Resultados",
-  "intro": "Qué te funciona: dónde te responden más y cuánto tardan.",
+  "intro": "Qué funciona: dónde responden más y cuánto tardan.",
   "insights": {
-    "label": "Lo que dicen tus datos",
+    "label": "Lo que dicen los datos",
     "kinds": {
-      "bestChannel": "Dónde te responden más",
+      "bestChannel": "Dónde responden más",
       "medianReply": "Cuánto tardan",
       "fastestChannel": "Dónde responden antes",
-      "bestSource": "Tu mejor fuente"
+      "bestSource": "Mejor fuente"
     },
-    "bestChannel": "Te responden más {{channel}}: <strong>{{rate}}</strong> frente a {{others}} en el resto.",
+    "bestChannel": "Responden más {{channel}}: <strong>{{rate}}</strong> frente a {{others}} en el resto.",
     "medianReply": "Las empresas tardan <strong>{{days}}</strong> de mediana en responder.",
     "fastestChannel": "Responden antes {{channel}}: <strong>{{days}}</strong> de mediana, frente a {{slowDays}} {{slowChannel}}.",
-    "bestSource": "Tu fuente con más respuesta es <strong>{{name}}</strong>, con un {{rate}}.",
-    "none": "Con unas {{count}} candidaturas enviadas, aquí verás qué te funciona."
+    "bestSource": "La fuente con más respuesta es <strong>{{name}}</strong>, con un {{rate}}.",
+    "none": "Con unas {{count}} candidaturas enviadas, aquí se verá qué funciona."
   },
   "questions": {
-    "channels": "¿Por dónde me responden más y antes?",
-    "stall": "¿Dónde se quedan mis candidaturas?",
-    "titles": "¿Qué puestos me responden?",
-    "discards": "¿Por qué descarto?"
+    "channels": "¿Por dónde responden más y antes?",
+    "stall": "¿Dónde se quedan las candidaturas?",
+    "titles": "¿Qué puestos reciben respuesta?",
+    "discards": "¿Por qué se descartan ofertas?"
   },
   "empty": {
     "periodTitle": "No hay ofertas en este periodo",
     "title": "Aún no hay datos",
-    "period": "Prueba con un periodo más largo.",
-    "body": "Los resultados se llenan a medida que das de alta ofertas (<to>Nueva oferta</to>), las revisas y registras lo que pasa con cada candidatura."
+    "period": "Con un periodo más largo puede haber datos.",
+    "body": "Los resultados se llenan a medida que se dan de alta ofertas (<to>Nueva oferta</to>), se revisan y se registra lo que pasa con cada candidatura."
   },
   "cost": {
     "title": "Coste del agente",
@@ -246,9 +245,9 @@
     "tokens": "{{tokens}} tokens"
   },
   "story": {
-    "title": "Tu búsqueda en números",
+    "title": "La búsqueda en números",
     "hint": "Desde la primera oferta, sea cual sea el periodo de arriba. Solo cifras: ni empresas, ni puestos, ni importes.",
-    "note": "Por si quieres contar cómo te va. La app no lo publica nunca: lo copias tú, si quieres.",
+    "note": "Para contar cómo va la búsqueda. La app no lo publica nunca: se copia a mano, si interesa.",
     "period": "Del {{start}} al {{end}}",
     "evaluated": "Evaluadas",
     "applied": "Candidaturas",
@@ -261,9 +260,10 @@
   },
   "more": "Más análisis",
   "flow": {
-    "title": "¿Cómo van mis candidaturas?",
-    "hint": "Hasta dónde ha llegado cada candidatura que has enviado y dónde están las que pararon.",
-    "everything": "Todo lo que has enviado",
+    "title": "¿Cómo van las candidaturas?",
+    "hint": "Hasta dónde ha llegado cada candidatura enviada y dónde están las que pararon.",
+    "hintLabel": "Qué muestra este gráfico",
+    "everything": "Todo lo enviado",
     "noneYet": "Ninguna aún",
     "ofPrevious": "{{pct}} de {{step}}",
     "chartLabel": "{{applied}} enviadas, {{replied}} con respuesta, {{interview}} en entrevista, {{offer}} con oferta y {{accepted}} aceptadas. El detalle está en «Ver las cifras».",
@@ -278,9 +278,10 @@
     "more": "Análisis completo",
     "numbers": "Ver las cifras",
     "stepHead": "Paso",
-    "whereTheyStopped": "Dónde están las que pararon",
-    "empty": "Cuando envíes tu primera candidatura, aquí verás hasta dónde llega.",
-    "emptyPeriod": "No enviaste ninguna candidatura de las ofertas vistas en este periodo.",
+    "whereTheyStopped": "Dónde pararon",
+    "stopsOf": "{{step}}:",
+    "empty": "Con la primera candidatura enviada, aquí se verá hasta dónde llega.",
+    "emptyPeriod": "Ninguna candidatura enviada de las ofertas vistas en este periodo.",
     "stops": {
       "applied": {
         "open_one": "{{count}} esperando",
@@ -317,8 +318,8 @@
         "open_other": "{{count}} decidiendo",
         "rejected_one": "{{count}} retirada por la empresa",
         "rejected_other": "{{count}} retiradas por la empresa",
-        "withdrawn_one": "{{count}} rechazada por ti",
-        "withdrawn_other": "{{count}} rechazadas por ti",
+        "withdrawn_one": "{{count}} rechazada a mano",
+        "withdrawn_other": "{{count}} rechazadas a mano",
         "expired_one": "{{count}} caducada",
         "expired_other": "{{count}} caducadas"
       }

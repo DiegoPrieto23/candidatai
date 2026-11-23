@@ -364,7 +364,9 @@ def set_milestone_status(
     if change.status == "scheduled":
         return _undo_interview_done(session, row, today)
     if row.status != "scheduled":
-        raise ValueError(f"El hito ya está «{row.status}»; si hay una fecha nueva, crea otro hito.")
+        raise ValueError(
+            f"El hito ya está «{row.status}»; si hay una fecha nueva, se crea otro hito."
+        )
     if (
         change.status == "done"
         and row.kind == "interview"
@@ -372,7 +374,7 @@ def set_milestone_status(
     ):
         raise ValueError(
             f"La entrevista es el {_when(row.starts_at, row.all_day)}: se marca como hecha a "
-            "partir de ese día. Si se ha adelantado, cambia antes su fecha."
+            "partir de ese día. Si se ha adelantado, antes hay que cambiar su fecha."
         )
     payload: dict[str, Any] = {"milestone_id": row.id}
     if change.note:

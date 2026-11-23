@@ -108,6 +108,14 @@ function subscribe(notify: () => void): () => void {
 
 const currentLanguage = () => i18n.resolvedLanguage ?? i18n.language
 
+/**
+ * El idioma que se le manda a la app al lanzar el agente (fase 47.3): decide el de su orden y su
+ * ventana. Solo hay órdenes en español e inglés: cualquier otro idioma va en inglés.
+ */
+export function portalLang(): 'es' | 'en' {
+  return currentLanguage() === 'es' ? 'es' : 'en'
+}
+
 export function useLanguage() {
   const language = useSyncExternalStore(subscribe, currentLanguage, currentLanguage)
   const change = useCallback((next: Language) => setLanguage(next), [])

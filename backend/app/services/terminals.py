@@ -43,16 +43,18 @@ ENV_NAME_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 SHELLS = ("bash", "zsh")
 
 NO_DISPLAY = (
-    "No hay entorno gráfico (ni DISPLAY ni WAYLAND_DISPLAY) donde abrir una terminal: copia la "
-    "orden y pégala en tu agente."
+    "No hay entorno gráfico (ni DISPLAY ni WAYLAND_DISPLAY) donde abrir una terminal: hay que "
+    "copiar la "
+    "orden y pegarla en el agente."
 )
 NOT_FOUND = (
-    "No encuentro ninguna terminal ({names}). Instala una o elige la tuya con CAI_TERMINAL en "
-    ".env; mientras, copia la orden y pégala en tu agente."
+    "No se encuentra ninguna terminal ({names}). Hay que instalar una o elegirla con CAI_TERMINAL "
+    "en "
+    ".env; mientras, se copia la orden y se pega en el agente."
 )
 CHOSEN_NOT_FOUND = (
-    "No encuentro la terminal de CAI_TERMINAL ({name}). Corrígela en .env; mientras, copia la "
-    "orden y pégala en tu agente."
+    "No se encuentra la terminal de CAI_TERMINAL ({name}). Hay que corregirla en .env; mientras, "
+    "se copia la orden y se pega en el agente."
 )
 
 

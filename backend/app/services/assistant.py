@@ -52,8 +52,8 @@ HISTORY_CHARS = 6000  # …y cuántos caracteres, como mucho, entre todos
 # ventana se pudo cerrar sin contestar).
 TERMINAL_HOURS = 2
 TERMINAL_EXPIRED = (
-    f"Tu agente no contestó en {TERMINAL_HOURS} horas desde la terminal. Si sigue abierta, "
-    "ciérrala y vuelve a preguntar."
+    f"El agente no contestó en {TERMINAL_HOURS} horas desde la terminal. Si sigue abierta, "
+    "conviene cerrarla y volver a preguntar."
 )
 
 Mode = Literal["background", "terminal", "session"]
@@ -217,7 +217,7 @@ class SaveAnswerInput(BaseModel):
         min_length=1,
         max_length=MAX_ANSWER,
         description="La respuesta que verá el usuario en el panel, en su idioma y en texto "
-        "llano: qué has hecho o qué has encontrado, y qué le toca a él.",
+        "llano e impersonal (sin «tú»): qué se ha hecho o encontrado y qué queda por hacer.",
     )
     links: list[AssistantLink] = Field(
         default_factory=list,
@@ -381,8 +381,9 @@ def create(
     if mode == "terminal" and _open_terminals(session) >= MAX_ACTIVE:
         raise LaunchError(
             "invalid_request",
-            f"Ya hay {MAX_ACTIVE} peticiones abiertas en tu terminal: espera a que tu agente "
-            "conteste o cancélalas.",
+            f"Ya hay {MAX_ACTIVE} peticiones abiertas en la terminal: hay que esperar a que el "
+            f"agente "
+            "conteste o cancelarlas.",
         )
     if mode == "background":
         active = session.scalar(
@@ -394,8 +395,9 @@ def create(
         if (active or 0) >= MAX_ACTIVE:
             raise LaunchError(
                 "invalid_request",
-                f"Tu agente ya tiene {MAX_ACTIVE} peticiones en marcha: espera a que termine "
-                "alguna o cancélala.",
+                f"El agente ya tiene {MAX_ACTIVE} peticiones en marcha: hay que esperar a que "
+                f"termine "
+                "alguna o cancelarla.",
             )
     text = text.strip()[:MAX_TEXT]
     now = utcnow()

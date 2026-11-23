@@ -145,6 +145,29 @@ def test_list_jobs_filters_and_paginates(client: TestClient) -> None:
     assert page["total"] == 2 and [j["id"] for j in page["items"]] == [first]
 
 
+def test_list_jobs_by_several_stages_and_close_reason(client: TestClient) -> None:
+    first = _add_text(client, title="Data Engineer", company="Acme Analytics")["job_id"]
+    second = _add_text(client, title="Analista BI", company="Beta Labs")["job_id"]
+    third = _add_text(client, title="BI Developer", company="Gamma")["job_id"]
+    client.post(f"/jobs/{first}/events", json={"type": "discarded", "reason": "closed"})
+    client.post(f"/jobs/{second}/events", json={"type": "discarded", "reason": "skills"})
+
+    def ids(**params: Any) -> list[int]:
+        response = client.get("/jobs", params=params)
+        assert response.status_code == 200, response.text
+        return sorted(j["id"] for j in response.json()["items"])
+
+    assert ids(stages=["closed", "pending_extraction"]) == [first, second, third]
+    assert ids(stages=["closed"]) == [first, second]
+    assert ids(close_reason="closed_by_company") == [first]
+    assert ids(close_reason="discarded", stages=["closed"]) == [second]
+    reasons = {j["id"]: j["close_reason"] for j in client.get("/jobs").json()["items"]}
+    assert reasons == {first: "closed_by_company", second: "discarded", third: None}
+    assert client.get(f"/jobs/{first}").json()["close_reason"] == "closed_by_company"
+    assert client.get("/jobs", params={"close_reason": "lost"}).status_code == 422
+    assert client.get("/jobs", params={"stages": ["closed", "limbo"]}).status_code == 422
+
+
 def test_list_jobs_rejects_unknown_stage(client: TestClient) -> None:
     response = client.get("/jobs", params={"stage": "limbo"})
     assert response.status_code == 422

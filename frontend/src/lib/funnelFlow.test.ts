@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { biggestStop, layoutFlow, NODE_WIDTH, stopLink, type FlowStop } from './funnelFlow'
+import { biggestStop, LAST_COLUMN, layoutFlow, NODE_WIDTH, stopLink, type FlowStop } from './funnelFlow'
 
 const COUNTS = { applied: 7, replied: 5, interview: 3, offer: 2, accepted: 0 }
 const STOPS: FlowStop[] = [
@@ -12,11 +12,12 @@ const STOPS: FlowStop[] = [
 ]
 
 describe('layoutFlow', () => {
-  it('un paso por columna, de borde a borde, con el alto de lo que lleva', () => {
+  it('un paso por columna, con el alto de lo que lleva y sitio a la derecha para la última cabecera', () => {
     const { nodes } = layoutFlow(COUNTS, STOPS, 1000)
     expect(nodes.map((n) => n.step)).toEqual(['applied', 'replied', 'interview', 'offer', 'accepted'])
     expect(nodes[0].x).toBe(0)
-    expect(nodes[4].x + NODE_WIDTH).toBe(1000)
+    expect(nodes[4].x).toBe(1000 - LAST_COLUMN)
+    expect(nodes[4].x + NODE_WIDTH).toBeLessThan(1000)
     expect(nodes[1].height / nodes[0].height).toBeCloseTo(5 / 7)
     expect(nodes[4].height).toBe(0)
   })

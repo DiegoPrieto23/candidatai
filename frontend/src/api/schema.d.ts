@@ -53,9 +53,9 @@ export interface paths {
         };
         /**
          * List Jobs
-         * @description Bandeja: filtrada por etapa, texto (título o empresa), modalidad, salario y encaje, ordenada
-         *     por fecha de alta, score o salario anualizado (por defecto, las más recientes primero; sin el
-         *     dato, al final).
+         * @description Bandeja: filtrada por etapa (una o varias), texto (título o empresa), modalidad, salario,
+         *     encaje y motivo de cierre, ordenada por fecha de alta, score o salario anualizado (por
+         *     defecto, las más recientes primero; sin el dato, al final).
          */
         get: operations["list_jobs"];
         put?: never;
@@ -80,6 +80,47 @@ export interface paths {
         get: operations["list_republished_jobs"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/jobs/duplicates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Duplicates
+         * @description Ofertas guardadas como duplicadas de otra, con su original y si se pueden borrar.
+         */
+        get: operations["list_duplicates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/jobs/duplicates/erase": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Erase Duplicates
+         * @description Borra las duplicadas de la vista previa que no tienen nada propio, tras copiar la base de
+         *     datos. Solo desde la UI.
+         */
+        post: operations["erase_duplicates"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1904,7 +1945,7 @@ export interface paths {
         put?: never;
         /**
          * Save User Answers
-         * @description Edición del usuario: crea un documento nuevo «Editadas por ti»; el anterior se conserva.
+         * @description Edición del usuario: crea un documento nuevo «Editadas a mano»; el anterior se conserva.
          */
         post: operations["save_user_answers"];
         delete?: never;
@@ -1928,7 +1969,7 @@ export interface paths {
         put?: never;
         /**
          * Save User Cover Letter
-         * @description Edición a mano: documento nuevo «Editada por ti», sin verificación, y su render.
+         * @description Edición a mano: documento nuevo «Editada a mano», sin verificación, y su render.
          */
         post: operations["save_user_cover_letter"];
         delete?: never;
@@ -2132,7 +2173,7 @@ export interface paths {
         put?: never;
         /**
          * Focus Application
-         * @description «Lo termino yo»: trae la pestaña al frente y deja que envíes tú.
+         * @description «Terminar a mano»: trae la pestaña al frente y deja que envíes tú.
          */
         post: operations["focus_application"];
         delete?: never;
@@ -2648,7 +2689,7 @@ export interface paths {
         put?: never;
         /**
          * Create Agent Request
-         * @description «Dejar para mi próxima sesión»: el agente lo verá con `list_agent_requests`.
+         * @description «Dejar para la próxima sesión»: el agente lo verá con `list_agent_requests`.
          */
         post: operations["create_agent_request"];
         delete?: never;
@@ -2767,6 +2808,27 @@ export interface paths {
         put?: never;
         /** Cancel Assistant Request */
         post: operations["cancel_assistant_request"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/agent/language": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Ui Language
+         * @description El idioma elegido en el portal: el de las órdenes al agente y sus ventanas, también de lo
+         *     que se lanza sin la UI. El CV y la carta siguen el idioma de la oferta.
+         */
+        put: operations["set_ui_language"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -3492,7 +3554,7 @@ export interface paths {
         put?: never;
         /**
          * Mark Draft Sent
-         * @description «Ya lo he enviado»: un seguimiento registra `followup_sent`.
+         * @description «Marcar como enviado»: un seguimiento registra `followup_sent`.
          */
         post: operations["mark_draft_sent"];
         delete?: never;
@@ -4217,6 +4279,18 @@ export interface components {
             subject: string | null;
             /** Background */
             background: boolean;
+            /** Run Id */
+            run_id?: number | null;
+            /**
+             * Stopping
+             * @default false
+             */
+            stopping: boolean;
+            /**
+             * Stopped By User
+             * @default false
+             */
+            stopped_by_user: boolean;
             /**
              * Status
              * @enum {string}
@@ -4408,6 +4482,8 @@ export interface components {
             mode: "background" | "terminal" | "session";
             /** Conversation Id */
             conversation_id?: number | null;
+            /** Lang */
+            lang?: ("es" | "en") | null;
         };
         /** AssistantList */
         AssistantList: {
@@ -5701,6 +5777,57 @@ export interface components {
              */
             occurred_at?: string | null;
         };
+        /** DuplicateList */
+        DuplicateList: {
+            /** Items */
+            items: components["schemas"]["DuplicateView"][];
+            /** Erasable */
+            erasable: number;
+            /** Kept */
+            kept: number;
+        };
+        /** DuplicateView */
+        DuplicateView: {
+            /** Job Id */
+            job_id: number;
+            /** Title */
+            title: string;
+            /** Company */
+            company: string;
+            /** Url */
+            url: string;
+            /**
+             * First Seen At
+             * Format: date-time
+             */
+            first_seen_at: string;
+            /** Original Id */
+            original_id: number;
+            /** Original Title */
+            original_title: string;
+            /** Original Stage */
+            original_stage: string | null;
+            /** Keep Reason */
+            keep_reason: ("no_longer_duplicate" | "own_work") | null;
+        };
+        /** DuplicatesErased */
+        DuplicatesErased: {
+            /**
+             * Ok
+             * @default true
+             */
+            ok: boolean;
+            /** Deleted Jobs */
+            deleted_jobs: number;
+            /** Kept */
+            kept: number;
+            /** Moved Sightings */
+            moved_sightings: number;
+            /** Backup */
+            backup: string | null;
+            /** Message */
+            message: string;
+        };
         /** EditPlatformBody */
         EditPlatformBody: {
             /** Name */
@@ -5833,6 +5960,14 @@ export interface components {
              * @description «BORRAR», escrito por el usuario.
              */
             confirm: string;
+        };
+        /** EraseDuplicatesBody */
+        EraseDuplicatesBody: {
+            /**
+             * Job Ids
+             * @description Las duplicadas de la vista previa.
+             */
+            job_ids: number[];
         };
         /** EraseJobBody */
         EraseJobBody: {
@@ -6639,6 +6774,8 @@ export interface components {
             closed_at?: string | null;
             /** Closed By */
             closed_by?: string | null;
+            /** Close Reason */
+            close_reason?: ("discarded" | "filtered_out" | "rejected" | "withdrawn" | "expired" | "closed_by_company" | "duplicate" | "accepted") | null;
         };
         /** JobRunCost */
         JobRunCost: {
@@ -6719,6 +6856,8 @@ export interface components {
             reopening?: components["schemas"]["ReopeningOf"] | null;
             /** Closed By */
             closed_by?: string | null;
+            /** Close Reason */
+            close_reason?: ("discarded" | "filtered_out" | "rejected" | "withdrawn" | "expired" | "closed_by_company" | "duplicate" | "accepted") | null;
             /** Reached */
             reached?: ("before_applying" | "applied" | "interview" | "offer") | null;
         };
@@ -6732,12 +6871,28 @@ export interface components {
             /** Missing */
             missing: string[];
         };
+        /** LanguageBody */
+        LanguageBody: {
+            /**
+             * Lang
+             * @enum {string}
+             */
+            lang: "es" | "en";
+        };
         /** LanguageRequirement */
         LanguageRequirement: {
             /** Language */
             language: string;
             /** Level */
             level?: string | null;
+        };
+        /** LanguageView */
+        LanguageView: {
+            /**
+             * Lang
+             * @enum {string}
+             */
+            lang: "es" | "en";
         };
         /**
          * LaunchBody
@@ -6754,6 +6909,8 @@ export interface components {
             /** Milestone Id */
             milestone_id?: number | null;
             search?: components["schemas"]["SearchScope"] | null;
+            /** Lang */
+            lang?: ("es" | "en") | null;
             /** Agent */
             agent?: string | null;
             /** Model */
@@ -8728,6 +8885,8 @@ export interface components {
             /** Milestone Id */
             milestone_id?: number | null;
             search?: components["schemas"]["SearchScope"] | null;
+            /** Lang */
+            lang?: ("es" | "en") | null;
         };
         /** ResearchSource */
         ResearchSource: {
@@ -9502,8 +9661,6 @@ export interface components {
             created: number;
             /** Existing */
             existing: number;
-            /** Duplicates */
-            duplicates: number;
             /** Job Ids */
             job_ids: number[];
             /** Errors */
@@ -10305,6 +10462,10 @@ export interface operations {
                 has_score?: boolean | null;
                 /** @description Encaje (score) mínimo. */
                 min_score?: number | null;
+                /** @description Varias etapas a la vez (`?stages=cv_ready&stages=closed`). */
+                stages?: components["schemas"]["Stage"][] | null;
+                /** @description Solo las cerradas con este motivo. */
+                close_reason?: ("discarded" | "filtered_out" | "rejected" | "withdrawn" | "expired" | "closed_by_company" | "duplicate" | "accepted") | null;
             };
             header?: never;
             path?: never;
@@ -10411,6 +10572,194 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RepublishedList"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_duplicates: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DuplicateList"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    erase_duplicates: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EraseDuplicatesBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DuplicatesErased"];
                 };
             };
             /** @description Unauthorized */
@@ -24120,6 +24469,102 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AssistantView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    set_ui_language: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LanguageBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LanguageView"];
                 };
             };
             /** @description Unauthorized */

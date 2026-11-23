@@ -4,6 +4,7 @@ import { ArrowRightIcon } from '@phosphor-icons/react'
 import { useTranslation } from 'react-i18next'
 import type { Schemas } from '@/api/client'
 import { useFunnelFlow } from '@/api/queries'
+import { Hint } from '@/components/Hint'
 import { Reveal } from '@/components/Reveal'
 import { ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
@@ -110,12 +111,9 @@ function Chart({ flow, counts }: { flow: Flow; counts: Record<FlowStep, number> 
         {layout.nodes.map((node, index) => {
           const last = index === layout.nodes.length - 1
           const info = stepInfo(node.step)
+          // Todas a la izquierda de su columna; la última tiene su hueco reservado en `layoutFlow`.
           return (
-            <div
-              key={node.step}
-              className={cn('absolute top-0 whitespace-nowrap', last && 'right-0 text-right')}
-              style={last ? undefined : { left: node.x }}
-            >
+            <div key={node.step} className="absolute top-0 whitespace-nowrap" style={{ left: node.x }}>
               <p className="text-sm font-medium">{tRoot(`steps.${node.step}`)}</p>
               <p className="tabular text-2xl leading-tight font-semibold tracking-tight">{formatNumber(node.count)}</p>
               <p className="text-xs text-muted-foreground">
@@ -208,6 +206,10 @@ function EmptyStep({ x }: { x: number }) {
 function Numbers({ flow }: { flow: Flow }) {
   const { t } = useTranslation('funnel', { keyPrefix: 'flow' })
   const { t: tRoot } = useTranslation('funnel')
+  // Las paradas, una línea por paso y en el orden del recorrido.
+  const stopsByStep = FLOW_STEPS.map((step) => ({ step, stops: flow.stops.filter((s) => s.step === step) })).filter(
+    (group) => group.stops.length > 0,
+  )
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       <table className="w-full text-sm">
@@ -217,7 +219,6 @@ function Numbers({ flow }: { flow: Flow }) {
             <th scope="col" className="py-1.5 font-normal">{t('stepHead')}</th>
             <th scope="col" className="py-1.5 text-right font-normal">{tRoot('funnel.countHead')}</th>
             <th scope="col" className="py-1.5 text-right font-normal">{tRoot('funnel.fromPreviousHead')}</th>
-            <th scope="col" className="py-1.5 text-right font-normal">{tRoot('funnel.fromStartHead')}</th>
           </tr>
         </thead>
         <tbody className="divide-y">
@@ -226,21 +227,25 @@ function Numbers({ flow }: { flow: Flow }) {
               <th scope="row" className="py-1.5 text-left font-normal">{tRoot(`steps.${s.step}`)}</th>
               <td className="tabular py-1.5 text-right">{formatNumber(s.count)}</td>
               <td className="tabular py-1.5 text-right text-muted-foreground">{pct(s.rate_from_previous)}</td>
-              <td className="tabular py-1.5 text-right text-muted-foreground">{pct(s.rate_from_start)}</td>
             </tr>
           ))}
         </tbody>
       </table>
-      {flow.stops.length > 0 && (
+      {stopsByStep.length > 0 && (
         <div>
           <h3 className="border-b py-1.5 text-xs text-muted-foreground">{t('whereTheyStopped')}</h3>
           <ul className="divide-y text-sm">
-            {flow.stops.map((stop) => (
-              <li key={`${stop.step}:${stop.outcome}`} className="flex items-baseline justify-between gap-4 py-1.5">
-                <Link to={stopLink(stop.step, stop.outcome)} className="underline-offset-4 hover:underline">
-                  {t(`stops.${stop.step}.${stop.outcome}` as never, { count: stop.count })}
-                </Link>
-                <span className="text-xs text-muted-foreground">{tRoot(`steps.${stop.step}`)}</span>
+            {stopsByStep.map(({ step, stops }) => (
+              <li key={step} className="py-1.5">
+                <span className="text-muted-foreground">{t('stopsOf', { step: tRoot(`steps.${step}`) })}</span>{' '}
+                {stops.map((stop, index) => (
+                  <span key={stop.outcome}>
+                    {index > 0 && <span className="text-muted-foreground"> · </span>}
+                    <Link to={stopLink(stop.step, stop.outcome)} className="underline-offset-4 hover:underline">
+                      {t(`stops.${stop.step}.${stop.outcome}` as never, { count: stop.count })}
+                    </Link>
+                  </span>
+                ))}
               </li>
             ))}
           </ul>
@@ -276,9 +281,12 @@ export function FunnelFlow({ since, more = false, level = 2 }: { since?: string 
       <div className="flex flex-wrap items-start justify-between gap-x-8 gap-y-4">
         <div className="min-w-0 max-w-[75ch]">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-            <Heading id="funnel-flow" className={cn('font-semibold tracking-tight', level === 2 ? 'text-lg' : 'text-base')}>
-              {t('title')}
-            </Heading>
+            <div className="flex items-center gap-1.5">
+              <Heading id="funnel-flow" className={cn('font-semibold tracking-tight', level === 2 ? 'text-lg' : 'text-base')}>
+                {t('title')}
+              </Heading>
+              <Hint text={t('hint')} label={t('hintLabel')} />
+            </div>
             {ownPeriod && (
               <div role="group" aria-label={tRoot('period')} className="flex gap-1">
                 {PERIODS.map((p) => (
@@ -296,10 +304,11 @@ export function FunnelFlow({ since, more = false, level = 2 }: { since?: string 
               </div>
             )}
           </div>
-          <p className="mt-0.5 text-sm text-muted-foreground">
-            {t('hint')}
-            {!ownPeriod && !!flow?.duplicates_excluded && tRoot('funnel.duplicates', { count: flow.duplicates_excluded })}
-          </p>
+          {!ownPeriod && !!flow?.duplicates_excluded && (
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              {tRoot('funnel.duplicates', { count: flow.duplicates_excluded })}
+            </p>
+          )}
         </div>
         {flow && counts.applied > 0 && (
           <dl className="flex gap-7">

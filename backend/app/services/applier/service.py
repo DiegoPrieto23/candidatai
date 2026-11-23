@@ -15,7 +15,7 @@ Flujo (POLICIES §5):
    uso y encola `apply_submit`.
 5. `run_submit` (worker): consume el token, pulsa el envío, captura la confirmación y registra
    `applied` con la captura como evidencia. Si no se reconoce la confirmación, no registra nada.
-6. «Lo termino yo»: `focus` trae la pestaña al frente y deja enviar; `mark_manual_done` registra
+6. «Terminar a mano»: `focus` trae la pestaña al frente y deja enviar; `mark_manual_done` registra
    `applied_manually`.
 
 Las funciones `run_*` las llama el worker: abren sus propias sesiones cortas, para no tener una
@@ -351,7 +351,7 @@ def prepare(session: Session, job_id: int, form_url: str | None = None) -> Attem
     previous = latest(session, job_id)
     if previous is not None and previous.status in ACTIVE:
         raise ApplierError(
-            "busy", "Ya hay un intento en marcha para esta oferta: espera a que termine."
+            "busy", "Ya hay un intento en marcha para esta oferta: hay que esperar a que termine."
         )
     if mode == "fill" and selected_render_id(session, job_id) is None:
         raise ApplierError("no_cv", "No hay un CV elegido para enviar en esta oferta.")
@@ -372,8 +372,9 @@ def prepare(session: Session, job_id: int, form_url: str | None = None) -> Attem
         warnings.append(
             AttemptWarning(
                 code="possible_duplicate",
-                message="En un intento anterior ya se pulsó «Enviar»: comprueba en la web (o en "
-                "tu correo) que no llegó antes de volver a enviar.",
+                message="En un intento anterior ya se pulsó «Enviar»: conviene comprobar en la "
+                "web (o en "
+                "el correo) que no llegó antes de volver a enviar.",
             ).model_dump()
         )
     attempt = ApplicationAttempt(
@@ -480,7 +481,7 @@ def _warnings(
         out.append(
             AttemptWarning(
                 code="invisible_captcha",
-                message="La web usa un captcha invisible: al enviar podría pedirte resolverlo.",
+                message="La web usa un captcha invisible: al enviar podría pedir resolverlo.",
             )
         )
     if blocked:
@@ -501,7 +502,7 @@ def _warnings(
             AttemptWarning(
                 code="unused_answers",
                 message=f"{len(unused)} respuestas del paquete no encajan con ninguna pregunta "
-                "del formulario: cópialas tú si hace falta.",
+                "del formulario: se copian a mano si hace falta.",
             )
         )
     if not data.answers:
@@ -515,8 +516,8 @@ def _warnings(
         out.append(
             AttemptWarning(
                 code="missing_required",
-                message=f"{len(missing)} campos obligatorios sin respuesta: complétalos en el "
-                "navegador y pulsa «Volver a revisar», o termina tú.",
+                message=f"{len(missing)} campos obligatorios sin respuesta: se completan en el "
+                "navegador y se pulsa «Volver a revisar», o se termina a mano.",
             )
         )
     return out
@@ -528,7 +529,7 @@ def _button_warning(page: Any) -> AttemptWarning:
     if label is None:
         return AttemptWarning(
             code="no_submit_button",
-            message="No se encuentra el botón de envío: tendrás que terminar tú.",
+            message="No se encuentra el botón de envío: hay que terminar a mano.",
         )
     return AttemptWarning(
         code="submit_button", message=f"Al confirmar se pulsará «{label}».", detail=label
@@ -663,8 +664,9 @@ def _fill_page_in_browser(
 
 _NO_FORM = (
     "No se reconoce ningún formulario de candidatura. Si en la web hay que pulsar un botón para "
-    "verlo, púlsalo en el navegador de CandidatAI y luego «Rellenar esta página»; si no, termina "
-    "tú en la web."
+    "verlo, se pulsa en el navegador de CandidatAI y luego «Rellenar esta página»; si no, se "
+    "termina "
+    "a mano en la web."
 )
 
 
@@ -709,7 +711,8 @@ def _rescan_in_browser(
     if page is None:
         raise ApplierError(
             "invalid_state",
-            "La pestaña preparada ya no existe (se cerró el navegador o el worker): vuelve a "
+            "La pestaña preparada ya no existe (se cerró el navegador o el worker): hay que "
+            "volver a "
             "preparar la candidatura.",
         )
     found = guard.check(page)
@@ -771,7 +774,8 @@ def _store_outcome(
             prompts.request(
                 session,
                 _PROMPT_KINDS[outcome.blocker.kind],
-                f"{outcome.blocker.message} Resuélvelo en el navegador de CandidatAI y pulsa "
+                f"{outcome.blocker.message} Hay que resolverlo en el navegador de CandidatAI y "
+                f"pulsar "
                 "«Ya está»: se rellenará el formulario.",
                 url=attempt.url,
                 attempt_id=attempt.id,
@@ -835,7 +839,8 @@ def rescan(session: Session, attempt_id: int) -> AttemptView:
     if _clicked(attempt):
         raise ApplierError(
             "invalid_state",
-            "En este intento ya se pulsó «Enviar»: termina tú en la web o prepara uno nuevo.",
+            "En este intento ya se pulsó «Enviar»: hay que terminar a mano en la web o preparar "
+            "uno nuevo.",
         )
     if attempt.mode != "fill" or attempt.status not in RESCANNABLE:
         raise ApplierError("invalid_state", f"No se puede volver a revisar en «{attempt.status}».")
@@ -865,7 +870,10 @@ def run_rescan(attempt_id: int) -> dict[str, Any]:
 def _fill_page_problem(session: Session, attempt: ApplicationAttempt) -> str | None:
     """Por qué no se puede usar «Rellenar esta página» en este intento, o `None`."""
     if _clicked(attempt):
-        return "En este intento ya se pulsó «Enviar»: termina tú en la web o prepara uno nuevo."
+        return (
+            "En este intento ya se pulsó «Enviar»: hay que terminar a mano en la web o "
+            "preparar uno nuevo."
+        )
     if attempt.status not in PAGE_FILLABLE:
         return f"No se puede rellenar una página con el intento en «{attempt.status}»."
     if events.current_stage(session, attempt.job_id) != Stage.CV_READY:
@@ -1001,7 +1009,7 @@ def confirm_submission(
         )
     if reviewed_at != attempt.updated_at:
         raise ApplierError(
-            "stale", "El intento ha cambiado desde que lo revisaste: revísalo otra vez."
+            "stale", "El intento ha cambiado desde la última revisión: hay que revisarlo otra vez."
         )
     pending = (
         attempt.token_hash is not None
@@ -1010,7 +1018,7 @@ def confirm_submission(
         and attempt.token_expires_at > utcnow()
     )
     if pending:
-        raise ApplierError("busy", "Ya confirmaste este envío: espera a que lo haga el worker.")
+        raise ApplierError("busy", "Este envío ya está confirmado: falta que lo haga el worker.")
     stage = events.current_stage(session, attempt.job_id)
     if stage != Stage.CV_READY:
         raise ApplierError("invalid_stage", f"La oferta está en «{stage}»: ya no se envía.")
@@ -1054,7 +1062,7 @@ def _submit_in_browser(
             outcome=submit.SubmitOutcome(
                 result="failed",
                 message="La pestaña preparada ya no existe (se cerró el navegador o el worker): "
-                "vuelve a preparar la candidatura.",
+                "hay que volver a preparar la candidatura.",
             ),
             screenshot=None,
         )
@@ -1148,7 +1156,7 @@ def _reject_token(attempt_id: int, reason: str) -> None:
         if attempt is None or attempt.status != "ready" or attempt.token_hash is None:
             return  # no había confirmación pendiente: nada que anular
         attempt.token_hash = None
-        attempt.error = f"No se envió: {reason} Confirma de nuevo si quieres enviarla."
+        attempt.error = f"No se envió: {reason} Para enviarla, hay que confirmarla de nuevo."
         _touch(attempt)
 
 
@@ -1167,7 +1175,7 @@ def _record_applied(session: Session, attempt: ApplicationAttempt) -> bool:
     return True
 
 
-# --- Abrir, «Lo termino yo» y navegador -----------------------------------------------------
+# --- Abrir, «Terminar a mano» y navegador -----------------------------------------------------
 
 
 def run_open(attempt_id: int) -> dict[str, Any]:
@@ -1195,7 +1203,7 @@ def run_open(attempt_id: int) -> dict[str, Any]:
 
 
 def focus(session: Session, attempt_id: int) -> AttemptView:
-    """«Lo termino yo»: encola traer la pestaña al frente y dejar que envíes tú."""
+    """«Terminar a mano»: encola traer la pestaña al frente y dejar que envíes tú."""
     _no_docker()
     attempt = _get(session, attempt_id)
     if attempt.status not in REVIEWABLE:
@@ -1247,7 +1255,8 @@ def mark_manual_done(session: Session, job_id: int) -> events.AddEventResult:
     attempt = latest(session, job_id)
     if attempt is not None and attempt.status in ACTIVE:
         raise ApplierError(
-            "busy", "El navegador está trabajando en esta candidatura: espera a que termine."
+            "busy",
+            "El navegador está trabajando en esta candidatura: hay que esperar a que termine.",
         )
     channel = _MANUAL_CHANNEL.get(attempt.platform, "ats_form") if attempt else "portal_manual"
     result = events.add_user_event(session, job_id, "applied_manually", channel=channel)
@@ -1275,12 +1284,14 @@ def _start_page() -> str:
         "p.note{color:#52606d;font-size:.9rem}</style></head><body>"
         "<h1>Navegador de CandidatAI</h1>"
         "<p>Aquí abre CandidatAI las ofertas y rellena los formularios. Tiene su propio perfil, "
-        "separado de tu Chrome: inicia sesión en los portales que uses y las sesiones se quedan "
+        "separado de Chrome: en él se inicia sesión en los portales que se usen y las sesiones se "
+        "quedan "
         "guardadas para las próximas candidaturas.</p>"
         f"<ul>{links}</ul>"
-        "<p>Después, en la ficha de la oferta, pulsa «Preparar candidatura».</p>"
-        '<p class="note">Las cuentas y las contraseñas las introduces tú: CandidatAI no las lee. '
-        "Puedes dejar esta ventana abierta.</p></body></html>"
+        "<p>Después, en la ficha de la oferta, «Preparar candidatura».</p>"
+        '<p class="note">Las cuentas y las contraseñas se introducen a mano: '
+        "CandidatAI no las lee. "
+        "Esta ventana puede quedarse abierta.</p></body></html>"
     )
 
 
@@ -1312,11 +1323,13 @@ def recover_interrupted(session: Session, attempt_ids: list[int]) -> int:
         if attempt is None:
             continue
         if attempt.status == "submitting":
-            attempt.error = "El worker se cerró durante el envío: comprueba en la web si llegó."
+            attempt.error = (
+                "El worker se cerró durante el envío: conviene comprobar en la web si llegó."
+            )
             _touch(attempt, "submit_unconfirmed")
             count += 1
         elif attempt.status in ("queued", "filling"):
-            attempt.error = "El worker se cerró antes de terminar: vuelve a preparar."
+            attempt.error = "El worker se cerró antes de terminar: hay que volver a preparar."
             _touch(attempt, "failed")
             count += 1
     return count

@@ -27,12 +27,12 @@ describe('Cómo funciona', () => {
     open()
     const main = await mainRegion()
     const who = within(main.getByRole('region', { name: 'Quién hace qué' }))
-    for (const name of ['Tú', 'Tu agente', 'La app']) {
+    for (const name of ['Quien busca empleo', 'El agente', 'La app']) {
       expect(who.getByRole('heading', { level: 3, name })).toBeInTheDocument()
     }
-    expect(who.getByText(/Ninguna candidatura sale sin tu confirmación/)).toBeInTheDocument()
+    expect(who.getByText(/Ninguna candidatura sale sin confirmación/)).toBeInTheDocument()
     // En viñetas, un verbo por línea.
-    for (const item of ['Decides qué ofertas siguen adelante', 'Redacta tus CVs y cartas', 'Deja a tu agente lo que necesita IA']) {
+    for (const item of ['Decide qué ofertas siguen adelante', 'Redacta los CVs y las cartas', 'Deja al agente lo que necesita IA']) {
       expect(who.getByText(item).tagName).toBe('LI')
     }
   })
@@ -43,14 +43,14 @@ describe('Cómo funciona', () => {
     const journey = main.getByRole('region', { name: 'El recorrido, en cinco pasos' })
     const steps = within(journey).getAllByRole('listitem')
     expect(steps.map((step) => within(step).getByRole('heading', { level: 3 }).textContent)).toEqual([
-      'Prepara tu búsqueda',
-      'Reúne ofertas',
-      'Decide cuáles merecen la pena',
-      'Prepara y envía la candidatura',
-      'Sigue tus procesos y aprende',
+      'Preparar la búsqueda',
+      'Reunir ofertas',
+      'Decidir cuáles merecen la pena',
+      'Preparar y enviar la candidatura',
+      'Seguir los procesos y aprender',
     ])
-    expect(journey).toHaveTextContent('pulsa «Valorar las ofertas nuevas»')
-    expect(journey).toHaveTextContent('pulsa «Generar CV»')
+    expect(journey).toHaveTextContent('«Valorar las ofertas nuevas» (aparece cuando hay ofertas pendientes) hace que el agente')
+    expect(journey).toHaveTextContent('«Generar CV» hace que el agente')
     expect(journey).not.toHaveTextContent('{{')
   })
 
@@ -81,7 +81,7 @@ describe('Cómo funciona', () => {
   it('las guías se abren aparte y en el idioma de la UI', async () => {
     open()
     const main = await mainRegion()
-    const guide = main.getByRole('link', { name: /Empieza aquí/ })
+    const guide = main.getByRole('link', { name: /Primeros pasos/ })
     expect(guide).toHaveAttribute('href', expect.stringMatching(/\/docs\/EMPEZAR\.md$/))
     expect(guide).toHaveAttribute('target', '_blank')
     expect(main.getByRole('link', { name: /Guía de uso/ })).toHaveAttribute('href', expect.stringMatching(/\/docs\/GUIA\.md$/))

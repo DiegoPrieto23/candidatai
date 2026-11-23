@@ -1,20 +1,20 @@
 {
   "steps": {
-    "reply_received": "They replied",
-    "interview_scheduled": "I have an interview",
+    "reply_received": "Reply received",
+    "interview_scheduled": "Interview scheduled",
     "interview_done": "Interview done",
     "test_assigned": "Technical test",
-    "offer_received": "I got an offer",
-    "accepted": "I accept the offer",
-    "rejected": "They turned me down",
-    "withdrawn": "I'm withdrawing",
-    "expired": "No reply, I'll consider it closed"
+    "offer_received": "Offer received",
+    "accepted": "Accept the offer",
+    "rejected": "Rejected by the company",
+    "withdrawn": "Withdraw the application",
+    "expired": "No reply: mark as closed"
   },
   "label": "What happened?",
   "title": "What happened with this application?",
-  "hint": "It's in “{{stage}}”. Log each step: the job changes stage on its own and it stays in its history.",
+  "hint": "It is in “{{stage}}”. Log each step: the job changes stage on its own and it stays in its history.",
   "details": "An offer's details (salary, reply-by date…) go in <offer>Log offer</offer>, and the date of an interview or a test in <milestones>Milestones → Add</milestones>.",
-  "loadFailed": "Couldn't load the options: {{error}}",
+  "loadFailed": "Could not load the options: {{error}}",
   "interview": {
     "instructions": {
       "label": "Instructions for prep and practice (optional)",
@@ -31,12 +31,12 @@
       "open": "Ask for changes to the guide",
       "label": "What you want to change",
       "placeholder": "E.g.: remove the code section and add more questions on leadership.",
-      "hint": "Your agent touches only this and adds nothing that isn’t in your profile. The previous version is kept.",
+      "hint": "Your agent touches only this and adds nothing that is not in your profile. The previous version is kept.",
       "pending": "Changes requested, not applied yet:",
       "cancel": "Cancel",
       "submit": "Apply changes",
-      "cancelled": "You can’t ask for changes to this guide because the interview is cancelled.",
-      "closed": "You can’t ask for changes to this guide because the process for this job is closed."
+      "cancelled": "You cannot ask for changes to this guide because the interview is cancelled.",
+      "closed": "You cannot ask for changes to this guide because the process for this job is closed."
     },
     "versions": {
       "older": {
@@ -54,7 +54,7 @@
       "reordered": "Same text, in a different order.",
       "removed": "Removed",
       "added": "Added",
-      "pendingHint": "First cancel the requested changes or wait until they’re applied.",
+      "pendingHint": "First cancel the requested changes or wait until they are applied.",
       "parts": {
         "cover": "Cover",
         "section": "Order of the sections",

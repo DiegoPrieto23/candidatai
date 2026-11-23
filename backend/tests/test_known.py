@@ -231,3 +231,57 @@ def test_closed_by_you_is_same_offer_not_reopen(session: Session) -> None:
     item = KnownItem(url=_infojobs(3), title="Data Engineer", company="Acme Datos", location="Vigo")
     [result] = check_known(session, [item]).items
     assert (result.status, result.closed_by) == ("same_offer", "discarded")
+
+
+def test_almost_same_title_is_same_offer_and_writes_nothing(session: Session) -> None:
+    """Lo que `store_job` no daría de alta (la misma vacante con un título casi igual) tampoco se
+    abre."""
+    job_id = _add(session, "https://careers.acme.com/jobs/1", title="Data Engineer Python")
+    before = _counts(session)
+    item = KnownItem(
+        url="https://careers.acme.com/jobs/2",
+        title="Data Engineer - Python / SQL",
+        company="ACME DATOS",
+        location="Remoto",
+    )
+    [result] = check_known(session, [item]).items
+    assert (result.status, result.matched_by, result.job_id) == (
+        "same_offer",
+        "fuzzy_title",
+        job_id,
+    )
+    assert _counts(session) == before
+    stored = ingest.add_from_text(
+        session, item.title or "", item.company or "", TEXT, url=item.url, location=item.location
+    )
+    assert (stored.created, stored.job_id) == (False, job_id)
+
+
+def test_almost_same_title_closed_by_the_company_is_a_reopen_candidate(session: Session) -> None:
+    job_id = _add(session, "https://careers.acme.com/jobs/1", title="Data Engineer Python")
+    _close(session, job_id, 40, EventType.EXPIRED)
+    item = KnownItem(
+        url="https://careers.acme.com/jobs/2", title="Data Engineer - Python", company="Acme Datos"
+    )
+    [result] = check_known(session, [item]).items
+    assert (result.status, result.matched_by) == ("reopen_candidate", "fuzzy_title")
+
+
+def test_same_platform_ids_are_not_almost_the_same_offer(session: Session) -> None:
+    """Dos ids distintos de la misma plataforma son publicaciones distintas, como al dar de alta."""
+    _add(session, _infojobs(1), title="Data Engineer")
+    item = KnownItem(url=_infojobs(2), title="Senior Data Engineer", company="Acme Datos")
+    [result] = check_known(session, [item]).items
+    assert result.status == "new"
+    other = KnownItem(
+        url="https://careers.acme.com/jobs/9", title="Senior Data Engineer", company="Acme Datos"
+    )
+    assert check_known(session, [other]).items[0].status == "same_offer"
+
+
+def test_almost_same_title_of_another_company_is_new(session: Session) -> None:
+    _add(session, "https://careers.acme.com/jobs/1", title="Data Engineer Python")
+    item = KnownItem(
+        url="https://globex.example/jobs/1", title="Data Engineer - Python", company="Globex"
+    )
+    assert check_known(session, [item]).items[0].status == "new"

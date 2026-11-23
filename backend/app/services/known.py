@@ -10,7 +10,9 @@ dar de alta:
 3. **Huella** (empresa + título + ubicación): `reopen_candidate` si la cerró la empresa o caducó
    hace más de `dedup.reopen_after_days` (`store_job` la dará de alta como reapertura); si no
    (viva, cerrada hace poco o cerrada por ti), `same_offer`.
-4. Nada de lo anterior: `new`.
+4. **Título casi igual** de la misma empresa (`ingest.fuzzy_original`, `matched_by: fuzzy_title`):
+   igual que la huella. `store_job` tampoco crea oferta para él.
+5. Nada de lo anterior: `new`.
 
 No escribe nada: ni publicaciones, ni eventos, ni ofertas.
 """
@@ -24,17 +26,22 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.policies import get_policies
-from app.models import Application, Job, JobSighting
+from app.models import Application, Company, Job, JobSighting
 from app.models.base import utcnow
 from app.services import platforms, reposts
-from app.services.ingest import closed_by_company, find_by_platform
+from app.services.ingest import (
+    closed_by_company,
+    find_by_platform,
+    fuzzy_original,
+    original_of,
+)
 from app.services.normalize import fingerprint, normalize_company
 from app.services.pipeline import Stage
 
 MAX_ITEMS = 100
 
 KnownStatus = Literal["new", "known", "same_offer", "reopen_candidate"]
-MatchedBy = Literal["platform_id", "url", "fingerprint"]
+MatchedBy = Literal["platform_id", "url", "fingerprint", "fuzzy_title"]
 
 
 class KnownItem(BaseModel):
@@ -115,9 +122,38 @@ def _by_fingerprint(session: Session, item: KnownItem) -> Job | None:
         return None
     location = " ".join(item.location.split()) if item.location else None
     fp = fingerprint(company, title, location)
-    return session.scalars(
+    job = session.scalars(
         select(Job).where(Job.fingerprint == fp).order_by(Job.id.desc()).limit(1)
     ).first()
+    # Una duplicada de antes lleva a su original, como al dar de alta.
+    return original_of(session, job) if job is not None else None
+
+
+def _by_fuzzy_title(
+    session: Session, item: KnownItem, platform: str | None, external_id: str | None, now: datetime
+) -> Job | None:
+    """La misma vacante con un título casi igual, como la reconoce `store_job` al dar de alta.
+
+    Aquí no se sabe de qué fuente viene el resultado, solo su plataforma: un conector sin
+    plataforma reconocible (que `store_job` distingue por su fuente) no pasa por aquí, porque lo
+    que se comprueba antes de abrir son los resultados de un portal."""
+    title = " ".join((item.title or "").split())
+    company = " ".join((item.company or "").split())
+    normalized = normalize_company(company) if company else ""
+    if not title or not normalized:
+        return None
+    company_id = session.scalars(
+        select(Company.id).where(Company.normalized_name == normalized).limit(1)
+    ).first()
+    if company_id is None:
+        return None
+    return fuzzy_original(
+        session,
+        company_id,
+        title,
+        now,
+        skip_platform=platform if external_id else None,
+    )
 
 
 def _result(
@@ -139,7 +175,9 @@ def _result(
     )
 
 
-def _check_one(session: Session, item: KnownItem, reopen_before: datetime) -> KnownResult:
+def _check_one(
+    session: Session, item: KnownItem, now: datetime, reopen_before: datetime
+) -> KnownResult:
     platform, external_id = _identity(item)
     if platform and external_id:
         job = find_by_platform(session, platform, external_id)
@@ -148,7 +186,11 @@ def _check_one(session: Session, item: KnownItem, reopen_before: datetime) -> Kn
     job = _by_url(session, item.url, platform, external_id)
     if job is not None:
         return _result(item, "known", "url", job, session.get(Application, job.id))
+    matched_by: MatchedBy = "fingerprint"
     job = _by_fingerprint(session, item)
+    if job is None:
+        job = _by_fuzzy_title(session, item, platform, external_id, now)
+        matched_by = "fuzzy_title"
     if job is None:
         return KnownResult(url=item.url, status="new")
     app = session.get(Application, job.id)
@@ -160,14 +202,14 @@ def _check_one(session: Session, item: KnownItem, reopen_before: datetime) -> Kn
         # Solo lo que `store_job` daría de alta como reapertura: la cerró la empresa o caducó.
         and closed_by_company(session, job.id, app.closed_by) is True
     )
-    return _result(item, "reopen_candidate" if reopen else "same_offer", "fingerprint", job, app)
+    return _result(item, "reopen_candidate" if reopen else "same_offer", matched_by, job, app)
 
 
 def check_known(session: Session, items: list[KnownItem], now: datetime | None = None) -> KnownList:
     """Estado de cada elemento, en el mismo orden. Solo lee."""
-    days = get_policies().dedup.reopen_after_days
-    reopen_before = (now or utcnow()) - timedelta(days=days)
-    results = [_check_one(session, item, reopen_before) for item in items]
+    now = now or utcnow()
+    reopen_before = now - timedelta(days=get_policies().dedup.reopen_after_days)
+    results = [_check_one(session, item, now, reopen_before) for item in items]
     counts = KnownCounts()
     for result in results:
         setattr(counts, result.status, getattr(counts, result.status) + 1)

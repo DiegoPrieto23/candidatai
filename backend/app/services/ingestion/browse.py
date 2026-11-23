@@ -147,7 +147,7 @@ def check_priority(source: Source, expected: int | None) -> None:
     if expected is not None and current is not None and current != expected:
         raise PriorityConflictError(
             f"El orden ha cambiado desde que lo cargaste: «{source.name}» está ahora en el puesto "
-            f"{current}. Recarga y vuelve a elegir."
+            f"{current}. Hay que recargar y volver a elegir."
         )
 
 
@@ -227,7 +227,8 @@ def add_platform(session: Session, data: AgentBrowseSource) -> SaveSourceResult:
 
     if (existing := _find_by_name(session, data.name)) is not None:
         raise SourceExistsError(
-            f"Ya hay una plataforma «{existing.name}»: cambia el nombre o edita la existente."
+            f"Ya hay una plataforma «{existing.name}»: hace falta otro nombre o editar la "
+            f"existente."
         )
     if is_linkedin(data):
         data = data.model_copy(update={"allow_agent_browsing": False})
@@ -377,7 +378,7 @@ def update_settings(
     if enabling and is_linkedin(config) and not confirm_risk:
         raise BrowsingNotAllowedError(
             "Activar la búsqueda con navegador en LinkedIn requiere confirmar el riesgo "
-            "para tu cuenta (`confirm_risk: true`)."
+            "para la cuenta (`confirm_risk: true`)."
         )
     if allow_agent_browsing is not None:
         config["allow_agent_browsing"] = allow_agent_browsing
@@ -403,7 +404,7 @@ def set_max_offers(session: Session, source_ids: list[int], max_offers: int) -> 
     """«Hasta N ofertas por portal» del panel de «Buscar ofertas»: el mismo número para varias
     plataformas en una operación (todas o ninguna) y, desde ahora, para las nuevas."""
     if not source_ids:
-        raise ValueError("Elige al menos una plataforma.")
+        raise ValueError("Hace falta al menos una plataforma.")
     if not offers_limit.MIN <= max_offers <= offers_limit.MAX:
         raise ValueError(
             f"El número de ofertas tiene que estar entre {offers_limit.MIN} y {offers_limit.MAX}."
@@ -431,7 +432,7 @@ def edit_platform(
     source = browse_source(session, source_id)
     clash = _find_by_name(session, name)
     if clash is not None and clash.id != source.id:
-        raise SourceExistsError(f"Ya hay una plataforma «{clash.name}»: elige otro nombre.")
+        raise SourceExistsError(f"Ya hay una plataforma «{clash.name}»: hace falta otro nombre.")
     config = dict(source.config or {})
     data = AgentBrowseSource.model_validate({**config, "name": name, "search_urls": search_urls})
     _check_domains(data)
@@ -441,7 +442,7 @@ def edit_platform(
     if data.platform not in platforms.PLATFORM_LABELS and before and after != before:
         raise ValueError(
             f"Las búsquedas tienen que seguir siendo de {', '.join(sorted(before))}: para otro "
-            "sitio, añade otra plataforma."
+            "sitio, se añade otra plataforma."
         )
     config["search_urls"] = data.search_urls
     source.name = " ".join(data.name.split())

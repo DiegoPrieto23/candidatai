@@ -36,7 +36,10 @@ describe('platformHome', () => {
     expect(platformHome(['no es url', 'https://www.infojobs.net/jobsearch/x?keyword=a'])).toEqual({
       origin: 'https://www.infojobs.net',
       host: 'infojobs.net',
+      label: 'www.infojobs.net',
     })
+    // Sin `www.`, tal cual.
+    expect(platformHome(['https://jobs.example.com/x'])?.label).toBe('jobs.example.com')
     expect(platformHome([])).toBeNull()
   })
 })

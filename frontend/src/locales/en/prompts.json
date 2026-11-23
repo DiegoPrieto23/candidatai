@@ -7,9 +7,9 @@
   },
   "description": "You need to do this yourself, {{where}}. CandidatAI never does it for you.",
   "openPage": "Open the page",
-  "expires": "If you don't answer within {{time}}, the notice expires.",
-  "agentContinues": "If you don't answer within {{time}}, the agent moves on to the next thing.",
-  "timeUp": "Time's up.",
+  "expires": "If you do not answer within {{time}}, the notice expires.",
+  "agentContinues": "If you do not answer within {{time}}, the agent moves on to the next thing.",
+  "timeUp": "Time is up.",
   "skip": "Skip",
   "done": "Done",
   "question": {
@@ -17,8 +17,8 @@
     "label": "Your answer",
     "placeholder": "Type your answer…",
     "placeholderOther": "Or type another answer…",
-    "expires": "If you don't answer within {{time}}, it will ask in its window.",
-    "timeUp": "Time's up: it will ask in its window.",
+    "expires": "If you do not answer within {{time}}, it will ask in its window.",
+    "timeUp": "Time is up: it will ask in its window.",
     "inTerminal": "Answer in the terminal",
     "send": "Send"
   }

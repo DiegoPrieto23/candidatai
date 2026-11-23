@@ -1,8 +1,8 @@
 """Alta manual de ofertas: por URL (descarga y extracción) o por texto pegado.
 
-Las dos vías normalizan, calculan la huella, detectan duplicados exactos (devuelven la oferta
-existente sin crear eventos) y difusos (`duplicate_of` + evento `duplicate_detected`), evalúan el
-riesgo del contenido (`services/untrusted.py`) y registran el evento `found`.
+Las dos vías normalizan, calculan la huella, detectan duplicados exactos y difusos (devuelven la
+oferta existente sin crear eventos; el difuso, con `duplicate_of`), evalúan el riesgo del
+contenido (`services/untrusted.py`) y registran el evento `found`.
 
 No se ejecuta JavaScript ni se sortean logins: si la página no da el texto, se pide pegarlo.
 """
@@ -476,18 +476,25 @@ def needs_store(session: Session, job: Job) -> bool:
     return republication(session, job, same_id=True) is not None
 
 
-def _fuzzy_duplicate(
+def fuzzy_original(
     session: Session,
     company_id: int,
     title: str,
     now: datetime,
-    source_id: int | None = None,
-) -> tuple[int, float] | None:
-    """Oferta original más parecida de la misma empresa en la ventana, y su puntuación.
+    *,
+    skip_source_id: int | None = None,
+    skip_platform: str | None = None,
+) -> Job | None:
+    """La misma vacante con un título casi igual («Data Engineer» y «Data Engineer (m/f/d)»): la
+    oferta de la misma empresa vista en `dedup.fuzzy_window_days` cuyo título se parece al menos
+    `dedup.fuzzy_title_threshold`. Con empates, la que sigue viva y, después, la más reciente (tras
+    una reapertura, la reapertura). Siempre la original, nunca una duplicada guardada antes de que
+    dejaran de crearse.
 
-    Con `source_id` (oferta de un conector con id propio), las ofertas de esa misma fuente que
-    también tienen id no cuentan: el ATS ya dice que son publicaciones distintas (p. ej. «Senior
-    Data Engineer» en remoto y «Data Engineer» en Vigo)."""
+    Para una oferta con id propio se pasan su fuente (`skip_source_id`) o su plataforma
+    (`skip_platform`): las de esa misma fuente o plataforma que también tienen id no cuentan,
+    porque el portal ya dice que son publicaciones distintas (p. ej. «Senior Data Engineer» en
+    remoto y «Data Engineer» en Vigo). Solo lee."""
     policy = get_policies().dedup
     since = now - timedelta(days=policy.fuzzy_window_days)
     candidates = session.scalars(
@@ -496,15 +503,29 @@ def _fuzzy_duplicate(
         .order_by(Job.first_seen_at, Job.id)
     ).all()
     target = normalize_title(title)
-    best: tuple[int, float] | None = None
-    for candidate in candidates:
-        if source_id is not None and candidate.source_id == source_id and candidate.external_id:
+    best: tuple[tuple[float, bool, int], Job] | None = None
+    for order, candidate in enumerate(candidates):
+        if candidate.external_id and (
+            (skip_source_id is not None and candidate.source_id == skip_source_id)
+            or (skip_platform is not None and candidate.platform == skip_platform)
+        ):
             continue
         score = fuzz.token_set_ratio(target, normalize_title(candidate.title))
-        if score >= policy.fuzzy_title_threshold and (best is None or score > best[1]):
-            # Siempre se apunta a la original, no a otro duplicado.
-            best = (candidate.duplicate_of or candidate.id, score)
-    return best
+        if score < policy.fuzzy_title_threshold:
+            continue
+        job = original_of(session, candidate)
+        app = session.get(Application, job.id)
+        key = (score, app is None or app.stage != Stage.CLOSED, order)
+        if best is None or key > best[0]:
+            best = (key, job)
+    return best[1] if best else None
+
+
+def original_of(session: Session, job: Job) -> Job:
+    """La original de una duplicada guardada antes de que dejaran de crearse; si no, la misma."""
+    if job.duplicate_of is None:
+        return job
+    return session.get(Job, job.duplicate_of) or job
 
 
 def store_job(
@@ -558,15 +579,32 @@ def store_job(
             session, same, same_id=True, url=url, platform=platform, external_id=external_id
         )
 
+    now = utcnow()
+    company_row = get_or_create_company(session, company)
     fp = fingerprint(company, title, location)
-    reopening_of: int | None = None
     existing = latest_by_fingerprint(session, fp)
+    # Una duplicada de antes lleva a su original, que es la que sigue la vacante.
+    fuzzy = existing is not None and existing.duplicate_of is not None
+    if existing is not None:
+        existing = original_of(session, existing)
+    else:
+        # La misma vacante con un título casi igual tampoco es una oferta nueva.
+        existing = fuzzy_original(
+            session,
+            company_row.id,
+            title,
+            now,
+            skip_source_id=source.id if external_id else None,
+            skip_platform=platform if external_id else None,
+        )
+        fuzzy = existing is not None
+    reopening_of: int | None = None
     if existing is not None:
         if republication(session, existing, same_id=False) == "reopening":
             reopening_of = existing.id
         else:
-            # La misma oferta con otro id o URL: puede ser una republicación (fase 16).
-            return note_known(
+            # La misma oferta con otro id, URL o título: puede ser una republicación (fase 16).
+            known = note_known(
                 session,
                 existing,
                 same_id=False,
@@ -574,17 +612,10 @@ def store_job(
                 platform=platform,
                 external_id=external_id,
             )
+            if fuzzy:
+                known.duplicate_of = existing.id
+            return known
 
-    now = utcnow()
-    company_row = get_or_create_company(session, company)
-    # Una reapertura no es un duplicado de la oferta de la que viene.
-    duplicate = (
-        None
-        if reopening_of is not None
-        else _fuzzy_duplicate(
-            session, company_row.id, title, now, source.id if external_id else None
-        )
-    )
     risk = assess(text, html)
     job = Job(
         source_id=source.id,
@@ -598,7 +629,6 @@ def store_job(
         raw_text=text,
         risk_flags=[flag.value for flag in risk.flags],
         fingerprint=fp,
-        duplicate_of=duplicate[0] if duplicate else None,
         reopening_of=reopening_of,
         posted_at=posted_at,
         first_seen_at=now,
@@ -625,14 +655,6 @@ def store_job(
             EventType.INJECTION_SUSPECTED,
             Actor.SYSTEM,
             {"flags": job.risk_flags, "excerpt": risk.excerpt},
-        )
-    if duplicate:
-        record(
-            session,
-            job.id,
-            EventType.DUPLICATE_DETECTED,
-            Actor.SYSTEM,
-            {"duplicate_of": duplicate[0], "score": round(duplicate[1], 1)},
         )
     return AddJobResult(
         job_id=job.id,

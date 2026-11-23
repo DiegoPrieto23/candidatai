@@ -89,15 +89,15 @@ describe('Bandeja', () => {
     const { unmount } = renderApp('/bandeja')
     let table = await screen.findByRole('table')
     const unread = within(table).getAllByRole('row')[2]
-    expect(within(unread).getByText('Sin encaje calculado: tu agente aún no ha leído la oferta.')).toBeInTheDocument()
+    expect(within(unread).getByText('Sin encaje calculado: el agente aún no ha leído la oferta.')).toBeInTheDocument()
     await userEvent.hover(within(unread).getByText('Sin encaje'))
-    expect(await screen.findByRole('tooltip')).toHaveTextContent('tu agente aún no ha leído la oferta')
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('el agente aún no ha leído la oferta')
     unmount()
 
     mockApi({ 'GET /status': status(1, 1), 'GET /jobs': rows, 'GET /profile/editable': noProfile })
     renderApp('/bandeja')
     table = await screen.findByRole('table')
-    expect(await within(table).findAllByText('Sin encaje calculado: falta tu perfil. Créalo en «Mi perfil».')).toHaveLength(2)
+    expect(await within(table).findAllByText('Sin encaje calculado: falta el perfil. Se crea en «Mi perfil».')).toHaveLength(2)
   })
 
   it('filtra por la etapa de la URL y busca con retardo', async () => {
@@ -151,7 +151,7 @@ describe('Bandeja', () => {
   it('muestra un estado vacío que invita a dar de alta', async () => {
     mockApi({ 'GET /status': status(), 'GET /jobs': page([]) })
     renderApp('/bandeja')
-    expect(await screen.findByText('Tu bandeja está vacía')).toBeInTheDocument()
+    expect(await screen.findByText('La bandeja está vacía')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /Añadir la primera/ })).toHaveAttribute('href', '/nueva')
   })
 
@@ -160,7 +160,7 @@ describe('Bandeja', () => {
     globalThis.fetch = () => Promise.reject(new TypeError('Failed to fetch'))
     renderApp('/bandeja')
     expect(await screen.findByText('CandidatAI no responde')).toBeInTheDocument()
-    expect(screen.getByText(/Ábrela desde su acceso directo/)).toBeInTheDocument()
+    expect(screen.getByText(/Hay que abrirla desde su acceso directo/)).toBeInTheDocument()
   })
 })
 
@@ -230,9 +230,9 @@ describe('Qué es cada etapa y cómo avanzar', () => {
     mockApi({ 'GET /status': status(0, 1), 'GET /jobs': page() })
     renderApp('/bandeja?stage=pending_detail')
     const box = await guide()
-    expect(box).toHaveTextContent('tu agente no entra en LinkedIn')
+    expect(box).toHaveTextContent('el agente no entra en LinkedIn')
     expect(within(box).getAllByRole('listitem')).toHaveLength(3)
-    expect(within(box).getByRole('link', { name: 'Instálalo en unos minutos' })).toHaveAttribute('href', '/fuentes/extension')
+    expect(within(box).getByRole('link', { name: 'Se instala en unos minutos' })).toHaveAttribute('href', '/fuentes/extension')
     expect(within(box).getByRole('link', { name: 'Por completar' })).toHaveAttribute('href', '/bandeja/por-completar')
   })
 
@@ -248,7 +248,7 @@ describe('Qué es cada etapa y cómo avanzar', () => {
     box = await guide()
     expect(within(box).getByRole('link', { name: 'Abrir la revisión rápida' })).toHaveAttribute('href', '/bandeja/revision')
     expect(within(box).queryByRole('button', { name: 'Valorar las que están por revisar' })).not.toBeInTheDocument()
-    expect(box).toHaveTextContent('Ninguna cambia de etapa sin tu decisión')
+    expect(box).toHaveTextContent('Ninguna cambia de etapa sin una decisión manual')
   })
 })
 
@@ -285,7 +285,7 @@ describe('Descartar desde la Bandeja (fase 27.6)', () => {
     expect(within(table).queryByText('Analytics Engineer')).not.toBeInTheDocument()
     expect(within(table).getByText('BI Developer')).toBeInTheDocument()
     const notice = await screen.findByText(/Descartada:/)
-    expect(notice).toHaveTextContent('Descartada: Analytics Engineer · No me interesa (título o empresa)')
+    expect(notice).toHaveTextContent('Descartada: Analytics Engineer · Sin interés (título o empresa)')
     expect(screen.getByRole('heading', { level: 1, name: 'Por completar' })).toBeInTheDocument() // sigue en la Bandeja
     const posts = calls.filter((c) => c.method === 'POST')
     expect(posts.map((c) => c.body)).toEqual([{ type: 'discarded', reason: 'not_interested' }])
@@ -364,6 +364,85 @@ describe('Descartes seguidos', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Deshacer' }))
     await waitFor(() => expect(within(table).getAllByRole('row')).toHaveLength(3))
     expect(screen.queryByText(/Descartad/)).not.toBeInTheDocument()
+  })
+})
+
+describe('Bandeja · motivo de cierre y varias etapas', () => {
+  const closed = (id: number, title: string, close_reason: string) =>
+    jobRow({ id, title, stage: 'closed', closed_at: '2026-11-01T10:00:00Z', closed_by: 'discarded', close_reason } as never)
+
+  it('en «Cerrada» enseña el motivo de cada una y filtra por él', async () => {
+    const calls = mockApi({
+      'GET /status': status(),
+      'GET /jobs': page([closed(1, 'Data Engineer', 'rejected'), closed(2, 'BI Developer', 'duplicate'), closed(3, 'Analista', 'discarded')]),
+    })
+    renderApp('/bandeja?stage=closed')
+    const table = await screen.findByRole('table')
+    expect(within(table).getByRole('columnheader', { name: 'Motivo' })).toBeInTheDocument()
+    const rows = within(table).getAllByRole('row')
+    expect(within(rows[1]).getByText('Rechazada')).toBeInTheDocument()
+    expect(within(rows[2]).getByText('Duplicada')).toBeInTheDocument()
+    expect(within(rows[3]).getByText('Descartada')).toBeInTheDocument()
+
+    const last = () => calls.filter((c) => c.path === '/jobs').at(-1)!.search
+    await userEvent.click(screen.getByRole('combobox', { name: 'Motivo de cierre' }))
+    await userEvent.click(await screen.findByRole('option', { name: 'Duplicada' }))
+    await waitFor(() => expect(last().get('close_reason')).toBe('duplicate'))
+    expect(last().get('stage')).toBe('closed')
+    // Ni el selector de etapas ni varias etapas fuera de «Todas».
+    expect(screen.queryByRole('button', { name: /^Etapas:/ })).not.toBeInTheDocument()
+  })
+
+  it('en una etapa abierta no hay motivo', async () => {
+    mockApi({ 'GET /status': status(1, 1), 'GET /jobs': page() })
+    renderApp('/bandeja?stage=pending_triage&reason=rejected')
+    const table = await screen.findByRole('table')
+    expect(within(table).queryByRole('columnheader', { name: 'Motivo' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('combobox', { name: 'Motivo de cierre' })).not.toBeInTheDocument()
+  })
+
+  it('en «Todas» se ven solo las etapas marcadas, guardadas en la URL', async () => {
+    const calls = mockApi({ 'GET /status': status(1, 1), 'GET /jobs': page([jobRow(), closed(2, 'BI Developer', 'rejected')]) })
+    renderApp('/bandeja')
+    const table = await screen.findByRole('table')
+    // En «Todas», la columna «Motivo» con un guion en las abiertas.
+    expect(within(table).getByRole('columnheader', { name: 'Motivo' })).toBeInTheDocument()
+    expect(within(within(table).getAllByRole('row')[2]).getByText('Rechazada')).toBeInTheDocument()
+    const jobsCalls = () => calls.filter((c) => c.path === '/jobs')
+    expect(jobsCalls().at(-1)!.search.getAll('stages')).toEqual([])
+
+    await userEvent.click(screen.getByRole('button', { name: 'Etapas: Todas las etapas' }))
+    const menu = await screen.findByRole('menu')
+    expect(within(menu).getAllByRole('menuitemcheckbox').every((item) => item.getAttribute('aria-checked') === 'true')).toBe(true)
+    await userEvent.click(within(menu).getByRole('menuitem', { name: 'Ninguna' }))
+    // Sin etapas no se pide nada a la API.
+    expect(await screen.findByText('Ninguna etapa marcada')).toBeInTheDocument()
+    const before = jobsCalls().length
+    expect(within(menu).getAllByRole('menuitemcheckbox').some((item) => item.getAttribute('aria-checked') === 'true')).toBe(false)
+
+    // El menú sigue abierto para marcar varias.
+    await userEvent.click(within(menu).getByRole('menuitemcheckbox', { name: /CV listo/ }))
+    await userEvent.click(within(menu).getByRole('menuitemcheckbox', { name: /Cerrada/ }))
+    await waitFor(() => expect(jobsCalls().at(-1)!.search.getAll('stages')).toEqual(['cv_ready', 'closed']))
+    expect(jobsCalls().length).toBeGreaterThan(before)
+    await userEvent.keyboard('{Escape}')
+    expect(await screen.findByRole('button', { name: 'Etapas: 2 de 8 etapas' })).toBeInTheDocument()
+  })
+
+  it('abre con las etapas de la URL e ignora lo que no es una etapa', async () => {
+    const calls = mockApi({ 'GET /status': status(), 'GET /jobs': page() })
+    renderApp('/bandeja?stages=closed,cv_ready,limbo')
+    await screen.findByRole('table')
+    expect(calls.find((c) => c.path === '/jobs')!.search.getAll('stages')).toEqual(['cv_ready', 'closed'])
+    expect(screen.getByRole('button', { name: 'Etapas: 2 de 8 etapas' })).toBeInTheDocument()
+  })
+
+  it('con solo etapas que no existen, enseña todas', async () => {
+    const calls = mockApi({ 'GET /status': status(), 'GET /jobs': page() })
+    renderApp('/bandeja?stages=limbo')
+    await screen.findByRole('table')
+    expect(calls.find((c) => c.path === '/jobs')!.search.getAll('stages')).toEqual([])
+    expect(screen.getByRole('button', { name: 'Etapas: Todas las etapas' })).toBeInTheDocument()
   })
 })
 

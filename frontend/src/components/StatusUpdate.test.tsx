@@ -27,11 +27,11 @@ describe('«¿Qué ha pasado?» en la ficha', () => {
     })
     renderApp('/jobs/1')
     const region = await screen.findByRole('region', { name: '¿Qué ha pasado?' })
-    expect(await within(region).findByRole('button', { name: 'Tengo entrevista' })).toBeInTheDocument()
-    expect(within(region).getByRole('button', { name: 'Me han respondido' })).toBeInTheDocument()
+    expect(await within(region).findByRole('button', { name: 'Entrevista concertada' })).toBeInTheDocument()
+    expect(within(region).getByRole('button', { name: 'Respuesta de la empresa' })).toBeInTheDocument()
     // Aceptar solo es posible ya en proceso.
-    expect(within(region).queryByRole('button', { name: 'Acepto la oferta' })).not.toBeInTheDocument()
-    await userEvent.click(within(region).getByRole('button', { name: 'Me han rechazado' }))
+    expect(within(region).queryByRole('button', { name: 'Aceptar la oferta' })).not.toBeInTheDocument()
+    await userEvent.click(within(region).getByRole('button', { name: 'Rechazo de la empresa' }))
     const dialog = await screen.findByRole('dialog')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Registrar' }))
     await waitFor(() => {
@@ -61,7 +61,7 @@ describe('«¿Qué ha pasado?» en la ficha', () => {
     })
     renderApp('/jobs/1')
     const region = await screen.findByRole('region', { name: '¿Qué ha pasado?' })
-    await userEvent.click(await within(region).findByRole('button', { name: 'Me han rechazado' }))
+    await userEvent.click(await within(region).findByRole('button', { name: 'Rechazo de la empresa' }))
     const dialog = await screen.findByRole('dialog')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Registrar' }))
 
@@ -84,12 +84,12 @@ describe('«¿Qué ha pasado?» en la ficha', () => {
     })
     renderApp('/jobs/1')
     const region = await screen.findByRole('region', { name: '¿Qué ha pasado?' })
-    for (const name of ['Me han respondido', 'Tengo entrevista', 'Entrevista hecha', 'Prueba técnica']) {
+    for (const name of ['Respuesta de la empresa', 'Entrevista concertada', 'Entrevista hecha', 'Prueba técnica']) {
       expect(await within(region).findByRole('button', { name })).toBeInTheDocument()
     }
     // Sin oferta registrada no se puede aceptar: primero, la oferta.
-    expect(within(region).queryByRole('button', { name: 'Acepto la oferta' })).not.toBeInTheDocument()
-    await userEvent.click(within(region).getByRole('button', { name: 'Me han hecho una oferta' }))
+    expect(within(region).queryByRole('button', { name: 'Aceptar la oferta' })).not.toBeInTheDocument()
+    await userEvent.click(within(region).getByRole('button', { name: 'Oferta recibida' }))
     const dialog = await screen.findByRole('dialog')
     expect(within(dialog).getByRole('radio', { checked: true })).toHaveTextContent('→ En proceso')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Registrar' }))
@@ -106,7 +106,7 @@ describe('«¿Qué ha pasado?» en la ficha', () => {
     mockApi({ ...routes('in_process'), 'GET /jobs/1': { ...base, events: [...base.events, offer] } })
     renderApp('/jobs/1')
     const region = await screen.findByRole('region', { name: '¿Qué ha pasado?' })
-    expect(await within(region).findByRole('button', { name: 'Acepto la oferta' })).toBeInTheDocument()
+    expect(await within(region).findByRole('button', { name: 'Aceptar la oferta' })).toBeInTheDocument()
   })
 
   it('lleva a «Anotar oferta» y a «Hitos» para los detalles', async () => {

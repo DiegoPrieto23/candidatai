@@ -97,7 +97,7 @@ las reabiertas las cuenta por `jobs` de esas fuentes desde que empezó, para ir 
 | risk_flags | JSON | Riesgo de inyección detectado por el código: `hidden_text`, `injection_phrase`… |
 | signals | JSON | Observaciones que no son riesgo (fase 16): `possibly_closed`, `liveness`, `open_confirmed`, `reposted`; y de oferta dudosa (fase 25.3): `salary_range_wide`, `employer_hidden`, `fixed_term`, `stale_repost`, `ai_screening`. Ver §Fase 16 |
 | fingerprint | str (índice) | Ver abajo. Única hasta la fase 45: una reapertura comparte la huella con la oferta de la que viene (migración `0042`) |
-| duplicate_of | FK jobs? | Si se detecta como duplicado difuso |
+| duplicate_of | FK jobs? | Duplicada difusa de esa oferta. Solo en las guardadas antes de la fase 47: desde entonces un duplicado difuso no crea oferta (ver abajo) |
 | reopening_of | FK jobs? | Fase 45: reapertura de esta oferta cerrada (ver «Ofertas que vuelven a publicarse») |
 | posted_at | datetime? | |
 | first_seen_at | datetime | |
@@ -108,10 +108,21 @@ de él: con los índices, la Bandeja y el embudo no tienen que leerlas de la fil
 
 **Huella:** `sha256(normalized_company | normalized_title | normalized_location)`, donde
 `normalized_title` quita seniority genérica entre paréntesis, emojis, dobles espacios y pasa a
-minúsculas. Además, un chequeo difuso (rapidfuzz, umbral en `config/policies.yaml`) entre ofertas
-de la misma empresa en los últimos 60 días marca `duplicate_of`. Excepción (fase 09): dos ofertas
-de la misma fuente con conector y `external_id` distintos nunca son duplicado difuso entre sí (el
-ATS ya dice que son publicaciones distintas).
+minúsculas. Sin huella igual, un chequeo difuso (rapidfuzz, umbral en `config/policies.yaml`)
+busca la misma vacante con un título casi igual entre las ofertas de la misma empresa de los últimos
+60 días (`ingest.fuzzy_original`; con empates, la que sigue viva y después la más reciente). Una
+duplicada antigua, por huella o por título, lleva siempre a su original. Desde la fase 47 se trata como la huella: no se crea oferta, se anota la publicación en
+la original y el alta devuelve `created: false` con `duplicate_of`; y si la original la cerró la
+empresa hace más de `dedup.reopen_after_days`, entra como reapertura. Excepción (fase 09): dos
+ofertas de la misma fuente o plataforma con `external_id` distintos nunca son duplicado difuso
+entre sí (el portal ya dice que son publicaciones distintas). Antes de la 47 el duplicado difuso
+se guardaba con `duplicate_of` y se cerraba con `duplicate_detected`; esas filas siguen hasta que
+el usuario las borra desde la Bandeja (`services/duplicates.py`): solo las que siguen cerradas como
+duplicadas y no tienen nada propio (un evento que no sea automático —lo son `found`,
+`detail_captured`, `duplicate_detected`, `extracted`, `extraction_failed`, `hard_filter_failed`,
+`injection_suspected`, `closure_suspected` y `scored`— o una fila con enlace
+obligatorio fuera de `events`, `applications`, `job_sightings`, `job_extractions` y `matches`),
+tras la copia previa y pasando sus publicaciones a la original.
 
 **Ofertas que vuelven a publicarse (fase 45, `ingest.republication`).** Cuando llega una oferta que
 ya está y la guardada se cerró hace más de `dedup.reopen_after_days` (30 por defecto), decide quién
@@ -208,7 +219,7 @@ Proyección del estado de candidatura para consultas rápidas; se recalcula desd
 | applied_at | datetime? | |
 | last_event_at | datetime | Lo mueve cualquier evento, también una nota posterior al cierre |
 | closed_at | datetime? | Fase 27.6: `occurred_at` del evento que la cerró; `NULL` si no está cerrada (lo limpia `reopened`). Una nota posterior no lo mueve |
-| closed_by | str? | Tipo de ese evento: `discarded`, `rejected`, `withdrawn`, `expired`, `accepted`, `duplicate_detected` o `hard_filter_failed` |
+| closed_by | str? | Tipo de ese evento: `discarded`, `rejected`, `withdrawn`, `expired`, `accepted`, `duplicate_detected` o `hard_filter_failed`. La Bandeja lo traduce a un **motivo de cierre** (`close_reason`, sin columna propia): el mismo nombre para `rejected`, `withdrawn`, `expired` y `accepted`; `duplicate` y `filtered_out` para los dos últimos; y un `discarded` es `closed_by_company` si el motivo del último descarte es `closed` y `discarded` si no |
 
 ### `events` (fuente de verdad)
 | Columna | Tipo | Notas |
@@ -253,7 +264,7 @@ Cola de trabajo del worker (sin Redis).
 | `apply_fill_page` `{attempt_id, previous}` | «Rellenar esta página» | Rellena la pestaña que tienes delante (el formulario de la empresa al que te llevó el portal) y para antes de enviar. Si es una página del portal o de LinkedIn, no toca nada y el intento vuelve a `previous` con el motivo |
 | `apply_rescan` `{attempt_id}` | «Volver a revisar» | Vuelve a leer los campos y a capturar, sin rellenar nada |
 | `apply_submit` `{attempt_id, token, consents}` | `confirm_submission` (solo la UI) | Consume el token, pulsa el envío, captura la confirmación y registra `applied` |
-| `apply_focus` `{attempt_id}` | «Lo termino yo» | Trae la pestaña al frente y retira el bloqueo del envío |
+| `apply_focus` `{attempt_id}` | «Terminar a mano» | Trae la pestaña al frente y retira el bloqueo del envío |
 | `check_open` `{job_id}` | `cai worker` cada día con la ingesta y al arrancar, para las ofertas en `approved` o `cv_ready` sin comprobación en `liveness.fresh_hours` (fase 16) | ¿Sigue abierta? (`services/liveness.check_job`). Un fallo de red da `unknown`, no se reintenta |
 | `run_linkedin_public` `{}` | `cai worker` cada día con la ingesta y al arrancar, solo si la búsqueda pública de LinkedIn está activada y le toca (fase 22) | `ingestion/linkedin_public.run`. Nunca se reintenta: un bloqueo de LinkedIn deja `blocked_at` y no se vuelve a intentar en `block_cooldown_days` |
 | `archive_application` `{job_id, event_id, cv_render_id, letter_document_id, letter_render_id, answers_document_id}` | `applied` o `applied_manually` (fase 13) | Copia lo enviado a `data/documentos/candidaturas/` (ver §Fase 13). Los ids se fijan al registrar el envío. Idempotente |
@@ -512,7 +523,7 @@ eventos; esta tabla guarda lo que necesita la pantalla de revisión.
 | platform | str | `greenhouse`, `lever`, `ashby`, `generic`, `linkedin`, `board` (portal de empleo), `unknown` (por la URL y, si no, mirando la página) |
 | mode | str | `fill` (rellenar y revisar) u `open` (LinkedIn o un portal: solo abrir; con «Rellenar esta página» pasa a `fill`) |
 | url | str | La del formulario (Lever `…/apply`, Ashby `…/application`) |
-| status | str | `queued` → `filling` → `ready` / `needs_user` / `failed`; `submitting` → `submitted` / `submit_unconfirmed` / `submit_failed` / `needs_user`; `manual` («Lo termino yo» o `open`), `manual_done` y `cancelled` (otro intento lo sustituye) |
+| status | str | `queued` → `filling` → `ready` / `needs_user` / `failed`; `submitting` → `submitted` / `submit_unconfirmed` / `submit_failed` / `needs_user`; `manual` («Terminar a mano» o `open`), `manual_done` y `cancelled` (otro intento lo sustituye) |
 | fields | JSON | `[FieldReport]`: `marker`, `label`, `control`, `kind`, `required`, `status` (`filled`, `empty`, `needs_user_input`, `sensitive`, `consent`, `skipped`, `error`), `source`, `value` (recortado) y `note` |
 | warnings | JSON | `[{code, message}]`: `invisible_captcha`, `submit_blocked`, `no_resume_field`, `unused_answers`, `no_answers`, `missing_required`, `submit_button` (qué botón se pulsará), `no_submit_button`, `form_opened` (se pulsó el botón que abre el formulario), `possible_duplicate` (un intento anterior ya pulsó «Enviar»), `captcha`, `antibot`, `login`, `no_form`, `form_error`, `no_evidence` |
 | screenshot_path / confirmation_path | str? | Relativos a `data/` (`applications/<job_id>/<intento>/review.png`, `confirmation.png` o `after-submit.png`) |
@@ -784,7 +795,7 @@ nunca el agente.
 ### `message_drafts` (fase 18, migración 0018)
 Mensajes a personas de la empresa: `linkedin` (≤ 300 caracteres, sin asunto ni adjuntos) y `email`
 (con asunto). Se guardan desde `approved` hasta `in_process` (los seguimientos y agradecimientos,
-solo en `applied`/`in_process`). «Ya lo he enviado» no registra evento. Como mucho uno vigente por
+solo en `applied`/`in_process`). «Marcar como enviado» no registra evento. Como mucho uno vigente por
 oferta, tipo y destinatario.
 
 | Columna | Tipo | Notas |
@@ -926,7 +937,7 @@ lee `services/agent_prefs.py`.
 | Columna | Tipo | Notas |
 |---|---|---|
 | id | int PK | |
-| scope | str | `default` (el agente por defecto), `agent` (el modelo de un agente), `action` (el agente de una acción), `tier` / `tier_undo` (niveles de gasto) o `setting` (un ajuste con su número o valor en `model`: `assess_min_score`, `extra_matching` y `browse_max_offers`, las ofertas por portal de las plataformas nuevas) |
+| scope | str | `default` (el agente por defecto), `agent` (el modelo de un agente), `action` (el agente de una acción), `tier` / `tier_undo` (niveles de gasto) o `setting` (un ajuste con su número o valor en `model`: `assess_min_score`, `extra_matching`, `browse_max_offers`, las ofertas por portal de las plataformas nuevas, y `ui_lang`, el idioma del portal, `es` o `en`, con el que se escriben las órdenes al agente y la consola de `cai start`) |
 | key | str | Vacía en `default`; el agente en `agent`; la acción en `action`. Única con `scope` |
 | agent | str? | En `default` y `action` |
 | model / preset | str? | Uno de los dos o ninguno. El modelo es texto libre validado con `models.pattern` del agente, sin red |

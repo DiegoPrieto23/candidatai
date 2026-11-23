@@ -69,8 +69,9 @@ búsqueda puntual con puesto, ubicación o ambos (ver «Modo búsqueda»).
      3. pasa el resto, en un solo lote, a `check_known` (`items`: `url`, `title`, `company`,
         `location` si la ves, porque cuenta en la comparación, y `platform` y `external_id` si los
         conoces);
-     4. guarda como candidatas las `new` y las `reopen_candidate`; las `known` y `same_offer` no se
-        abren: cuéntalas en `skipped_known`.
+     4. guarda como candidatas las `new` y las `reopen_candidate`; las `known` y `same_offer` (que
+        incluye la misma vacante de la misma empresa con un título casi igual) no se abren:
+        cuéntalas en `skipped_known`.
    - **Deja de leer esa búsqueda** en cuanto pase lo primero de esto (y apunta el motivo). Procesa
      los resultados de la página que van antes del que la dispara y para ahí:
      - aparece una referencia de `newest_refs` de su `last_seen` (la URL o el id de un resultado)

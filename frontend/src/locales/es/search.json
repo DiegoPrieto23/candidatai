@@ -1,8 +1,8 @@
 {
   "title": "Buscar ofertas",
-  "intro": "Tu agente recorre tus portales y da de alta las ofertas que encajan contigo.",
-  "introHint": "Solo lee: nunca se postula por ti. Busca en una ventana aparte, donde ves lo que hace, y puede tardar varios minutos.",
-  "introHintLabel": "Qué hace tu agente al buscar",
+  "intro": "El agente recorre los portales y da de alta las ofertas que encajan con el perfil.",
+  "introHint": "Solo lee: nunca envía una candidatura. Busca en una ventana aparte, donde se ve lo que hace, y puede tardar varios minutos.",
+  "introHintLabel": "Qué hace el agente al buscar",
   "nav": {
     "label": "Secciones de «Buscar ofertas»",
     "search": "Buscar",
@@ -11,10 +11,10 @@
   "platforms": "Portales en los que buscar",
   "selectAll": "Seleccionar todos",
   "selectNone": "Quitar selección",
-  "noneChosen": "Elige al menos un portal.",
+  "noneChosen": "Hace falta al menos un portal.",
   "searchNow": "Buscar ahora",
   "strip": {
-    "label": "Lo que vas a buscar",
+    "label": "Qué se va a buscar",
     "roles": "Puestos",
     "places": "Dónde",
     "count": "Cuántas",
@@ -23,26 +23,26 @@
     "rolePlaceholder": "Por ejemplo, BI Engineer",
     "placePlaceholder": "Ciudad, región o remoto",
     "addTyped": "Añadir «{{text}}»",
-    "suggestions": "De ofertas que has aprobado",
+    "suggestions": "De las ofertas aprobadas",
     "approved_one": "{{count}} aprobada",
     "approved_other": "{{count}} aprobadas",
     "remove": "Quitar {{item}}",
     "noRoles": "Ningún puesto todavía",
     "noPlaces": "En cualquier sitio",
-    "savesTo": "Se guarda en tu perfil, para esta y las próximas búsquedas.",
-    "added": "Añadido «{{item}}»: guardado en tu perfil.",
-    "removed": "Quitado «{{item}}»: guardado en tu perfil.",
+    "savesTo": "Se guarda en el perfil, para esta y las próximas búsquedas.",
+    "added": "Añadido «{{item}}»: guardado en el perfil.",
+    "removed": "Quitado «{{item}}»: guardado en el perfil.",
     "undo": "Deshacer",
-    "undone": "Deshecho: tu perfil vuelve a estar como antes.",
-    "noProfile": "Lo que buscas se guarda en tu perfil: <to>créalo primero</to>.",
+    "undone": "Deshecho: el perfil vuelve a estar como antes.",
+    "noProfile": "Lo que se busca se guarda en el perfil: <to>primero hay que crearlo</to>.",
     "modes": "Modalidad",
     "levels": "Nivel",
-    "changed": "Cambiado «{{item}}»: guardado en tu perfil.",
-    "issues": "Tu perfil tiene errores que hay que arreglar: los ves en <to>Mi perfil</to>."
+    "changed": "Cambiado «{{item}}»: guardado en el perfil.",
+    "issues": "El perfil tiene errores que hay que arreglar: están en <to>Mi perfil</to>."
   },
   "go": {
-    "login": "Inicia sesión en {{names}}",
-    "loginHint": "Ese portal pide iniciar sesión: tu agente te avisará antes de seguir.",
+    "login": "Iniciar sesión en {{names}}",
+    "loginHint": "Ese portal pide iniciar sesión: el agente avisará antes de seguir.",
     "loginHintLabel": "Por qué hay que iniciar sesión"
   },
   "portals": {
@@ -62,24 +62,31 @@
     "unusable": {
       "off": "Desactivado",
       "blocked": "Bloqueado",
-      "noAgent": "Sin permiso para tu agente"
+      "noAgent": "Sin permiso para el agente"
     },
     "change": "Cambiar en «Dónde buscar»",
     "legend": {
       "found": "Vistas",
-      "passed": "Pasan tus filtros",
-      "known": "Ya las tenías",
+      "passed": "Pasan los filtros",
+      "known": "Ya estaban",
       "created": "Nuevas",
       "reopened": "Reabiertas"
-    },
-    "companies": "Empresas con portal propio"
+    }
+  },
+  "companies": {
+    "title": "Empresas con portal propio",
+    "active": "{{active}} activas de {{total}}",
+    "manage": "Gestionar en «Dónde buscar»",
+    "more": "Ver las {{count}} en «Dónde buscar»",
+    "empty": "Ninguna todavía. La app revisa cada día la web de empleo de las empresas que se añadan, sin agente.",
+    "error": "No se han podido cargar las empresas. Se pueden ver en «Dónde buscar»."
   },
   "last": {
     "title": "Última búsqueda:",
     "summary_one": "{{count}} oferta nueva de {{found}} vistas",
     "summary_other": "{{count}} ofertas nuevas de {{found}} vistas",
     "inbox": "Ver en la bandeja",
-    "never": "aún no has buscado con tu agente."
+    "never": "aún no se ha buscado con el agente."
   },
   "plan": {
     "perPortal": {
@@ -89,8 +96,8 @@
       "aria_other": "Hasta {{count}} ofertas por portal",
       "ariaVaries": "Ofertas por portal: varía según el portal",
       "varies": "varía",
-      "variesHint": "Cada portal tiene el suyo (de {{min}} a {{max}}): elige un número para igualarlos.",
-      "hint": "Cambia a la vez el de todos los portales elegidos y el de los que añadas. En cada portal, tu agente da de alta las más recientes que encajan con tu perfil, hasta ese número. Para cambiar el de un solo portal, ve a «Dónde buscar».",
+      "variesHint": "Cada portal tiene el suyo (de {{min}} a {{max}}): al elegir un número aquí, se igualan todos.",
+      "hint": "Cambia a la vez el de todos los portales elegidos y el de los que se añadan. En cada portal, el agente da de alta las más recientes que encajan con el perfil, hasta ese número. El de un solo portal se cambia en «Dónde buscar».",
       "hintLabel": "Qué ofertas cuentan"
     }
   },
@@ -103,26 +110,26 @@
     "created_other": "{{count}} ofertas nuevas",
     "failed_one": "{{count}} fuente con problemas",
     "failed_other": "{{count}} fuentes con problemas",
-    "none": "Añade <to>empresas con portal propio</to> para consultar sus ofertas sin agente ni navegador.",
+    "none": "Las <to>empresas con portal propio</to> permiten consultar sus ofertas sin agente ni navegador.",
     "body_one": "{{count}} empresa o portal que la app consulta sola, sin agente.",
     "body_other": "{{count}} empresas y portales que la app consulta sola, sin agente.",
-    "othersHint": "También entran solas tus alertas por correo y lo que envíes con el botón del navegador. Se configuran en «Dónde buscar».",
+    "othersHint": "También entran solas las alertas por correo y lo que se envíe con el botón del navegador. Se configuran en «Dónde buscar».",
     "othersLabel": "Qué más entra sin navegador"
   },
   "empty": {
     "title": "Aún no hay portales en los que buscar",
-    "body": "Dile a tu agente dónde sueles buscar o añade un portal tú mismo.",
-    "configure": "Elegir portales con mi agente",
+    "body": "El agente puede preguntar dónde se suele buscar, o se añade un portal a mano.",
+    "configure": "Elegir portales con el agente",
     "manage": "Ir a «Dónde buscar»"
   },
   "searching": "Buscando…",
   "launch": {
-    "eyebrow": "Tu agente buscará en",
+    "eyebrow": "El agente buscará en",
     "portals_one": "{{count}} portal",
     "portals_other": "{{count}} portales",
     "companies_one": "{{count}} empresa",
     "companies_other": "{{count}} empresas",
-    "companiesHint": "Las empresas con portal propio se revisan a la vez, sin tu agente: la app lee su web de empleo entera y trae lo nuevo. Las revisadas hace poco se saltan.",
+    "companiesHint": "Las empresas con portal propio se revisan a la vez, sin el agente: la app lee su web de empleo entera y trae lo nuevo. Las revisadas hace poco se saltan.",
     "companiesHintLabel": "Qué pasa con las empresas",
     "companiesOnly_one": "Sin portales elegidos: solo revisará la empresa.",
     "companiesOnly_other": "Sin portales elegidos: solo revisará las {{count}} empresas.",
@@ -133,21 +140,21 @@
     "button": "Más ajustes",
     "active_one": "{{count}} grupo con ajustes",
     "active_other": "{{count}} grupos con ajustes",
-    "label": "Más ajustes de tu búsqueda",
+    "label": "Más ajustes de la búsqueda",
     "experience": "Experiencia y sueldo",
     "years": "Años de experiencia que pida la oferta",
     "yearsHintLabel": "Cómo se aplican los años",
-    "salaryPrivate": "Solo lo ves tú: tu agente nunca ve esta cifra.",
+    "salaryPrivate": "Dato privado: el agente nunca ve esta cifra.",
     "salaryHintLabel": "Cómo se aplica el sueldo mínimo",
     "languages": "Idiomas de trabajo",
     "contract": "Contrato y jornada",
     "anyIfEmpty": "Sin marcar, valen todos.",
     "ruleHint": "Cada filtro se aplica solo cuando la oferta indica ese dato: una oferta que no dice el tipo de contrato pasa el filtro de contrato, y una sin sueldo publicado pasa el del sueldo mínimo.",
     "ruleHintLabel": "Ofertas sin ese dato",
-    "discard": "Ofertas que no quieres",
+    "discard": "Ofertas que no interesan",
     "keywords": "Palabras en el título",
     "keywordsHintLabel": "Qué palabras descartan",
-    "employerLabel": "Empresas que no quieres",
+    "employerLabel": "Empresas que no interesan",
     "employer": {
       "consultancy": "Consultoras que asignan a su personal a un cliente",
       "agency": "ETT y agencias de selección",
@@ -157,19 +164,19 @@
     "discardChanges": "Descartar cambios",
     "save": "Guardar cambios",
     "saving": "Guardando…",
-    "rescore": "Al guardar se recalcula el encaje de tus ofertas abiertas.",
-    "saved": "Guardado en tu perfil.",
+    "rescore": "Al guardar se recalcula el encaje de las ofertas abiertas.",
+    "saved": "Guardado en el perfil.",
     "undo": "Deshacer",
-    "undone": "Deshecho: tus ajustes vuelven a estar como antes.",
-    "unsavedConfirm": "Tienes cambios sin guardar en «Más ajustes». ¿Salir sin guardarlos?"
+    "undone": "Deshecho: los ajustes vuelven a estar como antes.",
+    "unsavedConfirm": "Hay cambios sin guardar en «Más ajustes». ¿Salir sin guardarlos?"
   },
   "run": {
     "seen_one": "{{count}} vista",
     "seen_other": "{{count}} vistas",
-    "passed_one": "{{count}} pasa tus filtros",
-    "passed_other": "{{count}} pasan tus filtros",
-    "known_one": "{{count}} ya la tenías",
-    "known_other": "{{count}} ya las tenías",
+    "passed_one": "{{count}} pasa los filtros",
+    "passed_other": "{{count}} pasan los filtros",
+    "known_one": "{{count}} ya estaba",
+    "known_other": "{{count}} ya estaban",
     "created_one": "{{count}} nueva",
     "created_other": "{{count}} nuevas",
     "ofThemReopened_one": "(de ellas, {{count}} reabierta)",
@@ -183,7 +190,7 @@
       "limitReached": "Alcanzó el límite",
       "limit_one": "Alcanzó el límite: queda {{count}} sin abrir",
       "limit_other": "Alcanzó el límite: quedan {{count}} sin abrir",
-      "known_streak": "Encontró varias seguidas que ya tenías",
+      "known_streak": "Encontró varias seguidas que ya estaban",
       "pages": "Leyó todas las páginas que podía",
       "incident": "Paró por un problema"
     }

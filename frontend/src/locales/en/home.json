@@ -31,6 +31,11 @@
       "you": "Your turn",
       "agent": "Agent",
       "company": "Company"
+    },
+    "who": {
+      "you": "Who acts: you.",
+      "agent": "Who acts: the agent.",
+      "company": "Who acts: the company."
     }
   },
   "upcomingEmpty": "No interviews, tests or deadlines in the next 7 days.",
@@ -56,7 +61,7 @@
     "howItWorks": "The whole journey, step by step, in “How it works”",
     "profile": {
       "title": "Create your profile from your CV",
-      "body": "Upload your CV (PDF or Word) and press “Create my profile from my CV”: your agent reads it, asks you what the CV doesn't say and shows you each change before saving it.",
+      "body": "Upload your CV (PDF or Word) and press “Create my profile from my CV”: your agent reads it, asks you what the CV does not say and shows you each change before saving it.",
       "done": "Profile created: review it in “My profile”",
       "byHand": "No CV or no agent? Start by hand in “My profile”"
     },
@@ -66,7 +71,7 @@
       "manual": "or add a job board yourself",
       "done": "Job boards set up: see them in “Where to search”"
     },
-    "whatItDoes": "CandidatAI keeps your job search in order: it stores the jobs you're interested in, tells you which ones fit you and prepares a CV for each one.",
-    "whatIsTheAgent": "The part that needs AI (reading the jobs, assessing them, writing your CVs) is done by your agent: the AI program you have installed on your computer, like Claude Code or Codex. The app alone doesn't read jobs or write CVs. <agent>What it is and how to install it, in “Agent”</agent>."
+    "whatItDoes": "CandidatAI keeps your job search in order: it stores the jobs you are interested in, tells you which ones fit you and prepares a CV for each one.",
+    "whatIsTheAgent": "The part that needs AI (reading the jobs, assessing them, writing your CVs) is done by your agent: the AI program you have installed on your computer, like Claude Code or Codex. The app alone does not read jobs or write CVs. <agent>What it is and how to install it, in “Agent”</agent>."
   }
 }

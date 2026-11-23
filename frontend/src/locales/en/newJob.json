@@ -1,5 +1,5 @@
 {
-  "failed": "Couldn't add it.",
+  "failed": "Could not add it.",
   "optional": "(optional)",
   "required": "(required)",
   "url": {
@@ -7,7 +7,7 @@
     "hint": "A public page, such as Greenhouse or the company's website. Add LinkedIn jobs with the browser button or by <paste>pasting the text</paste>.",
     "downloading": "Downloading…",
     "submit": "Add job",
-    "unavailable": "I couldn't open that page: it may not be responding, ask you to sign in or load the job with JavaScript. Copy the job's text and paste it.",
+    "unavailable": "That page could not be opened: it may not be responding, may ask you to sign in or may load the job with JavaScript. Copy the job text and paste it here.",
     "usePaste": "Paste the text"
   },
   "text": {
@@ -27,7 +27,7 @@
     }
   },
   "title": "New job",
-  "intro": "Paste a job's link or text. If you already had it, it isn't added twice; then your agent reads it and pulls out its details.",
+  "intro": "Paste a job's link or text. If you already had it, it is not added twice; then your agent reads it and pulls out its details.",
   "byUrl": "By URL",
   "pasteText": "Paste text",
   "linkedin": {

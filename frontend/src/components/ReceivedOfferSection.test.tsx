@@ -73,7 +73,7 @@ describe('Oferta recibida en la ficha (fase 21)', () => {
     expect(within(section).getByText(/45\.000/)).toBeInTheDocument()
     await userEvent.click(within(section).getByRole('button', { name: /Preparar negociación/ }))
     await waitFor(() =>
-      expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ action: 'prepare-negotiation', job_id: 1 }),
+      expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ lang: 'es', action: 'prepare-negotiation', job_id: 1 }),
     )
   })
 
@@ -126,11 +126,11 @@ describe('Ofertas recibidas en Procesos (fase 21)', () => {
     })
     renderApp('/procesos')
     const section = await screen.findByRole('region', { name: 'Ofertas recibidas' }, { timeout: 5000 })
-    expect(within(section).getByText(/Tu mínimo: 41\.000/)).toBeInTheDocument()
+    expect(within(section).getByText(/Sueldo mínimo: 41\.000/)).toBeInTheDocument()
     expect(within(section).getByRole('link', { name: 'Brétema Analytics' })).toHaveAttribute('href', '/jobs/1')
-    const row = within(section).getByRole('row', { name: /Fijo frente a tu mínimo/ })
+    const row = within(section).getByRole('row', { name: /Fijo frente al mínimo/ })
     expect(row).toHaveTextContent('+4000 €')
-    expect(within(section).getByRole('row', { name: /Total frente a tu mínimo/ })).toHaveTextContent('−1000 €')
+    expect(within(section).getByRole('row', { name: /Total frente al mínimo/ })).toHaveTextContent('−1000 €')
     expect(within(section).getByText('Sin fijo anotado.')).toBeInTheDocument()
   })
 

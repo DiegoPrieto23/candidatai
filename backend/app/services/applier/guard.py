@@ -10,7 +10,7 @@ Nada de esto se esquiva: el navegador se lanza sin trucos para parecer humano.
 
 `arm_submit_block` instala en la página, mientras se rellena, un bloqueo del evento `submit` y de
 `form.submit()`/`requestSubmit()`. Se rearma antes de cada campo (una navegación lo quitaría).
-Solo `submit.py` lo retira, justo antes de pulsar el envío confirmado, y «Lo termino yo»
+Solo `submit.py` lo retira, justo antes de pulsar el envío confirmado, y «Terminar a mano»
 (`release_submit_block`). Protege de accidentes, no de una web hostil: un script de la propia
 página podría cambiar la marca de `window`.
 """
@@ -80,7 +80,7 @@ def check(page: Page, response: Response | None = None) -> PageCheck:
         return PageCheck(
             blocker=Blocker(
                 kind="captcha",
-                message="La página muestra un captcha. Resuélvelo tú en el navegador.",
+                message="La página muestra un captcha. Hay que resolverlo a mano en el navegador.",
             ),
             invisible_captcha=invisible,
         )
@@ -91,7 +91,8 @@ def check(page: Page, response: Response | None = None) -> PageCheck:
         return PageCheck(
             blocker=Blocker(
                 kind="antibot",
-                message="La web ha mostrado una comprobación anti-bot. Sigue tú en el navegador.",
+                message="La web ha mostrado una comprobación anti-bot. Hay que seguir a mano en "
+                "el navegador.",
             ),
             invisible_captcha=invisible,
         )
@@ -99,7 +100,8 @@ def check(page: Page, response: Response | None = None) -> PageCheck:
         return PageCheck(
             blocker=Blocker(
                 kind="login",
-                message="La web pide iniciar sesión. Entra tú en el navegador y vuelve a revisar.",
+                message="La web pide iniciar sesión. Hay que iniciarla a mano en el navegador y "
+                "volver a revisar.",
             ),
             invisible_captcha=invisible,
         )
@@ -142,5 +144,5 @@ def blocked_submits(page: Page) -> int:
 
 
 def release_submit_block(page: Page) -> None:
-    """Deja enviar: lo usan `submit.py` (con confirmación) y «Lo termino yo»."""
+    """Deja enviar: lo usan `submit.py` (con confirmación) y «Terminar a mano»."""
     page.evaluate("() => { window.__jhAllowSubmit = true; }")

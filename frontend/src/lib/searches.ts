@@ -84,12 +84,15 @@ export function searchLabel(raw: string): string {
   return parts.length ? parts.join(' · ') : i18n.t('platforms:searches.all')
 }
 
-/** Página base de una plataforma, sacada de sus búsquedas: `https://www.infojobs.net` e `infojobs.net`. */
-export function platformHome(urls: string[]): { origin: string; host: string } | null {
+/**
+ * Página base de una plataforma, sacada de sus búsquedas: `https://www.infojobs.net`, `infojobs.net`
+ * (para su logo) y `www.infojobs.net` (lo que se enseña, tal cual lo usa el sitio).
+ */
+export function platformHome(urls: string[]): { origin: string; host: string; label: string } | null {
   for (const raw of urls) {
     try {
       const url = new URL(raw)
-      if (url.protocol === 'https:' || url.protocol === 'http:') return { origin: url.origin, host: host(url) }
+      if (url.protocol === 'https:' || url.protocol === 'http:') return { origin: url.origin, host: host(url), label: url.hostname }
     } catch {
       // URL mal formada: probamos con la siguiente.
     }

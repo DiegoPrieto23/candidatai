@@ -62,7 +62,7 @@ describe('Por revisar', () => {
     await userEvent.keyboard('j')
     await waitFor(() => expect(within(screen.getByRole('article', { name: 'Oferta seleccionada' })).getByRole('heading', { name: 'Oferta 2' })).toBeInTheDocument())
     const note = within(screen.getByRole('article', { name: 'Oferta seleccionada' })).getByRole('note')
-    expect(note).toHaveTextContent('Tu agente no la valora en segundo plano: su encaje (40) está por debajo del mínimo (45).')
+    expect(note).toHaveTextContent('El agente no la valora en segundo plano: su encaje (40) está por debajo del mínimo (45).')
   })
 
   it('se mueve con J/K y flechas, y abre la ficha con O', async () => {
@@ -259,7 +259,7 @@ describe('Por revisar', () => {
     renderApp('/por-revisar')
     const note = within(await screen.findByRole('article')).getByRole('note', { name: 'No pasa los filtros' })
     expect(note).toHaveTextContent(reason)
-    await waitFor(() => expect(note).toHaveTextContent(/8\.?000\s€ por debajo de tu mínimo/))
+    await waitFor(() => expect(note).toHaveTextContent(/8\.?000\s€ por debajo del sueldo mínimo/))
   })
 
   it('avisa si no hay perfil y enseña la cola vacía', async () => {

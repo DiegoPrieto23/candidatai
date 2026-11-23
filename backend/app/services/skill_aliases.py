@@ -89,7 +89,8 @@ def _write(path: Path, data: CommentedMap, yaml: YAML, newline: str = "\n") -> N
         os.replace(draft, path)
     except PermissionError as exc:  # en Windows, si otro programa tiene el fichero abierto
         raise ValueError(
-            f"No se pudo escribir config/{path.name}: ciérralo si lo tienes abierto y reinténtalo."
+            f"No se pudo escribir config/{path.name}: si está abierto en otro programa, hay que "
+            f"cerrarlo y reintentarlo."
         ) from exc
     finally:
         draft.unlink(missing_ok=True)
@@ -112,7 +113,7 @@ def add_alias(
     wanted = skills.skill_key(profile_skill)
     match = next((n for n in names if skills.skill_key(n) == wanted), None)
     if match is None:
-        raise ValueError(f"«{profile_skill}» no está entre las skills de tu perfil.")
+        raise ValueError(f"«{profile_skill}» no está entre las skills del perfil.")
 
     with _LOCK:  # el índice se lee dentro: otro alias recién escrito cuenta
         result = _add_locked(alias, alias_key, match, profile, path)
@@ -146,7 +147,7 @@ def _add_locked(
         )
     levels = skills.profile_levels(profile, index)
     if current in levels:
-        raise AliasConflictError(f"«{alias}» ya la cubre tu perfil como «{levels[current][0]}».")
+        raise AliasConflictError(f"«{alias}» ya la cubre el perfil como «{levels[current][0]}».")
 
     yaml = _round_trip_yaml()
     data, newline = _load(path, yaml)

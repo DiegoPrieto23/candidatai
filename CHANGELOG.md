@@ -10,6 +10,24 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Detener a tu agente desde el aviso:** lo que va en segundo plano («Generando el CV…», «Leyendo
+  ofertas…») tiene un botón «Detener» en el aviso de arriba, con una confirmación corta. El aviso
+  pasa a «Deteniendo…» y, en unos segundos, a «Detenida», y lo que tu agente ya había guardado se
+  queda. Si lo abriste en una terminal, el aviso explica que se para cerrando esa ventana y ofrece
+  «Marcar como terminada».
+- **Por qué se cerró cada oferta, en la Bandeja:** columna «Motivo» en «Cerrada» y en «Todas»
+  (descartada, no pasó los filtros, rechazada, retirada, caducada, cerrada por la empresa,
+  duplicada o aceptada) y filtro «Motivo de cierre». Una duplicada ya no sale como «Descartada».
+- **Varias etapas a la vez en «Todas»:** el desplegable «Etapas» tiene una casilla por etapa (todas
+  marcadas al principio), «Todas» y «Ninguna», y lo marcado queda en la dirección de la página, así
+  que se puede guardar o compartir la vista (p. ej. solo «CV listo» y «Cerrada»).
+- **Borrar las ofertas duplicadas:** la Bandeja avisa de las ofertas duplicadas que se guardaban
+  antes (la misma vacante que otra, con un título casi igual, cerrada como duplicada). «Ver y
+  borrar» enseña la lista, cada una con su original, y las borra con una confirmación corta, tras
+  una copia de seguridad de la base de datos. Las que se reabrieron o tienen algo propio (un CV,
+  notas, una candidatura…) se quedan, y la lista dice por qué. La original conserva sus enlaces, así
+  que una búsqueda nueva los reconoce sin abrirlos. Tu agente puede consultarlas con
+  `list_duplicates` (`cai jobs duplicates`).
 - **Borrar una oferta o vaciarlo todo:** arriba en la ficha de cada oferta, junto a «Ver original»,
   «Borrar oferta» la quita con todo lo suyo (historial, CVs, cartas, entrevistas, borradores y los
   correos que solo eran de ella); su aviso explica que borrar no es descartar, que la cierra y la
@@ -50,10 +68,13 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 - **Tiempo y tasa de respuesta por canal:** en **Resultados**, cuánto te responden y en cuántos días
   (mediana) por referencia, en la web de la empresa, en los portales de empleo y en las ofertas que
   añades tú. También en `cai stats funnel` y en la interfaz para agentes.
-- **Columnas del Tablero a tu gusto:** con **Personalizar columnas** eliges entre 3 y 5 columnas
-  juntando etapas seguidas y les pones nombre. Solo cambia la vista: las etapas de tus ofertas siguen
-  igual, cada tarjeta de una columna con varias etapas dice la suya y **Restablecer** vuelve a las de
-  siempre.
+- **Columnas del Tablero a tu gusto:** con **Personalizar columnas** eliges entre 3 y 5 columnas. Cada
+  columna sale en una fila con su nombre y sus etapas como etiquetas, y se ordena arrastrándola o con
+  sus flechas; cada etapa elige su columna en un selector, aunque no vayan seguidas (p. ej. «Aprobada»
+  con «Cerrada»). Una vista previa enseña el tablero en pequeño con cuántas ofertas tendrá cada
+  columna. Solo cambia la vista, y el diálogo lo explica: las etapas de tus ofertas siguen igual, las
+  tarjetas solo avanzan a una etapa posterior y cada tarjeta de una columna con varias etapas dice la
+  suya. **Restablecer** vuelve a las de siempre y se aplica al guardar.
 - **Añadir hitos desde el Calendario:** con **Añadir hito**, el «+» de un día o pulsando una hora
   libre de la semana o del día. Eliges la oferta en una lista con buscador (por empresa o puesto,
   sin importar tildes ni mayúsculas) y el hito se guarda en su ficha, con la fecha ya puesta.
@@ -209,6 +230,40 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   puesto ya no desaparece mientras la editas.
 
 ### Cambiado
+- **Textos del portal en tono formal e impersonal:** en español, la app ya no tutea ni habla en primera
+  persona: «Pulsa «Guardar» para subir tu CV» pasa a «Se pulsa «Guardar» para subir el CV», y «tu agente», a
+  «el agente». Algunos botones cambian de nombre, como «Aceptar la oferta» (antes «Acepto la oferta»), «Marcar
+  como enviado» (antes «Ya lo he enviado»), «Dejar para la próxima sesión» o «Crear el perfil desde un CV». En
+  inglés, sin contracciones. También la ayuda (con sus preguntas frecuentes), los avisos y errores que
+  muestra la app y lo que imprime `cai start`, y lo que el agente deja en la app (valoraciones, respuestas
+  del Asistente, preguntas). También las guías (Primeros pasos, antes «Empieza aquí», la guía de uso,
+  las funcionalidades y el README); en inglés, sin contracciones. Las capturas de las guías son provisionales.
+- **Editar el CV tú, con más margen:** en «Editar texto», las skills se ven por grupos: el nombre del
+  grupo arriba y cada skill como una etiqueta con «×» para quitarla y un campo para añadir otra con
+  Intro. Hay «Añadir grupo» y botones para subir, bajar o quitar cada grupo (con confirmación si tiene
+  skills). Los logros de cada experiencia y proyecto también se quitan o reordenan con sus flechas;
+  para añadir uno, «Pedir cambios». Como antes, la versión queda sin verificar hasta «Verificar esta
+  versión».
+- **Tus empresas, a la vista en «Buscar»:** bajo los portales, las empresas con portal propio salen
+  en tarjetas compactas (logo, Activa o Pausada y su último recorrido), las activas primero y hasta
+  ocho; el resto y su gestión, en «Dónde buscar». La dirección de cada portal y de la web de cada
+  empresa se escribe tal cual la usa el sitio, con `www.` cuando lo lleva (`www.infojobs.net`).
+- **Portada más clara:** en «¿Cómo van mis candidaturas?», «Aceptadas» se alinea igual que los
+  demás pasos y la explicación pasa al ⓘ junto al título. «Ver las cifras» es más corto (paso,
+  cantidad y % del anterior) y agrupa en una línea por paso dónde pararon las candidaturas; lo
+  mismo en «Resultados». En «Recorrido de tus ofertas», cada etapa explica qué es y quién actúa al
+  pasar el ratón por encima o al llegar con el teclado.
+- **Tu agente, en el idioma del portal:** con el portal en inglés, lo que lanzas («Generar CV»,
+  «Buscar ofertas», el Asistente, «En segundo plano», «Dejar para mi próxima sesión») abre la
+  ventana con la orden y el título en inglés, y tu agente te contesta en inglés. La app recuerda el
+  idioma elegido para lo que se lanza sin el portal (tareas en segundo plano y programadas) y para
+  los mensajes de `cai start`. El CV y la carta siguen saliendo en el idioma de la oferta.
+- **La misma vacante con un título casi igual ya no se da de alta otra vez:** en lugar de guardarse
+  como oferta nueva y cerrarse como duplicada, se anota como una publicación más de la original,
+  venga de un alta manual, de la extensión, de un conector, de una alerta o de una búsqueda de tu
+  agente. `check_known` la reconoce antes de abrirla (`same_offer`), y si la original la cerró la
+  empresa hace más de 30 días, entra como reapertura. El resumen de cada fuente ya no cuenta
+  «cerradas como duplicadas»: entran en «ya estaban».
 - **«Respuestas» agrupa los correos de cada candidatura:** los de una misma oferta salen juntos, el
   más reciente arriba y los anteriores plegados debajo («4 correos anteriores de esta candidatura»),
   que despliegas con un clic. Un rechazo propuesto, y la opción «Rechazo» al cambiar o decidir qué
@@ -506,6 +561,11 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   conserva en tu perfil y tus CVs lo siguen teniendo en cuenta.
 
 ### Corregido
+- **El Asistente y la Ayuda ya no cambian de tamaño:** el panel mide lo mismo en las dos pestañas y
+  con la barra de conversaciones abierta o cerrada, así que no se mueve al cambiar. Solo su cuerpo
+  hace scroll (la cabecera, las pestañas y la caja de escribir quedan fijas), también con el
+  teclado, y una conversación larga se lee entera. Con avisos encima, el panel encoge en lugar de
+  salirse de la pantalla.
 - **Aceptar un correo que cuenta algo ya anotado:** si marcabas como «Rechazo» el correo de una
   candidatura que ya habías cerrado a mano como rechazada, salía un error de fechas. Ahora el correo
   se enlaza a ese registro, sin duplicarlo.

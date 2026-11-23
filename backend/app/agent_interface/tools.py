@@ -42,6 +42,7 @@ from app.services import (
     company_research,
     context,
     drafts,
+    duplicates,
     events,
     extractions,
     ingest,
@@ -722,6 +723,12 @@ def _check_known(session: Session, args: CheckKnownInput, _ctx: CallContext) -> 
     return known.check_known(session, args.items)
 
 
+def _list_duplicates(
+    session: Session, _args: NoInput, _ctx: CallContext
+) -> duplicates.DuplicateList:
+    return duplicates.list_duplicates(session)
+
+
 def _get_search_titles(
     session: Session, args: SearchTitlesInput, _ctx: CallContext
 ) -> search_titles.SearchTitlesView:
@@ -1123,15 +1130,28 @@ TOOLS: tuple[ToolSpec, ...] = (
             "(hasta 100: `url` y lo que se vea de título, empresa, ubicación e id). Para cada uno: "
             "`new` (no está), `known` (mismo id de plataforma o misma URL, sin contar parámetros "
             "de seguimiento), `same_offer` (misma empresa, título y ubicación, que pasa si la "
-            "ves: cuenta en la comparación; y la oferta sigue "
-            "viva o se cerró hace poco) o `reopen_candidate` (la misma, cerrada por la empresa o "
-            "caducada hace más de `dedup.reopen_after_days`: entrará como reapertura; con "
-            "`closed_by`). Solo lee: no da de alta nada."
+            "ves: cuenta en la comparación; o un título casi igual de la misma empresa; y la "
+            "oferta sigue viva o se cerró hace poco) o `reopen_candidate` (la misma, cerrada "
+            "por la empresa o caducada hace más de `dedup.reopen_after_days`: entrará como "
+            "reapertura; con `closed_by`). Solo lee: no da de alta nada."
         ),
         input_model=CheckKnownInput,
         output_model=known.KnownList,
         handler=_check_known,
         cli=CliSpec(path=("jobs", "known"), file_keys=("items",)),
+    ),
+    ToolSpec(
+        name="list_duplicates",
+        description=(
+            "Ofertas guardadas como duplicadas de otra (la misma vacante con un título casi "
+            "igual, de antes de que dejaran de crearse), con su original y `keep_reason`: "
+            "`None` si se puede borrar, `no_longer_duplicate` u `own_work` (tiene algo hecho) "
+            "si se queda. Solo lee: borrarlas lo hace el usuario en la Bandeja."
+        ),
+        input_model=NoInput,
+        output_model=duplicates.DuplicateList,
+        handler=_list_duplicates,
+        cli=CliSpec(path=("jobs", "duplicates")),
     ),
     ToolSpec(
         name="get_search_titles",

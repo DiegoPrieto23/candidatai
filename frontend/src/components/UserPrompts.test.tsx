@@ -55,7 +55,7 @@ describe('Avisos al usuario (captcha)', () => {
     renderApp('/')
     const dialog = await screen.findByRole('dialog')
     expect(within(dialog).getByRole('heading', { name: /Completa el captcha/ })).toBeInTheDocument()
-    expect(within(dialog).getByText(/en InfoJobs, en tu navegador/)).toBeInTheDocument()
+    expect(within(dialog).getByText(/en InfoJobs, en el navegador/)).toBeInTheDocument()
     expect(within(dialog).getByRole('timer')).toHaveTextContent('4:50')
     expect(within(dialog).getByRole('timer')).toHaveTextContent('el agente sigue con lo siguiente')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Ya está' }))
@@ -102,7 +102,7 @@ describe('Avisos al usuario (captcha)', () => {
       const dialog = await screen.findByRole('dialog')
       const send = within(dialog).getByRole('button', { name: 'Enviar' })
       expect(send).toBeDisabled()
-      await userEvent.type(within(dialog).getByRole('textbox', { name: 'Tu respuesta' }), 'Dos años')
+      await userEvent.type(within(dialog).getByRole('textbox', { name: 'Respuesta' }), 'Dos años')
       await userEvent.click(send)
       await waitFor(() =>
         expect(calls.find((c) => c.path === '/prompts/4/answer')?.body).toEqual({ outcome: 'done', answer: 'Dos años' }),

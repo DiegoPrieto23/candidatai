@@ -24,7 +24,7 @@ def _host(value: str) -> str:
     value = value.strip().rstrip(".").lower()
     if not _HOSTNAME.match(value) and not _is_ip(value):
         raise ValueError(
-            "Servidor no válido: escribe solo el nombre, como `imap.gmail.com` (sin `https://`, "
+            "Servidor no válido: solo el nombre, como `imap.gmail.com` (sin `https://`, "
             "puerto ni ruta)."
         )
     return value
@@ -48,7 +48,7 @@ def _no_controls(value: str) -> str:
 def _label(value: str) -> str:
     value = " ".join(_no_controls(value).split())
     if not value:
-        raise ValueError("Escribe un nombre.")
+        raise ValueError("Falta un nombre.")
     return value
 
 
@@ -100,7 +100,9 @@ class MailSourceInput(_Strict):
                     "`_`), que se crea dentro de data/inbox/."
                 )
             if name.casefold() in RESERVED_FOLDERS:
-                raise ValueError(f"«{name}» ya tiene otro uso en data/inbox/: elige otro nombre.")
+                raise ValueError(
+                    f"«{name}» ya tiene otro uso en data/inbox/: hace falta otro nombre."
+                )
             self.folder = name
             self.host = self.user = self.password = None
             self.read_replies = False

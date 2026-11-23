@@ -55,7 +55,7 @@ describe('Corregir el CV', () => {
       }),
     )
     const cv = await section()
-    const box = await within(cv).findByLabelText('Qué quieres corregir')
+    const box = await within(cv).findByLabelText('Qué corregir')
     const submit = within(cv).getByRole('button', { name: /Pedir corrección/ })
     expect(submit).toBeDisabled()
 
@@ -84,7 +84,7 @@ describe('Corregir el CV', () => {
       }),
     )
     const cv = await section()
-    await userEvent.type(await within(cv).findByLabelText('Qué quieres corregir'), 'Algo')
+    await userEvent.type(await within(cv).findByLabelText('Qué corregir'), 'Algo')
     await userEvent.click(within(cv).getByRole('button', { name: /Pedir corrección/ }))
     expect(await within(cv).findByRole('alert')).toHaveTextContent('Ya no se puede.')
     expect(calls.some((c) => c.path === '/agent/launch')).toBe(false)
@@ -98,7 +98,7 @@ describe('Corregir el CV', () => {
       }),
     )
     const cv = await section()
-    expect(await within(cv).findByText('Esperando a tu agente:')).toBeInTheDocument()
+    expect(await within(cv).findByText('Esperando al agente:')).toBeInTheDocument()
     expect(within(cv).getByText('El resumen más corto')).toBeInTheDocument()
     expect(within(cv).getByRole('button', { name: /Pedir corrección/ })).toBeEnabled()
     await userEvent.click(within(cv).getByRole('button', { name: 'Cancelar' }))
@@ -116,7 +116,7 @@ describe('Corregir el CV', () => {
       }),
     )
     const cv = await section()
-    expect(await within(cv).findByText('Tu agente no ha podido aplicarla:')).toBeInTheDocument()
+    expect(await within(cv).findByText('El agente no ha podido aplicarla:')).toBeInTheDocument()
     expect(within(cv).getByText('Tu perfil no lo respalda.')).toBeInTheDocument()
   })
 
@@ -129,7 +129,7 @@ describe('Corregir el CV', () => {
     )
     const cv = await section()
     await within(cv).findByRole('listitem', { name: 'Diseño 1' })
-    expect(within(cv).queryByLabelText('Qué quieres corregir')).not.toBeInTheDocument()
+    expect(within(cv).queryByLabelText('Qué corregir')).not.toBeInTheDocument()
   })
 })
 
@@ -165,7 +165,7 @@ describe('Versiones del CV', () => {
   it('con una sola versión no enseña la lista', async () => {
     mockApi(routes())
     const cv = await section()
-    await within(cv).findByLabelText('Qué quieres corregir')
+    await within(cv).findByLabelText('Qué corregir')
     expect(within(cv).queryByRole('region', { name: 'Versiones del texto' })).not.toBeInTheDocument()
   })
 
@@ -173,7 +173,7 @@ describe('Versiones del CV', () => {
     mockApi(routes({ 'GET /jobs/1/cv/history': history }))
     const cv = await section()
     const list = await openVersions(cv)
-    expect(within(list).getByText('Corregida por tu agente')).toBeInTheDocument()
+    expect(within(list).getByText('Corregida por el agente')).toBeInTheDocument()
     expect(within(list).getByText('Vigente')).toBeInTheDocument()
     expect(within(list).getByText('El resumen más corto')).toBeInTheDocument()
     expect(within(list).getByText('No quité el proyecto.')).toBeInTheDocument()
@@ -216,7 +216,7 @@ describe('Panel de cambios', () => {
     const calls = mockApi(routes({ 'GET /jobs/1/cv': jobCv([renderResult(1, { keyword_coverage: coverage })]) }))
     const cv = await section()
     await userEvent.click(await within(cv).findByRole('button', { name: 'Menciona dbt' }))
-    const box = within(cv).getByLabelText('Qué quieres corregir')
+    const box = within(cv).getByLabelText('Qué corregir')
     expect(box).toHaveValue('Menciona dbt')
     await userEvent.click(within(cv).getByRole('button', { name: 'Acorta el resumen' }))
     expect(box).toHaveValue('Menciona dbt\nAcorta el resumen')
@@ -225,7 +225,7 @@ describe('Panel de cambios', () => {
     await userEvent.click(within(cv).getByRole('tab', { name: 'Diseño' }))
     expect(box).not.toBeVisible()
     await userEvent.click(within(cv).getByRole('tab', { name: 'Pedir cambios' }))
-    expect(within(cv).getByLabelText('Qué quieres corregir')).toHaveValue('Menciona dbt\nAcorta el resumen')
+    expect(within(cv).getByLabelText('Qué corregir')).toHaveValue('Menciona dbt\nAcorta el resumen')
   })
 })
 
@@ -278,8 +278,8 @@ describe('Editar el texto del CV', () => {
     await userEvent.clear(bullet)
     await userEvent.type(bullet, 'Mejoré un 97 %.')
     await userEvent.click(within(form).getByRole('button', { name: 'Guardar versión nueva' }))
-    expect(await screen.findByText('La cifra «97» no aparece en tu perfil.')).toBeInTheDocument()
-    expect(screen.getByText(/«Cobol» no está en tu perfil/)).toBeInTheDocument()
+    expect(await screen.findByText('La cifra «97» no aparece en el perfil.')).toBeInTheDocument()
+    expect(screen.getByText(/«Cobol» no está en el perfil/)).toBeInTheDocument()
     expect(calls.filter((c) => c.path === '/jobs/1/cv/edit')).toHaveLength(1)
   })
 
@@ -299,6 +299,136 @@ describe('Editar el texto del CV', () => {
   })
 })
 
+describe('Editar logros y skills del CV', () => {
+  const richCv = () =>
+    jobCv([renderResult(1)], {
+      content: {
+        language: 'es',
+        subtitle: 'Data Engineer',
+        summary: 'Resumen ficticio.',
+        projects: [],
+        education_ids: [],
+        certification_ids: [],
+        extra_sections: [],
+        languages: [],
+        include_regional_language: false,
+        keywords_targeted: [],
+        experience: [
+          {
+            experience_id: 'exp-1',
+            bullets: [
+              { text: 'Primer logro.', evidence: ['exp-1/a1'] },
+              { text: 'Segundo logro.', evidence: ['exp-1/a2'] },
+            ],
+          },
+        ],
+        skills: [
+          { group: 'Lenguajes', items: ['Python', 'SQL'] },
+          { group: 'Datos', items: ['dbt'] },
+        ],
+      },
+    })
+
+  async function openEditor() {
+    const cv = await section()
+    await userEvent.click(await within(cv).findByRole('tab', { name: 'Editar texto' }))
+    return within(cv).findByRole('form', { name: 'Editar el texto del CV' })
+  }
+
+  type Sent = { content: { experience: { bullets: { text: string; evidence: string[] }[] }[]; skills: unknown } }
+  const sent = (calls: { path: string; body?: unknown }[]) =>
+    calls.find((c) => c.path === '/jobs/1/cv/edit')?.body as Sent
+
+  it('reordena y quita logros con sus evidencias, sin dejar ninguna experiencia vacía', async () => {
+    const calls = mockApi(
+      routes({
+        'GET /jobs/1/cv': richCv(),
+        'POST /jobs/1/cv/edit': { ok: true, job_id: 1, document_id: 2, render: renderResult(1), warnings: [] },
+      }),
+    )
+    const form = await openEditor()
+    expect(within(form).getByRole('button', { name: 'Subir la viñeta 1 de Data Engineer · Acme' })).toBeDisabled()
+    await userEvent.click(within(form).getByRole('button', { name: 'Bajar la viñeta 1 de Data Engineer · Acme' }))
+    expect(within(form).getByRole('textbox', { name: /viñeta 1$/ })).toHaveValue('Segundo logro.')
+    // Abajo del todo, «Bajar» se desactiva y el foco sigue al logro en su «Subir».
+    expect(within(form).getByRole('button', { name: 'Subir la viñeta 2 de Data Engineer · Acme' })).toHaveFocus()
+    await userEvent.click(within(form).getByRole('button', { name: 'Quitar la viñeta 2 de Data Engineer · Acme' }))
+    expect(within(form).getByRole('button', { name: 'Quitar la viñeta 1 de Data Engineer · Acme' })).toBeDisabled()
+    await userEvent.click(within(form).getByRole('button', { name: 'Guardar versión nueva' }))
+    await waitFor(() => expect(sent(calls)).toBeDefined())
+    expect(sent(calls).content.experience[0].bullets).toEqual([{ text: 'Segundo logro.', evidence: ['exp-1/a2'] }])
+  })
+
+  it('añade y quita skills como etiquetas, sin repetirlas', async () => {
+    const calls = mockApi(
+      routes({
+        'GET /jobs/1/cv': richCv(),
+        'POST /jobs/1/cv/edit': { ok: true, job_id: 1, document_id: 2, render: renderResult(1), warnings: [] },
+      }),
+    )
+    const form = await openEditor()
+    const chips = within(form).getByRole('list', { name: 'Skills de «Lenguajes»' })
+    expect(within(chips).getAllByRole('listitem').map((li) => li.textContent)).toEqual(['Python', 'SQL'])
+    const add = within(form).getByRole('textbox', { name: 'Añadir una skill a «Lenguajes»' })
+    await userEvent.type(add, 'python{Enter}')
+    expect(within(form).getByText('«python» ya está en este grupo.')).toBeInTheDocument()
+    await userEvent.clear(add)
+    // Intro añade la skill y no guarda la versión.
+    await userEvent.type(add, 'Scala{Enter}')
+    expect(calls.some((c) => c.path === '/jobs/1/cv/edit')).toBe(false)
+    expect(add).toHaveValue('')
+    await userEvent.type(add, 'Go')
+    expect(within(form).getByText('Falta pulsar Intro para añadir «Go»; si no, no se guarda.')).toBeInTheDocument()
+    await userEvent.clear(add)
+    await userEvent.click(within(form).getByRole('button', { name: 'Quitar «SQL» de «Lenguajes»' }))
+    expect(add).toHaveFocus()
+    await userEvent.click(within(form).getByRole('button', { name: 'Guardar versión nueva' }))
+    await waitFor(() => expect(sent(calls)).toBeDefined())
+    expect(sent(calls).content.skills).toEqual([
+      { group: 'Lenguajes', items: ['Python', 'Scala'] },
+      { group: 'Datos', items: ['dbt'] },
+    ])
+  })
+
+  it('añade, renombra, reordena y quita grupos; quitar uno con skills pide confirmación', async () => {
+    const calls = mockApi(
+      routes({
+        'GET /jobs/1/cv': richCv(),
+        'POST /jobs/1/cv/edit': { ok: true, job_id: 1, document_id: 2, render: renderResult(1), warnings: [] },
+      }),
+    )
+    const form = await openEditor()
+    const save = within(form).getByRole('button', { name: 'Guardar versión nueva' })
+    await userEvent.click(within(form).getByRole('button', { name: 'Añadir grupo' }))
+    const name = within(form).getByRole('textbox', { name: 'Nombre del grupo 3' })
+    expect(name).toHaveFocus()
+    // Sin nombre ni skills no se puede guardar.
+    expect(save).toBeDisabled()
+    expect(within(form).getByText(/cada grupo necesita un nombre/)).toBeInTheDocument()
+    // Intro en el nombre no guarda.
+    await userEvent.type(name, 'Nube{Enter}')
+    expect(calls.some((c) => c.path === '/jobs/1/cv/edit')).toBe(false)
+    await userEvent.type(within(form).getByRole('textbox', { name: 'Añadir una skill a «Nube»' }), 'AWS{Enter}')
+    expect(save).toBeEnabled()
+    await userEvent.click(within(form).getByRole('button', { name: 'Subir el grupo «Nube»' }))
+
+    await userEvent.click(within(form).getByRole('button', { name: 'Quitar el grupo «Lenguajes»' }))
+    const confirm = within(form).getByRole('group', { name: 'Quitar el grupo «Lenguajes»' })
+    expect(confirm).toHaveTextContent('¿Quitar el grupo «Lenguajes» y sus 2 skills del CV?')
+    await userEvent.click(within(confirm).getByRole('button', { name: 'Cancelar' }))
+    expect(within(form).getByRole('textbox', { name: 'Nombre del grupo 1' })).toHaveValue('Lenguajes')
+    await userEvent.click(within(form).getByRole('button', { name: 'Quitar el grupo «Lenguajes»' }))
+    await userEvent.click(within(form).getByRole('button', { name: 'Quitar grupo' }))
+
+    await userEvent.click(save)
+    await waitFor(() => expect(sent(calls)).toBeDefined())
+    expect(sent(calls).content.skills).toEqual([
+      { group: 'Nube', items: ['AWS'] },
+      { group: 'Datos', items: ['dbt'] },
+    ])
+  })
+})
+
 describe('Verificar el CV', () => {
   it('sin verificar ofrece hacerlo; verificado, no', async () => {
     mockApi(routes({ 'GET /jobs/1/cv': jobCv([renderResult(1)], { verification: null }) }))
@@ -309,7 +439,7 @@ describe('Verificar el CV', () => {
   it('verificado no ofrece volver a hacerlo', async () => {
     mockApi(routes({ 'GET /jobs/1/cv': jobCv([renderResult(1)], { verification: { passed: true, issues: [] } }) }))
     const cv = await section()
-    await within(cv).findByLabelText('Qué quieres corregir')
+    await within(cv).findByLabelText('Qué corregir')
     expect(within(cv).queryByRole('button', { name: /Verificar esta versión/ })).not.toBeInTheDocument()
   })
 })

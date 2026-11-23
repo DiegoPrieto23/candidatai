@@ -383,7 +383,7 @@ def _message(view_status: str, detail: str, suppressed: bool, cached: bool) -> s
             )
         return (
             f"Puede que esté cerrada: {detail}{when}. No se ha cerrado en CandidatAI: "
-            "descártala tú si lo confirmas."
+            "se descarta a mano si se confirma."
         )
     if view_status == "unknown":
         return f"No se pudo comprobar: {detail}{when}."

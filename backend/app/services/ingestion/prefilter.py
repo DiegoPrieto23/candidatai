@@ -120,7 +120,8 @@ class Prefilter:
             return PASS
         labels = ", ".join(SENIORITY_LABEL[s] for s in SENIORITY_ORDER if s in accepted)
         return Verdict(
-            False, f"El título indica seniority {SENIORITY_LABEL[level]}; solo aceptas: {labels}."
+            False,
+            f"El título indica seniority {SENIORITY_LABEL[level]}; solo se aceptan: {labels}.",
         )
 
     def _title(self, title: str) -> Verdict:
@@ -143,7 +144,7 @@ class Prefilter:
         for forms in self._roles:
             if any(role_similarity(seg, wanted) > 0 for seg in segments for wanted in forms):
                 return PASS
-        return Verdict(False, "El título no encaja con tus puestos (`preferences.roles`).")
+        return Verdict(False, "El título no encaja con los puestos buscados (`preferences.roles`).")
 
     def _location(self, location: str | None, remote: bool | None) -> Verdict:
         assert self.preferences is not None

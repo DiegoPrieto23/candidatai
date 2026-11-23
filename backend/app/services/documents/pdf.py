@@ -170,8 +170,8 @@ def get_converter() -> Converter:
     if word is not None:
         return word
     raise PdfConverterUnavailableError(
-        "No hay con qué convertir a PDF: instala LibreOffice (o define SOFFICE_PATH) o, en "
-        "Windows con Word, `uv sync --extra word`. Comprueba con `cai doctor`."
+        "No hay con qué convertir a PDF: hace falta LibreOffice (o definir SOFFICE_PATH) o, en "
+        "Windows con Word, `uv sync --extra word`. Se comprueba con `cai doctor`."
     )
 
 

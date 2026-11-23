@@ -177,7 +177,7 @@ def test_captcha_leaves_attempt_for_the_user(db: None, server: FormServer) -> No
     with session_scope() as session, pytest.raises(ApplierError):
         confirm(session, attempt_id, "Acme Analytics")
     assert server.posts == []
-    # «Lo termino yo»: la pestaña es tuya y después lo marcas como enviado.
+    # «Terminar a mano»: la pestaña es tuya y después lo marcas como enviado.
     with session_scope() as session:
         service.focus(session, attempt_id)
     assert service.run_focus(attempt_id) == {"attempt_id": attempt_id, "reopened": False}

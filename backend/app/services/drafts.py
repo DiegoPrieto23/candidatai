@@ -1,7 +1,7 @@
 """Borradores de mensajes: seguimiento y agradecimiento (fase 15), LinkedIn y correo (fase 18).
 
 El agente redacta (`save_message_draft`); la app **nunca envía nada** (regla dura 5). El usuario
-copia el texto, lo manda él y pulsa «Ya lo he enviado» en la UI; solo un seguimiento registra un
+copia el texto, lo manda él y pulsa «Marcar como enviado» en la UI; solo un seguimiento registra un
 evento (`followup_sent`). Como mucho `followups.max_followups` seguimientos (2) por candidatura;
 un agradecimiento, solo tras una entrevista hecha.
 
@@ -302,13 +302,13 @@ def save_message_draft(
         sent = followups_sent(session, [job_id]).get(job_id, 0)
         if sent >= limit:
             raise DraftNotAllowedError(
-                f"Ya enviaste {sent} seguimientos a esta candidatura (máximo {limit}): "
+                f"Ya hay {sent} seguimientos enviados a esta candidatura (máximo {limit}): "
                 "no se propone otro."
             )
     else:
         milestone_id = _interview_done(session, job_id, data.milestone_id).id
         if thanked_milestones(session, [milestone_id]):
-            raise DraftNotAllowedError("Ya enviaste el agradecimiento de esa entrevista.")
+            raise DraftNotAllowedError("El agradecimiento de esa entrevista ya está enviado.")
 
     # El vigente del mismo tipo y destinatario (y entrevista, en un agradecimiento).
     current = session.scalars(
@@ -380,7 +380,7 @@ def _draft(session: Session, draft_id: int) -> MessageDraft:
 def mark_draft_sent(
     session: Session, draft_id: int, occurred_at: datetime | None = None
 ) -> DraftActionResult:
-    """«Ya lo he enviado» (solo desde la UI): el usuario lo mandó desde su correo. Un seguimiento
+    """«Marcar como enviado» (solo desde la UI): el usuario lo mandó desde su correo. Un seguimiento
     registra `followup_sent` (actor `user`, `payload.draft_id`)."""
     row = _draft(session, draft_id)
     event_id = None

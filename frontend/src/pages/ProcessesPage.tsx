@@ -498,7 +498,12 @@ export function ProcessesPage() {
           <Board columns={board.data.columns} moves={board.data.moves} />
         </>
       )}
-      <BoardColumnsDialog open={editColumns} layout={layout} onOpenChange={setEditColumns} />
+      <BoardColumnsDialog
+        open={editColumns}
+        layout={layout}
+        totals={Object.fromEntries(board.data?.columns.map((c) => [c.stage, c.total]) ?? [])}
+        onOpenChange={setEditColumns}
+      />
 
       <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <section className="rounded-xl border bg-card p-5 sm:p-6" aria-label={t('next7')}>

@@ -5,13 +5,13 @@
     "reload": "Recargar",
     "down": {
       "title": "La app no responde",
-      "body": "No contesta: puede que se haya cerrado su ventana o que se haya parado. Ábrela otra vez con su acceso directo y recarga esta página."
+      "body": "No contesta: puede que se haya cerrado su ventana o que se haya parado. Hay que abrirla otra vez con su acceso directo y recargar esta página."
     },
     "broken": {
       "title": "Esta página ha fallado",
-      "body": "Es un fallo de la app, no de tus datos: el resto de páginas sigue funcionando.",
+      "body": "Es un fallo de la app, no de los datos: el resto de páginas sigue funcionando.",
       "home": "Volver a Inicio",
-      "report": "Si se repite, avísanos en <issues>GitHub</issues> con lo que estabas haciendo. El detalle del error está en la consola del navegador: pulsa <kbd>F12</kbd> y abre «Consola»."
+      "report": "Si se repite, se puede avisar en <issues>GitHub</issues> con lo que se estaba haciendo. El detalle del error está en la consola del navegador: <kbd>F12</kbd> y la pestaña «Consola»."
     }
   },
   "groups": {
@@ -55,13 +55,13 @@
     "newJob": "Nueva oferta"
   },
   "reminders": {
-    "running": "Tu agente trabaja en segundo plano",
+    "running": "El agente trabaja en segundo plano",
     "queued": "En cola en segundo plano"
   },
   "demo": {
     "label": "Modo demo",
     "title": "Modo demo: datos ficticios.",
-    "body": "Personas, empresas y ofertas son inventadas; tus datos reales no se tocan."
+    "body": "Personas, empresas y ofertas son inventadas; los datos reales no se tocan."
   },
   "signals": {
     "noProfile": "aún sin crear",
@@ -74,7 +74,7 @@
     "review": "Revisión rápida",
     "complete": "Por completar",
     "withCount": "{{label}} ({{count}})",
-    "profileLabel": "Apartados de tu perfil",
+    "profileLabel": "Apartados del perfil",
     "profile": "Mi perfil",
     "skills": "Habilidades por desarrollar",
     "templates": "Plantillas de CV",
@@ -84,29 +84,29 @@
   "searchRun": {
     "running": {
       "title": "Buscando ofertas…",
-      "body": "Tu agente sigue trabajando en su ventana.",
-      "companies": "La app está revisando las webs de empleo de tus empresas."
+      "body": "El agente sigue trabajando en su ventana.",
+      "companies": "La app está revisando las webs de empleo de las empresas seguidas."
     },
     "stale": {
-      "title": "Sin noticias de tu agente",
-      "body": "Lleva un rato sin dar de alta nada. Mira su ventana: quizá espera tu respuesta o se ha cerrado."
+      "title": "Sin noticias del agente",
+      "body": "Lleva un rato sin dar de alta nada. Conviene mirar su ventana: quizá espera una respuesta o se ha cerrado."
     },
     "done": {
       "title": "Búsqueda terminada"
     },
     "no_browser": {
-      "title": "Tu agente no ha podido buscar",
-      "body": "No tiene acceso a tu navegador. Conéctalo como dice «Antes de empezar» y vuelve a lanzar la búsqueda."
+      "title": "El agente no ha podido buscar",
+      "body": "No tiene acceso al navegador. Se conecta como indica «Antes de empezar» y se vuelve a lanzar la búsqueda."
     },
     "stopped": {
-      "title": "Tu agente ha parado antes de acabar",
-      "body": "En su ventana cuenta por qué. Lo que ya había encontrado está en la Bandeja."
+      "title": "El agente ha parado antes de acabar",
+      "body": "En su ventana explica por qué. Lo que ya había encontrado está en la Bandeja."
     },
-    "problems_one": "{{count}} problema en los portales o las empresas. Los ves en «Dónde buscar».",
-    "problems_other": "{{count}} problemas en los portales o las empresas. Los ves en «Dónde buscar».",
+    "problems_one": "{{count}} problema en los portales o las empresas. Se ve en «Dónde buscar».",
+    "problems_other": "{{count}} problemas en los portales o las empresas. Se ven en «Dónde buscar».",
     "seeInbox": "Ver en la Bandeja",
     "close": "Cerrar el aviso",
-    "notification": "Mira el resultado en CandidatAI.",
+    "notification": "El resultado está en CandidatAI.",
     "minimize": "Minimizar el aviso",
     "expand": "{{title}}: abrir el aviso",
     "portalCounts": "{{done}} de {{total}} portales",
@@ -115,29 +115,29 @@
     "newCount_other": "{{count}} ofertas nuevas"
   },
   "tasks": {
-    "runningTerminal": "Sigue en la ventana de tu agente. Si te pide permiso, contesta allí.",
-    "runningBackground": "En segundo plano: no tienes que hacer nada.",
-    "stale": "Sin noticias desde hace 30 minutos. Mira la ventana de tu agente o cierra este aviso.",
-    "doneBody": "Ya puedes verlo.",
+    "runningTerminal": "Sigue en la ventana del agente. Si pide permiso, se contesta allí.",
+    "runningBackground": "En segundo plano: el agente avisa aquí al terminar.",
+    "stale": "Sin noticias desde hace 30 minutos. Conviene mirar la ventana del agente o cerrar este aviso.",
+    "doneBody": "Ya se puede ver.",
     "doneCount_one": "{{count}} hecha.",
     "doneCount_other": "{{count}} hechas.",
     "counts": "{{done}} de {{total}}",
     "see": "Ver",
-    "notification": "Tu agente ha terminado.",
+    "notification": "El agente ha terminado.",
     "minimize": "Minimizar el aviso",
     "expand": "Abrir el aviso: {{title}}",
     "close": "Cerrar el aviso",
     "stopped": {
-      "title": "Tu agente ha parado",
-      "body": "No ha terminado todo. Mira su ventana para ver por qué."
+      "title": "El agente ha parado",
+      "body": "No ha terminado todo. Su ventana explica por qué."
     },
     "failed": {
       "title": "No ha salido bien",
       "body": "La ejecución ha fallado."
     },
     "needs_user": {
-      "title": "Tu agente necesita saber algo",
-      "body": "Ha parado con una pregunta para ti."
+      "title": "El agente necesita un dato",
+      "body": "Ha parado con una pregunta pendiente."
     },
     "actions": {
       "process-jobs": {
@@ -192,6 +192,19 @@
         "running": "Redactando el mensaje…",
         "done": "Borrador listo"
       }
-    }
+    },
+    "stop": "Detener",
+    "stopConfirm": "¿Detenerla? Lo que el agente ya ha guardado se queda.",
+    "stopYes": "Sí, detener",
+    "stopFailed": "No se ha podido detener. Conviene intentarlo otra vez.",
+    "stopNo": "Seguir",
+    "stopping": "Deteniendo…",
+    "stoppingBody": "Parando al agente. Tarda unos segundos.",
+    "cancelled": {
+      "title": "Detenida",
+      "body": "Detenida a mano. Lo que el agente ya había guardado se queda."
+    },
+    "terminalStop": "Para pararla, se cierra la ventana del agente.",
+    "markDone": "Marcar como terminada"
   }
 }

@@ -160,11 +160,11 @@ def _conflict_message(event: Event, conflicts: list[Event]) -> str:
     last = local_time(max(_utc(c.occurred_at) for c in conflicts))
     message = (
         f"No se puede anotar «{event.type}» el {local_time(event.occurred_at)}: después hay "
-        f"anotado {listed}, que no encaja con eso. Pon una fecha posterior al {last}"
+        f"anotado {listed}, que no encaja con eso. Hace falta una fecha posterior al {last}"
     )
     if all(_removable(c) for c in conflicts):
         return (
-            f"{message}. Si lo anotaste por error, anótalo desde la ficha de la oferta: allí te "
+            f"{message}. Si se anotó por error, se anota desde la ficha de la oferta: allí se "
             "propone quitarlo."
         )
     return f"{message}."
@@ -433,7 +433,7 @@ def _remove_conflicts(
     found = check_user_event(session, job_id, type, occurred_at)
     if not found.can_remove or {c.id for c in found.conflicts} != set(ids):
         raise InvalidTransitionError(
-            "Lo que impedía anotarlo ha cambiado desde que lo viste: vuelve a intentarlo."
+            "Lo que impedía anotarlo ha cambiado entretanto: conviene volver a intentarlo."
         )
     for model in (Reply, MessageDraft):
         session.execute(update(model).where(model.event_id.in_(ids)).values(event_id=None))

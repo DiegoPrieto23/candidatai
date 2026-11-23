@@ -120,7 +120,7 @@ def test_turning_on_requires_confirming_the_risk(session: Session) -> None:
     with pytest.raises(browse.BrowsingNotAllowedError, match="confirm_risk"):
         lp.update_settings(session, fetch_detail=True)
     # La descripción va con la búsqueda: no se enciende sola.
-    with pytest.raises(ValueError, match="Activa antes"):
+    with pytest.raises(ValueError, match="Antes hay que activar"):
         lp.update_settings(session, fetch_detail=True, confirm_risk=True)
     # Apagar lo que nunca se encendió no crea la fuente.
     assert lp.update_settings(session, enabled=False).source_id is None

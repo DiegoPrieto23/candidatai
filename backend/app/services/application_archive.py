@@ -134,7 +134,7 @@ def _readme(
         local = event.occurred_at.astimezone(local_zone())
         when = local.strftime("%Y-%m-%d %H:%M") + f" ({local_zone().key})"
         channel = (event.payload or {}).get("channel") or channel
-        kind = "envío asistido" if event.type == EventType.APPLIED.value else "registrado por ti"
+        kind = "envío asistido" if event.type == EventType.APPLIED.value else "registrado a mano"
         channel = f"{channel} ({kind})"
     version = str(profile_version_id) if profile_version_id is not None else "desconocida"
     lines = [
@@ -151,7 +151,7 @@ def _readme(
         *(f"- {name}" for name in files),
         *([] if files else ["- (ninguno: no había CV, carta ni respuestas guardados)"]),
         "",
-        "Copia de lo que se envió. Si rehaces el CV o la carta después, esta carpeta no cambia.",
+        "Copia de lo que se envió. Si después se rehace el CV o la carta, esta carpeta no cambia.",
         *(
             [
                 "",

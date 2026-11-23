@@ -19,6 +19,7 @@ from app.models import AgentPreference
 from app.services import jobs
 from app.services.matching import service as matching
 from app.services.pipeline import Stage
+from app.services.ui_language import Lang
 
 SCOPE, KEY = "setting", "assess_min_score"
 DEFAULT_GAP = 10
@@ -46,9 +47,17 @@ class AssessPlan(BaseModel):
     skipped: dict[int, int]  # oferta → su score, por debajo del umbral
 
 
-def prompt(assess: AssessPlan) -> str:
-    """La orden de la ejecución: solo con los ids de las que pasan (números, ningún texto)."""
+def prompt(assess: AssessPlan, lang: Lang = "es") -> str:
+    """La orden de la ejecución: solo con los ids de las que pasan (números, ningún texto). En
+    inglés, como las demás órdenes, pide contestar en inglés."""
     ids = ", ".join(str(job_id) for job_id in assess.eligible)
+    if lang == "en":
+        return (
+            f"Use the CandidatAI assess-fit skill with jobs {ids}. Only those: the other pending "
+            f"jobs have a score below {assess.threshold} and are not assessed in the background."
+            " Talk to me in English. Documents (CV, cover letter) keep the language of the job "
+            "posting."
+        )
     return (
         f"Usa el skill assess-fit de CandidatAI con las ofertas {ids}. Solo esas: las demás "
         f"pendientes tienen un score por debajo de {assess.threshold} y no se valoran en segundo "

@@ -35,7 +35,7 @@ export function stepOptions(card: BoardCard, moves: BoardMove[]): MoveOption[] {
   return options
 }
 
-/** Las tarjetas se arrastran solo hacia la derecha: hacia etapas posteriores del tablero. */
+/** Las tarjetas se arrastran solo hacia etapas posteriores, vayan en la columna que vayan. */
 export function isForward(order: readonly Stage[], from: Stage, to: Stage): boolean {
   return order.indexOf(to) > order.indexOf(from)
 }

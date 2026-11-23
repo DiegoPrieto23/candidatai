@@ -17,17 +17,17 @@
     "open": "open",
     "discard": "discard"
   },
-  "pollFailed": "Couldn't read the email: {{error}}",
+  "pollFailed": "Could not read the email: {{error}}",
   "discarded": "Discarded",
   "undo": "Undo",
-  "saveFailed": "Couldn't save: {{error}}",
+  "saveFailed": "Could not save: {{error}}",
   "empty": {
     "title": "No pending alerts",
     "body": "Jobs from your LinkedIn, Indeed and other portal alerts that arrive as a summary show up here. The mailboxes they come from are set up in “Where to search”."
   },
   "passing": "Match your preferences",
-  "failing": "Don’t match your filters",
-  "failingCount": "Don’t match your filters ({{count}})",
+  "failing": "Do not match your filters",
+  "failingCount": "Do not match your filters ({{count}})",
   "email": {
     "title": "Email alerts",
     "intro": "The mailboxes where your job alerts arrive, such as those from LinkedIn or Indeed. The app only reads them and their jobs go into the Inbox.",

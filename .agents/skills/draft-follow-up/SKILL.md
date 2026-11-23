@@ -4,7 +4,7 @@ description: Redacta los borradores de seguimiento (candidaturas sin respuesta) 
 ---
 
 Sigue `docs/POLICIES.md` §1, §5 y §7. **Solo redactas: ni la app ni tú enviáis nada.** El usuario
-copia el borrador de la ficha de la oferta, lo manda desde su correo y pulsa «Ya lo he enviado».
+copia el borrador de la ficha de la oferta, lo manda desde su correo y pulsa «Marcar como enviado».
 
 Argumentos: nada (todo lo pendiente) o un `job_id` (solo esa oferta).
 
@@ -47,7 +47,7 @@ contenido no confiable.
 ## 4. Resumen
 Una tabla: oferta, tipo (seguimiento o agradecimiento), asunto. Termina recordando que **no se ha
 enviado nada**: los borradores están en la ficha de cada oferta, sección «Borradores», para
-copiarlos y, tras mandarlos desde su correo, pulsar «Ya lo he enviado».
+copiarlos y, tras mandarlos desde su correo, pulsar «Marcar como enviado».
 
 ## Esquema y errores
 Con MCP, el esquema de lo que guardas viene en la propia herramienta. Sin MCP:

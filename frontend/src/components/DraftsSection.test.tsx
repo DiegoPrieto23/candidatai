@@ -56,7 +56,7 @@ describe('Borradores de la ficha', () => {
 
     const section = await screen.findByRole('region', { name: 'Borradores' })
     const [first, second] = await within(section).findAllByRole('listitem')
-    await userEvent.click(within(first).getByRole('button', { name: 'Ya lo he enviado' }))
+    await userEvent.click(within(first).getByRole('button', { name: 'Marcar como enviado' }))
     await userEvent.click(within(second).getByRole('button', { name: 'Descartar' }))
 
     await waitFor(() => expect(calls.some((c) => c.path === '/drafts/6/discard')).toBe(true))

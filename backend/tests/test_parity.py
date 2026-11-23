@@ -20,7 +20,7 @@ from app.agent_interface.tools import TOOLS_BY_NAME
 from app.core import migrations
 from app.core.config import get_settings
 from app.core.db import get_engine, session_scope
-from app.models import Event, Reply
+from app.models import Event, Job, Reply
 from app.models.base import utcnow
 from app.schemas.cover_letter import CoverLetterContent
 from app.schemas.cv import CvContent
@@ -76,6 +76,19 @@ def seed_closed() -> None:
     seed_job()
     with session_scope() as session:
         events.record(session, 1, "discarded", "user", payload={"reason": "no encaja"})
+
+
+def seed_duplicate() -> None:
+    """Oferta 1 y la 2 como duplicada suya, como se guardaban antes (ya no se crean)."""
+    seed_job()
+    with session_scope() as session:
+        job_id = ingest.add_from_text(
+            session, "BI Analyst", "Acme Analytics", POSTING_TEXT, location="Bilbao"
+        ).job_id
+        job = session.get(Job, job_id)
+        assert job is not None
+        job.duplicate_of = 1
+        events.record(session, job_id, "duplicate_detected", "system", {"duplicate_of": 1})
 
 
 def seed_profile() -> None:
@@ -707,6 +720,8 @@ CASES = [
                seed=seed_closed),
     _file_case("known-empty", "check_known", {"items": []}, ["jobs", "known"], "k.json",
                {"items": []}, expect_error="validation_error"),
+    Case("duplicates", "list_duplicates", {}, ["jobs", "duplicates"], seed=seed_duplicate),
+    Case("duplicates-none", "list_duplicates", {}, ["jobs", "duplicates"]),
     Case("titles", "get_search_titles", {}, ["jobs", "titles"], seed=seed_approved),
     Case("titles-days", "get_search_titles", {"days": 30}, ["jobs", "titles", "--days", "30"],
          seed=seed_closed),

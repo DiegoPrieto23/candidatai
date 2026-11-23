@@ -287,7 +287,7 @@ def test_style_sample_limits(client: TestClient, monkeypatch: pytest.MonkeyPatch
     monkeypatch.setattr(get_policies().profile_editing, "style_max_upload_mb", 5)
     monkeypatch.setattr(get_policies().profile_editing, "style_max_files", 1)
     _upload(client, "una.txt", b"Hola.")
-    assert "borra alguna" in post("otra.txt", b"Adios.")["error"]["message"]
+    assert "borrar alguna" in post("otra.txt", b"Adios.")["error"]["message"]
 
     monkeypatch.setattr(get_policies().profile_editing, "style_max_text_kb", 1)
     long = ("palabra " * 400).encode()

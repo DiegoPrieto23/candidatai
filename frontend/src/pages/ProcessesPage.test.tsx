@@ -48,7 +48,7 @@ function routes(extra: Record<string, unknown> = {}) {
 describe('Mover tarjetas', () => {
   const ORDER = ['approved', 'cv_ready', 'applied', 'in_process', 'closed'] as const
 
-  it('solo hacia la derecha', () => {
+  it('solo hacia una etapa posterior', () => {
     expect(isForward(ORDER, 'applied', 'in_process')).toBe(true)
     expect(isForward(ORDER, 'applied', 'closed')).toBe(true)
     expect(isForward(ORDER, 'applied', 'cv_ready')).toBe(false)
@@ -66,7 +66,7 @@ describe('Procesos (kanban)', () => {
     expect(within(applied).getByText(/Seguimiento · 12 días/)).toBeInTheDocument()
     expect(screen.getByText('1 seguimiento pendiente')).toBeInTheDocument()
     // La intro va en una línea; cómo se usa el tablero, en su ayuda.
-    expect(screen.getByText('Tus candidaturas en curso, por etapa.')).toBeInTheDocument()
+    expect(screen.getByText('Las candidaturas en curso, por etapa.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Cómo se usa el tablero' })).toBeInTheDocument()
     expect(within(screen.getByRole('region', { name: 'Cerrada' })).getByText('Rechazada')).toBeInTheDocument()
     const upcoming = screen.getByRole('region', { name: 'Próximos 7 días' })
@@ -98,7 +98,7 @@ describe('Procesos (kanban)', () => {
     expect(within(screen.getByRole('region', { name: 'Enviada' })).getByText('Oferta 2')).toBeInTheDocument()
 
     await userEvent.click(within(column).getByRole('combobox', { name: 'Mostrar' }))
-    await userEvent.click(await screen.findByRole('option', { name: 'Descartadas por ti' }))
+    await userEvent.click(await screen.findByRole('option', { name: 'Descartadas a mano' }))
     expect(within(column).getByText('Oferta 7')).toBeInTheDocument()
     expect(within(column).queryByText('Oferta 5')).not.toBeInTheDocument()
   })
@@ -110,7 +110,7 @@ describe('Procesos (kanban)', () => {
     const dialog = await screen.findByRole('dialog')
     const register = within(dialog).getByRole('button', { name: 'Registrar' })
     expect(register).toBeDisabled()
-    await userEvent.click(within(dialog).getByRole('radio', { name: /Enviada por tu cuenta/ }))
+    await userEvent.click(within(dialog).getByRole('radio', { name: /Enviada a mano/ }))
     await userEvent.selectOptions(within(dialog).getByLabelText('Canal (opcional)'), 'email')
     await userEvent.click(register)
 
@@ -276,17 +276,32 @@ describe('Procesos (kanban)', () => {
 
 
 describe('Columnas configurables', () => {
-  it('junta etapas y renombra sin tocar las etapas; «Restablecer» vuelve a las de siempre', async () => {
+  async function openDialog() {
+    await userEvent.click(screen.getByRole('button', { name: 'Personalizar columnas' }))
+    return screen.findByRole('dialog')
+  }
+
+  it('junta etapas con su selector y renombra sin tocar las etapas; «Restablecer» se aplica al guardar', async () => {
     const calls = mockApi(routes())
     renderApp('/procesos')
     await screen.findByRole('region', { name: 'Enviada' })
-    await userEvent.click(screen.getByRole('button', { name: 'Personalizar columnas' }))
-    const dialog = await screen.findByRole('dialog')
-    await userEvent.click(within(dialog).getByRole('switch', { name: '«Aprobada» y «CV listo» en la misma columna' }))
-    await userEvent.click(within(dialog).getByRole('switch', { name: '«Enviada» y «En proceso» en la misma columna' }))
-    // Con 3 columnas no se junta nada más.
-    expect(within(dialog).getByRole('switch', { name: '«CV listo» y «Enviada» en la misma columna' })).toBeDisabled()
-    await userEvent.type(within(dialog).getByLabelText('Columna 2'), 'En marcha')
+    let dialog = await openDialog()
+    expect(dialog).toHaveTextContent(/no cambia la etapa de ninguna oferta/)
+    await userEvent.selectOptions(within(dialog).getByLabelText('CV listo'), 'Columna 1 · Aprobada')
+    await userEvent.selectOptions(within(dialog).getByLabelText('En proceso'), 'Columna 2 · Enviada')
+    // Con 3 columnas, ninguna etapa sola puede dejar la suya: la columna desaparecería. Y una sola no
+    // pasa a una nueva; una de una columna con dos, sí.
+    const closed = within(dialog).getByLabelText('Cerrada')
+    expect(within(closed).getByRole('option', { name: 'Columna 1 · Aprobada · CV listo' })).toBeDisabled()
+    expect(within(closed).getByRole('option', { name: 'Columna nueva' })).toBeDisabled()
+    const cvReady = within(dialog).getByLabelText('CV listo')
+    expect(within(cvReady).getByRole('option', { name: 'Columna nueva' })).toBeEnabled()
+    const stagesOfFirst = within(dialog).getByRole('list', { name: 'Etapas de la columna 1' })
+    expect(within(stagesOfFirst).getAllByRole('listitem').map((li) => li.textContent)).toEqual(['Aprobada', 'CV listo'])
+    await userEvent.type(within(dialog).getByLabelText('Nombre de la columna 2'), 'En marcha')
+    // La vista previa ya enseña cómo queda.
+    const preview = within(dialog).getByRole('region', { name: 'Vista previa' })
+    expect(preview).toHaveTextContent('En marcha')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Guardar' }))
 
     const running = await screen.findByRole('region', { name: 'En marcha' })
@@ -299,9 +314,32 @@ describe('Columnas configurables', () => {
     // Solo es una vista: ninguna llamada que cambie nada.
     expect(calls.filter((c) => c.method !== 'GET')).toEqual([])
 
-    await userEvent.click(screen.getByRole('button', { name: 'Personalizar columnas' }))
-    await userEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Restablecer' }))
+    dialog = await openDialog()
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Restablecer' }))
+    // Aún no se ha aplicado: solo en el diálogo (detrás, el tablero sigue igual).
+    expect(within(dialog).getByRole('heading', { name: '5 columnas' })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'En marcha', hidden: true })).toBeInTheDocument()
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Guardar' }))
     expect(await screen.findByRole('region', { name: 'Enviada' })).toBeInTheDocument()
     expect(screen.queryByRole('region', { name: 'En marcha' })).not.toBeInTheDocument()
+  })
+
+  it('reordena columnas y junta etapas no seguidas; «Cancelar» no guarda', async () => {
+    mockApi(routes())
+    renderApp('/procesos')
+    await screen.findByRole('region', { name: 'Enviada' })
+    const order = () => screen.getAllByRole('region').map((r) => r.getAttribute('aria-label'))
+    let dialog = await openDialog()
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Subir la columna «Cerrada»' }))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Cancelar' }))
+    expect(order().indexOf('Cerrada')).toBeGreaterThan(order().indexOf('En proceso'))
+
+    dialog = await openDialog()
+    expect(within(dialog).getByRole('button', { name: 'Subir la columna «Aprobada»' })).toBeDisabled()
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Subir la columna «Cerrada»' }))
+    await userEvent.selectOptions(within(dialog).getByLabelText('Aprobada'), 'Columna 4 · Cerrada')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Guardar' }))
+    await screen.findByRole('region', { name: 'Aprobada · Cerrada' })
+    expect(order().indexOf('Aprobada · Cerrada')).toBeLessThan(order().indexOf('En proceso'))
   })
 })

@@ -62,8 +62,8 @@ LABELS: dict[Language, dict[str, str]] = {
         "sources": "Fuentes",
         "all_day": "todo el día",
         "madrid": "hora de Madrid",
-        "footer": "Guía generada con CandidatAI el {date}. Sale de tu perfil, la oferta y las "
-        "fuentes citadas: revísala antes de la entrevista.",
+        "footer": "Guía generada con CandidatAI el {date}. Sale del perfil, la oferta y las "
+        "fuentes citadas: conviene revisarla antes de la entrevista.",
     },
     "en": {
         "eyebrow": "Interview preparation",
@@ -382,7 +382,7 @@ def guide_file(session: Session, milestone_id: int) -> Path:
         raise FileNotFoundError(f"La entrevista {milestone_id} no tiene guía de preparación.")
     path = guide_path(file)
     if not path.is_file():
-        raise FileNotFoundError(f"No está el PDF de la guía ({file}): vuelve a prepararla.")
+        raise FileNotFoundError(f"No está el PDF de la guía ({file}): hay que volver a prepararla.")
     return path
 
 
@@ -449,7 +449,7 @@ def restore_guide(session: Session, milestone_id: int) -> MilestoneOut:
     stored = row.prep_guide or {}
     if stored.get("correction"):
         raise InterviewNotAllowedError(
-            "Tienes cambios pedidos sin aplicar: cancélalos antes de volver a otra versión."
+            "Hay cambios pedidos sin aplicar: hay que cancelarlos antes de volver a otra versión."
         )
     other = stored.get("previous")
     if not other:

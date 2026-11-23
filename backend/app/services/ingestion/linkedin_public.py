@@ -272,16 +272,17 @@ def update_settings(
     turning_on = enabling or enabling_detail
     if turning_on and not confirm_risk:
         raise BrowsingNotAllowedError(
-            "Activar la búsqueda pública de LinkedIn requiere confirmar que aceptas el riesgo "
-            "(`confirm_risk: true`): va contra sus condiciones de uso y puede bloquear tu IP."
+            "Activar la búsqueda pública de LinkedIn requiere confirmar que se acepta el riesgo "
+            "(`confirm_risk: true`): va contra sus condiciones de uso y puede bloquear la IP."
         )
     if enabling_detail and not (config.get("enabled") or enabling):
         raise ValueError(
-            "Activa antes la búsqueda pública: la descarga de la descripción va con ella."
+            "Antes hay que activar la búsqueda pública: la descarga de la descripción va con ella."
         )
     if enabling and not searches(session)[0]:
         raise ValueError(
-            "No hay ninguna búsqueda de LinkedIn que usar: añade a la plataforma LinkedIn una URL "
+            "No hay ninguna búsqueda de LinkedIn que usar: hay que añadir a la plataforma "
+            "LinkedIn una URL "
             "de linkedin.com/jobs/search con palabras clave o ubicación."
         )
     if source is None:

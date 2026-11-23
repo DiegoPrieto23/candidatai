@@ -219,17 +219,19 @@ def _image_suffix(content: bytes) -> str:
     from PIL import Image, UnidentifiedImageError
 
     if len(content) > MAX_PHOTO_BYTES:
-        raise PhotoError("La foto pasa de 10 MB: prueba con una más pequeña.")
+        raise PhotoError("La foto pasa de 10 MB: conviene probar con una más pequeña.")
     try:
         with Image.open(BytesIO(content)) as img:
             suffix = _FORMATS.get(img.format or "")
             img.verify()
     except (OSError, ValueError, SyntaxError, UnidentifiedImageError) as exc:
-        raise PhotoError("No parece una imagen válida: usa un JPG, PNG o WebP.") from exc
+        raise PhotoError("No parece una imagen válida: se aceptan JPG, PNG y WebP.") from exc
     except Image.DecompressionBombError as exc:
-        raise PhotoError("La imagen es demasiado grande: prueba con una más pequeña.") from exc
+        raise PhotoError(
+            "La imagen es demasiado grande: conviene probar con una más pequeña."
+        ) from exc
     if suffix is None:
-        raise PhotoError("Formato no admitido: usa un JPG, PNG o WebP.")
+        raise PhotoError("Formato no admitido: se aceptan JPG, PNG y WebP.")
     return suffix
 
 
@@ -257,8 +259,8 @@ def save_photo(
         configured = data_dir / profile.preferences.cv.photo_file
         if configured.is_file() and configured not in _named_photo(data_dir):
             raise PhotoError(
-                f"Tu perfil usa otra foto (`{profile.preferences.cv.photo_file}`): "
-                "quítala antes de subir una nueva."
+                f"El perfil usa otra foto (`{profile.preferences.cv.photo_file}`): "
+                "hay que quitarla antes de subir una nueva."
             )
     data_dir.mkdir(parents=True, exist_ok=True)
     target = data_dir / f"photo{suffix}"

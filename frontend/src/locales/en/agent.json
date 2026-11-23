@@ -43,7 +43,7 @@
   "handle": "Handle requests",
   "recentlyClosed": "Recently closed",
   "title": "Agent",
-  "intro": "Your agents and what you've left for their next session. They use your subscription: you don't pay extra per run.",
+  "intro": "Your agents and what you have left for their next session. They use your subscription: you do not pay extra per run.",
   "nextSession": "For your next session",
   "costs": {
     "title": "Cost",
@@ -64,9 +64,9 @@
     "byAgent": "By agent",
     "byModel": "By model",
     "empty": "No runs in this period.",
-    "terminal": "Only background runs count: what you do in a terminal doesn't reach the app. “Instructions size” is how heavy each action's instructions are, so you know where to trim.",
+    "terminal": "Only background runs count: what you do in a terminal does not reach the app. “Instructions size” is how heavy each action's instructions are, so you know where to trim.",
     "threshold": "Threshold before spending",
-    "thresholdIntro": "In the background, “Assess new jobs” only assesses jobs with this fit or higher, so it doesn't spend on those that almost surely don't fit; “To review” says why each one was left unassessed. The minimum to reach “To review” is {{triage}}; by default, this one is {{default}}.",
+    "thresholdIntro": "In the background, “Assess new jobs” only assesses jobs with this fit or higher, so it does not spend on those that almost surely do not fit; “To review” says why each one was left unassessed. The minimum to reach “To review” is {{triage}}; by default, this one is {{default}}.",
     "thresholdLabel": "Minimum fit",
     "thresholdSave": "Save",
     "thresholdReset": "Back to {{value}}",
@@ -84,13 +84,13 @@
     "runs": "Runs",
     "shared_one": "shared among {{count}} job",
     "shared_other": "shared among {{count}} jobs",
-    "terminal": "What you do in a terminal doesn't count: there the agent doesn't report its usage."
+    "terminal": "What you do in a terminal does not count: there the agent does not report its usage."
   },
   "semantic": "Meaning-based comparison",
   "summary": {
     "ready": "Your agent: {{agent}}, ready",
     "readyHint": "The buttons with the robot all over the app open it in a separate window with the command already written: there you see what it does and approve it.",
-    "cantOpen": "Your agent: I can't open it from here",
+    "cantOpen": "Your agent cannot be opened from here",
     "cantOpenHint": "{{reason}} The buttons with the robot show you the command so you can copy it and paste it into your agent."
   }
 }

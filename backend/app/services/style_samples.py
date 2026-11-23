@@ -157,7 +157,8 @@ def _save_locked(name: str, suffix: str, data: bytes) -> StyleSampleInfo:
     rules = policies.get_policies().profile_editing
     if len(_originals()) >= rules.style_max_files:
         raise InvalidUploadError(
-            f"Ya tienes {rules.style_max_files} muestras de estilo: borra alguna antes de subir "
+            f"Ya hay {rules.style_max_files} muestras de estilo: hay que borrar alguna antes de "
+            f"subir "
             "otra."
         )
     signature = _SIGNATURES.get(suffix)

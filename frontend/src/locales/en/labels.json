@@ -15,7 +15,7 @@
     "duplicate_detected": "Duplicate detected",
     "extracted": "Read by your agent",
     "hard_filter_failed": "Fails the filters",
-    "extraction_failed": "Your agent couldn't read it",
+    "extraction_failed": "Your agent could not read it",
     "injection_suspected": "Possible content aimed at an AI",
     "closure_suspected": "May no longer be posted",
     "scored": "Fit calculated",
@@ -82,7 +82,7 @@
     "hour": "hour"
   },
   "discardReason": {
-    "skills": "Stack doesn't fit",
+    "skills": "Stack does not fit",
     "seniority": "Level or years",
     "location": "Location or work mode",
     "salary": "Salary or conditions",
@@ -173,16 +173,16 @@
   "moveHint": {
     "applied": "You sent it with the CV selected in the app.",
     "applied_manually": "You sent it on your own (with or without the app's CV).",
-    "reply_received": "They've replied.",
+    "reply_received": "They have replied.",
     "interview_scheduled": "You have an interview: a milestone is created with its date and time.",
-    "interview_done": "You had an interview you hadn't logged.",
-    "test_assigned": "They've sent you a test: a milestone is created with its due date.",
-    "offer_received": "They've made you an offer.",
+    "interview_done": "You had an interview you had not logged.",
+    "test_assigned": "They have sent you a test: a milestone is created with its due date.",
+    "offer_received": "They have made you an offer.",
     "discarded": "You drop it before sending it.",
     "rejected": "The company has turned you down.",
     "withdrawn": "You withdraw from the process.",
     "expired": "The posting has expired or there was no reply.",
-    "accepted": "You've accepted the offer.",
+    "accepted": "You have accepted the offer.",
     "reopened": "It goes back to the stage it was in when it closed."
   },
   "hardFilter": {
@@ -192,7 +192,7 @@
     "location": "Location",
     "language": "Language",
     "title_keyword": "Title keywords",
-    "signal": "Doesn't say which company is hiring",
+    "signal": "Does not say which company is hiring",
     "salary": "Below your salary minimum",
     "contract": "Contract or working-time type",
     "employer_kind": "Employer type"

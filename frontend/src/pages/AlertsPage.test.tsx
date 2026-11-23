@@ -38,7 +38,7 @@ describe('Alertas', () => {
   it('con muchas, las enseña de 25 en 25', async () => {
     mockAlerts(Array.from({ length: 30 }, (_, i) => alertJob(i + 1)))
     renderApp('/bandeja/por-completar')
-    const list = await screen.findByRole('listbox', { name: 'Encajan con tus preferencias' })
+    const list = await screen.findByRole('listbox', { name: 'Encajan con las preferencias' })
     expect(within(list).getAllByRole('option')).toHaveLength(25)
     expect(screen.getByText('1-25 de 30')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: /Siguientes/ }))
@@ -53,12 +53,12 @@ describe('Alertas', () => {
     ])
     renderApp('/bandeja/por-completar')
 
-    const good = await screen.findByRole('listbox', { name: 'Encajan con tus preferencias' })
+    const good = await screen.findByRole('listbox', { name: 'Encajan con las preferencias' })
     expect(within(good).getByText('Alerta 1')).toBeInTheDocument()
     // Las que no encajan van plegadas.
-    expect(screen.queryByRole('listbox', { name: 'No encajan con tus filtros' })).not.toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: 'No encajan con tus filtros (1)' }))
-    const bad = screen.getByRole('listbox', { name: 'No encajan con tus filtros' })
+    expect(screen.queryByRole('listbox', { name: 'No encajan con los filtros' })).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'No encajan con los filtros (1)' }))
+    const bad = screen.getByRole('listbox', { name: 'No encajan con los filtros' })
     expect(within(bad).getByText('El título indica seniority senior.')).toBeInTheDocument()
     const open = within(good).getByRole('link', { name: /Abrir/ })
     expect(open).toHaveAttribute('href', 'https://www.linkedin.com/jobs/view/400000001/')

@@ -12,7 +12,7 @@ import { desktopOs } from '@/lib/extension'
 import { i18n, SOURCE_LANGUAGE } from '@/lib/i18n'
 
 const GUIDE = {
-  es: 'https://github.com/DiegoPrieto23/candidatai/blob/main/docs/EMPEZAR.md#3-instalar-tu-agente',
+  es: 'https://github.com/DiegoPrieto23/candidatai/blob/main/docs/EMPEZAR.md#3-instalar-el-agente',
   en: 'https://github.com/DiegoPrieto23/candidatai/blob/main/docs/START_HERE.md#3-install-your-agent',
 }
 const INSTALL_KEY = { windows: 'windows', mac: 'macos', linux: 'linux' } as const

@@ -122,12 +122,13 @@ describe('Plataformas', () => {
       .find((link) => link.getAttribute('href') === tecno.browse!.search_urls[0])
     expect(search).toBeDefined()
     expect(search).toHaveAttribute('rel', 'noopener noreferrer')
-    expect(screen.getByRole('link', { name: 'tecnoempleo.com' })).toHaveAttribute('href', 'https://www.tecnoempleo.com')
+    // El dominio, tal cual lo usa el portal: con `www.`.
+    expect(screen.getByRole('link', { name: 'www.tecnoempleo.com' })).toHaveAttribute('href', 'https://www.tecnoempleo.com')
     // La URL completa, solo al desplegar.
     expect(screen.queryByText(tecno.browse!.search_urls[0])).not.toBeInTheDocument()
     for (const button of screen.getAllByRole('button', { name: 'Ver las URLs' })) await userEvent.click(button)
     expect(screen.getByText(tecno.browse!.search_urls[0])).toBeInTheDocument()
-    expect(screen.getByText('12 vistas · 4 pasan tus filtros · 1 ya la tenías · 3 nuevas')).toBeInTheDocument()
+    expect(screen.getByText('12 vistas · 4 pasan los filtros · 1 ya estaba · 3 nuevas')).toBeInTheDocument()
     expect(screen.getByText('Captcha en la página 2: se para.')).toBeInTheDocument()
     expect(screen.getByText('El agente aún no la ha recorrido')).toBeInTheDocument()
   })
@@ -157,8 +158,8 @@ describe('Plataformas', () => {
     })
     renderApp('/plataformas')
     await userEvent.click(await screen.findByRole('button', { name: 'Ampliar búsqueda' }))
-    expect(await screen.findByText('Abierto en claude: sigue en la ventana que se acaba de abrir.')).toBeInTheDocument()
-    expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ action: 'broaden-search' })
+    expect(await screen.findByText('Abierto en claude: se continúa en la ventana recién abierta.')).toBeInTheDocument()
+    expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ lang: 'es', action: 'broaden-search' })
   })
 
   it('activar LinkedIn pide confirmar el riesgo y manda confirm_risk', async () => {
@@ -172,7 +173,7 @@ describe('Plataformas', () => {
 
     await userEvent.click(await screen.findByRole('switch', { name: 'Búsqueda con navegador en LinkedIn' }))
     const dialog = await screen.findByRole('dialog')
-    expect(within(dialog).getByText(/puede restringir o cerrar tu\s+cuenta/)).toBeInTheDocument()
+    expect(within(dialog).getByText(/puede restringir o cerrar la\s+cuenta/)).toBeInTheDocument()
 
     await userEvent.click(within(dialog).getByRole('button', { name: 'Cancelar' }))
     expect(calls.some((c) => c.path === '/sources/2/browse')).toBe(false)
@@ -286,7 +287,7 @@ describe('Plataformas', () => {
 
     await openSettings()
     ;(await screen.findByRole('button', { name: 'Qué es la prioridad' })).focus()
-    expect(await screen.findByRole('tooltip')).toHaveTextContent(/El orden en que tu agente recorre las plataformas/)
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(/El orden en que el agente recorre las plataformas/)
     await userEvent.keyboard('{Escape}')
     screen.getByRole('button', { name: 'Qué es el acceso' }).focus()
     expect(await screen.findByRole('tooltip')).toHaveTextContent(/Cómo entra el agente/)
@@ -298,12 +299,12 @@ describe('Plataformas', () => {
   it('sin plataformas, propone configurarlas con tu agente o añadir una', async () => {
     mockApi({ 'GET /status': status(), 'GET /sources': { sources: [], agent_browse: LIMITS } })
     renderApp('/plataformas')
-    expect(await screen.findByText('Aún no buscas en ningún portal')).toBeInTheDocument()
+    expect(await screen.findByText('Aún no se busca en ningún portal')).toBeInTheDocument()
     // Sin plataformas, lo destacado es configurarlas; buscar no tiene sentido aún.
-    expect(screen.getByRole('button', { name: 'Configurar con mi agente' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Configurar con el agente' })).toBeInTheDocument()
     expect(within(screen.getByRole('region', { name: 'Dónde buscar' })).getByRole('button', { name: 'Añadir portal' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Buscar ofertas' })).not.toBeInTheDocument()
-    expect(screen.getByText(/Pide a tu agente que lo configure/)).toBeInTheDocument()
+    expect(screen.getByText(/El agente puede configurarlo/)).toBeInTheDocument()
   })
 })
 
@@ -386,7 +387,7 @@ describe('Búsqueda pública de LinkedIn', () => {
     renderApp('/plataformas')
     expect(await screen.findByText(/LinkedIn cortó la última búsqueda/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Buscar ahora' })).toBeDisabled()
-    expect(screen.getByText(/2 nuevas para ti, 0 ya conocidas/)).toBeInTheDocument()
+    expect(screen.getByText(/2 nuevas que encajan, 0 ya conocidas/)).toBeInTheDocument()
     expect(screen.queryByText(/tras filtros/)).not.toBeInTheDocument()
   })
 
@@ -416,7 +417,7 @@ describe('Búsqueda pública de LinkedIn', () => {
     })
     renderApp('/plataformas')
     await userEvent.click(await screen.findByRole('button', { name: 'Buscar ahora' }))
-    expect(await screen.findByText('3 nuevas para ti')).toBeInTheDocument()
+    expect(await screen.findByText('3 nuevas que encajan')).toBeInTheDocument()
     expect(calls.find((c) => c.path === '/sources/linkedin-public/run')?.body).toEqual({})
   })
 })
@@ -439,7 +440,7 @@ describe('Añadir portal', () => {
     await userEvent.click(await within(await screen.findByRole('region', { name: 'Dónde buscar' })).findByRole('button', { name: 'Añadir portal' }))
     const dialog = await screen.findByRole('dialog')
     await userEvent.selectOptions(within(dialog).getByLabelText('Portal'), 'linkedin')
-    expect(within(dialog).getByRole('note')).toHaveTextContent('puede restringir o cerrar tu cuenta')
+    expect(within(dialog).getByRole('note')).toHaveTextContent('puede restringir o cerrar la cuenta')
     const add = within(dialog).getByRole('button', { name: 'Añadir' })
     expect(add).toBeDisabled()
     await userEvent.type(
@@ -499,7 +500,7 @@ describe('Añadir portal', () => {
     expect(within(dialog).getByText('Data Engineer · Remoto')).toBeInTheDocument()
     // Retocadas a mano, «Rellenar desde mi perfil» las vuelve a poner.
     await userEvent.clear(searches)
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Rellenar desde mi perfil' }))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Rellenar desde el perfil' }))
     await userEvent.click(within(dialog).getByRole('button', { name: 'Añadir' }))
     const call = calls.find((c) => c.method === 'POST' && c.path === '/sources/platforms')
     expect((call?.body as { search_urls: string[] }).search_urls).toHaveLength(2)

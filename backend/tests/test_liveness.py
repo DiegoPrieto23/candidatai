@@ -297,7 +297,7 @@ def test_check_job_flags_once_and_never_closes(session: Session) -> None:
     view = liveness.check_job(session, job.id, now=NOW)
     assert view.status == "possibly_closed"
     assert view.possibly_closed is not None and view.possibly_closed.reason == "http_404"
-    assert "descártala tú" in view.message
+    assert "se descarta a mano" in view.message
     assert session.get(Application, job.id).stage == "approved"  # type: ignore[union-attr]
 
     later = NOW + timedelta(days=1)

@@ -27,9 +27,9 @@ describe('Ofertas que vuelven a publicarse (fase 45)', () => {
     expect((await screen.findAllByText('Reabierta')).length).toBeGreaterThan(0)
 
     const banner = await screen.findByRole('region', { name: 'Ha vuelto a publicarse' })
-    expect(within(banner).getByText('Una oferta que cerraste ha vuelto a publicarse')).toBeInTheDocument()
+    expect(within(banner).getByText('Una oferta cerrada ha vuelto a publicarse')).toBeInTheDocument()
     expect(within(banner).getByRole('link', { name: 'BI Analyst' })).toHaveAttribute('href', '/jobs/7')
-    expect(within(banner).getByText(/La descartaste · publicada otra vez el/)).toBeInTheDocument()
+    expect(within(banner).getByText(/Descartada · publicada otra vez el/)).toBeInTheDocument()
     expect(within(banner).getByRole('link', { name: /Ver la publicación/ })).toHaveAttribute('href', NOTICE.url)
 
     await userEvent.click(within(banner).getByRole('button', { name: 'Reabrir' }))
@@ -58,7 +58,7 @@ describe('Ofertas que vuelven a publicarse (fase 45)', () => {
     })
     renderApp('/jobs/1')
     const note = await screen.findByText(/Reapertura/)
-    expect(note.closest('p')).toHaveTextContent(/de la oferta del 12 mar 2026 \(te rechazaron durante el proceso\)/)
+    expect(note.closest('p')).toHaveTextContent(/de la oferta del 12 mar 2026 \(rechazo durante el proceso\)/)
     expect(screen.getByRole('link', { name: /oferta del/ })).toHaveAttribute('href', '/jobs/3')
   })
 
@@ -73,7 +73,7 @@ describe('Ofertas que vuelven a publicarse (fase 45)', () => {
     })
     renderApp('/jobs/1')
     const notice = await screen.findByRole('region', { name: 'Ha vuelto a publicarse' })
-    expect(within(notice).getByText(/La cerraste tú y se ha vuelto a publicar/)).toBeInTheDocument()
+    expect(within(notice).getByText(/Se cerró a mano y ha vuelto a publicarse/)).toBeInTheDocument()
     await userEvent.click(within(notice).getByRole('button', { name: 'Ignorar' }))
     await waitFor(() => expect(calls.some((c) => c.path === '/jobs/1/republished/dismiss')).toBe(true))
   })

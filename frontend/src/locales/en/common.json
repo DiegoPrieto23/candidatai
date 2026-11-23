@@ -3,7 +3,7 @@
     "name": "English"
   },
   "notFound": {
-    "title": "This page doesn't exist",
+    "title": "This page does not exist",
     "goHome": "Go to home"
   },
   "loading": "Loading…",
@@ -25,20 +25,20 @@
   "copy": {
     "label": "Copy",
     "copied": "Copied",
-    "failed": "Couldn't copy",
+    "failed": "Could not copy",
     "copiedStatus": "Copied to the clipboard",
     "path": "Copy path"
   },
   "folder": {
     "open": "Open folder",
-    "notOpened": "Couldn't open it here. It's in"
+    "notOpened": "Could not open it here. It is in"
   },
   "noStage": "No stage",
   "errors": {
-    "offlineTitle": "CandidatAI isn't responding",
-    "loadFailed": "Couldn't load",
+    "offlineTitle": "CandidatAI is not responding",
+    "loadFailed": "Could not load",
     "generic": "Something went wrong.",
-    "offline": "Can't reach the app. Open it from its shortcut and reload this page.",
+    "offline": "Cannot reach the app. Open it from its shortcut and reload this page.",
     "unexpected": "Something went wrong in the app ({{status}}). Try again.",
     "types": {
       "unauthorized": "Unauthorized",
@@ -49,7 +49,7 @@
       "validation_error": "Invalid input",
       "invalid_request": "Invalid request",
       "invalid_transition": "Invalid state change",
-      "later_events": "Something logged later doesn't fit",
+      "later_events": "Something logged later does not fit",
       "exists": "Already exists",
       "invalid_file": "Invalid file",
       "too_large": "Too large",

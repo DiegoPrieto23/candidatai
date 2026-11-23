@@ -206,12 +206,16 @@ def _render_status(report: Any) -> None:
 
 
 def _render_added(result: Any) -> None:
+    if not result.created and result.duplicate_of is not None:
+        typer.echo(
+            f"Es la misma vacante que la oferta {result.duplicate_of}, con un título casi igual: "
+            "no se ha dado de alta otra."
+        )
+        return
     if not result.created:
         typer.echo(f"La oferta ya existía: {result.job_id}. No se ha cambiado nada.")
         return
     typer.echo(f"Oferta {result.job_id} dada de alta.")
-    if result.duplicate_of is not None:
-        typer.echo(f"Parece un duplicado de la oferta {result.duplicate_of}: queda cerrada.")
     if result.risk_flags:
         flags = ", ".join(result.risk_flags)
         typer.secho(f"Aviso: posible contenido dirigido a una IA ({flags}).", fg="yellow")
@@ -227,6 +231,23 @@ def _render_jobs(result: Any) -> None:
         score = f"{job.score:>3}" if job.score is not None else "  -"
         line = f"{job.id:>5}  {job.stage or '-':<18} {score}  {job.title} · {job.company}"
         typer.echo(f"{line}{dup}{marks}")
+
+
+def _render_duplicates(result: Any) -> None:
+    if not result.items:
+        typer.echo("No hay ofertas duplicadas.")
+        return
+    reasons = {
+        "no_longer_duplicate": "ya no está cerrada como duplicada",
+        "own_work": "tiene algo propio",
+    }
+    for item in result.items:
+        keep = f" (se queda: {reasons[item.keep_reason]})" if item.keep_reason else ""
+        typer.echo(
+            f"{item.job_id:>5}  {item.title} · {item.company} → duplicada de "
+            f"{item.original_id} «{item.original_title}»{keep}"
+        )
+    typer.echo(f"{result.erasable} se pueden borrar desde la Bandeja; {result.kept} se quedan.")
 
 
 def _render_job(job: Any) -> None:
@@ -510,17 +531,17 @@ def demo_seed(
         typer.secho(f"Aviso: {warning}", fg=typer.colors.YELLOW, err=True)
     folder = target.as_posix()
     if docker:  # fase 26.3: se abre desde tu equipo, cambiando la carpeta del contenedor
-        typer.echo("\nPara abrirla, desde la carpeta del repositorio en tu equipo:")
+        typer.echo("\nPara abrirla, desde la carpeta del repositorio en el equipo:")
         typer.echo(f"  {container.DEMO_COMPOSE}")
-        typer.echo("Para volver a tus datos: docker compose up -d")
-        typer.echo("Tu agente, por MCP contra el contenedor, ve la carpeta que esté abierta.")
+        typer.echo("Para volver a los datos reales: docker compose up -d")
+        typer.echo("El agente, por MCP contra el contenedor, ve la carpeta que esté abierta.")
     elif data_root() != REPO_ROOT:  # fase 28.1: app instalada, con la UI ya compilada
-        typer.echo("\nPara abrirla, cierra CandidatAI y, desde app/backend/:")
+        typer.echo("\nPara abrirla, se cierra CandidatAI y, desde app/backend/:")
         if sys.platform == "win32":
             typer.echo(f'  $env:CAI_DATA_DIR = "{folder}"; uv run cai start')
         else:
             typer.echo(f"  CAI_DATA_DIR={shlex.quote(folder)} uv run cai start")
-        typer.echo("Para volver a tus datos, ciérrala y abre CandidatAI como siempre.")
+        typer.echo("Para volver a los datos reales, se cierra y se abre CandidatAI como siempre.")
     elif sys.platform == "win32":
         typer.echo("\nPara abrirla (PowerShell, desde backend/):")
         typer.echo(f'  $env:CAI_DATA_DIR = "{folder}"; uv run cai serve')
@@ -1210,7 +1231,7 @@ def templates_build_letter(
     typer.echo(f"Carta creada: data/{result.path} ({result.header_blocks} bloques de cabecera).")
     for warning in result.warnings:
         typer.secho(f"  Aviso: {warning}", fg=typer.colors.YELLOW)
-    typer.echo(f"Mírala con `cai templates preview {result.template_id} --letter`.")
+    typer.echo(f"Se ve con `cai templates preview {result.template_id} --letter`.")
 
 
 def _csv(value: str | None) -> list[str] | None:
@@ -1550,7 +1571,7 @@ def sources_add(
 
 def _render_source_list(result: Any) -> None:
     if not result.sources:
-        typer.echo("No hay fuentes. Añade una con `cai sources add`.")
+        typer.echo("No hay fuentes. Se añade una con `cai sources add`.")
     for source in result.sources:
         _render_source(source)
 
@@ -1559,7 +1580,7 @@ def _render_mail_sources(result: Any) -> None:
     if result.demo:
         typer.echo("Demo: no se lee ningún buzón IMAP.")
     if not result.sources:
-        typer.echo("No hay buzones. Añade uno en la UI: Alertas → Añadir buzón.")
+        typer.echo("No hay buzones. Se añade uno en la UI: Alertas → Añadir buzón.")
     for box in result.sources:
         state = "activo" if box.enabled else "desactivado"
         if box.kind == "folder":
@@ -1751,7 +1772,7 @@ def sources_run(
     if as_json:
         typer.echo(dump_json(SourceRunBatch(runs=runs)))
     elif not runs:
-        typer.echo("No hay fuentes activas. Añade una con `cai sources add`.")
+        typer.echo("No hay fuentes activas. Se añade una con `cai sources add`.")
     else:
         for run in runs:
             _render_source_run(run)
@@ -2421,7 +2442,7 @@ def replies_poll(as_json: bool = JSON_OPTION) -> None:
             where = f" ({issue.item})" if issue.item else ""
             typer.secho(f"  ! {issue.message}{where}", fg="yellow")
         if result.created:
-            typer.echo("  Clasifícalos con review-replies y revísalos en «Respuestas».")
+            typer.echo("  Se clasifican con review-replies y se revisan en «Respuestas».")
     if result.errors and not result.created:
         raise typer.Exit(code=1)
 
@@ -2605,6 +2626,7 @@ register_tools(
         "add_job_from_url": _render_added,
         "add_job_from_text": _render_added,
         "list_jobs": _render_jobs,
+        "list_duplicates": _render_duplicates,
         "get_job": _render_job,
         "check_job_open": _render_message,
         "get_search_titles": _render_search_titles,

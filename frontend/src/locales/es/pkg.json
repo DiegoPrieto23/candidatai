@@ -1,15 +1,15 @@
 {
   "title": "Paquete de candidatura",
-  "intro": "Todo lo que necesitas para enviarla a mano, desde el portal o tu correo.",
+  "intro": "Todo lo necesario para enviarla a mano, desde el portal o por correo.",
   "form": {
     "question": "Pregunta",
     "answer": "Respuesta",
-    "emptyHint": "Si la dejas vacía, queda pendiente de un dato tuyo.",
+    "emptyHint": "Vacía, queda pendiente de un dato personal.",
     "save": "Guardar",
     "cancel": "Cancelar"
   },
   "item": {
-    "needsInput": "Falta un dato tuyo: complétala antes de enviar.",
+    "needsInput": "Falta un dato personal: completarla antes de enviar.",
     "noAnswer": "Sin respuesta.",
     "evidence": "Respaldo:",
     "copyAria": "Copiar la respuesta {{n}}",
@@ -18,15 +18,15 @@
   },
   "answers": {
     "title": "Respuestas de screening",
-    "editedByYou": "Editadas por ti",
+    "editedByYou": "Editadas a mano",
     "add": "Añadir pregunta",
-    "pending_one": "{{count}} respuesta espera un dato tuyo (salario, disponibilidad…).",
-    "pending_other": "{{count}} respuestas esperan un dato tuyo (salario, disponibilidad…).",
-    "none": "Aún no hay respuestas. Pega las preguntas del formulario a tu agente y pídele que prepare la candidatura, o añádelas tú."
+    "pending_one": "{{count}} respuesta espera un dato personal (salario, disponibilidad…).",
+    "pending_other": "{{count}} respuestas esperan un dato personal (salario, disponibilidad…).",
+    "none": "Aún no hay respuestas. El agente las prepara a partir de las preguntas del formulario, o se añaden a mano."
   },
   "letter": {
     "title": "Carta de presentación",
-    "editedByYou": "Editada por ti",
+    "editedByYou": "Editada a mano",
     "verified": "Verificada",
     "notVerified": "Sin verificar",
     "words": "{{count}} palabras · {{state}}",

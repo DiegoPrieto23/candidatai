@@ -23,7 +23,7 @@
   },
   "assistant": {
     "label": "What you want to ask your agent",
-    "placeholder": "How can I help?",
+    "placeholder": "How can the agent help?",
     "send": "Send",
     "protected": "Submitting an application, approving, discarding and deleting are always confirmed by you.",
     "protectedLabel": "What you confirm",
@@ -36,7 +36,7 @@
     "suggestions": {
       "pending": "What do I have pending this week?",
       "reviewFirst": "Which jobs should I review first?",
-      "noReply": "Which companies haven't replied to me?",
+      "noReply": "Which companies have not replied to me?",
       "howItGoes": "Sum up how my search is going this month"
     },
     "history": "Previous requests",
@@ -51,7 +51,7 @@
       "running": "Your agent is working",
       "terminal": "Your agent is working in the terminal that just opened: the answer will show up here",
       "asking": "Your agent is waiting for your answer in the notice",
-      "waiting": "I'll pass it to your agent in your next session",
+      "waiting": "Pending for your agent's next session",
       "done": "Done",
       "failed": "It could not be completed.",
       "cancelled": "Cancelled."
@@ -71,7 +71,8 @@
         "week": "Last 7 days",
         "older": "Earlier"
       }
-    }
+    },
+    "conversationLabel": "Conversation"
   },
   "screens": {
     "home": "Home",
@@ -232,7 +233,7 @@
     },
     "toComplete": {
       "q": "What are the jobs “To complete”?",
-      "a": "The ones that arrived from an alert with only the title and the link. Open them on their job board and send them with the browser button to complete them, or discard the ones that don't interest you.",
+      "a": "The ones that arrived from an alert with only the title and the link. Open them on their job board and send them with the browser button to complete them, or discard the ones that do not interest you.",
       "keywords": "incomplete alerts title link complete"
     },
     "getCv": {
@@ -297,7 +298,7 @@
     },
     "skillGaps": {
       "q": "What are the “Skills to build”?",
-      "a": "The skills the jobs you approve ask for that aren't in your profile yet. Mark them as yours, as a synonym of one in your profile or for the training plan your agent prepares.",
+      "a": "The skills the jobs you approve ask for that are not in your profile yet. Mark them as yours, as a synonym of one in your profile or for the training plan your agent prepares.",
       "keywords": "skills training learn gaps courses plan"
     },
     "dataLeaving": {
@@ -317,7 +318,7 @@
     },
     "companyUrl": {
       "q": "How do I follow a specific company's jobs?",
-      "a": "In “Where to search → Company career sites”, press “Add company” and paste its name and the address of its careers site as you see it. “Test” tells you which system it uses and which jobs fit you; if the address filters by city, that's kept. From then on it's checked every day. If the site isn't recognized, it's added to your job sites and your agent browses it when searching.",
+      "a": "In “Where to search → Company career sites”, press “Add company” and paste its name and the address of its careers site as you see it. “Test” tells you which system it uses and which jobs fit you; if the address filters by city, that is kept. From then on it is checked every day. If the site is not recognized, it is added to your job sites and your agent browses it when searching.",
       "keywords": "company careers site jobs page address url greenhouse lever city"
     },
     "linkedin": {
@@ -336,12 +337,12 @@
       "keywords": "not connecting error down closed not loading not working"
     },
     "agentWontOpen": {
-      "q": "A button doesn't open my agent",
+      "q": "A button does not open my agent",
       "a": "The button then shows the full instruction, with “Copy” and where to paste it. Check on the “Agent” page that your agent appears as ready.",
-      "keywords": "won't open agent instruction copy paste terminal install failure"
+      "keywords": "will not open agent instruction copy paste terminal install failure"
     },
     "noPdf": {
-      "q": "A Word template doesn't generate the CV",
+      "q": "A Word template does not generate the CV",
       "a": "Word templates use LibreOffice, which is free, to create the PDF. Install it and generate the CV again, or choose another template under “Design”.",
       "keywords": "pdf libreoffice missing document word error template"
     },
@@ -355,5 +356,6 @@
       "a": "In the CandidatAI Discussions on GitHub, or by opening an issue there. To show a failure, use the demo data instead of your own.",
       "keywords": "support contact error bug issue github community"
     }
-  }
+  },
+  "bodyLabel": "FAQ and guide"
 }

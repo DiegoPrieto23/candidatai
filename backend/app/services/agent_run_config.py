@@ -81,7 +81,7 @@ def ceiling_problem(action: ActionId) -> str | None:
             return (
                 f"El rol «{role}» de «{spec.label}» necesita {', '.join(extra)}, que no está "
                 "entre las herramientas de la acción, y este agente no puede acotarlo a lo que "
-                "tiene la ejecución: usa otro agente o «En terminal»."
+                "tiene la ejecución: hace falta otro agente o «En terminal»."
             )
     return None
 

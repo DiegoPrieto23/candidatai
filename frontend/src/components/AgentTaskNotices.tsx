@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { CheckCircleIcon, CircleNotchIcon, MinusIcon, WarningIcon, XIcon } from '@phosphor-icons/react'
 import type { AgentTaskView } from '@/api/client'
-import { keys, useAgentTasks, useDismissAgentTask, type AgentAction } from '@/api/queries'
+import { keys, useAgentTasks, useCancelAgentRun, useDismissAgentTask, type AgentAction } from '@/api/queries'
 import { Button } from '@/components/ui/button'
 import { notifyIfHidden } from '@/lib/notify'
 import { WATCHED_ACTIONS } from '@/lib/readyWatch'
@@ -33,13 +33,27 @@ function Progress({ done, total }: { done: number; total: number }) {
 function TaskNotice({ task }: { task: AgentTaskView }) {
   const { t } = useTranslation('nav', { keyPrefix: 'tasks' })
   const dismiss = useDismissAgentTask()
+  const cancel = useCancelAgentRun()
   const client = useQueryClient()
   const [minimized, setMinimized] = useState<string | null>(null)
+  // «Detener» pide una confirmación corta dentro del propio aviso (nada de diálogos del navegador).
+  const [confirming, setConfirming] = useState(false)
+  const confirmId = useId()
+  const stopButton = useRef<HTMLButtonElement>(null)
 
   const running = task.status === 'running'
   const good = task.status === 'finished' && task.outcome === 'done'
+  // Fase 47.4: la detuvo el usuario; no es que el agente haya parado por su cuenta.
+  const ending = task.status === 'finished' && task.stopped_by_user ? 'cancelled' : (task.outcome ?? 'stopped')
   const name = (kind: 'running' | 'done') => t(`actions.${task.action}.${kind}` as never)
-  const title = running || task.status === 'stale' ? name('running') : good ? name('done') : t(`${task.outcome ?? 'stopped'}.title` as never, { action: name('running') })
+  const title =
+    running && task.stopping
+      ? t('stopping')
+      : running || task.status === 'stale'
+        ? name('running')
+        : good
+          ? name('done')
+          : t(`${ending}.title` as never, { action: name('running') })
   const state = `${task.status}:${task.outcome}`
 
   // Lo que el agente va guardando se ve sin recargar: la bandeja, los recuentos, la ficha.
@@ -99,10 +113,24 @@ function TaskNotice({ task }: { task: AgentTaskView }) {
   }
 
   let body: string
-  if (running) body = task.background ? t('runningBackground') : t('runningTerminal')
+  if (running && task.stopping) body = t('stoppingBody')
+  else if (running) body = task.background ? t('runningBackground') : t('runningTerminal')
   else if (task.status === 'stale') body = t('stale')
   else if (good) body = counted ? t('doneCount', { count: task.done }) : t('doneBody')
-  else body = t(`${task.outcome ?? 'stopped'}.body` as never)
+  else body = t(`${ending}.body` as never)
+
+  // En segundo plano se puede detener; en una terminal a la vista, se para cerrando esa ventana.
+  const stoppable = running && task.run_id != null && !task.stopping
+  const inTerminal = running && task.run_id == null
+  const keepGoing = () => {
+    setConfirming(false)
+    // El foco vuelve a «Detener», que reaparece al cerrar la confirmación.
+    requestAnimationFrame(() => stopButton.current?.focus())
+  }
+  const stop = () => {
+    if (task.run_id == null) return
+    cancel.mutate(task.run_id, { onSuccess: () => setConfirming(false) })
+  }
 
   const to = good ? resultLink(task) : null
   return (
@@ -125,6 +153,50 @@ function TaskNotice({ task }: { task: AgentTaskView }) {
           <div className="mt-2.5">
             <Button asChild size="sm" variant="outline" onClick={() => dismiss.mutate(task.id)}>
               <Link to={to}>{t('see')}</Link>
+            </Button>
+          </div>
+        )}
+        {stoppable && !confirming && (
+          <div className="mt-2.5">
+            <Button
+              ref={stopButton}
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                cancel.reset()
+                setConfirming(true)
+              }}
+            >
+              {t('stop')}
+            </Button>
+          </div>
+        )}
+        {stoppable && confirming && (
+          <div role="group" aria-labelledby={confirmId} className="mt-2.5 space-y-2">
+            <p id={confirmId} className="text-xs">
+              {t('stopConfirm')}
+            </p>
+            {cancel.isError && (
+              <p role="alert" className="text-xs text-destructive">
+                {t('stopFailed')}
+              </p>
+            )}
+            <div className="flex gap-2">
+              <Button size="sm" variant="destructive" disabled={cancel.isPending} onClick={stop}>
+                {t('stopYes')}
+              </Button>
+              {/* El botón seguro recibe el foco al abrirse la confirmación. */}
+              <Button size="sm" variant="outline" autoFocus onClick={keepGoing}>
+                {t('stopNo')}
+              </Button>
+            </div>
+          </div>
+        )}
+        {inTerminal && (
+          <div className="mt-2.5 space-y-2">
+            <p className="text-xs text-muted-foreground">{t('terminalStop')}</p>
+            <Button size="sm" variant="outline" disabled={dismiss.isPending} onClick={() => dismiss.mutate(task.id)}>
+              {t('markDone')}
             </Button>
           </div>
         )}

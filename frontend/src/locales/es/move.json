@@ -8,8 +8,8 @@
   "interviewDate": "Fecha de la entrevista (opcional)",
   "dueDate": "Fecha de entrega (opcional)",
   "time": "Hora (opcional)",
-  "dateHintInterview": "Si aún no la sabes, déjala en blanco. Si no sabes la hora, se queda en las 14:00; si la borras, cuenta todo el día.",
-  "dateHintTest": "Si no tiene fecha, déjala en blanco. Si no sabes la hora, se queda en las 14:00; si la borras, cuenta todo el día.",
+  "dateHintInterview": "Si aún no se sabe, se deja en blanco. Sin hora, se queda en las 14:00; si se borra, cuenta todo el día.",
+  "dateHintTest": "Si no tiene fecha, se deja en blanco. Sin hora, se queda en las 14:00; si se borra, cuenta todo el día.",
   "interviewType": "Tipo de entrevista",
   "noInterviewType": "Sin indicar",
   "location": "Lugar o enlace (opcional)",
@@ -31,13 +31,13 @@
   "conflict": {
     "title": "Hay algo anotado después de esa fecha",
     "intro": "Para anotar «{{event}}» el {{when}}, esto no puede quedar después:",
-    "removeHint": "Si lo anotaste por error, quítalo y se anota en la fecha que has puesto.",
+    "removeHint": "Si se anotó por error, se quita y se anota en la fecha indicada.",
     "remove": "Quitarlo y anotar el {{when}}",
     "removeMany": "Quitar estos {{count}} y anotar el {{when}}",
     "cannotRemove": "No se puede quitar desde aquí: las entrevistas y las pruebas se borran desde su ficha, y una oferta recibida o aceptada no se quita.",
-    "laterHint": "O anótalo justo después, aunque no sea la fecha exacta:",
+    "laterHint": "O anotarlo justo después, aunque no sea la fecha exacta:",
     "later": "Anotar el {{when}}",
-    "noLater": "Elige una fecha posterior a lo de la lista.",
+    "noLater": "Hace falta una fecha posterior a lo de la lista.",
     "back": "Cambiar la fecha"
   }
 }

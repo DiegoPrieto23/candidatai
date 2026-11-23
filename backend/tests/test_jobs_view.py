@@ -145,6 +145,89 @@ def test_search_jobs_filters_by_mode_salary_and_score(
         jobs.search_jobs(session, min_score=101)
 
 
+def test_close_reason_in_rows_sheet_and_filter(
+    session: Session, make_job: Callable[..., Job]
+) -> None:
+    def closed(*steps: tuple[EventType, dict[str, Any]]) -> Job:
+        job = make_job()
+        events.record(session, job.id, EventType.FOUND, Actor.SYSTEM)
+        for event_type, payload in steps:
+            events.record(session, job.id, event_type, Actor.USER, payload)
+        return job
+
+    discarded = closed((EventType.DISCARDED, {"reason": "skills"}))
+    by_company = closed((EventType.DISCARDED, {"reason": "closed"}))
+    # Cuenta el último descarte: la cerró la empresa, se reabrió y se descartó por otra cosa.
+    again = closed(
+        (EventType.DISCARDED, {"reason": "closed"}),
+        (EventType.REOPENED, {}),
+        (EventType.DISCARDED, {"reason": "salary"}),
+    )
+    filtered = closed((EventType.EXTRACTED, {}), (EventType.HARD_FILTER_FAILED, {}))
+    duplicate = closed((EventType.DUPLICATE_DETECTED, {"duplicate_of": 1}))
+    rejected = closed((EventType.REJECTED, {}))
+    withdrawn = closed((EventType.WITHDRAWN, {}))
+    expired = closed((EventType.EXPIRED, {}))
+    accepted = closed(
+        (EventType.APPLIED_MANUALLY, {"channel": "email"}),
+        (EventType.INTERVIEW_SCHEDULED, {}),
+        (EventType.ACCEPTED, {}),
+    )
+    reopened = closed((EventType.REJECTED, {}), (EventType.REOPENED, {}))
+    open_job = closed()
+    expected = {
+        discarded.id: "discarded",
+        by_company.id: "closed_by_company",
+        again.id: "discarded",
+        filtered.id: "filtered_out",
+        duplicate.id: "duplicate",
+        rejected.id: "rejected",
+        withdrawn.id: "withdrawn",
+        expired.id: "expired",
+        accepted.id: "accepted",
+        reopened.id: None,
+        open_job.id: None,
+    }
+
+    rows = jobs.search_jobs(session, limit=jobs.MAX_LIMIT).items
+    assert {row.id: row.close_reason for row in rows} == expected
+    for job_id, reason in expected.items():
+        assert jobs.get_job_view(session, job_id).close_reason == reason
+
+    def ids(**kw: Any) -> set[int]:
+        page = jobs.search_jobs(session, **kw)
+        assert page.total == len(page.items)  # el total cuenta lo mismo que la página
+        return {row.id for row in page.items}
+
+    assert ids(reason="discarded") == {discarded.id, again.id}
+    assert ids(reason="closed_by_company") == {by_company.id}
+    for reason in ("filtered_out", "duplicate", "rejected", "withdrawn", "expired", "accepted"):
+        assert ids(reason=reason) == {k for k, v in expected.items() if v == reason}
+    assert ids(reason="rejected", q="nada") == set()
+    with pytest.raises(jobs.InvalidQueryError):
+        jobs.search_jobs(session, reason="lost")
+
+
+def test_search_jobs_by_several_stages(session: Session, make_job: Callable[..., Job]) -> None:
+    pending, closed, applied = make_job(), make_job(), make_job()
+    for job in (pending, closed, applied):
+        events.record(session, job.id, EventType.FOUND, Actor.SYSTEM)
+    events.record(session, closed.id, EventType.REJECTED, Actor.USER)
+    events.record(session, applied.id, EventType.APPLIED_MANUALLY, Actor.USER, {"channel": "email"})
+
+    def ids(**kw: Any) -> set[int]:
+        return {row.id for row in jobs.search_jobs(session, **kw).items}
+
+    assert ids(stages=["closed", "applied"]) == {closed.id, applied.id}
+    assert ids(stages=["pending_extraction"]) == {pending.id}
+    assert ids(stages=[]) == set()
+    # Con `stage` y `stages`, las que cumplen las dos.
+    assert ids(stage="closed", stages=["closed", "applied"]) == {closed.id}
+    assert ids(stages=["closed", "applied"], reason="rejected") == {closed.id}
+    with pytest.raises(jobs.InvalidQueryError):
+        jobs.search_jobs(session, stages=["closed", "limbo"])
+
+
 def test_get_job_view_not_found(session: Session) -> None:
     with pytest.raises(events.JobNotFoundError):
         jobs.get_job_view(session, 42)

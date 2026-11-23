@@ -82,7 +82,7 @@ def test_applied_manually_enqueues_and_worker_archives(session: Session, ready: 
     assert answers["answers"]
     readme = (folder / "README.md").read_text(encoding="utf-8")
     assert URL in readme
-    assert "email (registrado por ti)" in readme
+    assert "email (registrado a mano)" in readme
     assert "Versión del perfil:** 1" in readme
     assert "Europe/Madrid" in readme
     assert application_archive.relative_folder(ready) == result["folder"]

@@ -1,18 +1,18 @@
 {
   "title": "Candidatura asistida",
-  "intro": "Rellena el formulario en el navegador de CandidatAI y se para antes de enviar: nada sale sin tu confirmación.",
+  "intro": "CandidatAI rellena el formulario en su navegador y se detiene antes de enviar: nada sale sin confirmación.",
   "fieldStatus": {
     "filled": "Rellenado",
     "empty": "Vacío",
-    "needs_user_input": "Falta un dato tuyo",
-    "sensitive": "Dato sensible: decides tú",
+    "needs_user_input": "Falta un dato personal",
+    "sensitive": "Dato sensible: decisión manual",
     "consent": "Se acepta al enviar",
     "skipped": "Sin marcar",
     "error": "Error"
   },
   "attemptStatus": {
     "ready": "Listo para revisar",
-    "needs_user": "Necesita tu intervención",
+    "needs_user": "Necesita intervención manual",
     "submit_failed": "No se pudo enviar",
     "submit_unconfirmed": "Envío sin confirmar",
     "manual": "Abierta en el navegador de CandidatAI"
@@ -34,9 +34,9 @@
     "unexpected_format": "Formato inesperado",
     "no_answers": "Sin respuestas"
   },
-  "workerHint": "Aún no ha empezado. ¿Está CandidatAI abierta entera? Ciérrala y vuelve a abrirla desde su acceso directo.",
+  "workerHint": "Aún no ha empezado. ¿Está CandidatAI abierta entera? Conviene cerrarla y volver a abrirla desde su acceso directo.",
   "busy": {
-    "submitting": "Enviando… No cierres el navegador de CandidatAI.",
+    "submitting": "Enviando… El navegador de CandidatAI debe seguir abierto.",
     "filling": "Rellenando el formulario de {{domain}} en el navegador…",
     "queued": "En cola…"
   },
@@ -60,8 +60,8 @@
     "description": "Se pulsará <button/> en <domain/>. Esta confirmación vale solo para este envío.",
     "button": "«{{label}}»",
     "defaultButton": "el botón de envío",
-    "consents": "Al enviar aceptas:",
-    "typeCompany": "Escribe el nombre de la empresa para confirmar",
+    "consents": "Al enviar se acepta:",
+    "typeCompany": "Escribir el nombre de la empresa para confirmar",
     "cancel": "Cancelar",
     "send": "Enviar candidatura"
   },
@@ -69,18 +69,18 @@
   "markSent": "Marcar como enviada",
   "review": {
     "warnings": "Avisos",
-    "missing_one": "Falta {{count}} campo obligatorio: complétalo en el navegador y pulsa «Volver a revisar», o termina tú.",
-    "missing_other": "Faltan {{count}} campos obligatorios: complétalos en el navegador y pulsa «Volver a revisar», o termina tú.",
+    "missing_one": "Falta {{count}} campo obligatorio: se completa en el navegador y se pulsa «Volver a revisar», o se termina a mano.",
+    "missing_other": "Faltan {{count}} campos obligatorios: se completan en el navegador y se pulsa «Volver a revisar», o se termina a mano.",
     "send": "Enviar",
     "rescan": "Volver a revisar",
     "reopen": "Volver a abrir la oferta",
-    "finishMyself": "Lo termino yo",
-    "checkFirst": "Antes de marcarla como enviada, comprueba en la web o en tu correo que llegó.",
+    "finishMyself": "Terminar a mano",
+    "checkFirst": "Antes de marcarla como enviada, conviene comprobar en la web o en el correo que llegó.",
     "working": "Trabajando en el navegador…"
   },
   "prepare": {
-    "linkedin": "LinkedIn no se automatiza: se abrirá la oferta en el navegador de CandidatAI y copias el paquete desde arriba.",
-    "fill": "Se abrirá {{domain}} en el navegador de CandidatAI y se rellenará el formulario. No se envía nada hasta que lo confirmes.",
+    "linkedin": "LinkedIn no se automatiza: se abrirá la oferta en el navegador de CandidatAI y el paquete se copia desde arriba.",
+    "fill": "Se abrirá {{domain}} en el navegador de CandidatAI y se rellenará el formulario. No se envía nada sin confirmación.",
     "openAndPrepare": "Abrir y preparar",
     "again": "Preparar de nuevo",
     "prepare": "Preparar candidatura"
@@ -91,25 +91,25 @@
     "fill": "Rellenar ese formulario"
   },
   "portal": {
-    "intro": "{{portal}} es un portal de empleo y bloquea los navegadores automatizados, así que la oferta se abre en tu navegador, con tu sesión.",
-    "step1": "Abre la oferta y pulsa «Solicitar» o «Inscribirme».",
-    "step2": "Si te lleva al formulario de la empresa, copia la dirección de esa página y pégala abajo: CandidatAI lo rellena en su navegador y se para antes de enviar.",
-    "step3": "Si la candidatura se completa dentro de {{portal}}, termínala allí (el CV está en «Paquete de candidatura») y pulsa «Marcar como enviada».",
+    "intro": "{{portal}} es un portal de empleo y bloquea los navegadores automatizados, así que la oferta se abre en el navegador habitual, con la sesión iniciada.",
+    "step1": "Abrir la oferta y pulsar «Solicitar» o «Inscribirme».",
+    "step2": "Si lleva al formulario de la empresa, se copia la dirección de esa página y se pega abajo: CandidatAI lo rellena en su navegador y se para antes de enviar.",
+    "step3": "Si la candidatura se completa dentro de {{portal}}, se termina allí (el CV está en «Paquete de candidatura») y se pulsa «Marcar como enviada».",
     "open": "Abrir la oferta en {{portal}}"
   },
   "docker": {
-    "intro": "Estás usando CandidatAI en Docker: aquí no hay un navegador visible para rellenar el formulario y que pulses «Enviar». Abre la oferta en tu navegador y envía la candidatura tú (el CV está en «Paquete de candidatura»).",
-    "step": "Cuando la hayas enviado, pulsa «Marcar como enviada».",
-    "open": "Abrir la oferta en tu navegador",
-    "sectionIntro": "Abre la oferta en tu navegador y envíala tú; CandidatAI registra que la enviaste. Nada se envía sin ti."
+    "intro": "CandidatAI funciona en Docker: aquí no hay un navegador visible para rellenar el formulario y pulsar «Enviar». La oferta se abre en el navegador habitual y la candidatura se envía a mano (el CV está en «Paquete de candidatura»).",
+    "step": "Una vez enviada, se pulsa «Marcar como enviada».",
+    "open": "Abrir la oferta en el navegador",
+    "sectionIntro": "La oferta se abre en el navegador habitual y se envía a mano; CandidatAI registra el envío. Nada se envía sin confirmación."
   },
   "done": {
-    "manual": "Marcada como enviada por ti.",
+    "manual": "Marcada como enviada a mano.",
     "sent": "Enviada a {{domain}}: la web confirmó el envío."
   },
   "fillFailed": "No se pudo rellenar el formulario.",
   "openBrowser": {
-    "title": "Abre el navegador de CandidatAI para iniciar sesión en tus portales. Tiene su propio perfil, separado de tu Chrome.",
+    "title": "Abrir el navegador de CandidatAI para iniciar sesión en los portales. Tiene su propio perfil, separado de Chrome.",
     "label": "Abrir navegador"
   }
 }

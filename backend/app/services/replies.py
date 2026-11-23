@@ -578,10 +578,10 @@ def _describe(result: RepliesPollResult) -> str:
     if result.created:
         text = (
             f"Respuestas: {result.created} correo{'s' if result.created != 1 else ''} nuevo"
-            f"{'s' if result.created != 1 else ''} de tus procesos"
+            f"{'s' if result.created != 1 else ''} de los procesos"
         )
     else:
-        text = "Respuestas: ningún correo nuevo de tus procesos"
+        text = "Respuestas: ningún correo nuevo de los procesos"
     if result.checked:
         plural = "s" if result.processes != 1 else ""
         text += (

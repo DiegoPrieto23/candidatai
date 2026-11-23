@@ -38,8 +38,8 @@
     "offlineTitle": "CandidatAI no responde",
     "loadFailed": "No se ha podido cargar",
     "generic": "Algo ha fallado.",
-    "offline": "No hay conexión con la app. Ábrela desde su acceso directo y recarga esta página.",
-    "unexpected": "Algo ha fallado en la app ({{status}}). Vuelve a intentarlo.",
+    "offline": "No hay conexión con la app. Hay que abrirla desde su acceso directo y recargar esta página.",
+    "unexpected": "Algo ha fallado en la app ({{status}}). Conviene volver a intentarlo.",
     "types": {
       "unauthorized": "No autorizado",
       "forbidden": "No permitido",

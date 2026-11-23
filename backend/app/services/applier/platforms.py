@@ -103,9 +103,10 @@ def portal_problem(url: str) -> str | None:
     if platform == "board":
         label = BOARD_LABELS[job_board(url) or ""]
         return (
-            f"Esta pestaña es de {label}, no del formulario de la empresa: pulsa allí «Solicitar» "
-            "o «Inscribirme» y, cuando llegues al formulario, vuelve a pulsar «Rellenar esta "
-            "página». Si se completa dentro del portal, termínala tú."
+            f"Esta pestaña es de {label}, no del formulario de la empresa: allí se pulsa "
+            f"«Solicitar» "
+            "o «Inscribirme» y, al llegar al formulario, se vuelve a pulsar «Rellenar esta "
+            "página». Si se completa dentro del portal, se termina a mano."
         )
     return None
 

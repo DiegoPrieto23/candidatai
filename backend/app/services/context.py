@@ -181,7 +181,9 @@ def _read(section: ContextSection) -> ContextFile:
         content = raw.decode("utf-8-sig")
     except UnicodeDecodeError:
         content = ""
-        warnings.append("invalid_encoding: no está en UTF-8; guárdalo como UTF-8 en tu editor.")
+        warnings.append(
+            "invalid_encoding: no está en UTF-8; hay que guardarlo como UTF-8 en un editor."
+        )
     empty = is_empty(content) and not warnings  # ilegible no es vacío
     text, truncated = _truncate("" if empty else strip_guides(content))
     if truncated:

@@ -111,7 +111,7 @@ def test_deleting_a_builtin_default_clears_it_and_a_hidden_one_cannot_be_default
     assert response.json()["default_cleared"] is True and response.json()["hidden"] is True
     assert client.get("/templates/default").json()["template_id"] is None
     refused = client.post("/templates/clasica-foto/default", headers=UI)
-    assert refused.status_code in (400, 422) and "restáurala" in refused.text
+    assert refused.status_code in (400, 422) and "hay que restaurarla" in refused.text
     client.post("/templates/clasica-foto/restore", headers=UI)
     assert client.post("/templates/clasica-foto/default", headers=UI).status_code == 200
 

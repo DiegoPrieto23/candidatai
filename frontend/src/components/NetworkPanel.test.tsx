@@ -62,8 +62,8 @@ describe('Tu red en la ficha', () => {
     })
     renderApp('/jobs/1?tab=company')
 
-    const panel = await screen.findByRole('region', { name: 'Tu red' })
-    expect(await within(panel).findByText('Conoces a 2 personas en Brétema Analytics.')).toBeInTheDocument()
+    const panel = await screen.findByRole('region', { name: 'Red de contactos' })
+    expect(await within(panel).findByText('2 contactos en Brétema Analytics.')).toBeInTheDocument()
     expect(within(panel).getByRole('link', { name: /Uxía Barreiro/ })).toHaveAttribute(
       'href',
       'https://www.linkedin.com/in/uxia-demo',
@@ -88,10 +88,10 @@ describe('Tu red en la ficha', () => {
       'GET /jobs/1/network': network([person(3, { contact_id: null })]),
     })
     renderApp('/jobs/1?tab=company')
-    const panel = await screen.findByRole('region', { name: 'Tu red' })
-    expect(await within(panel).findByText('Conoces a 1 persona en Brétema Analytics.')).toBeInTheDocument()
+    const panel = await screen.findByRole('region', { name: 'Red de contactos' })
+    expect(await within(panel).findByText('1 contacto en Brétema Analytics.')).toBeInTheDocument()
     expect(within(panel).queryByRole('button', { name: 'Añadir al proceso' })).not.toBeInTheDocument()
-    expect(within(panel).getByText(/Apruébala para añadirlos/)).toBeInTheDocument()
+    expect(within(panel).getByText(/Al aprobarla, se pueden añadir/)).toBeInTheDocument()
   })
 
   it('sin red importada explica cómo y la importa desde la carpeta de siempre', async () => {
@@ -109,9 +109,9 @@ describe('Tu red en la ficha', () => {
       'POST /network/import': { ok: true, path: 'x', total: 10, added: 10, updated: 0, removed: 0, skipped: 0, without_company: 1, message: 'ok' },
     })
     renderApp('/jobs/1?tab=company')
-    const panel = await screen.findByRole('region', { name: 'Tu red' })
+    const panel = await screen.findByRole('region', { name: 'Red de contactos' })
     expect(await within(panel).findByText('data/documentos/linkedin/Connections.csv')).toBeInTheDocument()
-    const button = within(panel).getByRole('button', { name: 'Importar mis contactos' })
+    const button = within(panel).getByRole('button', { name: 'Importar contactos' })
     await waitFor(() => expect(button).toBeEnabled())
     await userEvent.click(button)
     await waitFor(() => expect(calls.some((c) => c.path === '/network/import')).toBe(true))
@@ -128,7 +128,7 @@ describe('Tu red en la ficha', () => {
       'POST /contacts/7/referral': { status: 200, body: contact({ referral: 'given' }) },
     })
     renderApp('/jobs/1?tab=company')
-    const panel = await screen.findByRole('region', { name: 'Tu red' })
+    const panel = await screen.findByRole('region', { name: 'Red de contactos' })
     expect(await within(panel).findByText('Ya es contacto del proceso')).toBeInTheDocument()
 
     await userEvent.click(screen.getByRole('tab', { name: 'Proceso' }))
@@ -152,11 +152,11 @@ describe('Tu red en el triaje', () => {
       ]),
     })
     renderApp('/triaje')
-    expect(await screen.findByText('Conoces a 2')).toBeInTheDocument()
+    expect(await screen.findByText('2 contactos')).toBeInTheDocument()
     const detail = await screen.findByRole('article', { name: 'Oferta seleccionada' })
     expect(
       await within(detail).findByText(
-        /Conoces a 2 personas en Brétema Analytics: Uxía Barreiro \(Data Engineering Manager\) y Antón Lema \(Recruiter\)/,
+        /2 contactos en Brétema Analytics: Uxía Barreiro \(Data Engineering Manager\) y Antón Lema \(Recruiter\)/,
       ),
     ).toBeInTheDocument()
   })

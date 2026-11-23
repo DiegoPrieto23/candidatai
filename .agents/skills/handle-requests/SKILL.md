@@ -1,6 +1,6 @@
 ---
 name: handle-requests
-description: Atiende los encargos que el usuario dejó en la UI de CandidatAI para tu próxima sesión («Dejar para mi próxima sesión»), siguiendo la orden de cada uno y cerrándolo al terminar. Úsalo cuando se pida ver o hacer los encargos pendientes, o cuando get_status diga que hay alguno. Antes se llamaba atender-encargos.
+description: Atiende los encargos que el usuario dejó en la UI de CandidatAI para tu próxima sesión («Dejar para la próxima sesión»), siguiendo la orden de cada uno y cerrándolo al terminar. Úsalo cuando se pida ver o hacer los encargos pendientes, o cuando get_status diga que hay alguno. Antes se llamaba atender-encargos.
 ---
 
 1. `list_agent_requests()`: los pendientes, el más antiguo primero. Si no hay, dilo en una línea y

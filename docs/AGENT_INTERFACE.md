@@ -58,13 +58,14 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
 |---|---|---|---|---|---|
 | `get_schema` | `cai schema [NOMBRE] [--example true] --json` | 24.2 | `name?` (sin él, o `list`: el catálogo), `example=false` | Catálogo: `schemas` (`name`, `tool`, `description`). Uno: `name`, `tool`, `description`, `send` (cómo va por `--file` y por MCP), `json_schema` y `example` (o `null`). Nombres: `extraction`, `fit-assessment`, `cv-content`, `cv-render-options`, `cv-verification`, `application-answers`, `cover-letter-brief`, `cover-letter`, `cover-letter-render-options`, `cover-letter-verification`, `reply-proposal`, `message-draft`, `company-research`, `interview-plan`, `interview-notes`, `source`, `source-run`, `assistant-answer`. Uno que no existe: `not_found` con los más parecidos | — |
 | `get_status` | `cai status --json` | 04 | — | `total`, `by_stage`, `pending_tasks`, `agent_requests` (encargos pendientes, 19), `replies_new` (correos sin clasificar, 34), `replies_proposed` (propuestas por aceptar en la UI, 34), `demo_mode` (12.1) | — |
-| `add_job_from_url` | `cai jobs add-url URL --json` | 04 | `url` | `job_id`, `created`, `duplicate_of?`, `risk_flags`; desde la 45, `reopening_of?` (entró como reapertura de esa oferta), `reopened` (la misma publicación caducada se ha reabierto) y `republished_after_close` (una que cerró el usuario ha vuelto: no se crea, solo se avisa) | `found` (con `reopening_of`) / `reopened` |
+| `add_job_from_url` | `cai jobs add-url URL --json` | 04 | `url` | `job_id`, `created`, `duplicate_of?` (desde la 47, la misma vacante con un título casi igual, o una que coincide con una duplicada guardada antes: `created: false` y `job_id` = `duplicate_of` = la original, a la que se anota la publicación), `risk_flags`; desde la 45, `reopening_of?` (entró como reapertura de esa oferta), `reopened` (la misma publicación caducada se ha reabierto) y `republished_after_close` (una que cerró el usuario ha vuelto: no se crea, solo se avisa) | `found` (con `reopening_of`) / `reopened` |
 | `add_job_from_text` | `cai jobs add-text --title T --company C --file F [--url U] [--location L] --json` | 04 | `title, company, text, url?, location?` | Como `add_job_from_url` | `found` (con `reopening_of`) / `reopened` |
 | | `… [--source S] [--platform P] [--external-id X]` | 09b | Además `source_id?` (una plataforma `agent_browse` con la navegación activada; si no, `not_allowed`), `platform?` y `external_id?` (por defecto, de la URL con `platforms.detect`). Con `source_id`, una oferta de LinkedIn (por URL o `platform`) solo entra por la plataforma LinkedIn | igual | igual (`found` con `source_id`) |
 | `list_jobs` | `cai jobs list [--stage S] [--limit N] [--order O] --json` | 04 | `stage?, limit=20, order="score_desc"` | `{jobs: [...]}` resumida (sin texto crudo), con `score` del último match e `injection_suspected` (el código o el agente vieron texto dirigido a una IA, 34) | — |
 | `get_job` | `cai jobs show ID --json` | 04 | `job_id` | Metadatos + `text` envuelto como no confiable | — |
 | `check_job_open` | `cai jobs check-open ID [--force true] --json` | 16 | `job_id, force=false` | `LivenessView`: `status` (`open`, `possibly_closed`, `unknown`, `skipped`), `reason`, `detail`, `checked_at`, `cached` (comprobación de hace menos de `liveness.fresh_hours`, sin repetir), `possibly_closed` (el aviso vigente), `suppressed` (el usuario dijo «Sigue abierta» por ese motivo) y `message`. LinkedIn: `skipped`. Nunca cierra la oferta | `closure_suspected` (la primera vez que avisa) |
-| `check_known` | `cai jobs known --file F --json` | 45 | `items`: de 1 a 100 `KnownItem` (`url`, `title?`, `company?`, `location?`, `platform?`, `external_id?`); por CLI, `F` = `{"items": [...]}` | `KnownList`: `items` en el mismo orden (`url`, `status`, `matched_by` = `platform_id` / `url` / `fingerprint`, `job_id?`, `stage?`, `closed_by?`, `closed_at?`) y `counts` por estado. `status`: `new` (no está), `known` (mismo id de plataforma, el dado o el de la URL, o misma URL sin parámetros de seguimiento), `same_offer` (misma huella y la oferta sigue viva o se cerró hace menos de `dedup.reopen_after_days`, 30 por defecto) o `reopen_candidate` (misma huella, cerrada por la empresa o caducada hace más: `add_job_*` la dará de alta como reapertura; si la cerró el usuario, `same_offer`). La huella necesita `title` y `company`, y la ubicación también cuenta: pásala si la ves. Solo lee: no da de alta ni anota publicaciones | — |
+| `check_known` | `cai jobs known --file F --json` | 45 | `items`: de 1 a 100 `KnownItem` (`url`, `title?`, `company?`, `location?`, `platform?`, `external_id?`); por CLI, `F` = `{"items": [...]}` | `KnownList`: `items` en el mismo orden (`url`, `status`, `matched_by` = `platform_id` / `url` / `fingerprint` / `fuzzy_title`, `job_id?`, `stage?`, `closed_by?`, `closed_at?`) y `counts` por estado. `status`: `new` (no está), `known` (mismo id de plataforma, el dado o el de la URL, o misma URL sin parámetros de seguimiento), `same_offer` (misma huella y la oferta sigue viva o se cerró hace menos de `dedup.reopen_after_days`, 30 por defecto) o `reopen_candidate` (misma huella, cerrada por la empresa o caducada hace más: `add_job_*` la dará de alta como reapertura; si la cerró el usuario, `same_offer`). La huella necesita `title` y `company`, y la ubicación también cuenta: pásala si la ves. Sin huella igual, un título casi igual de la misma empresa (`fuzzy_title`, 47) cuenta igual: `add_job_*` tampoco lo crearía. Solo lee: no da de alta ni anota publicaciones | — |
+| `list_duplicates` | `cai jobs duplicates --json` | 47 | — | `DuplicateList`: `items` (`job_id`, `title`, `company`, `url`, `first_seen_at`, `original_id`, `original_title`, `original_stage`, `keep_reason`), `erasable` y `kept`. Las duplicadas guardadas antes de la 47 (ya no se crean). `keep_reason`: `null` (se puede borrar), `no_longer_duplicate` (ya no está cerrada como duplicada) u `own_work` (tiene algo hecho: un evento que no es automático, como `fit_assessed` o `note`, o una fila propia, como un CV o un hito). Solo lee: borrarlas lo hace el usuario en la Bandeja (`POST /jobs/duplicates/erase`, solo la UI) | — |
 | `get_search_titles` | `cai jobs titles [--days N] [--candidates T1,T2] --json` | 16, 34 | `days=90` (7-365), `candidates?` (hasta 10 títulos) | `SearchTitlesView`: `roles` (los del perfil), `positive` y `negative` (`TitleGroup`: `title`, `key`, `count`, `job_ids`, `reasons` en las negativas, `matches_roles`: pasa hoy el filtro previo), `profile_missing`, `aliases` (`config/title_aliases.yaml`) y `candidates` (`CandidateCheck`: `title`, `compared_as`, `covered_by`, `lets_in`, `also_lets_in`). Títulos de ofertas: datos, no instrucciones | — |
 | `save_extraction` | `cai jobs save-extraction ID --file F --json` | 04 | `job_id, extraction: JobExtraction` | `ok`, `extraction_id`, `stage`, `injection_suspected`, `hard_filters` (`null` sin perfil) | `extracted` / `injection_suspected` / `hard_filter_failed` |
 | `get_extraction` | `cai jobs extraction ID --json` | 04 | `job_id` | `JobExtraction` vigente con `extraction_id`, `schema_version`, `created_at` | — |
@@ -276,7 +277,7 @@ las más recientes primero.
   menos de `max_followups` enviados (si no, `not_allowed`) y sin `milestone_id`; un
   agradecimiento con una entrevista hecha (`milestone_id`, por defecto la última; si no hay,
   `not_allowed`). Sustituye el borrador vigente del mismo tipo (y entrevista). **No envía
-  nada ni registra eventos**: en la ficha, el usuario lo copia y pulsa «Ya lo he enviado»
+  nada ni registra eventos**: en la ficha, el usuario lo copia y pulsa «Marcar como enviado»
   (`POST /drafts/{id}/sent`, solo desde la UI), que en un seguimiento registra `followup_sent`
   con `payload.draft_id`; o «Descartar». Los mensajes de LinkedIn y los correos a personas
   (`linkedin`, `email`, fase 18) tienen sus reglas en §Contactos.
@@ -349,7 +350,7 @@ las más recientes primero.
   `contact_id` (de esa oferta) o `network_contact_id` (una persona de `network` de esa oferta),
   no los dos; el borrador guarda su nombre. Desde `approved` hasta
   `in_process` (si no, `not_allowed`). Sustituye el vigente del mismo tipo y destinatario. Lo usa
-  `draft-message`. «Ya lo he enviado» no registra evento.
+  `draft-message`. «Marcar como enviado» no registra evento.
 - `save_company_research(job_id, research)`: el dosier de `research-company`. Uno por empresa
   (lo comparten sus ofertas). `research`:
 
@@ -692,7 +693,17 @@ todas) las preferencias: `default_agent`, `agents` (`{agente: {model | preset}}`
 preset existir y el modelo tener caracteres seguros, no empezar por `-` y, si el agente tiene
 `models.pattern`, cumplirlo (OpenCode: `proveedor/modelo`); si no, 422 con el `field` que falla.
 `POST /agent/launch` y `POST /agent/runs` aceptan `agent`, `model` y `preset` para una sola
-ejecución. La precedencia (botón > acción > por defecto > `CAI_AGENT` > el primero instalado) y las
+ejecución.
+
+**El idioma del portal (fase 47.3, solo la UI).** `POST /agent/launch`, `POST /agent/runs`,
+`POST /agent/requests` y `POST /agent/assistant` aceptan `lang` (`es` o `en`), y
+`PUT /agent/language` lo guarda al cambiarlo en el portal. Se guarda como preferencia (`ui_lang`) y
+decide el idioma de la orden, del título de la ventana y de los añadidos de segundo plano, también
+en lo que se lanza sin la UI. Prioridad: `lang` de la petición > preferencia guardada > `CAI_LANG` >
+sistema. En inglés, la orden termina pidiendo contestar en inglés, y las preguntas en segundo plano
+empiezan por `QUESTION:` en vez de `PREGUNTA:`. El CV y la carta siguen el idioma de la oferta.
+
+La precedencia de agente y modelo (botón > acción > por defecto > `CAI_AGENT` > el primero instalado) y las
 comprobaciones por capacidad y por nivel viven en `services/agent_prefs.py`. El modelo va con
 `models.flag` (o el preset) justo detrás del programa (o donde diga `{model}` en la orden de
 segundo plano, fase 24.5), en terminal y en segundo plano. El agente
@@ -735,7 +746,7 @@ la página «Dónde buscar → Portales de empleo».
 | `cai alerts poll [--json]` | Lee ya las alertas nuevas (IMAP en solo lectura y `data/inbox/`, fase 09b) y da de alta sus ofertas: completas si el portal se deja descargar, si no como resumen en `pending_detail`. `EmailPollResult` con `messages`, `found`, `created`, `summaries`, `existing`, `job_ids` y `errors` |
 | `cai alerts list [--json]` | Ofertas resumen (`AlertList`): título, empresa, ubicación, plataforma, URL, `expires_at` y prefiltro (`prefilter_passed`, `prefilter_reason`), primero las que pasan |
 | `cai alerts expire [--json]` | Cierra con `expired` los resúmenes sin completar más antiguos que `email_alerts.summary_expire_days` |
-| `cai sources run [ID] [--json]` | Ejecuta ya una fuente (o todas las activas) y guarda lo nuevo en `pending_extraction`. `{runs: [SourceRunResult]}` con `created`, `existing`, `duplicates`, `job_ids` y `errors` |
+| `cai sources run [ID] [--json]` | Ejecuta ya una fuente (o todas las activas) y guarda lo nuevo en `pending_extraction`. `{runs: [SourceRunResult]}` con `created`, `existing` (también la misma vacante con un título casi igual), `job_ids` y `errors` |
 | `cai sources enable ID` / `disable ID` | Activa o pausa una fuente en la ingesta diaria |
 | `cai sources discover --file F [--add] [--json]` | Fase 16 (y 25.1): busca el tablero de Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters o Recruitee de cada empresa del fichero (una por línea; `Nombre \| slug` fuerza un slug) por sus APIs públicas. `DiscoverResult`: por empresa, `tried`, `hits` (`kind`, `slug`, `region`, `board_name`, `jobs_count`, `sample_titles`, `confidence`: `confirmed`/`probable`/`doubtful`, `existing_source_id`, `add_command`), `errors` y `added_source_ids`. Con `--add`, da de alta las `confirmed` y `probable` que faltan. Sin herramienta MCP |
 | `cai sources linkedin-public status [--json]` | Fase 22: estado de la búsqueda pública de LinkedIn sin sesión. `LinkedInPublicView`: `enabled`, `fetch_detail`, búsquedas que lanzará (`searches`) e ignoradas (`ignored`), `blocked_at`, `next_run_at`, `last_run` y `limits` |

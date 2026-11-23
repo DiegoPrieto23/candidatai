@@ -4,11 +4,11 @@
   "defaultAgent": "Agente por defecto",
   "defaultAuto": "Automático (el primero instalado)",
   "notInstalled": "No instalado",
-  "installWith": "Instálalo con:",
+  "installWith": "Se instala con:",
   "copy": "Copiar",
   "copied": "Copiado",
-  "onlyCompatible": "Compatible, pero la app no tiene botón para él: ábrelo tú y pídele lo que necesites.",
-  "notLaunchable": "Configurado, pero la app no sabe abrirlo con una orden: úsalo tú desde su terminal.",
+  "onlyCompatible": "Compatible, pero la app no tiene botón para él: se abre a mano y se le pide lo necesario.",
+  "notLaunchable": "Configurado, pero la app no sabe abrirlo con una orden: se usa a mano desde su terminal.",
   "badges": {
     "openSource": "Open-source",
     "localModels": "Modelos locales",
@@ -32,7 +32,7 @@
   "save": "Guardar",
   "saved": "Guardado.",
   "byAction": "Por acción",
-  "byActionIntro": "Cambia el agente y el modelo de una acción concreta. Lo efectivo es lo que usará el próximo botón.",
+  "byActionIntro": "El agente y el modelo de una acción concreta. Lo efectivo es lo que usará el próximo botón.",
   "action": "Acción",
   "agent": "Agente",
   "effective": "Efectivo",
@@ -42,7 +42,7 @@
   "reason": {
     "explicit": "elegido para esta ejecución",
     "action": "elegido para esta acción",
-    "default": "tu agente por defecto",
+    "default": "el agente por defecto",
     "env": "elegido en la configuración",
     "first_installed": "el primero instalado",
     "none": "ninguno disponible"
@@ -56,7 +56,7 @@
     "untrusted": "Nivel C con contenido no confiable: solo en terminal.",
     "model": "El modelo elegido no vale para este agente."
   },
-  "warning": "Revisa antes de lanzarlo: la guía de agentes explica por qué.",
+  "warning": "Conviene revisarlo antes de lanzarlo: la guía de agentes explica por qué.",
   "loadFailed": "No se pudieron leer los agentes.",
   "local": {
     "title": "Modelos locales (Ollama)",
@@ -66,25 +66,25 @@
     "noEnvContext": "sin OLLAMA_CONTEXT_LENGTH (Ollama usa {{tokens}})",
     "context": "contexto {{tokens}}",
     "noTools": "sin herramientas",
-    "contextLow": "{{model}}: contexto de {{tokens}} tokens. Los agentes necesitan al menos {{min}}: pon OLLAMA_CONTEXT_LENGTH={{min}} y reinicia Ollama.",
+    "contextLow": "{{model}}: contexto de {{tokens}} tokens. Los agentes necesitan al menos {{min}}: hay que poner OLLAMA_CONTEXT_LENGTH={{min}} y reiniciar Ollama.",
     "smallModel": "{{model}} está elegido para «{{action}}»: los modelos de unos 8B o menos suelen fallar con los esquemas del CV.",
-    "noModels": "Ollama responde, pero no tiene ningún modelo: descarga uno con «ollama pull».",
-    "guide": "Cómo montarlo: mira la guía de modelos gratis. La app solo lee qué modelos hay; nunca les pide nada."
+    "noModels": "Ollama responde, pero no tiene ningún modelo: se descarga uno con «ollama pull».",
+    "guide": "Cómo montarlo: en la guía de modelos gratis. La app solo lee qué modelos hay; nunca les pide nada."
   },
   "tiers": {
     "title": "Niveles de gasto",
-    "intro": "Agente y modelo para las acciones principales, en tres niveles. Rellénalos una vez y aplica uno con un clic: cambia tu tabla «Por acción» y se puede deshacer.",
+    "intro": "Agente y modelo para las acciones principales, en tres niveles. Se rellenan una vez y se aplica uno con un clic: cambia la tabla «Por acción» y se puede deshacer.",
     "economy": {
       "label": "Económico",
-      "help": "Las acciones cerradas (procesar, valorar, respuestas) con un modelo local; el CV, con tu agente más capaz."
+      "help": "Las acciones cerradas (procesar, valorar, respuestas) con un modelo local; el CV, con el agente más capaz."
     },
     "balanced": {
       "label": "Equilibrado",
-      "help": "Las acciones cerradas con el modelo rápido de tu agente más capaz; el CV, con su modelo de siempre."
+      "help": "Las acciones cerradas con el modelo rápido del agente más capaz; el CV, con su modelo de siempre."
     },
     "max": {
       "label": "Máximo",
-      "help": "Todo con tu agente más capaz y su modelo de siempre."
+      "help": "Todo con el agente más capaz y su modelo de siempre."
     },
     "active": "En uso",
     "custom": "Editado",
@@ -96,8 +96,8 @@
     "agentFor": "Agente para {{action}}",
     "modelFor": "Modelo para {{action}}",
     "notes": {
-      "no_local_agent": "No tienes instalado ningún agente con modelos locales: va con el modelo rápido de tu agente.",
-      "needs_local_model": "Pon el modelo local en «Editar» (p. ej. el de Ollama) para poder aplicarlo.",
+      "no_local_agent": "No hay ningún agente instalado con modelos locales: va con el modelo rápido del agente.",
+      "needs_local_model": "Para aplicarlo, hay que poner el modelo local en «Editar» (p. ej. el de Ollama).",
       "no_agent": "No hay ningún agente que se pueda abrir desde la app."
     }
   },
@@ -105,23 +105,23 @@
   "others_other": "Otros agentes compatibles ({{count}})",
   "fineTune": "Elegir agente y modelo por acción",
   "getAgent": {
-    "title": "Necesitas un agente de IA",
-    "why": "CandidatAI guarda y ordena tu búsqueda, pero <strong>no lee ofertas ni escribe CVs por sí sola</strong>: eso lo hace un agente de IA, un programa que instalas en tu equipo y que usa tu suscripción. No es la app de chat de Claude ni claude.ai: es un programa aparte, como <strong>Claude Code</strong>, que viene incluido en Claude Pro.",
-    "step1": "<strong>Elige uno.</strong> Si no lo tienes claro, Claude Code: es el más probado con CandidatAI y entra en Claude Pro. Si ya pagas ChatGPT Plus, Codex.",
+    "title": "Hace falta un agente de IA",
+    "why": "CandidatAI guarda y ordena la búsqueda, pero <strong>no lee ofertas ni escribe CVs por sí sola</strong>: eso lo hace un agente de IA, un programa que se instala en el equipo y que usa una suscripción propia. No es la app de chat de Claude ni claude.ai: es un programa aparte, como <strong>Claude Code</strong>, que viene incluido en Claude Pro.",
+    "step1": "<strong>Elegir uno.</strong> Ante la duda, Claude Code: es el más probado con CandidatAI y entra en Claude Pro. Con ChatGPT Plus, Codex.",
     "step2": {
-      "windows": "<strong>Instálalo.</strong> Abre PowerShell (pulsa la tecla de Windows, escribe «PowerShell» y pulsa Intro), pega esta orden con clic derecho y pulsa Intro:",
-      "mac": "<strong>Instálalo.</strong> Abre Terminal (pulsa Cmd y la barra espaciadora, escribe «Terminal» y pulsa Intro), pega esta orden y pulsa Intro:",
-      "linux": "<strong>Instálalo.</strong> Abre una terminal, pega esta orden y pulsa Intro:"
+      "windows": "<strong>Instalarlo.</strong> Abrir PowerShell (tecla de Windows, escribir «PowerShell» y pulsar Intro), pegar esta orden con clic derecho y pulsar Intro:",
+      "mac": "<strong>Instalarlo.</strong> Abrir Terminal (Cmd y la barra espaciadora, escribir «Terminal» y pulsar Intro), pegar esta orden y pulsar Intro:",
+      "linux": "<strong>Instalarlo.</strong> Abrir una terminal, pegar esta orden y pulsar Intro:"
     },
-    "step3": "<strong>Inicia sesión.</strong> Cuando termine, abre otra ventana igual, escribe «claude», pulsa Intro y sigue los pasos para iniciar sesión con tu cuenta de Claude.",
-    "step4": "Cierra CandidatAI y vuelve a abrirla desde su acceso directo: los botones con el robot abrirán tu agente con la orden ya escrita.",
+    "step3": "<strong>Iniciar sesión.</strong> Al terminar, abrir otra ventana igual, escribir «claude», pulsar Intro y seguir los pasos para iniciar sesión con la cuenta de Claude.",
+    "step4": "Cerrar CandidatAI y volver a abrirla desde su acceso directo: los botones con el robot abrirán el agente con la orden ya escrita.",
     "commandLabel": "Orden para instalar Claude Code",
     "guide": "La guía paso a paso",
     "otherAgents": "Otros agentes, en «Agente»"
   },
   "configure": {
     "title": "Versiones, modelos y con cuál se abre cada cosa",
-    "body": "Comprueba qué tienes instalado, elige los modelos y decide qué agente usa cada acción.",
+    "body": "Qué hay instalado, qué modelos se usan y qué agente usa cada acción.",
     "open": "Configurar agentes",
     "close": "Ocultar la configuración"
   }

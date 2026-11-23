@@ -13,7 +13,7 @@
   "attemptStatus": {
     "ready": "Ready to review",
     "needs_user": "Needs your attention",
-    "submit_failed": "Couldn't send",
+    "submit_failed": "Could not send",
     "submit_unconfirmed": "Sending not confirmed",
     "manual": "Open in CandidatAI's browser"
   },
@@ -34,9 +34,9 @@
     "unexpected_format": "Unexpected format",
     "no_answers": "No answers"
   },
-  "workerHint": "It hasn't started yet. Is CandidatAI fully open? Close it and open it again from its shortcut.",
+  "workerHint": "It has not started yet. Is CandidatAI fully open? Close it and open it again from its shortcut.",
   "busy": {
-    "submitting": "Sending… Don't close CandidatAI's browser.",
+    "submitting": "Sending… Do not close CandidatAI's browser.",
     "filling": "Filling in the {{domain}} form in the browser…",
     "queued": "Queued…"
   },
@@ -74,12 +74,12 @@
     "send": "Send",
     "rescan": "Review again",
     "reopen": "Reopen the job",
-    "finishMyself": "I'll finish it",
+    "finishMyself": "Finish it yourself",
     "checkFirst": "Before marking it as sent, check on the website or in your email that it arrived.",
     "working": "Working in the browser…"
   },
   "prepare": {
-    "linkedin": "LinkedIn isn't automated: the job will open in CandidatAI's browser and you copy the package from above.",
+    "linkedin": "LinkedIn is not automated: the job will open in CandidatAI's browser and you copy the package from above.",
     "fill": "{{domain}} will open in CandidatAI's browser and the form will be filled in. Nothing is sent until you confirm.",
     "openAndPrepare": "Open and prepare",
     "again": "Prepare again",
@@ -98,8 +98,8 @@
     "open": "Open the job on {{portal}}"
   },
   "docker": {
-    "intro": "You're using CandidatAI in Docker: there's no visible browser here to fill in the form and let you click “Send”. Open the job in your browser and send the application yourself (the CV is in “Application package”).",
-    "step": "Once you've sent it, click “Mark as sent”.",
+    "intro": "You are using CandidatAI in Docker: there is no visible browser here to fill in the form and let you click “Send”. Open the job in your browser and send the application yourself (the CV is in “Application package”).",
+    "step": "Once you have sent it, click “Mark as sent”.",
     "open": "Open the job in your browser",
     "sectionIntro": "Open the job in your browser and send it yourself; CandidatAI records that you sent it. Nothing is sent without you."
   },
@@ -107,7 +107,7 @@
     "manual": "Marked as sent by you.",
     "sent": "Sent to {{domain}}: the website confirmed it."
   },
-  "fillFailed": "Couldn't fill in the form.",
+  "fillFailed": "Could not fill in the form.",
   "openBrowser": {
     "title": "Opens CandidatAI's browser so you can sign in to your job boards. It has its own profile, separate from your Chrome.",
     "label": "Open browser"

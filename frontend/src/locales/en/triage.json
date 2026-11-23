@@ -25,11 +25,11 @@
     "discard": "discard",
     "detail": "details"
   },
-  "profileMissing": "<strong>Without a profile the fit can't be calculated.</strong> Create it in “My profile” or ask your agent to build it from your CV.",
-  "saveFailed": "Couldn't save: {{error}}",
+  "profileMissing": "<strong>Without a profile the fit cannot be calculated.</strong> Create it in “My profile” or ask your agent to build it from your CV.",
+  "saveFailed": "Could not save: {{error}}",
   "empty": {
     "title": "Nothing to review",
-    "body": "When your agent reads new jobs (“Assess new jobs”), they'll show up here sorted by fit."
+    "body": "When your agent reads new jobs (“Assess new jobs”), they will show up here sorted by fit."
   },
   "queue": "Jobs to review",
   "discardDialog": {

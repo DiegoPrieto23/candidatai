@@ -72,7 +72,7 @@ def _public_url(value: str) -> str:
         or parts.username is not None  # un enlace con usuario o contraseña no va en el perfil
     ):
         raise ValueError(
-            "Debe ser una URL pública con http:// o https:// (p. ej. https://github.com/tu-usuario)."
+            "Debe ser una URL pública con http:// o https:// (p. ej. https://github.com/usuario)."
         )
     return value
 

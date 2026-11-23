@@ -66,15 +66,19 @@ def test_seniority_only_accepted_levels(seniority: str, passes: bool) -> None:
     ("accepted", "seniority", "reason"),
     [
         # Busca un puesto intermedio o senior y no quiere junior.
-        (["senior", "mid"], "junior", "Pide seniority junior; solo aceptas: intermedio, senior."),
+        (
+            ["senior", "mid"],
+            "junior",
+            "Pide seniority junior; solo se aceptan: intermedio, senior.",
+        ),
         # Primer empleo: no quiere puestos de más nivel.
         (
             ["intern", "junior"],
             "mid",
-            "Pide seniority intermedio; solo aceptas: prácticas, junior.",
+            "Pide seniority intermedio; solo se aceptan: prácticas, junior.",
         ),
         (["intern", "junior"], "junior", None),
-        (["mid", "lead"], "senior", "Pide seniority senior; solo aceptas: intermedio, lead."),
+        (["mid", "lead"], "senior", "Pide seniority senior; solo se aceptan: intermedio, lead."),
     ],
 )
 def test_seniority_follows_the_profile_in_both_directions(
@@ -100,7 +104,7 @@ def test_years_without_limit_in_profile() -> None:
 
 def test_years_reason() -> None:
     got = failures(demo_extraction(years_experience_min=8))
-    assert got["years"] == "Pide 8 años de experiencia; tu máximo es 4 (+1 de tolerancia)."
+    assert got["years"] == "Pide 8 años de experiencia; el máximo es 4 (+1 de tolerancia)."
 
 
 # --- Modalidad -----------------------------------------------------------------------------------
@@ -123,7 +127,7 @@ def test_unknown_remote_mode_can_be_required() -> None:
 
 def test_remote_mode_reason_in_spanish() -> None:
     got = failures(demo_extraction(remote_mode="onsite"))
-    assert got["remote_mode"] == "Modalidad presencial; aceptas: remoto, híbrido."
+    assert got["remote_mode"] == "Modalidad presencial; se aceptan: remoto, híbrido."
 
 
 # --- Ubicación -----------------------------------------------------------------------------------
@@ -152,7 +156,7 @@ def test_location(locations: list[str], mode: str, passes: bool) -> None:
 
 def test_location_reasons() -> None:
     got = failures(demo_extraction(locations=["Madrid"], remote_mode="onsite"))
-    assert got["location"] == "Madrid solo te vale en híbrido o remoto, y la oferta es presencial."
+    assert got["location"] == "Madrid solo vale en híbrido o remoto, y la oferta es presencial."
     got = failures(demo_extraction(locations=["Sevilla"], remote_mode="hybrid"))
     assert got["location"] == "Fuera de zona: Sevilla."
 
@@ -199,7 +203,7 @@ def test_language_reason() -> None:
     required = [{"language": "English", "level": "C1"}, {"language": "Deutsch", "level": None}]
     got = failures(demo_extraction(languages_required=required))
     assert got["language"] == (
-        "Idiomas: pide English C1 y tienes B2; pide Deutsch y no está en tu perfil."
+        "Idiomas: pide English C1 y el perfil tiene B2; pide Deutsch y no está en el perfil."
     )
 
 

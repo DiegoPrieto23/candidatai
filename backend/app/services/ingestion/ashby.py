@@ -46,7 +46,8 @@ class AshbyConnector:
             client,
             API.format(slug=config.slug),
             label=self.label,
-            not_found=f"No existe el tablero «{config.slug}» en Ashby (404). Revisa el nombre.",
+            not_found=f"No existe el tablero «{config.slug}» en Ashby (404). Conviene revisar el "
+            f"nombre.",
         )
         if not isinstance(data, dict) or not isinstance(data.get("jobs"), list):
             raise unexpected(self.label, "falta la lista `jobs`")

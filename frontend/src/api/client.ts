@@ -1,5 +1,5 @@
 import createClient from 'openapi-fetch'
-import { i18n } from '@/lib/i18n'
+import { i18n, portalLang } from '@/lib/i18n'
 import type { components, paths } from './schema'
 
 export type Schemas = components['schemas']
@@ -156,6 +156,12 @@ export const api = createClient<paths>({
   baseUrl: API_URL,
   // Se resuelve en cada llamada (no al crear el cliente) para que los tests puedan simularlo.
   fetch: (request) => globalThis.fetch(request),
+})
+
+// Fase 47.3: al cambiar el idioma del portal, la app lo guarda para lo que se lanza sin la UI
+// (worker, tareas programadas). Si no contesta, da igual: cada lanzamiento lleva el idioma.
+i18n.on('languageChanged', () => {
+  void api.PUT('/agent/language', { body: { lang: portalLang() } }).catch(() => undefined)
 })
 
 /** Error de la API con el formato común `{ok: false, error: {type, message, details}}`. */

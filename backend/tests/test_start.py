@@ -464,7 +464,7 @@ def test_start_says_where_to_go_when_no_browser_opens(
 ) -> None:
     (ui_dir / "starting.html").write_text("<!doctype html>", encoding="utf-8")
     steps = _record_start(monkeypatch, opened=False)
-    assert any("abre http://127.0.0.1:8000 en el tuyo" in s for s in steps)
+    assert any("hay que abrir http://127.0.0.1:8000 a mano" in s for s in steps)
 
 
 def test_the_starting_page_asks_the_app_and_opens_it() -> None:

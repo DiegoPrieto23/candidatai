@@ -24,6 +24,7 @@
     "candidatai_get_job": "allow",
     "candidatai_check_job_open": "allow",
     "candidatai_check_known": "allow",
+    "candidatai_list_duplicates": "allow",
     "candidatai_get_search_titles": "allow",
     "candidatai_save_extraction": "allow",
     "candidatai_get_extraction": "allow",

@@ -379,18 +379,18 @@ texto y los comandos para que lo hagas tú. Las búsquedas de plataformas van po
 prueba manual con Claude Code.
 
 `expand` (fase 25.2) revisa el perfil y añade o mejora lo que aceptas, de la misma forma, y con tus
-enlaces públicos propone además proyectos, skills y certificaciones. Su botón es «Mejorar el contenido de mi perfil»
+enlaces públicos propone además proyectos, skills y certificaciones. Su botón es «Mejorar el contenido del perfil»
 («Mi perfil»). Leer los enlaces necesita web (lectura de páginas), pero la revisión no: con un agente
 sin `web` el botón sigue activo y el skill se salta los enlaces. Lee READMEs de terceros, así que con
 un agente de nivel C avisa de usar una sesión dedicada solo a eso.
 
 ### Botones «en tu agente» de la UI
 «Buscar ofertas», «Valorar las ofertas nuevas» (y «Valorar esta oferta» de una oferta),
-«Generar CV», en la página «Habilidades por desarrollar» «Añadir al perfil las que tengo» (`update-profile`)
+«Generar CV», en la página «Habilidades por desarrollar» «Añadir al perfil las marcadas «La tengo»» (`update-profile`)
 y «Plan de formación», y desde la fase 15 «Revisar respuestas» (Inicio y «Respuestas»), «Redactar borradores» (Procesos) y
 «Redactar seguimiento» (ficha de una candidatura enviada), desde la fase 16 «Ampliar búsqueda»
 («Dónde buscar»), desde la 17 los de las entrevistas y desde la 18 «Redactar mensaje» e «Investigar
-empresa» (ficha), desde la 25.2 «Mejorar el contenido de mi perfil» y «Crear mi perfil desde mi CV» (y, con perfil, «Importar información desde un CV», que usa `update-profile`)
+empresa» (ficha), desde la 25.2 «Mejorar el contenido del perfil» y «Crear el perfil desde un CV» (y, con perfil, «Importar información desde un CV», que usa `update-profile`)
 («Mi perfil», sin perfil todavía), abren tu
 agente en una terminal (Windows Terminal o PowerShell) con la orden del skill ya escrita; tú
 ves, contestas y apruebas lo que haga. Qué programa se abre lo dice `launch` de cada agente en el
@@ -506,7 +506,7 @@ terminal ni web y sin que sus subagentes tengan más, y un lector de su salida e
 `backend/app/services/agent_output.py` (`PARSERS`). Si el agente no puede limitarlas, no lo
 añadas: la garantía de este modo es justo esa.
 
-**«Dejar para mi próxima sesión»** funciona con cualquier agente: guarda la orden y tu próxima
+**«Dejar para la próxima sesión»** funciona con cualquier agente: guarda la orden y tu próxima
 sesión la ve en `get_status` (`agent_requests`) o con el skill `handle-requests`.
 
 ### Añadir otro agente

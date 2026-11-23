@@ -46,7 +46,7 @@ from app.core.policies import get_policies
 from app.models import AgentRun
 from app.models.base import utcnow
 from app.services import agent_registry, agent_run_config
-from app.services.agent_launch import CLIENT_ENV, QUESTION_PREFIX
+from app.services.agent_launch import CLIENT_ENV, QUESTION_PREFIX, QUESTION_PREFIX_EN
 from app.services.agent_output import PARSERS, short
 from app.services.agent_runs import INTERRUPTED, ProgressKind, RunStatus
 
@@ -55,9 +55,11 @@ logger = logging.getLogger(__name__)
 FLUSH_SECONDS = 2.0  # cada cuánto se guarda el progreso y se mira si han pedido cancelar
 RESULT_GRACE_SECONDS = 10.0  # tras el resultado final, lo que se espera a que el agente salga
 MAX_QUESTIONS = 10
-QUESTION_RE = re.compile(rf"^[\W_]*{re.escape(QUESTION_PREFIX.rstrip(':'))}\s*:\**\s*(.+)$", re.I)
+# «PREGUNTA:» con la orden en español y «QUESTION:» con la orden en inglés.
+_QUESTION_WORDS = "|".join(re.escape(p.rstrip(":")) for p in (QUESTION_PREFIX, QUESTION_PREFIX_EN))
+QUESTION_RE = re.compile(rf"^[\W_]*(?:{_QUESTION_WORDS})\s*:\**\s*(.+)$", re.I)
 ANSI_RE = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")  # colores de la consola en stderr (OpenCode)
-STOPPED = "Se paró el worker mientras se ejecutaba. No se repite: lánzala otra vez si quieres."
+STOPPED = "Se paró el worker mientras se ejecutaba. No se repite: se puede lanzar otra vez."
 
 # Procesos en marcha y aviso de parada del worker (`stop_active`).
 _active: dict[int, subprocess.Popen[str]] = {}
@@ -558,7 +560,9 @@ def describe(outcome: AgentRunOutcome) -> str:
     if outcome.status == "done":
         return f"{base}: terminada."
     if outcome.status == "needs_user":
-        return f"{base}: necesita tu respuesta ({outcome.questions} preguntas). Mírala en la UI."
+        return (
+            f"{base}: necesita una respuesta ({outcome.questions} preguntas). Se responde en la UI."
+        )
     if outcome.status == "cancelled":
         return f"{base}: cancelada."
     return f"{base}: {outcome.status}. {outcome.error or ''}".strip()

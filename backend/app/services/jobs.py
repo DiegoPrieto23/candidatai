@@ -160,6 +160,79 @@ def get_job(session: Session, job_id: int) -> JobDetail:
 RemoteMode = Literal["onsite", "hybrid", "remote", "unknown"]
 REMOTE_MODES: tuple[str, ...] = get_args(RemoteMode)
 
+# Por qué se cerró una oferta, para la Bandeja. Sale del evento de cierre (`closed_by`) y, en un
+# descarte, de su motivo: descartada con `closed` («la han cerrado») la cerró la empresa.
+CloseReason = Literal[
+    "discarded",
+    "filtered_out",
+    "rejected",
+    "withdrawn",
+    "expired",
+    "closed_by_company",
+    "duplicate",
+    "accepted",
+]
+CLOSE_REASONS: tuple[str, ...] = get_args(CloseReason)
+_REASON_BY_EVENT: dict[str, CloseReason] = {
+    EventType.DUPLICATE_DETECTED: "duplicate",
+    EventType.HARD_FILTER_FAILED: "filtered_out",
+    EventType.REJECTED: "rejected",
+    EventType.WITHDRAWN: "withdrawn",
+    EventType.EXPIRED: "expired",
+    EventType.ACCEPTED: "accepted",
+}
+COMPANY_DISCARD_REASON = "closed"
+
+
+def close_reason(closed_by: str | None, discard_reason: str | None) -> CloseReason | None:
+    """El motivo de cierre a partir del evento que la cerró y, si fue un descarte, su motivo."""
+    if closed_by is None:
+        return None
+    if closed_by == EventType.DISCARDED:
+        return "closed_by_company" if discard_reason == COMPANY_DISCARD_REASON else "discarded"
+    return _REASON_BY_EVENT.get(closed_by)
+
+
+def _last_discards():
+    """El motivo del último descarte de cada oferta (por fecha y, a igual fecha, por registro)."""
+    ranked = (
+        select(
+            Event.job_id,
+            Event.payload["reason"].as_string().label("reason"),
+            func.row_number()
+            .over(partition_by=Event.job_id, order_by=(Event.occurred_at.desc(), Event.id.desc()))
+            .label("n"),
+        )
+        .where(Event.type == EventType.DISCARDED)
+        .subquery()
+    )
+    return select(ranked.c.job_id, ranked.c.reason).where(ranked.c.n == 1)
+
+
+def _discard_reasons(session: Session, job_ids: list[int]) -> dict[int, str | None]:
+    if not job_ids:
+        return {}
+    last = _last_discards().subquery()
+    rows = session.execute(select(last.c.job_id, last.c.reason).where(last.c.job_id.in_(job_ids)))
+    return {job_id: reason for job_id, reason in rows}
+
+
+def _close_reason_filter(reason: str):
+    """Las ofertas cerradas con ese motivo, como condición sobre `applications` y `jobs`."""
+    if reason not in CLOSE_REASONS:
+        valid = ", ".join(CLOSE_REASONS)
+        raise InvalidQueryError(f"Motivo de cierre desconocido: «{reason}». Válidos: {valid}.")
+    closed = Application.stage == Stage.CLOSED
+    if reason in ("discarded", "closed_by_company"):
+        last = _last_discards().subquery()
+        by_company = Job.id.in_(
+            select(last.c.job_id).where(last.c.reason == COMPANY_DISCARD_REASON)
+        )
+        discarded = Application.closed_by == EventType.DISCARDED
+        return (closed, discarded, by_company if reason == "closed_by_company" else ~by_company)
+    events = [event for event, value in _REASON_BY_EVENT.items() if value == reason]
+    return (closed, Application.closed_by.in_(events))
+
 
 class JobRow(JobSummary):
     remote_mode: RemoteMode | None  # de la extracción vigente; None si aún no hay
@@ -168,6 +241,7 @@ class JobRow(JobSummary):
     # Cuándo y con qué evento se cerró (fase 27.6); None si no está cerrada.
     closed_at: datetime | None = None
     closed_by: str | None = None
+    close_reason: CloseReason | None = None  # por qué se cerró; None si no está cerrada
 
 
 # Orden de la bandeja. Las ofertas sin el dato (sin score, sin salario o sin cerrar) van siempre al
@@ -277,10 +351,13 @@ def search_jobs(
     has_salary: bool | None = None,
     has_score: bool | None = None,
     min_score: int | None = None,
+    stages: list[str] | None = None,
+    reason: str | None = None,
 ) -> JobPage:
-    """Página de ofertas para la bandeja: filtro por etapa, búsqueda en título y empresa, modalidad,
-    con o sin salario, con o sin encaje (score) y encaje mínimo, y orden por fecha de alta, score,
-    salario o fecha de cierre."""
+    """Página de ofertas para la bandeja: filtro por etapa (una, `stage`, o varias, `stages`; con
+    las dos, las que cumplen ambas), búsqueda en título y empresa, modalidad, con o sin salario,
+    con o sin encaje (score), encaje mínimo y motivo de cierre (`reason`: solo cerradas), y orden
+    por fecha de alta, score, salario o fecha de cierre."""
     if min_score is not None and not 0 <= min_score <= 100:
         raise InvalidQueryError("`min_score` debe estar entre 0 y 100.")
     if not 1 <= limit <= MAX_LIMIT:
@@ -297,6 +374,10 @@ def search_jobs(
     filters = []
     if stage is not None:
         filters.append(Application.stage == parse_stage(stage).value)
+    if stages is not None:
+        filters.append(Application.stage.in_([parse_stage(value).value for value in stages]))
+    if reason is not None:
+        filters.extend(_close_reason_filter(reason))
     if source_kind is not None:
         filters.append(Job.source_id.in_(select(Source.id).where(Source.kind == source_kind)))
     filters.extend(_extraction_filters(remote_mode, has_salary))
@@ -344,6 +425,9 @@ def search_jobs(
     rows = [by_id[job_id] for job_id in page if job_id in by_id]
     latest = extractions.latest_rows(session, [job.id for job, *_ in rows])
     known = network.known_counts(session, [job.id for job, *_ in rows])
+    discards = _discard_reasons(
+        session, [job.id for job, *rest in rows if rest[-1] == EventType.DISCARDED]
+    )
     items = []
     for job, company, job_stage, score, suspected, closed_at, closed_by in rows:
         extraction = latest.get(job.id)
@@ -367,6 +451,7 @@ def search_jobs(
                 known_contacts=known.get(job.id, 0),
                 closed_at=closed_at,
                 closed_by=closed_by,
+                close_reason=close_reason(closed_by, discards.get(job.id)),
             )
         )
     return JobPage(items=items, total=total, limit=limit, offset=offset)
@@ -404,6 +489,7 @@ class JobView(JobSummary):
     reopening: ReopeningOf | None = None
     # Si está cerrada: con qué evento y hasta dónde llegó (p. ej. un rechazo tras entrevista).
     closed_by: str | None = None
+    close_reason: CloseReason | None = None
     reached: Reached | None = None
 
 
@@ -470,8 +556,12 @@ def get_job_view(session: Session, job_id: int) -> JobView:
 
 
 def _closing(events: list[Event]) -> dict[str, Any]:
-    closing = [e.type for e in events if TRANSITIONS[EventType(e.type)].to == Stage.CLOSED]
+    closing = [e for e in events if TRANSITIONS[EventType(e.type)].to == Stage.CLOSED]
+    last = closing[-1] if closing else None
+    discards = [e for e in events if e.type == EventType.DISCARDED]
+    reason = (discards[-1].payload or {}).get("reason") if discards else None
     return {
-        "closed_by": closing[-1] if closing else None,
+        "closed_by": last.type if last else None,
+        "close_reason": close_reason(last.type, reason) if last else None,
         "reached": reached_step(e.type for e in events),
     }

@@ -23,6 +23,9 @@ approval_mode = "approve"
 [mcp_servers.candidatai.tools.check_known]
 approval_mode = "approve"
 
+[mcp_servers.candidatai.tools.list_duplicates]
+approval_mode = "approve"
+
 [mcp_servers.candidatai.tools.get_search_titles]
 approval_mode = "approve"
 

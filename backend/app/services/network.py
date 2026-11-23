@@ -222,7 +222,7 @@ def import_connections(session: Session, path: Path | None = None) -> ImportResu
     existing = {_key(row): row for row in session.scalars(select(NetworkContact))}
     if not parsed and existing:
         raise NetworkImportError(
-            "El fichero no trae ningún contacto: no se borra la red que ya tenías."
+            "El fichero no trae ningún contacto: no se borra la red que ya había."
         )
     now = utcnow()
     seen: set[tuple[str, ...]] = set()
@@ -280,7 +280,8 @@ def import_connections(session: Session, path: Path | None = None) -> ImportResu
         message=f"Red importada: {total} personas ({added} nuevas, {updated} actualizadas, "
         f"{len(gone)} quitadas)."
         + (
-            " Ojo: se ha quitado más de la mitad de la red; comprueba que el fichero está entero."
+            " Atención: se ha quitado más de la mitad de la red; conviene comprobar que el "
+            "fichero está entero."
             if existing and len(gone) * 2 > len(existing)
             else ""
         ),
@@ -455,7 +456,7 @@ def add_to_process(session: Session, job_id: int, data: AddFromNetwork) -> Conta
     person = session.get(NetworkContact, data.network_contact_id)
     if person is None:
         raise NetworkContactNotFoundError(
-            f"No existe la persona {data.network_contact_id} en tu red."
+            f"No existe la persona {data.network_contact_id} en la red de contactos."
         )
     already = session.scalars(
         select(Contact).where(Contact.job_id == job_id, Contact.network_contact_id == person.id)

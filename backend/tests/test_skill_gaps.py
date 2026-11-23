@@ -241,8 +241,8 @@ def test_add_alias_already_same_does_nothing(aliases_file: Path) -> None:
     [
         ("Spark", "Python", "ya es sinónimo de «Apache Spark»"),
         ("Databricks", "Python", "ya es sinónimo de «Databricks»"),
-        ("DAX", "Power BI", "ya la cubre tu perfil como «DAX»"),
-        ("Kafka", "Kubernetes", "no está entre las skills de tu perfil"),
+        ("DAX", "Power BI", "ya la cubre el perfil como «DAX»"),
+        ("Kafka", "Kubernetes", "no está entre las skills del perfil"),
         ("  ", "Python", "no puede quedar vacía"),
     ],
 )

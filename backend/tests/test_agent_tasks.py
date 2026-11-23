@@ -193,6 +193,82 @@ def test_background_follows_its_run(session: Session, status: str, outcome: str)
     assert (seen(session).status, seen(session).outcome) == ("finished", outcome)
 
 
+def _run(session: Session, job_id: int, status: str = "running") -> AgentRun:
+    run = AgentRun(
+        action="generate-cv",
+        job_id=job_id,
+        agent="claude",
+        status=status,
+        prompt="x",
+        command=[],
+        unset_env=[],
+        output_format="claude-stream-json",
+        progress=[],
+        questions=[],
+        cancel_requested=False,
+    )
+    session.add(run)
+    session.flush()
+    return run
+
+
+def test_stopping_a_background_run_from_the_notice(session: Session) -> None:
+    """Fase 47.4: el aviso lleva su ejecución; «Detener» la cancela con `agent_runs.cancel`."""
+    from app.services import agent_runs
+
+    job_id = job(session)
+    run = _run(session, job_id)
+    agent_tasks.start(session, "generate-cv", job_id, run_id=run.id)
+    view = seen(session)
+    assert (view.run_id, view.stopping, view.stopped_by_user) == (run.id, False, False)
+
+    agent_runs.cancel(session, run.id)  # en curso: se pide y el worker para el proceso
+    view = seen(session)
+    assert (view.status, view.stopping) == ("running", True)
+
+    run.status = "cancelled"  # lo que hace el worker al parar el proceso
+    run.finished_at = utcnow()
+    session.flush()
+    view = seen(session)
+    assert (view.status, view.outcome, view.stopping, view.stopped_by_user) == (
+        "finished",
+        "stopped",
+        False,
+        True,
+    )
+
+
+def test_a_queued_run_stops_at_once(session: Session) -> None:
+    from app.services import agent_runs
+
+    job_id = job(session)
+    run = _run(session, job_id, status="queued")
+    agent_tasks.start(session, "generate-cv", job_id, run_id=run.id)
+    agent_runs.cancel(session, run.id)
+    view = seen(session)
+    assert (view.status, view.outcome, view.stopped_by_user) == ("finished", "stopped", True)
+
+
+def test_the_agent_stopping_first_is_not_stopped_by_the_user(session: Session) -> None:
+    job_id = job(session)
+    run = _run(session, job_id)
+    agent_tasks.start(session, "generate-cv", job_id, run_id=run.id)
+    agent_tasks.finish(session, "generate-cv", "stopped")  # el agente dice que para
+    run.status = "cancelled"
+    session.flush()
+    assert (seen(session).outcome, seen(session).stopped_by_user) == ("stopped", False)
+
+
+def test_a_terminal_notice_has_no_run_to_stop(session: Session) -> None:
+    job_id = job(session)
+    agent_tasks.start(session, "generate-cv", job_id)
+    view = seen(session)
+    assert (view.background, view.run_id, view.stopping) == (False, None, False)
+    # Si el agente dice que ha parado, no lo ha detenido el usuario.
+    agent_tasks.finish(session, "generate-cv", "stopped")
+    assert (seen(session).outcome, seen(session).stopped_by_user) == ("stopped", False)
+
+
 def test_a_queued_background_run_never_goes_stale(session: Session) -> None:
     job_id = job(session)
     run = AgentRun(

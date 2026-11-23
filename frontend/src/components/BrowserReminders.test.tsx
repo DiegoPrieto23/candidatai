@@ -64,6 +64,6 @@ describe('Avisos del navegador', () => {
     mockApi(routes())
     renderApp('/calendario')
     expect(await screen.findByRole('switch', { name: 'Avisos del navegador' })).toBeDisabled()
-    expect(screen.getByText(/Permite los avisos de esta página/)).toBeInTheDocument()
+    expect(screen.getByText(/permitir los avisos de esta página/)).toBeInTheDocument()
   })
 })

@@ -225,18 +225,15 @@ function Panel({ tab, setTab, onClose }: { tab: Tab; setTab: (tab: Tab) => void;
       aria-label={title}
       data-help-panel
       className={cn(
-        'pointer-events-auto flex max-w-[calc(100vw-2rem)] flex-col rounded-xl border bg-card text-card-foreground animate-in fade-in slide-in-from-bottom-1 duration-200',
-        // El asistente, como un chat: más ancho, de alto fijo (la caja abajo) y con borde, sombra y
-        // cabecera propios para que no se confunda con la página.
-        // Con la barra de conversaciones abierta, más ancho todavía (como ChatGPT o Claude).
-        assistant
-          ? 'h-[min(36rem,calc(100dvh-6rem))] overflow-hidden border-primary/30 shadow-2xl dark:border-primary/40'
-          : 'max-h-[min(34rem,calc(100dvh-6rem))] w-96 shadow-lg',
-        assistant && (sidebar ? 'w-[44rem]' : 'w-[28rem]'),
+        // El mismo tamaño en las dos pestañas y con o sin la barra de conversaciones: el panel no se
+        // mueve al cambiar. Solo el cuerpo hace scroll; cabecera, pestañas y caja de escribir, fijas.
+        'pointer-events-auto flex h-[min(36rem,calc(100dvh-6rem))] min-h-48 w-[40rem] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-xl border bg-card text-card-foreground animate-in fade-in slide-in-from-bottom-1 duration-200',
+        // El asistente, como un chat: con borde, sombra y cabecera propios para que no se confunda con la página.
+        assistant ? 'border-primary/30 shadow-2xl dark:border-primary/40' : 'shadow-lg',
       )}
     >
       <header
-        className={cn('flex items-center gap-2 border-b px-4 py-2.5', tab === 'assistant' && 'bg-primary/10 dark:bg-primary/15')}
+        className={cn('flex shrink-0 items-center gap-2 border-b px-4 py-2.5', tab === 'assistant' && 'bg-primary/10 dark:bg-primary/15')}
       >
         <TitleIcon className="size-4 text-primary" weight={tab === 'assistant' ? 'fill' : 'bold'} aria-hidden />
         <h2 className="flex-1 text-sm font-semibold">{title}</h2>
@@ -273,7 +270,7 @@ function Panel({ tab, setTab, onClose }: { tab: Tab; setTab: (tab: Tab) => void;
       <div
         role="tablist"
         aria-label={t('tabs.label')}
-        className={cn('flex gap-1 border-b px-3 pt-1.5', tab === 'assistant' && 'bg-primary/10 dark:bg-primary/15')}
+        className={cn('flex shrink-0 gap-1 border-b px-3 pt-1.5', tab === 'assistant' && 'bg-primary/10 dark:bg-primary/15')}
       >
         {TABS.map((name) => (
           <button
@@ -331,7 +328,7 @@ function Panel({ tab, setTab, onClose }: { tab: Tab; setTab: (tab: Tab) => void;
       )}
       {tab === 'help' && (
       <>
-      <div className="relative border-b px-4 py-3">
+      <div className="relative shrink-0 border-b px-4 py-3">
         <MagnifyingGlassIcon
           className="pointer-events-none absolute top-1/2 left-6.5 size-4 -translate-y-1/2 text-muted-foreground"
           weight="bold"
@@ -350,7 +347,13 @@ function Panel({ tab, setTab, onClose }: { tab: Tab; setTab: (tab: Tab) => void;
           className="pl-8"
         />
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-2">
+      {/* Enfocable, para recorrerlo también con las flechas y Av Pág. */}
+      <div
+        role="region"
+        aria-label={t('bodyLabel')}
+        tabIndex={0}
+        className="min-h-0 flex-1 overflow-y-auto px-4 py-2 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:ring-inset"
+      >
         <p role="status" className="sr-only">
           {searching && t('results', { count: faqFound.length + guideFound.length })}
         </p>
@@ -398,7 +401,7 @@ function Panel({ tab, setTab, onClose }: { tab: Tab; setTab: (tab: Tab) => void;
       </div>
       {/* El atajo `?` abre la ayuda: en la pestaña del agente no viene a cuento. */}
       {tab === 'help' && (
-        <footer className="border-t px-4 py-2 text-xs text-muted-foreground">
+        <footer className="shrink-0 border-t px-4 py-2 text-xs text-muted-foreground">
           <SafeTrans t={t} i18nKey="shortcut" components={{ kbd: <Kbd>{null}</Kbd> }} />
         </footer>
       )}
@@ -467,9 +470,9 @@ export function HelpPanel() {
   }, [open])
 
   return (
-    <div ref={wrapper} className="flex flex-col items-end gap-2">
+    <div ref={wrapper} className="flex min-h-0 flex-col items-end gap-2">
       {open && <Panel tab={tab} setTab={setTab} onClose={close} />}
-      <div className="flex items-center gap-2">
+      <div className="flex shrink-0 items-center gap-2">
         <Hint text={t('launcherHint')} side="top">
           <Button
             ref={assistantButton}

@@ -47,7 +47,7 @@ describe('Mi perfil', () => {
   it('enseña el estado de cada nota para tu agente y las carpetas de tus archivos', async () => {
     mockApi({ 'GET /status': status(), 'GET /context': contextStatus(), 'GET /profile/editable': NO_PROFILE, 'GET /context/style-samples': [] })
     renderApp('/perfil')
-    const notes = await screen.findByRole('region', { name: 'Notas para tu agente' })
+    const notes = await screen.findByRole('region', { name: 'Notas para el agente' })
     await within(notes).findByRole('region', { name: 'Estilo de redacción' })
     const row = (name: string) => within(notes).getByRole('region', { name })
     expect(await within(row('Estilo de redacción')).findByText('Con contenido')).toBeInTheDocument()
@@ -57,9 +57,9 @@ describe('Mi perfil', () => {
     expect(within(row('Narrativa')).getByRole('button', { name: 'Crear «Narrativa»' })).toBeInTheDocument()
     // La explicación larga va en la ayuda de la tarjeta, no a la vista.
     expect(within(notes).queryByText(/Nunca respaldan un hecho/)).not.toBeInTheDocument()
-    expect(within(notes).getByRole('button', { name: 'Qué es «Notas para tu agente»' })).toBeInTheDocument()
+    expect(within(notes).getByRole('button', { name: 'Qué es «Notas para el agente»' })).toBeInTheDocument()
 
-    const files = screen.getByRole('region', { name: 'Tus archivos' })
+    const files = screen.getByRole('region', { name: 'Archivos' })
     // Con su nombre legible, no el de la carpeta en disco.
     expect(within(files).getByText('CV')).toBeInTheDocument()
     expect(within(files).getByText('Títulos')).toBeInTheDocument()
@@ -114,11 +114,11 @@ describe('Mi perfil', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Empezar a mano' }))
     await userEvent.type(screen.getByLabelText('Nombre'), 'Demo Persona')
     await userEvent.type(screen.getByLabelText(/^Titular/), 'Analista')
-    await userEvent.type(screen.getByLabelText(/^Puesto que buscas/), 'Data Analyst')
+    await userEvent.type(screen.getByLabelText(/^Puesto buscado/), 'Data Analyst')
     await userEvent.click(screen.getByRole('checkbox', { name: 'Junior' }))
     const before = reads
-    await userEvent.click(screen.getByRole('button', { name: 'Crear mi perfil' }))
-    expect(await screen.findByText(/Ya tienes un perfil/)).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Crear el perfil' }))
+    expect(await screen.findByText(/Ya hay un perfil/)).toBeInTheDocument()
     await waitFor(() => expect(reads).toBeGreaterThan(before))
   })
 
@@ -145,23 +145,23 @@ describe('Mi perfil', () => {
     renderApp('/perfil')
     await userEvent.click(await screen.findByRole('button', { name: 'Empezar a mano' }))
     // Sin rellenar, dice qué falta y no envía nada.
-    await userEvent.click(screen.getByRole('button', { name: 'Crear mi perfil' }))
-    expect(screen.getAllByText('Hace falta para crear tu perfil.')).toHaveLength(3)
-    expect(screen.getByText('Elige al menos uno.')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Crear el perfil' }))
+    expect(screen.getAllByText('Hace falta para crear el perfil.')).toHaveLength(3)
+    expect(screen.getByText('Hace falta al menos uno.')).toBeInTheDocument()
     expect(calls.some((c) => c.method === 'POST' && c.path === '/profile')).toBe(false)
 
     await userEvent.type(screen.getByLabelText('Nombre'), 'Demo Persona')
     await userEvent.type(screen.getByLabelText(/^Titular/), 'Analista')
-    await userEvent.type(screen.getByLabelText(/^Puesto que buscas/), 'Data Analyst')
+    await userEvent.type(screen.getByLabelText(/^Puesto buscado/), 'Data Analyst')
     await userEvent.click(screen.getByRole('checkbox', { name: 'Mid' }))
-    await userEvent.click(screen.getByRole('button', { name: 'Crear mi perfil' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Crear el perfil' }))
     await waitFor(() =>
       expect(calls.find((c) => c.method === 'POST' && c.path === '/profile')?.body).toEqual({
         name: 'Demo Persona', headline: 'Analista', role: 'Data Analyst', seniority: ['mid'], summary: null, language: 'es',
       }),
     )
     // El editor, con sus pestañas.
-    expect(await screen.findByRole('tab', { name: 'Sobre ti' })).toBeInTheDocument()
+    expect(await screen.findByRole('tab', { name: 'Datos personales' })).toBeInTheDocument()
   })
 
   it('abre la carpeta del contexto', async () => {
@@ -199,12 +199,12 @@ describe('Mi perfil', () => {
       model: null,
       preset: null,
       reason: 'default',
-      reason_text: 'tu agente por defecto',
+      reason_text: 'el agente por defecto',
       blocked: null,
       blocked_code: null,
       warning: null,
     }
-    const expand = { id: 'expand', label: 'Mejorar el contenido de mi perfil', needs_job: false, prompt: 'Usa el skill expand…', background: false }
+    const expand = { id: 'expand', label: 'Mejorar el contenido del perfil', needs_job: false, prompt: 'Usa el skill expand…', background: false }
     const launcher = (agent: Record<string, unknown>) => ({
       available: true,
       agent: 'claude',
@@ -222,11 +222,11 @@ describe('Mi perfil', () => {
       'POST /agent/launch': { ok: true, agent: 'claude', prompt: 'Usa el skill expand…', message: 'ok' },
     })
     const view = renderApp('/perfil')
-    const button = await screen.findByRole('button', { name: 'Mejorar el contenido de mi perfil' })
+    const button = await screen.findByRole('button', { name: 'Mejorar el contenido del perfil' })
     await waitFor(() => expect(button).toBeEnabled())
     await userEvent.click(button)
-    expect(await screen.findByText('Abierto en claude: sigue en la ventana que se acaba de abrir.')).toBeInTheDocument()
-    expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ action: 'expand' })
+    expect(await screen.findByText('Abierto en claude: se continúa en la ventana recién abierta.')).toBeInTheDocument()
+    expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ lang: 'es', action: 'expand' })
     view.unmount()
 
     const noAgent = 'Codex no tiene visión, y esta acción lo necesita.'
@@ -237,7 +237,7 @@ describe('Mi perfil', () => {
       'GET /agent': launcher({ ...claude, agent: 'codex', display_name: 'Codex', blocked: noAgent, blocked_code: 'capability' }),
     })
     renderApp('/perfil')
-    const blocked = await screen.findByRole('button', { name: 'Mejorar el contenido de mi perfil' })
+    const blocked = await screen.findByRole('button', { name: 'Mejorar el contenido del perfil' })
     await waitFor(() => expect(blocked).toBeDisabled())
     expect(blocked).toHaveAccessibleDescription(new RegExp(noAgent))
     // Sin segundo plano: pregunta antes de escribir en el perfil.
@@ -252,7 +252,7 @@ describe('Mi perfil', () => {
       model: null,
       preset: null,
       reason: 'default',
-      reason_text: 'tu agente por defecto',
+      reason_text: 'el agente por defecto',
       blocked: null,
       blocked_code: null,
       warning: null,
@@ -282,12 +282,12 @@ describe('Mi perfil', () => {
     // El botón de la página abre un diálogo con los dos pasos: subir el CV y lanzar a tu agente.
     await userEvent.click(await screen.findByRole('button', { name: 'Importar información desde un CV' }))
     const dialog = await screen.findByRole('dialog', { name: 'Importar información desde un CV' })
-    expect(within(dialog).getByRole('button', { name: 'Subir mi CV' })).toBeInTheDocument()
+    expect(within(dialog).getByRole('button', { name: 'Subir el CV' })).toBeInTheDocument()
     const launch = await within(dialog).findByRole('button', { name: 'Importar información desde un CV' })
     await waitFor(() => expect(launch).toBeEnabled())
     await userEvent.click(launch)
-    await screen.findByText('Abierto en claude: sigue en la ventana que se acaba de abrir.')
-    expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ action: 'import-profile-from-cv' })
+    await screen.findByText('Abierto en claude: se continúa en la ventana recién abierta.')
+    expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ lang: 'es', action: 'import-profile-from-cv' })
   })
 
   it('sin perfil, el CV se sube arrastrándolo a la caja; un formato que no vale no se sube', async () => {
@@ -304,13 +304,13 @@ describe('Mi perfil', () => {
       },
     })
     renderApp('/perfil')
-    const button = await screen.findByRole('button', { name: 'Subir mi CV' })
+    const button = await screen.findByRole('button', { name: 'Subir el CV' })
     const zone = button.closest('div.border-dashed') as HTMLElement
-    expect(within(zone).getByText('Arrastra aquí tu CV o súbelo desde tu equipo')).toBeInTheDocument()
+    expect(within(zone).getByText('Arrastrar aquí el CV o subirlo desde el equipo')).toBeInTheDocument()
 
     const drag = (files: File[]) => ({ dataTransfer: { files, types: ['Files'] } })
     fireEvent.dragOver(zone, drag([]))
-    expect(within(zone).getByText('Suéltalo para subirlo')).toBeInTheDocument()
+    expect(within(zone).getByText('Soltar para subirlo')).toBeInTheDocument()
     fireEvent.drop(zone, drag([new File(['x'], 'foto.png', { type: 'image/png' })]))
     expect(await screen.findByRole('alert')).toHaveTextContent('Ese formato no se admite')
     expect(calls.some((c) => c.method === 'POST' && c.path === '/context/documents/cv')).toBe(false)

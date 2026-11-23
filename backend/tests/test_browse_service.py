@@ -373,7 +373,7 @@ def test_disabling_browsing_keeps_the_place(session: Session) -> None:
 def test_stale_ui_priority_is_a_conflict(session: Session) -> None:
     ids = [_platform(session, name) for name in ("Uno", "Dos")]
     browse.update_settings(session, ids[0], priority=2, expected_priority=1)
-    with pytest.raises(browse.PriorityConflictError, match="Recarga"):
+    with pytest.raises(browse.PriorityConflictError, match="recargar"):
         browse.update_settings(session, ids[0], priority=1, expected_priority=1)
     assert _order(session) == [(1, "Dos"), (2, "Uno")]
 

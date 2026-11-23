@@ -127,7 +127,7 @@ y para cada una el usuario decide:
   Cambia el `scoring_key` y el worker recalcula las ofertas abiertas. Se rechaza si el nombre ya
   es sinónimo de otra skill o si el perfil ya lo cubre: eso se cambia a mano en el fichero. Solo
   lo decide el usuario: ni la app ni el agente proponen o añaden alias por su cuenta.
-- **«La tengo»**: queda marcada y «Añadir al perfil las que tengo» abre `update-profile`, que
+- **«La tengo»**: queda marcada y «Añadir al perfil las marcadas «La tengo»» abre `update-profile`, que
   pregunta nivel y dónde la usó (§1.4). Hasta que esté en el perfil no cuenta.
 - **«No la tengo»**: hueco real. El skill `training-plan` los convierte en un plan con recursos
   verificados (cada uno con su URL) en `data/documentos/training-plan.md`. El plan no toca el
@@ -250,7 +250,7 @@ Una oferta puede encajar en el papel y aun así no merecer la pena. El código m
 5. **Mensajes a recruiters**: el agente solo redacta borradores. Los envías tú.
    Seguimientos y agradecimientos (fase 15, skill `draft-follow-up`): la app los guarda
    como borrador en la ficha y nunca los envía; los copias, los mandas desde tu correo y pulsas
-   «Ya lo he enviado». Como mucho **2 seguimientos** por candidatura
+   «Marcar como enviado». Como mucho **2 seguimientos** por candidatura
    (`followups.max_followups`): después no se propone otro. Un agradecimiento, solo tras una
    entrevista hecha. Nada que no esté en tu perfil o en el historial de la oferta (§1).
    **Mensajes a personas** (fase 18, skill `draft-message`): un mensaje de LinkedIn de

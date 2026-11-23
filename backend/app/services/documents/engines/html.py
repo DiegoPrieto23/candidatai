@@ -230,7 +230,7 @@ def _print(
                 )
             except PlaywrightError as exc:
                 raise ChromiumUnavailableError(
-                    "Playwright no encuentra Chromium: ejecuta "
+                    "Playwright no encuentra Chromium: hay que ejecutar "
                     "`uv run --directory backend playwright install chromium`. "
                     f"({str(exc).splitlines()[0]})"
                 ) from exc

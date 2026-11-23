@@ -319,6 +319,6 @@ def test_at_most_three_terminals_at_once(db: None, terminal: list[str]) -> None:
     with session_scope() as session:
         for _ in range(assistant.MAX_ACTIVE):
             assistant.create(session, "Hola", "terminal")
-        with pytest.raises(LaunchError, match="abiertas en tu terminal"):
+        with pytest.raises(LaunchError, match="abiertas en la terminal"):
             assistant.create(session, "Hola", "terminal")
     assert len(terminal) == assistant.MAX_ACTIVE

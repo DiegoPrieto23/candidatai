@@ -12,6 +12,9 @@ function task(overrides: Partial<AgentTaskView> = {}): AgentTaskView {
     milestone_id: null,
     subject: null,
     background: false,
+    run_id: null,
+    stopping: false,
+    stopped_by_user: false,
     status: 'running',
     outcome: null,
     done: 2,
@@ -39,7 +42,7 @@ describe('Avisos de lo que lanzan los botones', () => {
     renderApp('/como-funciona')
     expect(await screen.findByText('Leyendo y valorando las ofertas nuevas…')).toBeInTheDocument()
     expect(screen.getByText('2 de 5')).toBeInTheDocument()
-    expect(screen.getByText(/Si te pide permiso, contesta allí/)).toBeInTheDocument()
+    expect(screen.getByText(/Si pide permiso, se contesta allí/)).toBeInTheDocument()
   })
 
   it('al terminar la investigación lleva a la pestaña de la empresa', async () => {
@@ -76,7 +79,7 @@ describe('Avisos de lo que lanzan los botones', () => {
   it('si tu agente para antes de acabar, lo dice', async () => {
     mockApi(routes([task({ action: 'correct-cv', job_id: 42, total: 0, done: 0, status: 'finished', outcome: 'stopped' })]))
     renderApp('/como-funciona')
-    expect(await screen.findByText('Tu agente ha parado')).toBeInTheDocument()
+    expect(await screen.findByText('El agente ha parado')).toBeInTheDocument()
   })
 
   it('si no hay noticias, no sigue diciendo que trabaja como si nada', async () => {
@@ -104,5 +107,51 @@ describe('Avisos de lo que lanzan los botones', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Cerrar el aviso' }))
     await waitFor(() => expect(calls.some((c) => c.path === '/agent/tasks/3/dismiss')).toBe(true))
+  })
+
+  describe('Detener (fase 47.4)', () => {
+    const background = (overrides: Partial<AgentTaskView> = {}) =>
+      task({ action: 'generate-cv', job_id: 7, subject: 'Data Engineer · Acme', total: 0, done: 0, background: true, run_id: 11, ...overrides })
+
+    it('en segundo plano, «Detener» pide confirmación y cancela su ejecución', async () => {
+      const calls = mockApi(routes([background()], { 'POST /agent/runs/11/cancel': { status: 200, body: {} } }))
+      renderApp('/como-funciona')
+      const notice = (await screen.findByText('Data Engineer · Acme')).closest('[role="status"]') as HTMLElement
+      await userEvent.click(within(notice).getByRole('button', { name: 'Detener' }))
+      const confirm = within(notice).getByRole('group', { name: /¿Detenerla\?/ })
+      expect(within(confirm).getByRole('button', { name: 'Seguir' })).toHaveFocus()
+      expect(calls.some((c) => c.path.endsWith('/cancel'))).toBe(false)
+
+      await userEvent.click(within(confirm).getByRole('button', { name: 'Seguir' }))
+      expect(within(notice).queryByRole('group')).not.toBeInTheDocument()
+
+      await userEvent.click(within(notice).getByRole('button', { name: 'Detener' }))
+      await userEvent.click(within(notice).getByRole('button', { name: 'Sí, detener' }))
+      await waitFor(() => expect(calls.some((c) => c.method === 'POST' && c.path === '/agent/runs/11/cancel')).toBe(true))
+    })
+
+    it('mientras para dice «Deteniendo…» y al final «Detenida»', async () => {
+      mockApi(routes([background({ stopping: true })]))
+      renderApp('/como-funciona')
+      expect(await screen.findByText('Deteniendo…')).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: 'Detener' })).not.toBeInTheDocument()
+    })
+
+    it('detenida por el usuario no dice que el agente haya parado solo', async () => {
+      mockApi(routes([background({ status: 'finished', outcome: 'stopped', stopped_by_user: true, finished_at: '2026-11-03T10:05:00Z' })]))
+      renderApp('/como-funciona')
+      expect(await screen.findByText('Detenida')).toBeInTheDocument()
+      expect(screen.getByText(/Lo que el agente ya había guardado se queda/)).toBeInTheDocument()
+      expect(screen.queryByText('El agente ha parado')).not.toBeInTheDocument()
+    })
+
+    it('en una terminal explica cómo pararla y deja marcarla como terminada', async () => {
+      const calls = mockApi(routes([task({ total: 0, done: 0 })], { 'POST /agent/tasks/3/dismiss': { tasks: [] } }))
+      renderApp('/como-funciona')
+      expect(await screen.findByText('Para pararla, se cierra la ventana del agente.')).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: 'Detener' })).not.toBeInTheDocument()
+      await userEvent.click(screen.getByRole('button', { name: 'Marcar como terminada' }))
+      await waitFor(() => expect(calls.some((c) => c.path === '/agent/tasks/3/dismiss')).toBe(true))
+    })
   })
 })

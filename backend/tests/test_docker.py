@@ -200,12 +200,12 @@ def test_doctor_docker_section(
     assert list(checks) == [
         "Docker · API",
         "Docker · datos",
-        "Docker · tu agente",
+        "Docker · el agente",
         "Docker · límites",
     ]
     assert checks["Docker · API"].status == CheckStatus.OK
     assert checks["Docker · datos"].status == CheckStatus.OK
-    assert container.MCP_COMMAND in checks["Docker · tu agente"].detail
+    assert container.MCP_COMMAND in checks["Docker · el agente"].detail
     assert "segundo plano" in checks["Docker · límites"].detail
     assert checks["Docker · límites"].status == CheckStatus.OK  # esperados, no se arreglan dentro
     # Sin volumen, tus datos se irían con el contenedor; sin contenedor, la API sigue local.

@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import { keepPreviousData, useInfiniteQuery, useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { ApiError, api, unwrap, type CvEditInput, type CvRenderOptions, type ReferralStatus, type Schemas, type Stage } from './client'
 import type { operations } from './schema'
+import { portalLang } from '@/lib/i18n'
 
 /** Ofertas por página en la Bandeja: 25, como el resto de listas largas. */
 export const PAGE_SIZE = 25
@@ -104,6 +105,10 @@ export interface JobsParams {
   has_salary?: boolean
   has_score?: boolean
   min_score?: number
+  /** Varias etapas a la vez (en «Todas»); sin ellas, todas. */
+  stages?: Stage[]
+  /** Solo las cerradas con este motivo. */
+  close_reason?: JobsQuery['close_reason']
 }
 
 export function useStatus() {
@@ -115,7 +120,7 @@ export function useStatus() {
   })
 }
 
-export function useJobs(params: JobsParams, options: { refetchInterval?: number } = {}) {
+export function useJobs(params: JobsParams, options: { refetchInterval?: number; enabled?: boolean } = {}) {
   return useQuery({
     ...options,
     queryKey: keys.jobs(params),
@@ -135,6 +140,8 @@ export function useJobs(params: JobsParams, options: { refetchInterval?: number 
               has_salary: params.has_salary,
               has_score: params.has_score,
               min_score: params.min_score,
+              stages: params.stages,
+              close_reason: params.close_reason,
             },
           },
         }),
@@ -282,6 +289,23 @@ export function useRepublishedJobs() {
   return useQuery({
     queryKey: [...keys.allJobs, 'republished'] as const,
     queryFn: () => unwrap(api.GET('/jobs/republished')),
+  })
+}
+
+/** Ofertas guardadas como duplicadas de otra (ya no se crean): el aviso de la Bandeja. */
+export function useDuplicateJobs() {
+  return useQuery({
+    queryKey: [...keys.allJobs, 'duplicates'] as const,
+    queryFn: () => unwrap(api.GET('/jobs/duplicates')),
+  })
+}
+
+/** Borra las duplicadas de la vista previa que no tienen nada propio (con copia previa). */
+export function useEraseDuplicates() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (jobIds: number[]) => unwrap(api.POST('/jobs/duplicates/erase', { body: { job_ids: jobIds } })),
+    onSuccess: () => client.invalidateQueries(),
   })
 }
 
@@ -1202,7 +1226,8 @@ export function useAgentLauncher() {
 export function useLaunchAgent() {
   const client = useQueryClient()
   return useMutation({
-    mutationFn: (body: LaunchTarget & { agent?: string }) => unwrap(api.POST('/agent/launch', { body })),
+    mutationFn: (body: LaunchTarget & { agent?: string }) =>
+      unwrap(api.POST('/agent/launch', { body: { ...body, lang: portalLang() } })),
     onSuccess: (_result, body) => {
       if (body.action === 'search-jobs') void client.invalidateQueries({ queryKey: keys.searchRun })
       void client.invalidateQueries({ queryKey: keys.agentTasks })
@@ -1416,7 +1441,8 @@ export function useAgentRuns() {
 export function useStartAgentRun() {
   const client = useQueryClient()
   return useMutation({
-    mutationFn: (body: LaunchTarget & { agent?: string }) => unwrap(api.POST('/agent/runs', { body })),
+    mutationFn: (body: LaunchTarget & { agent?: string }) =>
+      unwrap(api.POST('/agent/runs', { body: { ...body, lang: portalLang() } })),
     onSuccess: () => client.invalidateQueries({ queryKey: keys.agentRuns }),
   })
 }
@@ -1426,7 +1452,12 @@ export function useCancelAgentRun() {
   return useMutation({
     mutationFn: (runId: number) =>
       unwrap(api.POST('/agent/runs/{run_id}/cancel', { params: { path: { run_id: runId } }, body: {} })),
-    onSuccess: () => client.invalidateQueries({ queryKey: keys.agentRuns }),
+    // El aviso de arriba sigue a la ejecución: pasa a «Deteniendo…» y después a «Detenida».
+    onSuccess: () =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: keys.agentRuns }),
+        client.invalidateQueries({ queryKey: keys.agentTasks }),
+      ]),
   })
 }
 
@@ -1474,7 +1505,7 @@ export function useAskAssistant() {
   const client = useQueryClient()
   return useMutation({
     mutationFn: (body: { text: string; mode: 'background' | 'terminal' | 'session'; conversation_id?: number | null }) =>
-      unwrap(api.POST('/agent/assistant', { body })),
+      unwrap(api.POST('/agent/assistant', { body: { ...body, lang: portalLang() } })),
     onSuccess: (view) => {
       // Una conversación nueva se ve ya con su primera pregunta, sin esperar a pedirla.
       const key = keys.assistantConversation(view.conversation_id)
@@ -1546,7 +1577,7 @@ export function useAgentRequests() {
 export function useCreateAgentRequest() {
   const client = useQueryClient()
   return useMutation({
-    mutationFn: (body: LaunchTarget) => unwrap(api.POST('/agent/requests', { body })),
+    mutationFn: (body: LaunchTarget) => unwrap(api.POST('/agent/requests', { body: { ...body, lang: portalLang() } })),
     onSuccess: () =>
       Promise.all([
         client.invalidateQueries({ queryKey: keys.agentRequests }),

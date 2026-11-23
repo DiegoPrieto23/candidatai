@@ -4,9 +4,10 @@ import {
   BOARD_STAGES,
   columnName,
   defaultLayout,
+  assignStage,
+  canAssign,
   isValidLayout,
-  joinsOf,
-  layoutFromJoins,
+  moveColumn,
   readLayout,
   resetLayout,
   saveLayout,
@@ -22,31 +23,60 @@ describe('Columnas del tablero', () => {
     expect(defaultLayout().map((c) => c.stages)).toEqual(BOARD_STAGES.map((s) => [s]))
   })
 
-  it('junta etapas seguidas y conserva los nombres por su primera etapa', () => {
-    const layout = layoutFromJoins([true, false, false, false], { approved: 'Por enviar' })
+  it('asigna etapas a columnas, ordenadas por el proceso; la columna vacía desaparece', () => {
+    let layout = assignStage(defaultLayout(), 'cv_ready', 0)
     expect(layout.map((c) => c.stages)).toEqual([['approved', 'cv_ready'], ['applied'], ['in_process'], ['closed']])
-    expect(columnName(layout[0])).toBe('Por enviar')
-    expect(columnName(layout[1])).toBe('Enviada')
+    layout = assignStage(layout, 'approved', 3)
+    expect(layout.map((c) => c.stages)).toEqual([['cv_ready'], ['applied'], ['in_process'], ['approved', 'closed']])
+    expect(columnName(layout[3])).toBe('Aprobada · Cerrada')
     expect(columnName({ stages: ['approved', 'cv_ready'], name: ' ' })).toBe('Aprobada · CV listo')
-    expect(joinsOf(layout)).toEqual([true, false, false, false])
+    // A una nueva, al final y sin nombre.
+    layout = assignStage(layout, 'closed', 'new')
+    expect(layout.map((c) => c.stages)).toEqual([['cv_ready'], ['applied'], ['in_process'], ['approved'], ['closed']])
+    expect(layout[4].name).toBe('')
   })
 
-  it('valida: todas las etapas, en orden y entre 3 y 5 columnas', () => {
+  it('entre 3 y 5 columnas: lo que se saldría no se puede asignar', () => {
+    // Una etapa que ya va sola no pasa a una nueva: movería su columna y perdería el nombre.
+    expect(canAssign(defaultLayout(), 'closed', 'new')).toBe(false)
+    expect(assignStage(defaultLayout(), 'closed', 'new')).toEqual(defaultLayout())
+    expect(canAssign([{ stages: ['approved', 'cv_ready'], name: '' }, ...defaultLayout().slice(2)], 'cv_ready', 'new')).toBe(true)
+    const three = assignStage(assignStage(defaultLayout(), 'cv_ready', 0), 'in_process', 1)
+    expect(three).toHaveLength(3)
+    expect(canAssign(three, 'closed', 0)).toBe(false) // serían 2
+    expect(assignStage(three, 'closed', 0)).toBe(three)
+    expect(canAssign(three, 'cv_ready', 1)).toBe(true) // «Aprobada» se queda en la suya
+    expect(canAssign(three, 'cv_ready', 'new')).toBe(true) // de 3 a 4
+  })
+
+  it('mueve columnas de sitio', () => {
+    const moved = moveColumn(defaultLayout(), 4, 0)
+    expect(moved.map((c) => c.stages[0])).toEqual(['closed', 'approved', 'cv_ready', 'applied', 'in_process'])
+    expect(moveColumn(moved, 0, -1)).toBe(moved)
+  })
+
+  it('valida: todas las etapas una vez y entre 3 y 5 columnas, en cualquier orden', () => {
     expect(isValidLayout(defaultLayout())).toBe(true)
-    expect(isValidLayout(layoutFromJoins([true, true, false, false], {}))).toBe(true)
-    expect(isValidLayout(layoutFromJoins([true, true, true, false], {}))).toBe(false) // 2 columnas
-    expect(isValidLayout([{ stages: ['cv_ready', 'approved'], name: '' }, ...defaultLayout().slice(2)])).toBe(false)
+    expect(isValidLayout(moveColumn(defaultLayout(), 4, 0))).toBe(true)
+    expect(isValidLayout([{ stages: ['cv_ready', 'approved'], name: '' }, ...defaultLayout().slice(2)])).toBe(true)
+    expect(isValidLayout([{ stages: ['approved', 'approved'], name: '' }, ...defaultLayout().slice(2)])).toBe(false)
+    const two = [{ stages: ['approved', 'cv_ready', 'applied', 'in_process'], name: '' }, ...defaultLayout().slice(4)]
+    expect(isValidLayout(two)).toBe(false)
     expect(isValidLayout(defaultLayout().slice(1))).toBe(false)
     expect(isValidLayout('nada')).toBe(false)
   })
 
   it('guarda, lee y restablece; lo estropeado vuelve a las de siempre', () => {
-    const layout = layoutFromJoins([false, false, true, false], { applied: 'En marcha' })
+    const layout = assignStage(defaultLayout(), 'in_process', 2).map((c, i) => (i === 2 ? { ...c, name: 'En marcha' } : c))
     saveLayout(layout)
     expect(readLayout()).toEqual(layout)
     // Uno inválido no se guarda: sigue el anterior.
-    saveLayout(layoutFromJoins([true, true, true, false], {}))
+    saveLayout(defaultLayout().slice(2))
     expect(readLayout()).toEqual(layout)
+    // Solo cambiar el orden ya es algo que guardar.
+    const reordered = moveColumn(defaultLayout(), 4, 0)
+    saveLayout(reordered)
+    expect(readLayout()).toEqual(reordered)
     resetLayout()
     expect(readLayout()).toEqual(defaultLayout())
     localStorage.setItem('cai-board-columns', '{roto')

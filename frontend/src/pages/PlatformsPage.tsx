@@ -511,7 +511,7 @@ function PlatformRow({ source, order, limits }: { source: SourceView; order: Slo
               rel="noopener noreferrer"
               className="mt-0.5 inline-flex items-center gap-1 text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
             >
-              {home.host}
+              {home.label}
               <ArrowSquareOutIcon className="size-3" aria-hidden />
             </a>
           )}

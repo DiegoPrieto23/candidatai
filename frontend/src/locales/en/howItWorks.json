@@ -1,6 +1,6 @@
 {
   "title": "How it works",
-  "intro": "CandidatAI organizes your job search, from the first job to the company's reply. Here's the journey, step by step.",
+  "intro": "CandidatAI organizes your job search, from the first job to the company's reply. Here is the journey, step by step.",
   "who": {
     "title": "Who does what",
     "you": {
@@ -29,7 +29,7 @@
         "agent": "Leaves anything that needs AI to your agent"
       }
     },
-    "promise": "No application goes out without your confirmation, and your CVs only include what's in your profile."
+    "promise": "No application goes out without your confirmation, and your CVs only include what is in your profile."
   },
   "steps": {
     "title": "The journey, in five steps",
@@ -51,7 +51,7 @@
     },
     "follow": {
       "title": "Follow your processes and learn",
-      "body": "“{{processes}}” shows where each application stands and which ones have gone days without a reply. “{{replies}}” gathers the companies' emails, if you turn on reading them in a mailbox; otherwise you note it in the job. “{{calendar}}” gathers your interviews and other dates, “{{funnel}}” what works for you and where your applications stall and “{{skills}}” what your jobs ask for that isn't in your profile yet."
+      "body": "“{{processes}}” shows where each application stands and which ones have gone days without a reply. “{{replies}}” gathers the companies' emails, if you turn on reading them in a mailbox; otherwise you note it in the job. “{{calendar}}” gathers your interviews and other dates, “{{funnel}}” what works for you and where your applications stall and “{{skills}}” what your jobs ask for that is not in your profile yet."
     }
   },
   "guides": {

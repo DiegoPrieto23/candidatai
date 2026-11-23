@@ -132,7 +132,7 @@ def submit_application(session: SessionDep, attempt_id: int, body: SubmitBody) -
     status_code=status.HTTP_202_ACCEPTED,
 )
 def focus_application(session: SessionDep, attempt_id: int) -> AttemptView:
-    """«Lo termino yo»: trae la pestaña al frente y deja que envíes tú."""
+    """«Terminar a mano»: trae la pestaña al frente y deja que envíes tú."""
     return _run(lambda: service.focus(session, attempt_id))
 
 

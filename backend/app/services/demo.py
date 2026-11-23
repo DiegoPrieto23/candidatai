@@ -117,7 +117,7 @@ def prepare_dir(target: Path, force: bool) -> None:
         if target.is_relative_to(data) or data.is_relative_to(target):
             raise DemoSeedError(
                 "La demo nunca se crea en `data/`, dentro de ella ni en una carpeta que la "
-                "contenga: ahí van tus datos reales."
+                "contenga: ahí van los datos reales."
             )
     if target.exists():
         if not target.is_dir():
@@ -126,11 +126,11 @@ def prepare_dir(target: Path, force: bool) -> None:
             if not is_demo_dir(target):
                 raise DemoSeedError(
                     f"«{target}» ya existe y no es una demo (no tiene `{DEMO_MARKER}`): no se "
-                    "toca. Elige otra carpeta con `--dir`."
+                    "toca. Hace falta otra carpeta con `--dir`."
                 )
             if not force:
                 raise DemoSeedError(
-                    f"«{target}» ya tiene una demo. Usa `--force` para recrearla desde cero."
+                    f"«{target}» ya tiene una demo. Con `--force` se recrea desde cero."
                 )
             shutil.rmtree(target)
     target.mkdir(parents=True, exist_ok=True)
@@ -645,8 +645,8 @@ def _populate(
         if plan.cv is not None:
             if template is None:
                 warnings.append(
-                    f"Sin CV para «{plan.title}»: no hay con qué generar el PDF. Instala "
-                    "LibreOffice o `uv run playwright install chromium` y repite con `--force`."
+                    f"Sin CV para «{plan.title}»: no hay con qué generar el PDF. Hace falta "
+                    "LibreOffice o `uv run playwright install chromium`, y repetir con `--force`."
                 )
             else:
                 _write_cv(session, job_id, plan.cv, template)

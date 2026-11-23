@@ -1,8 +1,8 @@
 {
   "title": "Botón «Enviar a CandidatAI»",
-  "intro": "Guarda con un clic la oferta que estás viendo, en LinkedIn, InfoJobs o cualquier web, y completa las de LinkedIn que llegan como resumen.",
+  "intro": "Guarda con un clic la oferta abierta en el navegador, en LinkedIn, InfoJobs o cualquier web, y completa las de LinkedIn que llegan como resumen.",
   "browser": {
-    "question": "¿Qué navegador usas?",
+    "question": "Navegador",
     "detected": "(este)",
     "names": {
       "chrome": "Chrome",
@@ -11,52 +11,52 @@
       "firefox": "Firefox",
       "safari": "Safari"
     },
-    "unsupported": "La extensión funciona en Chrome, Edge y Brave. Para usarla, abre CandidatAI en uno de ellos.",
-    "openIn": "Estás en otro navegador: abre CandidatAI en {{name}} para instalarla y conectarla allí."
+    "unsupported": "La extensión funciona en Chrome, Edge y Brave. Para usarla, CandidatAI debe abrirse en uno de ellos.",
+    "openIn": "Este es otro navegador: para instalarla y conectarla, CandidatAI se abre en {{name}}."
   },
-  "outdated": "Tienes una versión antigua de la extensión (<strong>{{installed}}</strong>; la de esta app es la <strong>{{current}}</strong>). En la página de extensiones del navegador, pulsa el botón de recargar (⟳) de su tarjeta.",
+  "outdated": "La extensión instalada es una versión antigua (<strong>{{installed}}</strong>; la de esta app es la <strong>{{current}}</strong>). En la página de extensiones del navegador, se pulsa el botón de recargar (⟳) de su tarjeta.",
   "installed": "Instalada (versión {{version}}).",
   "steps": {
-    "install": "Cárgala en tu navegador",
-    "connect": "Conéctala con CandidatAI",
-    "use": "Fíjala en la barra y úsala"
+    "install": "Cargarla en el navegador",
+    "connect": "Conectarla con CandidatAI",
+    "use": "Fijarla en la barra y usarla"
   },
   "install": {
-    "folder": "Abre la carpeta de la extensión para ver dónde está. Es la que vas a elegir en el paso 4 (allí tienes su ruta para copiarla).",
+    "folder": "Abrir la carpeta de la extensión para ver dónde está. Es la que se elige en el paso 4 (allí está su ruta para copiarla).",
     "openFolder": "Abrir la carpeta de la extensión",
-    "noFolder": "No encuentro la carpeta de la extensión en esta instalación. Vuelve a instalar CandidatAI.",
-    "page": "En una pestaña nueva, pega esta dirección y pulsa Intro:",
-    "devMode": "Activa el <strong>Modo de desarrollador</strong> (arriba a la derecha).",
-    "devModeEdge": "Activa el <strong>Modo de desarrollador</strong> (en el panel de la izquierda).",
+    "noFolder": "No se encuentra la carpeta de la extensión en esta instalación. Hay que volver a instalar CandidatAI.",
+    "page": "En una pestaña nueva, pegar esta dirección y pulsar Intro:",
+    "devMode": "Activar el <strong>Modo de desarrollador</strong> (arriba a la derecha).",
+    "devModeEdge": "Activar el <strong>Modo de desarrollador</strong> (en el panel de la izquierda).",
     "load": {
-      "windows": "Pulsa <strong>{{button}}</strong>. Se abre una ventana para elegir una carpeta: haz clic en la barra de direcciones de arriba, pega esta ruta, pulsa Intro y después <strong>Seleccionar carpeta</strong>.",
-      "mac": "Pulsa <strong>{{button}}</strong>. Se abre una ventana para elegir una carpeta: pulsa <strong>Cmd+Mayús+G</strong>, pega esta ruta, pulsa Intro y después <strong>Seleccionar</strong>.",
-      "linux": "Pulsa <strong>{{button}}</strong>. Se abre una ventana para elegir una carpeta: pulsa <strong>Ctrl+L</strong>, pega esta ruta, pulsa Intro y después <strong>Seleccionar</strong>.",
+      "windows": "Pulsar <strong>{{button}}</strong>. Se abre una ventana para elegir una carpeta: clic en la barra de direcciones de arriba, pegar esta ruta, pulsar Intro y después <strong>Seleccionar carpeta</strong>.",
+      "mac": "Pulsar <strong>{{button}}</strong>. Se abre una ventana para elegir una carpeta: pulsar <strong>Cmd+Mayús+G</strong>, pegar esta ruta, pulsar Intro y después <strong>Seleccionar</strong>.",
+      "linux": "Pulsar <strong>{{button}}</strong>. Se abre una ventana para elegir una carpeta: pulsar <strong>Ctrl+L</strong>, pegar esta ruta, pulsar Intro y después <strong>Seleccionar</strong>.",
       "whole": "Se elige la carpeta <strong>extension</strong> entera, sin entrar en ella ni abrir ningún fichero de dentro."
     },
     "loadButton": "Cargar descomprimida",
     "loadButtonEdge": "Cargar desempaquetada",
-    "update": "Si ya la tenías cargada, no la cargues otra vez: pulsa el botón de recargar (<strong>⟳</strong>) de su tarjeta.",
-    "waiting": "Esperando a que la cargues. Cuando lo hagas, esta página pasa sola al paso siguiente.",
+    "update": "Si ya estaba cargada, no se carga otra vez: se pulsa el botón de recargar (<strong>⟳</strong>) de su tarjeta.",
+    "waiting": "Esperando a que se cargue. Cuando esté, esta página pasa sola al paso siguiente.",
     "copyFolder": "Copiar la ruta de la carpeta de la extensión"
   },
   "connect": {
-    "body": "Un clic y listo: CandidatAI le da a la extensión una clave que solo vale en este equipo. No tienes que copiar nada.",
+    "body": "Un clic y listo: CandidatAI le da a la extensión una clave que solo vale en este equipo. No hay que copiar nada.",
     "button": "Conectar",
     "connecting": "Conectando…",
     "done": "Conectada: la extensión ya puede guardar ofertas en CandidatAI.",
     "again": "Conectar de nuevo",
-    "againHint": "Solo hace falta si cambias de navegador: conectar otra vez desconecta el anterior.",
-    "noAnswer": "La extensión no ha respondido. Recárgala (⟳) en la página de extensiones y vuelve a pulsar «Conectar».",
-    "rejected": "La extensión no ha podido conectarse. Vuelve a pulsar «Conectar»."
+    "againHint": "Solo es necesario al cambiar de navegador: conectar otra vez desconecta el anterior.",
+    "noAnswer": "La extensión no ha respondido. Hay que recargarla (⟳) en la página de extensiones y volver a pulsar «Conectar».",
+    "rejected": "La extensión no ha podido conectarse. Hay que volver a pulsar «Conectar»."
   },
   "use": {
-    "pin": "Pulsa el icono del puzle de la barra del navegador y la <strong>chincheta</strong> junto a «Enviar a CandidatAI», para tenerla siempre a mano.",
-    "pinEdge": "Pulsa el botón <strong>Extensiones</strong> de la barra del navegador y el icono del <strong>ojo</strong> junto a «Enviar a CandidatAI», para tenerla siempre a mano.",
-    "send": "Abre una oferta (por ejemplo, en LinkedIn con tu sesión iniciada) y pulsa el botón. Te dice si es <strong>nueva</strong>, si ha <strong>completado</strong> un resumen o si <strong>ya estaba</strong>, con un enlace a su ficha.",
-    "selection": "Si no encuentra la descripción, selecciona con el ratón el texto de la oferta, con la empresa, y vuelve a pulsar."
+    "pin": "Pulsar el icono del puzle de la barra del navegador y la <strong>chincheta</strong> junto a «Enviar a CandidatAI», para tenerla siempre a mano.",
+    "pinEdge": "Pulsar el botón <strong>Extensiones</strong> de la barra del navegador y el icono del <strong>ojo</strong> junto a «Enviar a CandidatAI», para tenerla siempre a mano.",
+    "send": "Con una oferta abierta (por ejemplo, en LinkedIn con la sesión iniciada), se pulsa el botón, que indica si es <strong>nueva</strong>, si ha <strong>completado</strong> un resumen o si <strong>ya estaba</strong>, con un enlace a su ficha.",
+    "selection": "Si no encuentra la descripción, se selecciona con el ratón el texto de la oferta, con la empresa, y se vuelve a pulsar."
   },
-  "privacy": "Solo actúa cuando pulsas su botón, en la pestaña que tienes delante: no recorre páginas, no lee tus cookies y solo se comunica con CandidatAI en tu equipo. Las condiciones de LinkedIn prohíben las extensiones que copian su contenido; esta guarda solo la oferta que le pides, como si la copiaras y la pegaras, pero esa prohibición sigue en sus condiciones.",
+  "privacy": "Solo actúa al pulsar su botón, en la pestaña abierta: no recorre páginas, no lee las cookies y solo se comunica con CandidatAI en este equipo. Las condiciones de LinkedIn prohíben las extensiones que copian su contenido; esta guarda solo la oferta pedida, como si se copiara y se pegara, pero esa prohibición sigue en sus condiciones.",
   "demo": {
     "show": "Ver cómo se hace",
     "alt": "Animación: una oferta abierta en LinkedIn, un clic en el botón «Enviar a CandidatAI» de la barra del navegador, el aviso de oferta nueva y la oferta ya en la Bandeja de CandidatAI.",

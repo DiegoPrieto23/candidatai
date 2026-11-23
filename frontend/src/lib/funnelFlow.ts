@@ -62,6 +62,11 @@ const END_MIN_ROW = 16
 const BRANCH_DROP = 20
 /** Dónde acaba una rama entre dos pasos: deja a su derecha el hueco para su texto. */
 const END_AT = 0.42
+/**
+ * Lo que se reserva a la derecha para la última columna: su cabecera va a la izquierda, como la
+ * de las demás, y necesita sitio para no salirse del gráfico.
+ */
+export const LAST_COLUMN = 140
 
 /** Una franja entre dos tramos verticales, con las curvas en la mitad. */
 function ribbon(x0: number, y0: number, h0: number, x1: number, y1: number, h1: number): string {
@@ -78,7 +83,7 @@ function ribbon(x0: number, y0: number, h0: number, x1: number, y1: number, h1: 
 export function layoutFlow(counts: Record<FlowStep, number>, stops: readonly FlowStop[], width: number): FlowLayout {
   const scale = FULL_HEIGHT / Math.max(1, counts.applied)
   const size = (count: number) => (count > 0 ? Math.max(count * scale, MIN_HEIGHT) : 0)
-  const gap = (width - NODE_WIDTH) / (FLOW_STEPS.length - 1)
+  const gap = (width - Math.min(LAST_COLUMN, Math.max(100, width / 5))) / (FLOW_STEPS.length - 1)
 
   const nodes: FlowNode[] = FLOW_STEPS.map((step, index) => ({
     step,

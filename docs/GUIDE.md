@@ -31,7 +31,7 @@ steps.
 ## 1. Requirements
 
 CandidatAI is built and tested on **Windows 11**. On macOS and Linux it has an installer and the
-buttons that open your agent work, but they're still being tested: Linux on WSL2 and
+buttons that open your agent work, but they are still being tested: Linux on WSL2 and
 macOS in CI.
 
 **To use it** you only need Windows, macOS or Linux and, if you want the Word templates ("Simple
@@ -46,7 +46,7 @@ part you also need **an AI agent** (Claude Code, Codex, Antigravity CLI…; see 
 |---|---|---|
 | [uv](https://docs.astral.sh/uv/) | Python 3.12 and backend dependencies (no separate Python install needed) | `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 \| iex"` |
 | Node LTS + pnpm | Building and developing the UI | Node from nodejs.org; `npm install -g pnpm` (Node 25+ no longer ships `corepack`) |
-| LibreOffice **or** Playwright's Chromium | CV and cover-letter PDFs | LibreOffice from libreoffice.org (if it isn't in `C:\Program Files\LibreOffice` or on the `PATH`, set `SOFFICE_PATH` in `.env`); Chromium with `uv run playwright install chromium` |
+| LibreOffice **or** Playwright's Chromium | CV and cover-letter PDFs | LibreOffice from libreoffice.org (if it is not in `C:\Program Files\LibreOffice` or on the `PATH`, set `SOFFICE_PATH` in `.env`); Chromium with `uv run playwright install chromium` |
 | Git | Cloning and updating | git-scm.com |
 
 Open a new terminal after installing so the `PATH` is refreshed.
@@ -64,9 +64,9 @@ powershell -ExecutionPolicy Bypass -File $env:TEMP\cai-install.ps1
 
 The installer:
 
-1. installs [uv](https://docs.astral.sh/uv/) if it's missing (it brings Python 3.12);
+1. installs [uv](https://docs.astral.sh/uv/) if it is missing (it brings Python 3.12);
 2. downloads the latest CandidatAI release, with the UI already built (no Node needed), and
-   checks its SHA-256 checksum before opening it: if it doesn't match the published one, nothing
+   checks its SHA-256 checksum before opening it: if it does not match the published one, nothing
    is installed;
 3. puts it in `%LOCALAPPDATA%\CandidatAI\app`, and your data in `%LOCALAPPDATA%\CandidatAI\data`;
 4. prepares the environment, the PDF Chromium and the database;
@@ -79,14 +79,14 @@ while you use it; to close CandidatAI, close that window.
 - **Before installing**, `-WhatIf` (at the end of the second line) explains what it would do
   without changing anything. In the examples below, if PowerShell refuses to run scripts, use
   `powershell -ExecutionPolicy Bypass -File .\install.ps1 …` instead of `.\install.ps1 …`.
-- **Updating:** run the installer again (with CandidatAI closed). Your data isn't touched, and
+- **Updating:** run the installer again (with CandidatAI closed). Your data is not touched, and
   the app's `.env` (`…\CandidatAI\app\.env`) is kept.
 - **Uninstalling:** `.\install.ps1 -Uninstall` removes the app and the shortcuts, not your data
   (with `-RemoveData`, your data too, after confirming).
 - **From your copy of the repository:** `.\install.ps1 -Source <repository folder>`, after
   building the UI (`pnpm build`). With a local zip, `-Source .\candidatai.zip` checks the checksum
-  if its `candidatai.zip.sha256` sits next to it. `-SkipChecksum` doesn't check it: use it only
-  with a URL of your own that doesn't publish one.
+  if its `candidatai.zip.sha256` sits next to it. `-SkipChecksum` does not check it: use it only
+  with a URL of your own that does not publish one.
 
 ### On macOS and Linux: `install.sh`
 
@@ -98,7 +98,7 @@ curl -fsSL https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/insta
 
 It does the same as the Windows one:
 
-1. installs uv if it's missing;
+1. installs uv if it is missing;
 2. downloads the latest release, with the UI already built, and checks its SHA-256 checksum;
 3. puts it in `~/Library/Application Support/CandidatAI/app` (macOS) or
    `~/.local/share/candidatai/app` (Linux, or `$XDG_DATA_HOME/candidatai/app`), and your data next
@@ -115,15 +115,15 @@ It does the same as the Windows one:
   (with `--remove-data`, your data too, if you confirm by typing «borrar»). It only touches folders
   it created (they hold a `.candidatai` file).
 - **From your copy of the repository**, with the UI built: `bash install.sh --source <folder>`.
-  `--skip-checksum` doesn't check the zip's checksum: only with a URL of your own that doesn't
+  `--skip-checksum` does not check the zip's checksum: only with a URL of your own that does not
   publish one.
 - On macOS, the first time it may ask for permission for the app to control Terminal: allow it.
 
 ### With Docker (optional)
 
-If you'd rather not install Python or Chromium on your computer, CandidatAI runs in a container.
-It's an alternative with limits: **the installer is still the recommended way**. Your AI agent
-doesn't go inside the container, so whatever needs to open a window for it doesn't work the same.
+If you would rather not install Python or Chromium on your computer, CandidatAI runs in a container.
+It is an alternative with limits: **the installer is still the recommended way**. Your AI agent
+does not go inside the container, so whatever needs to open a window for it does not work the same.
 
 You need Docker (on Windows, Docker Desktop) and a copy of the repository. From its folder:
 
@@ -132,7 +132,7 @@ docker compose up -d --build        # the first time takes a few minutes (it bui
 ```
 
 The app is at `http://127.0.0.1:8000`, on your computer only. Your data goes in the
-`candidatai-data` volume, which survives stopping, updating or removing the container. If there's
+`candidatai-data` volume, which survives stopping, updating or removing the container. If there is
 a `.env` in the folder, the container reads it (job board keys, IMAP…): with IMAP set up, its
 worker reads your email alerts just like the native install, but stores them in the volume. When
 you add a mailbox from the UI, the container has no keychain: its password goes in as a Docker
@@ -142,23 +142,23 @@ then you recreate the container (`docker compose up -d`).
 - **Stop and start:** `docker compose stop` and `docker compose start`.
 - **Update:** `git pull` and `docker compose up -d --build`.
 - **Check:** `docker compose exec candidatai cai doctor`. Its «Docker» section says where your data
-  is and what doesn't work inside.
+  is and what does not work inside.
 - **The demo:** `docker compose exec candidatai cai demo seed` creates it in another volume. To open
   it, `docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d`. To go back to your
   data, `docker compose up -d`.
 
-**What works and what doesn't inside Docker:**
+**What works and what does not inside Docker:**
 
 | | With Docker |
 |---|---|
 | UI, jobs, review, tracking and results | Yes |
 | Job sources and email alerts (the worker) | Yes |
-| CVs and cover letters in PDF | Yes, with the html templates (`moderna-2col`…). Not the docx ones, because there's no LibreOffice: if one would be used, `moderna-2col` takes its place and the app tells you |
+| CVs and cover letters in PDF | Yes, with the html templates (`moderna-2col`…). Not the docx ones, because there is no LibreOffice: if one would be used, `moderna-2col` takes its place and the app tells you |
 | Your agent through MCP or `cai … --json` | Yes, from outside the container (below) |
 | "In your agent" buttons | They copy the instruction for you to paste into your agent |
-| **In the background** | No: the agent isn't in the container |
+| **In the background** | No: the agent is not in the container |
 | Assisted application | The job opens in your browser, you send it and click **Mark as sent** |
-| Semantic similarity in the score | No (the image doesn't ship torch); the score works the same |
+| Semantic similarity in the score | No (the image does not ship torch); the score works the same |
 | Mailbox passwords | The container has no keychain: they go in as a Docker secret or an environment variable ([`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md#docker), Spanish) |
 
 **Your agent, from outside.** The agent runs on your computer, in the repository folder (it reads
@@ -193,7 +193,7 @@ docker compose start
 
 It works the same in PowerShell. To restore it into an empty volume:
 `docker run --rm -v candidatai-data:/data -v "$PWD":/backup alpine tar xzf /backup/candidatai-data.tgz -C /data`.
-If you'd rather keep your data in a folder on your computer, swap the volume in
+If you would rather keep your data in a folder on your computer, swap the volume in
 `docker-compose.yml` for that folder (the commented line); on Linux, uid 1000 must be able to
 write to it.
 
@@ -204,8 +204,8 @@ git clone https://github.com/DiegoPrieto23/candidatai.git candidatai
 cd candidatai\backend
 uv sync                                # backend dependencies (creates .venv)
 uv run playwright install chromium     # html templates and PDFs without LibreOffice
-uv run cai doctor                      # checks the environment and tells you what's missing
-uv run cai agents doctor               # which AI agents you have, which one is used and what's missing
+uv run cai doctor                      # checks the environment and tells you what is missing
+uv run cai agents doctor               # which AI agents you have, which one is used and what is missing
 cd ..\frontend
 pnpm install
 pnpm build                             # the built UI that `cai start` serves
@@ -238,7 +238,7 @@ $env:CAI_DATA_DIR = "data-demo-en"; uv run cai start
 ```
 
 With the installed app, close CandidatAI first. The demo is saved next to your data (for example,
-`%LOCALAPPDATA%\CandidatAI\data-demo-en`), so updating doesn't delete it. To go back to your data,
+`%LOCALAPPDATA%\CandidatAI\data-demo-en`), so updating does not delete it. To go back to your data,
 close the window and open CandidatAI as usual.
 
 Without `--lang en` you get the Spanish demo in `data-demo/`. Your browser opens at
@@ -248,7 +248,7 @@ demo folder so its MCP server uses it and not your data.
 
 If you cloned the repository, build the UI first (`cd frontend; pnpm install; pnpm build`) and
 again whenever you switch branches or update: `cai start` serves the built UI, and with an old one
-you won't see what was added later.
+you will not see what was added later.
 
 ## 4. Your data and your profile
 
@@ -257,13 +257,13 @@ photo, documents and emails. Keys go in `.env`, also outside git.
 
 | What | Where | How |
 |---|---|---|
-| **Profile** (the source of truth for anything written about you) | `data/profile.yaml` | To start, upload your CV in **My profile** and click **Create my profile from my CV** (or ask your agent): the `update-profile` skill reads it, asks for what's missing and validates it. With no agent, **Start by hand** creates a minimal profile (name, headline, role and levels) and opens the editor. Then **fill it in and refine it in My profile**: experience and achievements, projects, education, skills and languages, STAR stories, what you're looking for and your CV and letter preferences, block by block. Each block saves on its own, keeps your file's formatting and comments, warns you if you changed it outside the app, and can be undone. Every change creates a version: the **History** tab shows when it was made, where it came from (the app, your agent, an undo) and what changed, block by block and as “Before → Now”, with no YAML; you can go back to any of them, and that is another version you can also undo. With a profile already made, **Import information from a CV** adds what's missing from another CV and shows you the differences before writing. You can still edit the YAML if you prefer |
+| **Profile** (the source of truth for anything written about you) | `data/profile.yaml` | To start, upload your CV in **My profile** and click **Create my profile from my CV** (or ask your agent): the `update-profile` skill reads it, asks for what is missing and validates it. With no agent, **Start by hand** creates a minimal profile (name, headline, role and levels) and opens the editor. Then **fill it in and refine it in My profile**: experience and achievements, projects, education, skills and languages, STAR stories, what you are looking for and your CV and letter preferences, block by block. Each block saves on its own, keeps your file's formatting and comments, warns you if you changed it outside the app, and can be undone. Every change creates a version: the **History** tab shows when it was made, where it came from (the app, your agent, an undo) and what changed, block by block and as “Before → Now”, with no YAML; you can go back to any of them, and that is another version you can also undo. With a profile already made, **Import information from a CV** adds what is missing from another CV and shows you the differences before writing. You can still edit the YAML if you prefer |
 | **Your CV as a design** | `data/templates/<id>/` | Upload a CV with the design you like in **My profile → CV templates → Upload new template** and click **Turn into a template** (it uses the `import-cv-template` skill). Word, PDF, image or HTML (Canva, Google Docs…) |
-| **Photo** | `data/photo.jpg` (or png), and the original in `data/photo-original.*` | Upload it, frame it (zoom and drag, in your browser), reframe it or remove it in **My profile → About you**. Each template crops it to its shape; it's included or not depending on the job's country |
+| **Photo** | `data/photo.jpg` (or png), and the original in `data/photo-original.*` | Upload it, frame it (zoom and drag, in your browser), reframe it or remove it in **My profile → About you**. Each template crops it to its shape; it is included or not depending on the job's country |
 | **Context** (style, narrative, criteria) | `data/contexto/*.md` | Edited in **My profile → Documents**, under **Notes for your agent** (with a preview), or in your editor. Guides the agent, but never backs a CV claim |
-| **Writing samples** (letters, emails or posts of yours) | `data/documentos/estilo/` | Upload them in **My profile → Documents**, under **Notes for your agent** (.txt, .md, .docx, .pdf). Your agent takes your tone from them, never facts, and reads them as data: if they contain someone else's text with instructions, it doesn't follow them |
+| **Writing samples** (letters, emails or posts of yours) | `data/documentos/estilo/` | Upload them in **My profile → Documents**, under **Notes for your agent** (.txt, .md, .docx, .pdf). Your agent takes your tone from them, never facts, and reads them as data: if they contain someone else's text with instructions, it does not follow them |
 | **Source documents** (old CVs, degrees, references) | `data/documentos/` | Your CV and your LinkedIn export are uploaded in **My profile → Documents**, under **Your files**; the rest, in their folder. `update-profile` can read them, confirming before writing |
-| **What you've done in public** (repositories, portfolio, Kaggle, Scholar, verifiable certifications) | `data/profile.yaml` | The `expand` skill, or "Improve my profile content" in "My profile". Use it **right after creating your profile** and whenever you want to polish it: it reviews the whole profile (achievements without numbers, filler text, gaps) and proposes projects, skills (with no level: you set it), achievements with the numbers the source gives and certifications, each with its link in `source`, and writes only what you accept. Public web only: no LinkedIn, nothing behind a login. Reading the links needs an agent with web search; reviewing the profile doesn't |
+| **What you have done in public** (repositories, portfolio, Kaggle, Scholar, verifiable certifications) | `data/profile.yaml` | The `expand` skill, or "Improve my profile content" in "My profile". Use it **right after creating your profile** and whenever you want to polish it: it reviews the whole profile (achievements without numbers, filler text, gaps) and proposes projects, skills (with no level: you set it), achievements with the numbers the source gives and certifications, each with its link in `source`, and writes only what you accept. Public web only: no LinkedIn, nothing behind a login. Reading the links needs an agent with web search; reviewing the profile does not |
 
 Your salary minimum goes in Search jobs → More settings (or in the profile's `private.salary_floor_eur`):
 the app discards postings that publish a salary below it and uses it to compare the offers you
@@ -274,11 +274,11 @@ posting, contract and working-time types, and whether to exclude consultancies o
 In My profile, every achievement and story has **Improve with my agent**: your agent proposes a
 clearer version, asks you for any missing numbers (it never makes them up) and only writes with
 your OK. Under STAR stories, **Propose stories from my experience** suggests stories from the
-achievements that don't have one yet. Your email and phone are edited there, but your agent still
+achievements that do not have one yet. Your email and phone are edited there, but your agent still
 never sees them. The same goes for your salary minimum (`private`), under **Search jobs → More settings**.
 
 **Where your data is and how to back it up.** `uv run cai paths` (or `cai paths` in the app
-folder) tells you which folder you're using. With the installer:
+folder) tells you which folder you are using. With the installer:
 
 | System | Data folder |
 |---|---|
@@ -291,11 +291,11 @@ folder) tells you which folder you're using. With the installer:
 To back it up, **close CandidatAI** (the database has to be idle) and copy that whole folder
 wherever you like: a zip, another disk or your cloud. To restore it, with the app closed, put the
 copy back in place. Keep the app's `.env` too if it holds your keys. Passwords in the system
-keychain aren't in the copy: on another computer, type them again in each mailbox's **Edit**.
+keychain are not in the copy: on another computer, type them again in each mailbox's **Edit**.
 
 ## 5. Connect your agent
 
-Open your agent **at the repository root**: that's where it finds the instructions
+Open your agent **at the repository root**: that is where it finds the instructions
 (`AGENTS.md`), the skills and the MCP server, already configured.
 
 - **Claude Code:** `claude` at the root. Check with `/mcp` that the `candidatai` server is
@@ -305,7 +305,7 @@ Open your agent **at the repository root**: that's where it finds the instructio
   the MCP server in `.agents/mcp_config.json` (generated). Skills are invoked as `/generate-cv 42`.
   It works with Google AI Pro or Ultra and with the free plan, which has a weekly quota.
 - **Other agents:** if they read `AGENTS.md` and speak MCP, register the `candidatai` server with the
-  command in `.mcp.json`. If they don't speak MCP, every tool has its
+  command in `.mcp.json`. If they do not speak MCP, every tool has its
   `uv run --directory backend cai … --json` command (table in
   [`AGENT_INTERFACE.md`](AGENT_INTERFACE.md), Spanish).
 
@@ -317,7 +317,7 @@ Besides your subscription (Claude, ChatGPT), you can use open-source agents with
 (Ollama or LM Studio: free, and nothing leaves your computer) or a **free cloud model** (OpenRouter
 `:free`, Antigravity's free plan: free, with daily limits, and the postings and your profile go to
 the provider). With Ollama, set `OLLAMA_CONTEXT_LENGTH=32768` or more: with its default 4,096,
-agents don't work. `cai agents doctor` and each agent's card tell you which models you have and
+agents do not work. `cai agents doctor` and each agent's card tell you which models you have and
 whether the context is enough. Models of about 8B or less tend to fail on the CV. Full guide, with
 recommended models by memory and what leaves your computer in each case:
 [`MODELOS_GRATIS.md`](MODELOS_GRATIS.md) (Spanish).
@@ -335,7 +335,7 @@ recommended models by memory and what leaves your computer in each case:
 Start CandidatAI **outside your agent** (its own window or the shortcut): if the agent runs out of
 memory it may close what it started.
 
-If it's your first time, **How it works**, at the bottom of the menu, covers the whole journey and
+If it is your first time, **How it works**, at the bottom of the menu, covers the whole journey and
 who does what.
 
 For a specific question, the **Help** button (the `?` at the bottom right, on every page; it also
@@ -375,28 +375,28 @@ The menu has nine entries: **Home** and **My profile**; under Search, **Search j
 inbox**; under Processes, **Board**, **Calendar**, **Replies** and **Results**; and **Agent**. The
 rest are tabs inside them: the Inbox has **Quick review** and **To complete**, and My profile,
 **Skills to build** and **CV templates**. Search jobs has two tabs, each with its own
-address: **Search** (what you're after, with **More settings**, and your job boards) and **Where to
+address: **Search** (what you are after, with **More settings**, and your job boards) and **Where to
 search** (job boards, companies, email and the browser button).
 
 A typical day:
 
-1. Open **Home**: it tells you what's waiting (jobs to review, CVs ready, overdue follow-ups).
+1. Open **Home**: it tells you what is waiting (jobs to review, CVs ready, overdue follow-ups).
 2. Ask your agent for `process-jobs` (it reads and assesses the new ones), or press "Assess new jobs" in the UI.
 3. Approve or discard in **Quick review**, in the Job inbox.
-4. `generate-cv` for the approved ones and, when you're ready, apply from the job page.
+4. `generate-cv` for the approved ones and, when you are ready, apply from the job page.
 5. `daily-summary` sums all of that up in one answer.
 
 ## 7. Set up job sources
 
 | Source | How to set it up |
 |---|---|
-| **Manual** | **New job** in the UI: a URL or pasted text (with text, the role and company are required because they're how duplicates are spotted, and the button says what's missing). With a LinkedIn URL, the app guides you: "Open the job" to click the browser button there, or "Paste text" with the link already filled in |
-| **Company career sites** (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee) | In **Search jobs**, the **Where to search → Company career sites** tab: **Add company**, its name and the address of its careers site as you see it (`https://careers.acme.com/madrid/`). The app works out which system it uses and the places in the address ("Only Madrid"), and only shows you the jobs that fit you. On each company, the switch pauses or resumes it, and its ⋯ menu has **Search now**, its website and its places. If it doesn't recognize the site, it adds it to your job sites for your agent to browse. From the terminal, `cai sources add --name "Acme" --url https://careers.acme.com/`; `cai sources discover --file companies.txt` finds the board of each company in a list. If detection fails, **More options** lets you set the system and its name in the address: [`FUENTES_OFERTAS.md`](FUENTES_OFERTAS.md#cómo-encontrar-el-slug) (Spanish) |
+| **Manual** | **New job** in the UI: a URL or pasted text (with text, the role and company are required because they are how duplicates are spotted, and the button says what is missing). With a LinkedIn URL, the app guides you: "Open the job" to click the browser button there, or "Paste text" with the link already filled in |
+| **Company career sites** (Greenhouse, Lever, Ashby, Personio, Teamtailor, Workable, SmartRecruiters, Recruitee) | In **Search jobs**, the **Where to search → Company career sites** tab: **Add company**, its name and the address of its careers site as you see it (`https://careers.acme.com/madrid/`). The app works out which system it uses and the places in the address ("Only Madrid"), and only shows you the jobs that fit you. On each company, the switch pauses or resumes it, and its ⋯ menu has **Search now**, its website and its places. If it does not recognize the site, it adds it to your job sites for your agent to browse. From the terminal, `cai sources add --name "Acme" --url https://careers.acme.com/`; `cai sources discover --file companies.txt` finds the board of each company in a list. If detection fails, **More options** lets you set the system and its name in the address: [`FUENTES_OFERTAS.md`](FUENTES_OFERTAS.md#cómo-encontrar-el-slug) (Spanish) |
 | **InfoJobs and Adzuna** | Their keys in `.env` (`CAI_INFOJOBS_CLIENT_ID`/`_SECRET`, `CAI_ADZUNA_APP_ID`/`_KEY`) and a search with `cai sources add` |
 | **Manfred and freehire.me** | No keys: a search on the same page or with `cai sources add --kind manfred --name Manfred --query "data engineer"` (for freehire, also `--country` and `--remote-only`) |
 | **Email alerts** | Create job alerts on LinkedIn, InfoJobs, Indeed… and have them land in a label of your mailbox. In **Where to search → Email alerts → Add mailbox**, connect one or more mailboxes (Gmail, Outlook, Yahoo, iCloud or other IMAP, always read-only) or a folder of `.eml` files; the wizard explains each provider and tests the connection before saving. The password is stored encrypted in the system keychain (Credential Manager on Windows, Keychain on macOS) and never comes out again. Step by step in [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md) (Spanish). What comes in shows up in the **Job inbox**; the ones that only bring a title and a link wait in its **To complete** tab |
 | **"Send to CandidatAI" button** | In **Where to search → Browser button**: the app guides you through loading `extension/` in Chrome, Edge or Brave and connects it in one click. Instructions: [`extension/README.md`](../extension/README.md) (Spanish) |
-| **Your agent with your browser** | In **Where to search → Job boards**, **Set up with my agent** (`search-jobs configurar`) picks job boards and searches; or add them yourself: on InfoJobs, Tecnoempleo, Indeed and LinkedIn the searches come from the roles and locations in your profile, and each job board is edited with its pencil; `search-jobs` browses them. LinkedIn stays off until you turn it on. In the strip at the top of **Search**, you remove your roles and places with their ✕ and add them with **+ Add role** or **+ Add place**; clicking a place lets you choose what you accept there (any work mode, hybrid or remote only, or rule it out), and work mode and level are ticked as chips. Each change is saved to your profile right away, with **Undo**, and adding a role suggests the titles of jobs you approve that your roles don't cover yet. In the same strip, **Up to N jobs per job board** changes the limit of all the chosen job boards at once, and of the ones you add (a single one's, in **Where to search**). **More settings** (with the number of groups that have something set) opens below with years of experience, minimum salary, languages, contract and hours, and what you rule out; those are saved together with **Save changes**, with **Undo** afterwards. `/buscar/ajustes` opens the page with **More settings** open. When you press **Search now**, the app also checks your companies' careers sites at the same time (without your agent and without spending tokens; the ones checked recently are skipped), and a notice says “Searching…” on every page until your agent and the companies finish. With no job boards chosen, the button only checks the companies. On each job board, **problems** are what stopped it being read (a captcha, a login, a changed page) and **notes** are what your agent wrote down without anything failing, like the searches it didn't get to. Each card says what the last search brought, with the same numbers as its legend (**Seen · Pass your filters · Already had · New**, and of the new ones, the **Reopened**), and why it stopped: “Reached what the previous search saw” (it doesn't open again what it already saw), “Reached the limit: 5 left unopened” (if there are many, raise that job board's jobs per run) and so on. The “Searching…” notice adds them up when it finishes |
+| **Your agent with your browser** | In **Where to search → Job boards**, **Set up with my agent** (`search-jobs configurar`) picks job boards and searches; or add them yourself: on InfoJobs, Tecnoempleo, Indeed and LinkedIn the searches come from the roles and locations in your profile, and each job board is edited with its pencil; `search-jobs` browses them. LinkedIn stays off until you turn it on. In the strip at the top of **Search**, you remove your roles and places with their ✕ and add them with **+ Add role** or **+ Add place**; clicking a place lets you choose what you accept there (any work mode, hybrid or remote only, or rule it out), and work mode and level are ticked as chips. Each change is saved to your profile right away, with **Undo**, and adding a role suggests the titles of jobs you approve that your roles do not cover yet. In the same strip, **Up to N jobs per job board** changes the limit of all the chosen job boards at once, and of the ones you add (a single one's, in **Where to search**). **More settings** (with the number of groups that have something set) opens below with years of experience, minimum salary, languages, contract and hours, and what you rule out; those are saved together with **Save changes**, with **Undo** afterwards. `/buscar/ajustes` opens the page with **More settings** open. When you press **Search now**, the app also checks your companies' careers sites at the same time (without your agent and without spending tokens; the ones checked recently are skipped), and a notice says “Searching…” on every page until your agent and the companies finish. With no job boards chosen, the button only checks the companies, which show as cards below the job boards (Active or Paused and their last check). On each job board, **problems** are what stopped it being read (a captcha, a login, a changed page) and **notes** are what your agent wrote down without anything failing, like the searches it did not get to. Each card says what the last search brought, with the same numbers as its legend (**Seen · Pass your filters · Already had · New**, and of the new ones, the **Reopened**), and why it stopped: “Reached what the previous search saw” (it does not open again what it already saw), “Reached the limit: 5 left unopened” (if there are many, raise that job board's jobs per run) and so on. The “Searching…” notice adds them up when it finishes |
 | **LinkedIn's public search** | The **Public search without signing in** switch on the LinkedIn card in **Where to search → Job boards**. Off by default: it goes against LinkedIn's terms and may get your IP blocked for a while |
 
 The worker runs the automatic sources every day at `connectors.daily_at`
@@ -405,14 +405,14 @@ The worker runs the automatic sources every day at `connectors.daily_at`
 
 ## 8. From job to application
 
-1. **Extract:** first, if a title or company doesn't interest you, remove it from the Inbox
+1. **Extract:** first, if a title or company does not interest you, remove it from the Inbox
    (**To complete** or **To read**) with **Discard**, one by one or selecting several: it costs
    no agent time and can be undone. `process-jobs` turns each posting's text into structured data (it is the first phase of "Assess new jobs", which continues with step 2). Posting text is
    untrusted content: if it carries hidden text or phrases aimed at an AI, the job page warns you.
 2. **Assess:** the app computes the fit (0 to 100: "good fit", "possible fit" or "low fit", and on
    hover, where it comes from) and applies your hard filters; `assess-fit` adds a reasoned
    verdict: "Assess new jobs" does it right after reading them, and "Assess this job" on its page, for a single one. If a job has
-   no fit, its page says what's missing: your profile, your agent reading it, or both.
+   no fit, its page says what is missing: your profile, your agent reading it, or both.
 3. **Review:** in the Inbox, **Quick review** tab, `J`/`K` to move, `A` to approve, `D` to discard (with a reason)
    and `O` to open the job page. A discard can be undone from the notice; an approval, with
    **Reopen** on the job page.
@@ -421,10 +421,12 @@ The worker runs the automatic sources every day at `connectors.daily_at`
    with a panel beside it:
    - **Ask for changes:** write what to change ("a shorter summary", "drop project X") and your
      agent (`correct-cv`) changes only that, without inventing anything, and verifies it. If you
-     ask for one page, a version that doesn't fit isn't saved.
-   - **Edit text:** change the summary, bullets or skills yourself, with no agent. The app warns you
-     about anything your profile doesn't back, and that version stays unverified until you press
-     **Verify this version** (`verify-cv`).
+     ask for one page, a version that does not fit is not saved.
+   - **Edit text:** change the summary and bullets yourself, remove or reorder achievements with
+     their arrows and organise the skills in groups: each group with its name and its skills as tags
+     (× to remove, Enter to add), plus **Add group** and moving or removing groups. All with no agent.
+     To add an achievement, ask for changes. The app warns you about anything your profile does not
+     back, and that version stays unverified until you press **Verify this version** (`verify-cv`).
    - **Design:** template, photo, colour and hidden sections, without spending agent time.
 
    Every correction or edit is a new version: the job page shows what changed, section by
@@ -441,20 +443,22 @@ The worker runs the automatic sources every day at `connectors.daily_at`
 ## 9. Tracking, replies and results
 
 - **Board:** a kanban by stage. A card only changes column by recording what
-  happened (reply, interview, test, offer, rejection), and cards only move to the right: while you
+  happened (reply, interview, test, offer, rejection), and cards only move to a later stage: while you
   drag one, the columns where it can go are highlighted. Reopening a closed job is in **Update
   status**. Interviews and tests create a dated
   milestone you can export to your calendar (`.ics`). On the job page, **What happened?** also
-  records what doesn't change the stage (another reply, another interview, a test, the offer) and
-  links to **Log offer** and **Milestones** for the details; **I accept the offer** shows up once
-  there's an offer.
-  With **Customize columns** you pick 3 to 5 columns by grouping consecutive stages (e.g. **Approved**
-  and **CV ready**) and name them; it only changes the view, stages stay as they are, and **Reset**
-  brings back the usual ones. It's saved in your browser.
+  records what does not change the stage (another reply, another interview, a test, the offer) and
+  links to **Log offer** and **Milestones** for the details; **Accept the offer** shows up once
+  there is an offer.
+  With **Customize columns** you pick 3 to 5 columns: each stage goes to the column you choose in its
+  selector (e.g. **Approved** and **CV ready** together), each column shows its stages as tags and a
+  name, and you order them by dragging or with their arrows. A preview shows how the board will look.
+  It only changes the view: your jobs' stages stay as they are and cards still only move to a later
+  stage. **Reset** brings back the usual ones when you save. It is saved in your browser.
 - **Calendar:** all your milestones (interviews, tests, deadlines and others, past ones included) by
   month, week, day or agenda. Click one to see its details and open the job. To add one, use **Add
   milestone**, a day's **+** or a free hour in the week view: pick the job (with many, search it by
-  company or title) and it's saved on its page. Today, weekends and days from other months stand out
+  company or title) and it is saved on its page. Today, weekends and days from other months stand out
   at a glance, and each milestone type has its color and icon.
 - **Reminders:** the `.ics` and the feed carry alarms, so your calendar reminds you without the app
   sending any email: a day and an hour before each timed milestone, and at 9:00 the day before each
@@ -472,7 +476,7 @@ The worker runs the automatic sources every day at `connectors.daily_at`
 - **Results:** what works for you. At the top, sentences drawn from your data: which channel gets
   you more replies (referral, company careers site, job boards or the jobs you add yourself), how long
   companies take to reply, where they reply sooner and your best source. Each sentence appears once
-  there's enough data (about 10 sent applications per group; 5 replies for the times) and a clear difference. Below,
+  there is enough data (about 10 sent applications per group; 5 replies for the times) and a clear difference. Below,
   grouped by question: "Where do I get more replies, and sooner?" (by channel, with the rate and the
   median days, by source and by referral); "Where do my applications stall?" (**How are my applications going?**, also
   on Home, with a branch for each group that stopped, the first reply and the weekly chart); "Which
@@ -481,7 +485,7 @@ The worker runs the automatic sources every day at `connectors.daily_at`
   numbers** (or `cai stats story`): your figures since the start, with no company names, with a
   line to share if you want to. `review-search` runs the weekly retrospective.
 - **Network:** import your LinkedIn connections (CSV export) with `cai contacts import-linkedin` and
-  you'll see “You know N” on jobs at their companies; `draft-message` drafts the
+  you will see “You know N” on jobs at their companies; `draft-message` drafts the
   message.
 
 ## 10. Interviews and received offers
@@ -494,7 +498,7 @@ The worker runs the automatic sources every day at `connectors.daily_at`
   practice** box keeps what you want **Prepare** and **Mock interview** to take into account
   ("more weight on SQL", "they said there will be a business case", "tougher feedback"…). They
   belong to that interview and stay saved until you change them.
-- **Fixing an interview:** the pencil edits it while it's scheduled; the X cancels it (it stays
+- **Fixing an interview:** the pencil edits it while it is scheduled; the X cancels it (it stays
   on the job page). If you added it by mistake, the bin **deletes** it completely, also from
   the history and the funnel, and the job's stage is recalculated. It works for any milestone.
 - `prepare-interview 42`: reads everything about the job, your profile, what you already sent and
@@ -518,27 +522,27 @@ The worker runs the automatic sources every day at `connectors.daily_at`
 Many pages have buttons that open your agent with the instruction already written:
 
 - **In a separate window:** opens a window with your agent; you see and approve what it does. If
-  a button can't open your agent, it shows the whole command in a box with **Copy** and says where
+  a button cannot open your agent, it shows the whole command in a box with **Copy** and says where
   to paste it.
 - **Notices of what your agent is doing:** what you launch with a button (reading and assessing
   jobs, reviewing replies, generating or correcting a CV, the cover letter, company research,
   preparing an interview…) shows up in a notice on every page, with what it has done so far, and
-  changes when it finishes or if it couldn't. You can minimise or close it; closing it doesn't
+  changes when it finishes or if it could not. You can minimise or close it; closing it does not
   stop your agent. When a CV or an interview guide is ready, the notice offers **Open PDF**; if you
   allowed notifications and are in another window, a system notification too. The CV is also
   saved in `data/cvs/` and the guide in `data/entrevistas/`.
 - **Your agent asks you in the app:** if it needs to know something to write a CV, a cover letter
   or a guide, a notice lets you answer right there. You can also answer in its window. Permission
   requests and conversations (a mock interview, say) stay in its window.
-- **In the background** (Claude Code; OpenCode only for `process-jobs` and `assess-fit`): for skills that don't ask
+- **In the background** (Claude Code; OpenCode only for `process-jobs` and `assess-fit`): for skills that do not ask
   questions (`process-jobs`, `assess-fit`, `generate-cv`, `correct-cv`, `verify-cv`,
   `generate-cover-letter` and the English summary). It runs without a window, only with the app tools it needs, and a
-  notice tells you when it's done. If your agent can't, the menu suggests one
+  notice tells you when it is done. If your agent cannot, the menu suggests one
   that can. Requires `cai worker`.
   - **Cost:** the **Cost** section of the **Agent** page adds up tokens, time and, if the agent
     reports it, money, by action, agent and model (7 and 30 days), with how much each skill
     weighs; the job page shows what was spent on that job and the funnel, per sent application and
-    per interview. What you do in a terminal doesn't count: there the agent doesn't report usage.
+    per interview. What you do in a terminal does not count: there the agent does not report usage.
   - **Threshold before spending:** in the background, "Assess new jobs" and `assess-fit` only
     assess jobs with a minimum fit (by default, the “To review” minimum minus 10; change it under **Cost**). **To review**
     says why a job below it stays unassessed.
@@ -548,14 +552,14 @@ Many pages have buttons that open your agent with the instruction already writte
 - **Leave for my next session**: stores the request;
   `handle-requests` does it when you open your agent, or press **Handle requests** on the Agent page.
 
-**Which agent opens.** The **Agent** page starts with your agent and whether it's ready (or how to
+**Which agent opens.** The **Agent** page starts with your agent and whether it is ready (or how to
 install one). **Configure agents** opens the agents you have, what each one can do and how to
 install the missing ones. There you pick the default agent, each
 agent's model and, in the “By action” table, a different agent or model for a specific action (e.g.
 OpenCode with a local model to process postings and Claude Code for the CV). Each button's dropdown
 (the ▾ arrow) says which agent it opens with and lets you use another one just this once.
-If an agent isn't suited to an action (it has no browser to search for postings, say), the button
-says so and doesn't launch it. With nothing chosen, `CAI_AGENT` from `.env` or the first installed
+If an agent is not suited to an action (it has no browser to search for postings, say), the button
+says so and does not launch it. With nothing chosen, `CAI_AGENT` from `.env` or the first installed
 agent is used.
 On macOS and Linux, the buttons open Terminal.app or your desktop's terminal; to use another one
 (iTerm2, kitty…), set `CAI_TERMINAL=iterm` (or its name or path) in `.env`.
@@ -571,7 +575,8 @@ one” puts your preferences back as they were.
   IMAP (`CAI_IMAP_HOST`, `CAI_IMAP_PORT`, `CAI_IMAP_USER`, `CAI_IMAP_PASSWORD`, `CAI_IMAP_FOLDER`),
   `CAI_BROWSER_CHANNEL` (`chrome` or `msedge` for assisted
   applications), `CAI_EMBEDDINGS=off`, `UV_PATH` (uv outside the PATH), `CAI_LANG` (`es` or
-  `en`: language of the `cai start` messages in the terminal; without it, your system's). Nothing
+  `en`: language of the `cai start` messages in the terminal and of the orders to your agent until
+  you choose a language in the portal; without it, your system's). Nothing
   is required. Passwords and keys (`CAI_IMAP_PASSWORD`, `CAI_ADZUNA_APP_KEY`,
   `CAI_INFOJOBS_CLIENT_SECRET`) are better kept in the system keychain: if you put them in `.env`,
   the app offers to move them there.
@@ -584,18 +589,18 @@ one” puts your preferences back as they were.
 ### Language
 
 The interface is in **English** and **Spanish**. The globe button at the bottom of the sidebar
-(or of the menu on a phone) opens the list of languages; the change is instant and the app
-remembers it in this browser. The first time, it follows your browser's language: Spanish if it's
+opens the list of languages; the change is instant and the app
+remembers it in this browser. The first time, it follows your browser's language: Spanish if it is
 Spanish, English otherwise. Dates and numbers follow the language too. Changing it redraws the
 page: a dialog or a half-written form closes, so finish it first.
 
-What the interface doesn't translate: your own data (jobs, profile, notes), what your agent writes
+What the interface does not translate: your own data (jobs, profile, notes), what your agent writes
 (CVs, letters and assessments follow each job's language) and a few messages that the server
 writes without a code to translate (some warnings and run results), which stay in Spanish.
 
 ## 13. Updating
 
-**With the installer:** run it again; your data (`%LOCALAPPDATA%\CandidatAI\data`) isn't touched and
+**With the installer:** run it again; your data (`%LOCALAPPDATA%\CandidatAI\data`) is not touched and
 migrations apply by themselves.
 
 **From the repository**, with your agent **closed** (its MCP server locks the Python environment):
@@ -613,11 +618,11 @@ cd ..\frontend; pnpm install; pnpm build
 
 | Symptom | Fix |
 |---|---|
-| Something's wrong and you don't know what | `uv run cai doctor` checks database, PDF, Chromium, templates, photo, email and capture |
+| Something's wrong and you do not know what | `uv run cai doctor` checks database, PDF, Chromium, templates, photo, email and capture |
 | "Ejecuta `cai db upgrade`" | There are new migrations: `uv run cai db upgrade` |
 | `uv sync` fails with "file in use" | Close your agent (its MCP server uses `cai-mcp.exe`) and try again |
 | No PDFs | Install LibreOffice or run `uv run playwright install chromium`; `cai doctor` checks it |
-| The UI can't reach the API | Start CandidatAI (`cai start` or the shortcut) and keep its window open |
+| The UI cannot reach the API | Start CandidatAI (`cai start` or the shortcut) and keep its window open |
 | "Port 8000 is used by another program" | Close that program or use `cai start --port 8001` |
 | The built UI is missing | In the repository, `cd frontend; pnpm install; pnpm build` (the installer ships it) |
 | Nothing comes in by itself in the morning | CandidatAI must be open (`cai start` runs the worker) |

@@ -62,7 +62,8 @@ class WorkableConnector:
             WIDGET.format(slug=config.slug),
             label=self.label,
             not_found=(
-                f"No existe la cuenta «{config.slug}» en Workable (404). Revisa el slug: es lo "
+                f"No existe la cuenta «{config.slug}» en Workable (404). Conviene revisar el "
+                f"slug: es lo "
                 "que va tras `apply.workable.com/`."
             ),
         )

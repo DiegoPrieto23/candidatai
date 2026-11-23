@@ -49,7 +49,7 @@ def posting_text(title: str, company: str, case: object) -> str:
 def main() -> int:
     migrations.ensure_current()
     cases = load_cases(SEED_DIR / "seed.jsonl")[: len(COMPANIES)]
-    created = skipped = duplicated = 0
+    created = skipped = 0
     for case, company in zip(cases, COMPANIES, strict=True):
         fixture = case.job_fixture
         location = ", ".join(fixture.extraction.locations) or None
@@ -64,22 +64,12 @@ def main() -> int:
             if not result.created:
                 skipped += 1
                 continue
-            if result.duplicate_of is not None:
-                # La app la cierra como duplicado de otra: no admite extracción.
-                duplicated += 1
-                print(
-                    f"{result.job_id:>4}  {'closed':<15} {fixture.title} · {company} "
-                    f"(duplicado de la oferta {result.duplicate_of}: sin extracción)"
-                )
-                continue
             saved = extractions.save_extraction(session, result.job_id, fixture.extraction)
             created += 1
             print(f"{result.job_id:>4}  {saved.stage:<15} {fixture.title} · {company}")
     data_dir = get_settings().data_dir
     shown = data_dir.relative_to(REPO_ROOT) if data_dir.is_relative_to(REPO_ROOT) else data_dir
     summary = f"{created} ofertas creadas, {skipped} ya existían"
-    if duplicated:
-        summary += f", {duplicated} cerradas como duplicado"
     print(f"\n{summary} (datos en {shown}).")
     return 0
 

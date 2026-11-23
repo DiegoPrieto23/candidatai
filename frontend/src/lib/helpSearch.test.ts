@@ -28,7 +28,7 @@ function faqIndex(language: string) {
 
 describe('buscador de la ayuda', () => {
   const index = buildIndex([
-    { id: 'a', title: '¿Cómo creo mi perfil?', body: 'Sube tu CV.', keywords: 'currículum' },
+    { id: 'a', title: '¿Cómo se crea el perfil?', body: 'Sube tu CV.', keywords: 'currículum' },
     { id: 'b', title: 'Plantillas de CV', body: 'El diseño de tu perfil en un CV.' },
     { id: 'c', title: 'Calendario', body: 'Entrevistas y plazos.' },
   ])

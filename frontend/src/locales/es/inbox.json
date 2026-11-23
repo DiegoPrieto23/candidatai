@@ -22,7 +22,8 @@
     "stage": "Etapa",
     "added": "Alta",
     "closed": "Cerrada",
-    "actions": "Acciones"
+    "actions": "Acciones",
+    "reason": "Motivo"
   },
   "loadingJobs": "Cargando ofertas",
   "count_one": "{{count}} oferta",
@@ -44,6 +45,8 @@
     "fit_50": "Encaje de 50 o más",
     "fit_70": "Encaje de 70 o más",
     "fit_85": "Encaje de 85 o más",
+    "reason": "Motivo de cierre",
+    "reasonAny": "Cualquier motivo",
     "clear": "Limpiar filtros"
   },
   "allStages": "Todas",
@@ -54,9 +57,9 @@
     "body": "Ninguna oferta coincide con estos filtros."
   },
   "empty": {
-    "title": "Tu bandeja está vacía",
+    "title": "La bandeja está vacía",
     "addFirst": "Añadir la primera",
-    "body": "Da de alta una oferta desde su URL o pegando el texto. Después, «Valorar las ofertas nuevas» la lee, saca sus datos y valora si encaja contigo."
+    "body": "Una oferta se da de alta desde su URL o pegando el texto. Después, «Valorar las ofertas nuevas» la lee, saca sus datos y valora si encaja con el perfil."
   },
   "closedWhen": "Cerrada {{when}}",
   "quick": {
@@ -86,51 +89,71 @@
     "processJobs": "Valorar las ofertas nuevas",
     "openTriage": "Abrir la revisión rápida",
     "all": {
-      "what": "Todas tus ofertas, estén en la etapa que estén. Cada oferta avanza así: Por completar → Por leer → Por revisar → Aprobada → CV listo → Enviada → En proceso.",
-      "next": "elige una etapa en la fila de abajo para ver solo sus ofertas y qué hay que hacer con ellas."
+      "what": "Todas las ofertas, estén en la etapa que estén. Cada oferta avanza así: Por completar → Por leer → Por revisar → Aprobada → CV listo → Enviada → En proceso.",
+      "next": "elegir una etapa en la fila de abajo para ver solo sus ofertas y qué hay que hacer con ellas."
     },
     "pending_detail": {
-      "what": "Ofertas que te llegaron como resumen, casi siempre de las alertas de LinkedIn por correo: les falta la descripción. Por seguridad tu agente no entra en LinkedIn, así que este paso lo haces tú con el botón «Enviar a CandidatAI» del navegador.",
+      "what": "Ofertas que llegaron como resumen, casi siempre de las alertas de LinkedIn por correo: les falta la descripción. Por seguridad el agente no entra en LinkedIn, así que este paso se hace a mano con el botón «Enviar a CandidatAI» del navegador.",
       "steps": {
-        "open": "Pulsa <strong>Abrir</strong> en una oferta: se abre en su portal (en LinkedIn, con tu sesión iniciada).",
-        "send": "En esa pestaña, pulsa el botón <strong>Enviar a CandidatAI</strong> de la barra del navegador. Guarda la descripción y la oferta pasa a «Por leer».",
-        "discard": "Si por el título ya ves que no te interesa, descártala aquí mismo, sin abrirla."
+        "open": "<strong>Abrir</strong> en una oferta la abre en su portal (en LinkedIn, con la sesión iniciada).",
+        "send": "En esa pestaña, el botón <strong>Enviar a CandidatAI</strong> de la barra del navegador guarda la descripción y la oferta pasa a «Por leer».",
+        "discard": "Si por el título ya se ve que no interesa, se descarta aquí mismo, sin abrirla."
       },
-      "extension": "¿Aún no tienes el botón? <extension>Instálalo en unos minutos</extension>. También puedes repasarlas una a una, con atajos de teclado, en <alerts>Por completar</alerts>."
+      "extension": "¿Aún sin el botón? <extension>Se instala en unos minutos</extension>. También se pueden repasar una a una, con atajos de teclado, en <alerts>Por completar</alerts>."
     },
     "pending_extraction": {
-      "what": "Ofertas con la descripción completa que tu agente aún no ha leído.",
-      "next": "pulsa «Valorar las ofertas nuevas». Tu agente saca los datos de cada una, la app calcula su encaje (de 0 a 100) frente a tu perfil y tu agente explica por qué encaja o no. Las que no pasan tus filtros (modalidad, ubicación…) se cierran solas; las demás pasan a «Por revisar»."
+      "what": "Ofertas con la descripción completa que el agente aún no ha leído.",
+      "next": "«Valorar las ofertas nuevas». El agente saca los datos de cada una, la app calcula su encaje (de 0 a 100) frente al perfil y el agente explica por qué encaja o no. Las que no pasan los filtros (modalidad, ubicación…) se cierran solas; las demás pasan a «Por revisar»."
     },
     "pending_triage": {
-      "what": "Ofertas ya leídas y con su encaje calculado, a la espera de que decidas.",
-      "next": "revísalas en <triage>Revisión rápida</triage> y apruébalas o descártalas. Si alguna aún no tiene valoración, «Valorar las ofertas nuevas» también la valora. Ninguna cambia de etapa sin tu decisión."
+      "what": "Ofertas ya leídas y con su encaje calculado, a la espera de una decisión.",
+      "next": "revisarlas en <triage>Revisión rápida</triage> y aprobarlas o descartarlas. Si alguna aún no tiene valoración, «Valorar las ofertas nuevas» también la valora. Ninguna cambia de etapa sin una decisión manual."
     },
     "approved": {
-      "what": "Ofertas que has aprobado. Les falta el CV a medida.",
-      "next": "abre cada una y, en la pestaña «Candidatura», pulsa «Generar CV». Tu agente lo redacta solo con datos de tu perfil y lo verifica; cuando está, la oferta pasa a «CV listo»."
+      "what": "Ofertas aprobadas. Les falta el CV a medida.",
+      "next": "en cada una, pestaña «Candidatura», «Generar CV». El agente lo redacta solo con datos del perfil y lo verifica; cuando está, la oferta pasa a «CV listo»."
     },
     "cv_ready": {
       "what": "Ofertas con su CV a medida listo, sin enviar todavía.",
-      "next": "en la pestaña «Candidatura» de cada una, revisa el CV, prepara la carta o las respuestas si las piden y envía la candidatura tú desde el portal. Después pulsa «Marcar como enviada» y pasa a «Enviada»."
+      "next": "en la pestaña «Candidatura» de cada una, revisar el CV, preparar la carta o las respuestas si las piden y enviar la candidatura desde el portal. Después, «Marcar como enviada» la pasa a «Enviada»."
     },
     "applied": {
       "what": "Candidaturas enviadas, a la espera de que la empresa conteste.",
-      "next": "cuando te llamen para una entrevista o una prueba, anótalo en la pestaña «Proceso» de la oferta, o acepta la propuesta en <replies>Respuestas</replies> si la app leyó el correo, y pasa a «En proceso». Si tardan en contestar, la app te recuerda hacer un seguimiento."
+      "next": "cuando llegue una entrevista o una prueba, se anota en la pestaña «Proceso» de la oferta, o se acepta la propuesta en <replies>Respuestas</replies> si la app leyó el correo, y pasa a «En proceso». Si tardan en contestar, la app recuerda hacer un seguimiento."
     },
     "in_process": {
       "what": "Procesos con entrevistas o pruebas en marcha.",
-      "next": "síguelos en <processes>Procesos</processes>: anota cada entrevista, prepárala con tu agente y registra cómo acaba, con una oferta o con el cierre."
+      "next": "seguirlos en <processes>Procesos</processes>: anotar cada entrevista, prepararla con el agente y registrar cómo acaba, con una oferta o con el cierre."
     },
     "closed": {
-      "what": "El final del recorrido: ofertas descartadas, rechazadas, caducadas, duplicadas o que no pasaron tus filtros.",
-      "next": "es la etapa final. Si cerraste una por error, ábrela y pulsa «Reabrir»."
+      "what": "El final del recorrido: ofertas descartadas, rechazadas, caducadas, duplicadas o que no pasaron los filtros.",
+      "next": "es la etapa final. Si una se cerró por error, se abre y se pulsa «Reabrir»."
     },
     "openComplete": "Repasarlas una a una"
   },
   "noScoreWhy": {
-    "profile": "Sin encaje calculado: falta tu perfil. Créalo en «Mi perfil».",
-    "unread": "Sin encaje calculado: tu agente aún no ha leído la oferta.",
+    "profile": "Sin encaje calculado: falta el perfil. Se crea en «Mi perfil».",
+    "unread": "Sin encaje calculado: el agente aún no ha leído la oferta.",
     "other": "Sin encaje calculado todavía."
+  },
+  "closeReason": {
+    "discarded": "Descartada",
+    "filtered_out": "No pasó los filtros",
+    "rejected": "Rechazada",
+    "withdrawn": "Retirada",
+    "expired": "Caducada",
+    "closed_by_company": "Cerrada por la empresa",
+    "duplicate": "Duplicada",
+    "accepted": "Aceptada"
+  },
+  "stagePicker": {
+    "label": "Etapas",
+    "all": "Todas",
+    "none": "Ninguna",
+    "summaryAll": "Todas las etapas",
+    "summarySome": "{{count}} de {{total}} etapas",
+    "summaryNone": "Ninguna etapa",
+    "emptyTitle": "Ninguna etapa marcada",
+    "emptyBody": "Para ver ofertas, hay que marcar al menos una etapa en «Etapas»."
   }
 }

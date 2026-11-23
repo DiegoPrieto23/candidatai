@@ -57,7 +57,7 @@ describe('Coste del agente en la ficha (fase 25.4)', () => {
     const runs = within(panel).getByRole('list', { name: 'Ejecuciones' })
     expect(runs).toHaveTextContent(/Valorar las ofertas nuevas · claude · .* · repartida entre 2 ofertas/)
     expect(runs).toHaveTextContent(/Generar CV · opencode · ollama\/qwen3:8b/)
-    expect(within(panel).getByText(/No cuenta lo que hagas en una terminal/)).toBeInTheDocument()
+    expect(within(panel).getByText(/No cuenta lo que se hace en una terminal/)).toBeInTheDocument()
   })
 
   it('sin ejecuciones no se enseña', async () => {

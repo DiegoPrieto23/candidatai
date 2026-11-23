@@ -16,7 +16,7 @@ describe('Banner del modo demo', () => {
   it('no sale con tus datos', async () => {
     mockApi({ 'GET /status': status(), 'GET /jobs': emptyPage })
     renderApp('/bandeja')
-    expect(await screen.findByText('Tu bandeja está vacía')).toBeInTheDocument()
+    expect(await screen.findByText('La bandeja está vacía')).toBeInTheDocument()
     expect(screen.queryByRole('note', { name: 'Modo demo' })).not.toBeInTheDocument()
   })
 })
@@ -25,7 +25,7 @@ describe('Saltar al contenido (fase 36)', () => {
   it('es lo primero con Tab y deja el foco en el contenido', async () => {
     mockApi({ 'GET /status': status(), 'GET /jobs': emptyPage })
     renderApp('/bandeja')
-    await screen.findByText('Tu bandeja está vacía')
+    await screen.findByText('La bandeja está vacía')
 
     await userEvent.tab()
     const skip = screen.getByRole('link', { name: 'Saltar al contenido' })
@@ -183,10 +183,10 @@ describe('Barra lateral (fase 23.3)', () => {
       expect(within(tabs).getByRole('link', { name: 'Dónde buscar' })).toHaveAttribute('href', '/fuentes')
       // Solo la pestaña abierta: el correo sí, la búsqueda no.
       expect(await screen.findByRole('heading', { level: 3, name: 'Alertas por correo' })).toBeInTheDocument()
-      expect(screen.queryByRole('region', { name: 'Lo que vas a buscar' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('region', { name: 'Qué se va a buscar' })).not.toBeInTheDocument()
 
       await userEvent.click(within(tabs).getByRole('link', { name: 'Buscar' }))
-      expect(await screen.findByRole('region', { name: 'Lo que vas a buscar' })).toBeInTheDocument()
+      expect(await screen.findByRole('region', { name: 'Qué se va a buscar' })).toBeInTheDocument()
       expect(within(tabs).getByRole('link', { name: 'Buscar' })).toHaveAttribute('aria-current', 'page')
       expect(screen.queryByRole('navigation', { name: 'Dónde buscar' })).not.toBeInTheDocument()
       expect(screen.queryByRole('heading', { level: 3, name: 'Alertas por correo' })).not.toBeInTheDocument()

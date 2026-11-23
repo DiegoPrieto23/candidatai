@@ -90,8 +90,8 @@ class ProfileConflictError(ValueError):
     def __init__(self, current_hash: str | None, name: str = "profile.yaml") -> None:
         self.current_hash = current_hash
         super().__init__(
-            f"data/{name} ha cambiado desde que lo abriste (lo editaste a mano o tu agente). "
-            "Recarga para ver lo nuevo y vuelve a aplicar tu cambio."
+            f"data/{name} ha cambiado desde que se abrió (a mano o por el agente). "
+            "Hay que recargar para ver lo nuevo y volver a aplicar el cambio."
         )
 
 
@@ -102,8 +102,9 @@ class ProfileReferencedError(ValueError):
         self.refs = refs  # evidencia -> títulos de las historias que la citan
         listed = "; ".join(f"«{ref}» (en {', '.join(titles)})" for ref, titles in refs.items())
         super().__init__(
-            f"No se puede borrar lo que citan tus historias STAR: {listed}. Quita antes esa "
-            "evidencia de la historia o borra la historia."
+            f"No se puede borrar lo que citan las historias STAR: {listed}. Antes hay que quitar "
+            f"esa "
+            "evidencia de la historia o borrar la historia."
         )
 
 
@@ -189,7 +190,8 @@ def atomic_write(path: Path, text: str) -> None:
         os.replace(draft, path)
     except PermissionError as exc:  # en Windows, si otro programa tiene el fichero abierto
         raise ValueError(
-            f"No se pudo escribir {path.name}: ciérralo si lo tienes abierto y reinténtalo."
+            f"No se pudo escribir {path.name}: si está abierto en otro programa, hay que cerrarlo "
+            f"y reintentarlo."
         ) from exc
     finally:
         draft.unlink(missing_ok=True)
@@ -566,7 +568,7 @@ def _diff(old: str, new: str) -> str:
         _mask_private(old).splitlines(keepends=True),
         _mask_private(new).splitlines(keepends=True),
         fromfile="profile.yaml (ahora)",
-        tofile="profile.yaml (con tu cambio)",
+        tofile="profile.yaml (con el cambio)",
     )
     return "".join(lines)
 
@@ -585,7 +587,7 @@ def save_section(
         raw = _read(path)
         if raw is None:
             raise profiles.ProfileNotFoundError(
-                f"No existe {path}: crea tu perfil con el skill `update-profile` o `cai profile "
+                f"No existe {path}: el perfil se crea con el skill `update-profile` o `cai profile "
                 "init`."
             )
         current = file_hash(raw)
@@ -596,7 +598,9 @@ def save_section(
         yaml = round_trip_yaml()
         data = yaml.load(old_text)
         if not isinstance(data, CommentedMap):
-            raise ValueError("data/profile.yaml no es un objeto YAML: arréglalo en tu editor.")
+            raise ValueError(
+                "data/profile.yaml no es un objeto YAML: hay que arreglarlo en un editor."
+            )
 
         plain_old = pyyaml.safe_load(old_text) or {}
         value = _clean(content)
@@ -756,11 +760,13 @@ def restore_version(
         old_text = _text(raw)
         now = _validate(old_text, path).model_dump(mode="json")
         if now == target:
-            raise NothingToUndoError("Tu perfil ya está como en esa versión.")
+            raise NothingToUndoError("El perfil ya está como en esa versión.")
         yaml = round_trip_yaml()
         data = yaml.load(old_text)
         if not isinstance(data, CommentedMap):
-            raise ValueError("data/profile.yaml no es un objeto YAML: arréglalo en tu editor.")
+            raise ValueError(
+                "data/profile.yaml no es un objeto YAML: hay que arreglarlo en un editor."
+            )
         sections = [k for k in dict.fromkeys([*target, *now]) if now.get(k) != target.get(k)]
         for key in sections:
             value = target.get(key)
@@ -846,7 +852,7 @@ def save_salary_floor(
         raw = _read(path)
         if raw is None:
             raise profiles.ProfileNotFoundError(
-                f"No existe {path}: crea tu perfil con el skill `update-profile` o `cai profile "
+                f"No existe {path}: el perfil se crea con el skill `update-profile` o `cai profile "
                 "init`."
             )
         current = file_hash(raw)
@@ -857,7 +863,9 @@ def save_salary_floor(
         yaml = round_trip_yaml()
         data = yaml.load(old_text)
         if not isinstance(data, CommentedMap):
-            raise ValueError("data/profile.yaml no es un objeto YAML: arréglalo en tu editor.")
+            raise ValueError(
+                "data/profile.yaml no es un objeto YAML: hay que arreglarlo en un editor."
+            )
         private = data.get("private")
         if not isinstance(private, CommentedMap):
             if value is None:

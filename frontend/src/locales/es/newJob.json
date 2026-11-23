@@ -7,7 +7,7 @@
     "hint": "Una página pública, como Greenhouse o la web de la empresa. Las de LinkedIn se añaden con el botón del navegador o <paste>pegando el texto</paste>.",
     "downloading": "Descargando…",
     "submit": "Dar de alta",
-    "unavailable": "No he podido abrir esa página: puede que no responda, que pida iniciar sesión o que cargue la oferta con JavaScript. Copia el texto de la oferta y pégalo.",
+    "unavailable": "No se ha podido abrir esa página: puede que no responda, que pida iniciar sesión o que cargue la oferta con JavaScript. En ese caso, se copia el texto de la oferta y se pega aquí.",
     "usePaste": "Pegar el texto"
   },
   "text": {
@@ -16,7 +16,7 @@
     "location": "Ubicación",
     "url": "Enlace",
     "text": "Texto de la oferta",
-    "hint": "Pega la oferta completa: requisitos, condiciones y salario si lo indica.",
+    "hint": "La oferta completa: requisitos, condiciones y salario si lo indica.",
     "saving": "Guardando…",
     "submit": "Dar de alta",
     "missing": "Para darla de alta, falta {{fields}}.",
@@ -27,22 +27,22 @@
     }
   },
   "title": "Nueva oferta",
-  "intro": "Pega el enlace o el texto de una oferta. Si ya la tenías, no se duplica; después tu agente la lee y saca sus datos.",
+  "intro": "El enlace o el texto de una oferta. Si ya existía, no se duplica; después el agente la lee y saca sus datos.",
   "byUrl": "Por URL",
   "pasteText": "Pegar texto",
   "linkedin": {
     "title": "Las ofertas de LinkedIn se añaden de una de estas dos formas:",
     "button": {
       "title": "Con el botón del navegador",
-      "body": "Abre la oferta en LinkedIn y pulsa «Enviar a CandidatAI» en la barra del navegador.",
+      "body": "Con la oferta abierta en LinkedIn, pulsar «Enviar a CandidatAI» en la barra del navegador.",
       "open": "Abrir la oferta",
-      "connected": "Tu botón del navegador está conectado.",
+      "connected": "El botón del navegador está conectado.",
       "install": "Instalar el botón del navegador",
       "newTab": "(se abre en una pestaña nueva)"
     },
     "paste": {
       "title": "Pegando el texto",
-      "body": "Copia el texto de la oferta y pégalo. El enlace ya va rellenado.",
+      "body": "Se copia el texto de la oferta y se pega aquí. El enlace ya va rellenado.",
       "button": "Pegar texto"
     }
   }

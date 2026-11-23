@@ -241,7 +241,8 @@ def _warnings(
                     code="context_low",
                     model=item.name,
                     text=f"{item.name}: contexto de {item.context} tokens (por {how}). Los agentes "
-                    f"necesitan al menos {MIN_CONTEXT}: pon {CONTEXT_ENV}={MIN_CONTEXT} y reinicia "
+                    f"necesitan al menos {MIN_CONTEXT}: hay que poner {CONTEXT_ENV}={MIN_CONTEXT} "
+                    f"y reiniciar "
                     "Ollama.",
                 )
             )
@@ -259,7 +260,8 @@ def _warnings(
                         action=action,
                         text=f"{local.name} ({local.parameter_size}) está elegido para «{action}»: "
                         f"los modelos de unos 8B o menos suelen fallar con los "
-                        "esquemas del CV. Usa uno más grande o tu suscripción para redactar.",
+                        "esquemas del CV. Para redactar conviene uno más grande o la suscripción "
+                        "del agente.",
                     )
                 )
                 break

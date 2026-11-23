@@ -185,7 +185,7 @@ replies:
 # «No la tengo» en la página Skills (huecos reales para `training-plan`).
 skill_gaps: [Looker, Databricks]
 
-# Un encargo «Dejar para mi próxima sesión» pendiente: el CV de la primera oferta aprobada sin CV.
+# Un encargo «Dejar para la próxima sesión» pendiente: el CV de la primera oferta aprobada sin CV.
 agent_request: generate-cv
 
 # Una muestra de estilo («Mi perfil» → «Contexto y estilo»).

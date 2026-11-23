@@ -44,8 +44,8 @@ PAGES = (
         intro=(
             "Las dudas más habituales al usar CandidatAI, con la pantalla donde se resuelve cada "
             "una. Son las mismas que busca el botón de ayuda de la app, abajo a la derecha (se "
-            "abre con `?`). Para el detalle, la [guía de uso](GUIA.md); si es tu primera vez, "
-            "[Empieza aquí](EMPEZAR.md)."
+            "abre con `?`). Para el detalle, la [guía de uso](GUIA.md); la primera vez, "
+            "[Primeros pasos](EMPEZAR.md)."
         ),
         where="Dónde: «{screen}».",
         generated=(
