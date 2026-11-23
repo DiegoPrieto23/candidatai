@@ -236,7 +236,8 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   como enviado» (antes «Ya lo he enviado»), «Dejar para la próxima sesión» o «Crear el perfil desde un CV». En
   inglés, sin contracciones. También la ayuda (con sus preguntas frecuentes), los avisos y errores que
   muestra la app y lo que imprime `cai start`, y lo que el agente deja en la app (valoraciones, respuestas
-  del Asistente, preguntas). Las guías pasan al mismo tono en la próxima versión.
+  del Asistente, preguntas). También las guías (Primeros pasos, antes «Empieza aquí», la guía de uso,
+  las funcionalidades y el README); en inglés, sin contracciones. Las capturas de las guías son provisionales.
 - **Editar el CV tú, con más margen:** en «Editar texto», las skills se ven por grupos: el nombre del
   grupo arriba y cada skill como una etiqueta con «×» para quitarla y un campo para añadir otra con
   Intro. Hay «Añadir grupo» y botones para subir, bajar o quitar cada grupo (con confirmación si tiene

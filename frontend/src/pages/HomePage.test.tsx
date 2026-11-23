@@ -193,7 +193,7 @@ describe('Primeros pasos (app recién instalada)', () => {
     )
     expect(within(notice).getByRole('link', { name: 'La guía paso a paso' })).toHaveAttribute(
       'href',
-      expect.stringContaining('EMPEZAR.md#3-instalar-tu-agente'),
+      expect.stringContaining('EMPEZAR.md#3-instalar-el-agente'),
     )
     expect(within(notice).getByRole('link', { name: 'Otros agentes, en «Agente»' })).toHaveAttribute('href', '/agente')
   })

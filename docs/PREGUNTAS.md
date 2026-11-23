@@ -4,7 +4,7 @@
 
 <!-- Generado por scripts/build_faq.py desde frontend/src/locales/es/help.json. No lo edites a mano. -->
 
-Las dudas más habituales al usar CandidatAI, con la pantalla donde se resuelve cada una. Son las mismas que busca el botón de ayuda de la app, abajo a la derecha (se abre con `?`). Para el detalle, la [guía de uso](GUIA.md); si es tu primera vez, [Empieza aquí](EMPEZAR.md).
+Las dudas más habituales al usar CandidatAI, con la pantalla donde se resuelve cada una. Son las mismas que busca el botón de ayuda de la app, abajo a la derecha (se abre con `?`). Para el detalle, la [guía de uso](GUIA.md); la primera vez, [Primeros pasos](EMPEZAR.md).
 
 ## Primeros pasos
 

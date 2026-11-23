@@ -10,13 +10,13 @@ the rest are in Spanish only.
 
 | Documento | Qué cuenta |
 |---|---|
-| 🌐 [Empieza aquí](EMPEZAR.md) · [Start here](START_HERE.md) | Para quien no es técnico: qué necesitas (incluido el agente y lo que cuesta), instalar, la demo, tu perfil, tu primera búsqueda y preguntas frecuentes |
-| 🌐 [Guía de uso](GUIA.md) · [User guide](GUIDE.md) | Instalar, probar la demo, conectar tu agente y el día a día |
+| 🌐 [Primeros pasos](EMPEZAR.md) · [Start here](START_HERE.md) | Para quien no es técnico: qué hace falta (incluido el agente y lo que cuesta), instalar, la demo, el perfil, la primera búsqueda y preguntas frecuentes |
+| 🌐 [Guía de uso](GUIA.md) · [User guide](GUIDE.md) | Instalar, probar la demo, conectar el agente y el día a día |
 | 🌐 [Preguntas frecuentes](PREGUNTAS.md) · [Frequent questions](FAQ.md) | Las dudas habituales, con la pantalla donde se resuelve cada una; son las del botón de ayuda de la app |
-| 🌐 [Funcionalidades](FUNCIONALIDADES.md) · [Features](FEATURES.md) | Todo lo que hace, en el orden en que lo usas, con su página o su skill |
+| 🌐 [Funcionalidades](FUNCIONALIDADES.md) · [Features](FEATURES.md) | Todo lo que hace, en el orden en que se usa, con su página o su skill |
 | [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md) | Alertas de empleo y respuestas por correo (Gmail, IMAP), paso a paso |
 | [`FUENTES_OFERTAS.md`](FUENTES_OFERTAS.md) | De dónde salen las ofertas: APIs, alertas, botón, navegador, LinkedIn |
-| [`CV_TEMPLATES.md`](CV_TEMPLATES.md) | Plantillas de CV, motores (Word y HTML) e importar tu propio diseño |
+| [`CV_TEMPLATES.md`](CV_TEMPLATES.md) | Plantillas de CV, motores (Word y HTML) e importar un diseño propio |
 | [`../extension/README.md`](../extension/README.md) | Instalar el botón «Enviar a CandidatAI» |
 | [`COMPARATIVA.md`](COMPARATIVA.md) | CandidatAI frente a AI Job Search y career-ops: qué tiene cada uno, qué falta y qué no se hará |
 
@@ -27,7 +27,7 @@ the rest are in Spanish only.
 | [`POLICIES.md`](POLICIES.md) | Veracidad del CV, encaje, privacidad, candidaturas, contenido no confiable, búsqueda con navegador |
 | 🌐 [`../SECURITY.md`](../SECURITY.md) | Modelo de amenazas y cómo avisar de una vulnerabilidad |
 
-## Cómo está hecho · How it's built
+## Cómo está hecho · How it is built
 
 | Documento | Qué cuenta |
 |---|---|

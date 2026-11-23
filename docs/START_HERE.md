@@ -19,7 +19,7 @@ the demo, your profile and your first search. For everything else, the [user gui
 
 | | What | Why |
 |---|---|---|
-| 💻 | **A computer** with Windows 11, macOS or Linux, and an internet connection | Windows 11 is the most tested, also installed from scratch; macOS and Linux have an installer and pass the tests, but haven't been installed by hand from a release yet |
+| 💻 | **A computer** with Windows 11, macOS or Linux, and an internet connection | Windows 11 is the most tested, also installed from scratch; macOS and Linux have an installer and pass the tests, but have not been installed by hand from a release yet |
 | 📦 | **The app** (this project, free) | It keeps your jobs, profile, CVs and processes, applies the rules and does the automatic work |
 | 🤖 | **An AI agent** | It reads the postings, judges the fit and writes your CV and letters. **The app never calls an AI itself**, so without an agent you can review jobs and track, but not write |
 
@@ -32,22 +32,22 @@ choose which one, and that decides what it costs and where your data goes:
 | **Claude Code** | Included in Claude Pro, about US$20 a month, or higher plans | To Anthropic | **The reference**: tested end to end |
 | **Codex** | Included in ChatGPT Plus, about US$20 a month, or higher plans; the free plan has limited access | To OpenAI | Tested with one job |
 | **Antigravity CLI** | Included in Google AI Pro, about US$20 a month (€21.99 in Spain), or Google AI Ultra; also free with a Google account, with a weekly quota | To Google | Extracts and assesses well. On the free plan, the quota runs out when it starts on CVs; with Google AI Pro, not measured yet |
-| **OpenCode** or **Qwen Code** with a free cloud model (OpenRouter `:free`) | Free, about 50 requests a day (1,000 if you've ever bought US$10 of credit) | To the model's provider | Configured, not yet measured with a cloud model |
-| **A local model** (Ollama or LM Studio) with OpenCode, Codex or Qwen Code | Free | **Nowhere**: it stays on your computer | Needs a powerful computer: measured with a 20B model on 16 GB of memory and no graphics card, it didn't finish the test |
+| **OpenCode** or **Qwen Code** with a free cloud model (OpenRouter `:free`) | Free, about 50 requests a day (1,000 if you have ever bought US$10 of credit) | To the model's provider | Configured, not yet measured with a cloud model |
+| **A local model** (Ollama or LM Studio) with OpenCode, Codex or Qwen Code | Free | **Nowhere**: it stays on your computer | Needs a powerful computer: measured with a 20B model on 16 GB of memory and no graphics card, it did not finish the test |
 
 Prices change: check [claude.com/pricing](https://claude.com/pricing),
 [chatgpt.com/pricing](https://chatgpt.com/pricing) and
-[gemini.google/subscriptions](https://gemini.google/subscriptions/) before subscribing. If you're not sure, start
-with **Claude Code**: it's the one that has been tested the most with CandidatAI. Free and local
+[gemini.google/subscriptions](https://gemini.google/subscriptions/) before subscribing. If you are not sure, start
+with **Claude Code**: it is the one that has been tested the most with CandidatAI. Free and local
 models, step by step: [`MODELOS_GRATIS.md`](MODELOS_GRATIS.md) (Spanish). What each agent does,
 measured: [`evals/compat/REPORT.md`](../evals/compat/REPORT.md).
 
-Whichever you choose, **the agent never receives your email, phone or salary minimum**, and it can't
+Whichever you choose, **the agent never receives your email, phone or salary minimum**, and it cannot
 send anything to a company: you do that.
 
 ## 2. Install the app
 
-You don't need administrator rights, Python or anything else beforehand.
+You do not need administrator rights, Python or anything else beforehand.
 
 ### On Windows
 
@@ -64,7 +64,7 @@ You don't need administrator rights, Python or anything else beforehand.
    minutes the first time. When it says it has finished, a **"CandidatAI"** shortcut appears on your
    desktop and in the Start menu.
 
-**About Windows warnings.** With these two lines you won't see the blue **SmartScreen** window
+**About Windows warnings.** With these two lines you will not see the blue **SmartScreen** window
 ("Windows protected your PC"): it only appears for programs downloaded with a browser, and here
 nothing is downloaded that way. `-ExecutionPolicy Bypass` lets PowerShell run that one script
 without changing your settings. If you downloaded `install.ps1` from the browser instead, right
@@ -88,11 +88,11 @@ applications menu (Linux). On macOS, the first time, it may ask for permission t
 allow it. On Linux, if the PDF browser is missing system libraries, it tells you which command to
 run (that one does need `sudo`).
 
-### The checksum: how you know the download wasn't altered
+### The checksum: how you know the download was not altered
 
 Each [release](https://github.com/DiegoPrieto23/candidatai/releases/latest) publishes
 `candidatai.zip` and a `candidatai.zip.sha256` file with its "fingerprint". **The installer checks
-it by itself**: if the download doesn't match, it stops and installs nothing. To check it by hand
+it by itself**: if the download does not match, it stops and installs nothing. To check it by hand
 (for example, if you downloaded the zip yourself), put both files in the same folder and run:
 
 ```powershell
@@ -118,14 +118,14 @@ nothing is online.
 
 ## 3. Install your agent
 
-An agent isn't the Claude chat app or claude.ai: it's a separate program you install on your
+An agent is not the Claude chat app or claude.ai: it is a separate program you install on your
 computer, with the same account and subscription (Claude Code, in Claude's case). While you have
 none, **Home** and **Agent** warn you with "You need an AI agent" and the steps to install Claude
 Code: open PowerShell (or Terminal on macOS), paste the command they give you with **Copy**, sign in
 by typing `claude` and open CandidatAI again.
 
 For another agent, press **Configure agents**, in **Agent**: it lists the agents the app
-knows, marks the ones you don't have as **Not installed** and gives you the command to install each
+knows, marks the ones you do not have as **Not installed** and gives you the command to install each
 one, ready to copy.
 Their official pages: [Claude Code](https://code.claude.com/docs/en/setup),
 [Codex](https://developers.openai.com/codex/cli),
@@ -136,9 +136,9 @@ with your account the first time you open it.
 Back in **Agent**, the top says "Your agent: Claude Code, ready". If you have several, choose yours
 as the default agent in **Configure agents**. From then on, buttons such as **Assess new jobs**
 or **Generate CV** open it in a separate window with the instruction already typed:
-you watch what it does and approve it. If it can't be opened, the button shows you the whole
+you watch what it does and approve it. If it cannot be opened, the button shows you the whole
 instruction, with **Copy**, so you can paste it into your agent. Their small arrow also offers **In the background**
-(no window; a notice tells you when it's done) and **Leave for my next session**.
+(no window; a notice tells you when it is done) and **Leave for my next session**.
 
 <!-- media:provisional -->
 <img src="img/en/agent.webp" alt="Agent page: default agent, one per action and background runs" width="88%">
@@ -170,23 +170,23 @@ To go back to your own data, close that window and open CandidatAI as usual.
 
 ## 5. Create your profile
 
-Your **profile** is the single source of truth: nothing goes into a CV that isn't in it. You don't
+Your **profile** is the single source of truth: nothing goes into a CV that is not in it. You do not
 have to fill it in by hand: your agent builds it from your CV. With no CV or no agent, you can also
 start it by hand.
 
 The easiest way is from the app. Open **My profile**: while you have no profile, it suggests
 starting with your CV. Click **Upload my CV** (PDF or Word) and then **Create my profile from my
 CV**, which opens your agent in a terminal with the request already written. It reads your CV,
-asks about what it doesn't say (your skill levels, the figures behind your achievements, what
-you're looking for) and saves nothing without your OK. When it's done, your profile shows up on its
+asks about what it does not say (your skill levels, the figures behind your achievements, what
+you are looking for) and saves nothing without your OK. When it is done, your profile shows up on its
 own in **My profile**: carry on with step 3.
 
 With no agent (or no CV), click **Start by hand** in **My profile**: write your name, your headline,
-the role you're looking for and the levels you accept, and click **Create my profile**. The editor
-opens so you can carry on block by block; what it didn't ask (work mode, locations, photo on the CV)
+the role you are looking for and the levels you accept, and click **Create my profile**. The editor
+opens so you can carry on block by block; what it did not ask (work mode, locations, photo on the CV)
 starts open to anything and you change it in **Search jobs** and in **My profile**.
 
-If you'd rather do it from your agent:
+If you would rather do it from your agent:
 
 1. Open your agent in the app folder. On Windows, in PowerShell (with Claude Code; for another
    agent, its command instead of `claude`):
@@ -199,10 +199,10 @@ If you'd rather do it from your agent:
    On macOS the first line is `cd ~/"Library/Application Support/CandidatAI/app"` and on Linux
    `cd ~/.local/share/candidatai/app`.
 2. Ask it: *"Create my profile from my CV"*, and tell it where your CV is (Word or PDF). It uses the
-   `update-profile` skill: it reads your CV, asks you for what's missing and saves it, without
+   `update-profile` skill: it reads your CV, asks you for what is missing and saves it, without
    making anything up.
 3. Then review it block by block in **My profile**: experience and achievements (with numbers if you
-   have them), skills and languages; and in **Search jobs**, what you're looking for: roles, locations and work mode at the
+   have them), skills and languages; and in **Search jobs**, what you are looking for: roles, locations and work mode at the
    top, and under **More settings** your salary minimum, years of experience and contract. Each change can be undone.
 
 <!-- media:provisional -->
@@ -215,8 +215,8 @@ sees the figure**.
 
 Jobs can come in several ways; start with one or two:
 
-- **Paste a job** you've seen: **New job**, paste its link or its text.
-- **Companies you'd like to work for**: in **Search jobs**, the **Where to search → Company career sites** section. If they use Greenhouse, Lever,
+- **Paste a job** you have seen: **New job**, paste its link or its text.
+- **Companies you would like to work for**: in **Search jobs**, the **Where to search → Company career sites** section. If they use Greenhouse, Lever,
   Ashby and the like, their new jobs arrive every day by themselves.
 - **Job alerts by email** (LinkedIn, InfoJobs, Indeed…): **Where to search → Email alerts**, add your mailbox step by step.
   The app only reads; it never sends or deletes email.
@@ -245,7 +245,7 @@ postings and your profile, without your email, phone or salary minimum), and it 
 behind your agent's model, unless you use a local model. The app also reads public job pages, the
 APIs of the job boards you set up and, once per website, the icon of each job board and company in
 **Where to search**. That site sees a visit from your connection, with nothing of yours. The icon
-is saved in your data folder, so opening the page doesn't notify anyone again.
+is saved in your data folder, so opening the page does not notify anyone again.
 
 **Does it send applications by itself?** No. It fills in forms and stops; sending takes your click,
 one application at a time. Messages and emails are drafts that you copy and send.
@@ -255,14 +255,14 @@ one application at a time. Messages and emails are drafts that you copy and send
 read. You give it an **app password**, not your normal one, and you can revoke it at any moment. Be
 aware that with Gmail an app password can reach the whole mailbox (Google offers nothing narrower);
 the limit to one label is set by the app. The password stays in the `.env` file on your computer
-and your agent never sees it. If you'd rather not connect anything, you can export the alert emails
+and your agent never sees it. If you would rather not connect anything, you can export the alert emails
 and drop them in a folder. Step by step for Gmail, Outlook, Yahoo and iCloud:
 [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md) (Spanish). An email can contain text aimed at an AI:
 the app detects it and treats it as data, never as an instruction.
 
 **What about LinkedIn?** No automated applications on LinkedIn, ever. LinkedIn jobs reach you through
 your email alerts or the browser button. Searching LinkedIn (with your browser, or its public search
-without your account) only happens if you turn it on, and it's at your own risk.
+without your account) only happens if you turn it on, and it is at your own risk.
 
 **How much does it cost?** The app is free (MIT licence). The agent costs what its plan costs (see
 [section 1](#1-what-you-need)): nothing with a free or local model, around US$20 a month with Claude
@@ -275,6 +275,6 @@ postings and writing CVs needs the agent.
 **Where do I ask for help?** In the repository's
 [Discussions](https://github.com/DiegoPrieto23/candidatai/discussions) or by opening an
 [issue](https://github.com/DiegoPrieto23/candidatai/issues) (with the demo data, never yours). If
-something doesn't start, `uv run cai doctor` in the app's `backend` folder checks everything and
-tells you what's missing, and the [user guide](GUIDE.md#14-troubleshooting) lists the usual
+something does not start, `uv run cai doctor` in the app's `backend` folder checks everything and
+tells you what is missing, and the [user guide](GUIDE.md#14-troubleshooting) lists the usual
 problems.
