@@ -3,9 +3,9 @@ import type { Stage } from '@/api/client'
 import { STAGE_LABEL } from '@/lib/labels'
 
 /**
- * Columnas del Tablero: una vista sobre las etapas. Cada columna junta etapas seguidas y puede
- * llevar un nombre propio. Agrupar o renombrar no cambia ninguna etapa ni ningún evento: se guarda
- * solo en este navegador.
+ * Columnas del Tablero: una vista sobre las etapas. Cada columna junta las etapas que se quiera, en
+ * el orden que se quiera, y puede llevar un nombre propio. Agrupar, ordenar o renombrar no cambia
+ * ninguna etapa ni ningún evento: se guarda solo en este navegador.
  */
 export interface BoardColumnSetting {
   stages: Stage[]
@@ -26,7 +26,7 @@ export function defaultLayout(): BoardColumnSetting[] {
   return BOARD_STAGES.map((stage) => ({ stages: [stage], name: '' }))
 }
 
-/** Las columnas cubren todas las etapas, en orden, sin repetir, y son entre 3 y 5. */
+/** Las columnas cubren todas las etapas, cada una una vez, y son entre 3 y 5. */
 export function isValidLayout(value: unknown): value is BoardColumnSetting[] {
   if (!Array.isArray(value) || value.length < MIN_COLUMNS || value.length > MAX_COLUMNS) return false
   const stages: unknown[] = []
@@ -37,11 +37,15 @@ export function isValidLayout(value: unknown): value is BoardColumnSetting[] {
     if (typeof name !== 'string' || name.length > MAX_NAME) return false
     stages.push(...own)
   }
-  return stages.length === BOARD_STAGES.length && stages.every((stage, i) => stage === BOARD_STAGES[i])
+  return stages.length === BOARD_STAGES.length && BOARD_STAGES.every((stage) => stages.includes(stage))
 }
 
-function isDefault(layout: BoardColumnSetting[]): boolean {
-  return layout.length === BOARD_STAGES.length && layout.every((c) => !c.name.trim())
+/** Las de siempre: una columna por etapa, en su orden y sin nombre. */
+export function isDefault(layout: BoardColumnSetting[]): boolean {
+  return (
+    layout.length === BOARD_STAGES.length &&
+    layout.every((c, i) => c.stages.length === 1 && c.stages[0] === BOARD_STAGES[i] && !c.name.trim())
+  )
 }
 
 let cache: { raw: string | null; layout: BoardColumnSetting[] } | null = null
@@ -110,21 +114,50 @@ export function columnId(column: BoardColumnSetting): Stage {
 
 // --- Editor ---------------------------------------------------------------------------------
 
-/** `joins[i]`: la etapa `i` y la siguiente van en la misma columna. */
-export function joinsOf(layout: BoardColumnSetting[]): boolean[] {
-  const joins: boolean[] = []
-  for (const column of layout) {
-    column.stages.forEach((_, i) => joins.push(i < column.stages.length - 1))
-  }
-  return joins.slice(0, BOARD_STAGES.length - 1)
+const stageOrder = (stage: Stage) => (BOARD_STAGES as readonly Stage[]).indexOf(stage)
+
+/** Dentro de una columna, las etapas van en el orden del proceso, como sus tarjetas. */
+function sorted(stages: Stage[]): Stage[] {
+  return [...stages].sort((a, b) => stageOrder(a) - stageOrder(b))
 }
 
-/** Las columnas que salen de unir etapas; cada una conserva el nombre de la que empezaba igual. */
-export function layoutFromJoins(joins: boolean[], names: Partial<Record<Stage, string>>): BoardColumnSetting[] {
-  const layout: BoardColumnSetting[] = []
-  BOARD_STAGES.forEach((stage, i) => {
-    if (i > 0 && joins[i - 1]) layout[layout.length - 1].stages.push(stage)
-    else layout.push({ stages: [stage], name: names[stage] ?? '' })
-  })
-  return layout
+/** La columna en la que está una etapa. */
+export function columnOf(layout: BoardColumnSetting[], stage: Stage): number {
+  return layout.findIndex((column) => column.stages.includes(stage))
+}
+
+/**
+ * Si la etapa puede ir a la columna `target` (o a una nueva, al final): sin pasar de 5 columnas y
+ * sin bajar de 3, porque la columna que se queda sin etapas desaparece. Una etapa que ya va sola no
+ * pasa a una nueva: solo movería su columna al final y le quitaría el nombre (para eso, las flechas).
+ */
+export function canAssign(layout: BoardColumnSetting[], stage: Stage, target: number | 'new'): boolean {
+  const from = columnOf(layout, stage)
+  if (target === from) return true
+  const emptiesFrom = layout[from]?.stages.length === 1
+  if (emptiesFrom && target === 'new') return false
+  const count = layout.length + (target === 'new' ? 1 : 0) - (emptiesFrom ? 1 : 0)
+  return count >= MIN_COLUMNS && count <= MAX_COLUMNS
+}
+
+/** Lleva la etapa a otra columna (o a una nueva, al final, sin nombre). */
+export function assignStage(layout: BoardColumnSetting[], stage: Stage, target: number | 'new'): BoardColumnSetting[] {
+  if (!canAssign(layout, stage, target) || target === columnOf(layout, stage)) return layout
+  const next = layout.map((column, i) => ({
+    ...column,
+    stages: sorted(
+      i === target ? [...column.stages.filter((s) => s !== stage), stage] : column.stages.filter((s) => s !== stage),
+    ),
+  }))
+  if (target === 'new') next.push({ stages: [stage], name: '' })
+  return next.filter((column) => column.stages.length > 0)
+}
+
+/** Cambia una columna de sitio. */
+export function moveColumn(layout: BoardColumnSetting[], from: number, to: number): BoardColumnSetting[] {
+  if (from === to || to < 0 || to >= layout.length) return layout
+  const next = [...layout]
+  const [moved] = next.splice(from, 1)
+  next.splice(to, 0, moved)
+  return next
 }

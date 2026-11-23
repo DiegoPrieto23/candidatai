@@ -443,16 +443,18 @@ The worker runs the automatic sources every day at `connectors.daily_at`
 ## 9. Tracking, replies and results
 
 - **Board:** a kanban by stage. A card only changes column by recording what
-  happened (reply, interview, test, offer, rejection), and cards only move to the right: while you
+  happened (reply, interview, test, offer, rejection), and cards only move to a later stage: while you
   drag one, the columns where it can go are highlighted. Reopening a closed job is in **Update
   status**. Interviews and tests create a dated
   milestone you can export to your calendar (`.ics`). On the job page, **What happened?** also
   records what doesn't change the stage (another reply, another interview, a test, the offer) and
   links to **Log offer** and **Milestones** for the details; **I accept the offer** shows up once
   there's an offer.
-  With **Customize columns** you pick 3 to 5 columns by grouping consecutive stages (e.g. **Approved**
-  and **CV ready**) and name them; it only changes the view, stages stay as they are, and **Reset**
-  brings back the usual ones. It's saved in your browser.
+  With **Customize columns** you pick 3 to 5 columns: each stage goes to the column you choose in its
+  selector (e.g. **Approved** and **CV ready** together), each column shows its stages as tags and a
+  name, and you order them by dragging or with their arrows. A preview shows how the board will look.
+  It only changes the view: your jobs' stages stay as they are and cards still only move to a later
+  stage. **Reset** brings back the usual ones when you save. It's saved in your browser.
 - **Calendar:** all your milestones (interviews, tests, deadlines and others, past ones included) by
   month, week, day or agenda. Click one to see its details and open the job. To add one, use **Add
   milestone**, a day's **+** or a free hour in the week view: pick the job (with many, search it by

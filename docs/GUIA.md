@@ -439,15 +439,17 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
 ## 9. Seguimiento, respuestas y resultados
 
 - **Tablero:** kanban por etapas. Una tarjeta solo cambia de columna registrando lo que pasó
-  (respuesta, entrevista, prueba, oferta, rechazo), y las tarjetas solo van hacia la derecha: al
+  (respuesta, entrevista, prueba, oferta, rechazo), y las tarjetas solo van hacia una etapa posterior: al
   arrastrar una, se marcan las columnas a las que puede ir. Reabrir una oferta cerrada está en
   «Actualizar estado». Entrevistas y pruebas crean un hito con fecha,
   exportable a tu calendario (`.ics`). En la ficha, «¿Qué ha pasado?» registra también lo que no
   cambia de etapa (otra respuesta, otra entrevista, una prueba, la oferta) y enlaza a «Anotar
   oferta» y a «Hitos» para los detalles; «Acepto la oferta» sale cuando ya hay una oferta.
-  Con «Personalizar columnas» eliges entre 3 y 5 columnas juntando etapas seguidas (p. ej. «Aprobada»
-  y «CV listo») y les pones nombre; es solo la vista, las etapas no cambian, y «Restablecer» vuelve a
-  las de siempre. Se guarda en tu navegador.
+  Con «Personalizar columnas» eliges entre 3 y 5 columnas: cada etapa va a la columna que elijas con
+  su selector (p. ej. «Aprobada» y «CV listo» juntas), cada columna lleva sus etapas como etiquetas y
+  un nombre, y se ordenan arrastrándolas o con sus flechas. Una vista previa enseña cómo quedará el
+  tablero. Es solo la vista: las etapas de tus ofertas no cambian y las tarjetas siguen avanzando solo
+  a una etapa posterior. «Restablecer» vuelve a las de siempre al guardar. Se guarda en tu navegador.
 - **Calendario:** todos tus hitos (entrevistas, pruebas, plazos y otros, también los pasados) por
   mes, semana, día o agenda. Pulsa uno para ver sus datos e ir a la oferta. Para añadir uno, «Añadir
   hito», el «+» de un día o una hora libre de la semana: eliges la oferta (con muchas, la buscas por

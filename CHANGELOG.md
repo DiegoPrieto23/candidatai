@@ -68,10 +68,13 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 - **Tiempo y tasa de respuesta por canal:** en **Resultados**, cuánto te responden y en cuántos días
   (mediana) por referencia, en la web de la empresa, en los portales de empleo y en las ofertas que
   añades tú. También en `cai stats funnel` y en la interfaz para agentes.
-- **Columnas del Tablero a tu gusto:** con **Personalizar columnas** eliges entre 3 y 5 columnas
-  juntando etapas seguidas y les pones nombre. Solo cambia la vista: las etapas de tus ofertas siguen
-  igual, cada tarjeta de una columna con varias etapas dice la suya y **Restablecer** vuelve a las de
-  siempre.
+- **Columnas del Tablero a tu gusto:** con **Personalizar columnas** eliges entre 3 y 5 columnas. Cada
+  columna sale en una fila con su nombre y sus etapas como etiquetas, y se ordena arrastrándola o con
+  sus flechas; cada etapa elige su columna en un selector, aunque no vayan seguidas (p. ej. «Aprobada»
+  con «Cerrada»). Una vista previa enseña el tablero en pequeño con cuántas ofertas tendrá cada
+  columna. Solo cambia la vista, y el diálogo lo explica: las etapas de tus ofertas siguen igual, las
+  tarjetas solo avanzan a una etapa posterior y cada tarjeta de una columna con varias etapas dice la
+  suya. **Restablecer** vuelve a las de siempre y se aplica al guardar.
 - **Añadir hitos desde el Calendario:** con **Añadir hito**, el «+» de un día o pulsando una hora
   libre de la semana o del día. Eliges la oferta en una lista con buscador (por empresa o puesto,
   sin importar tildes ni mayúsculas) y el hito se guarda en su ficha, con la fecha ya puesta.
