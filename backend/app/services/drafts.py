@@ -302,13 +302,13 @@ def save_message_draft(
         sent = followups_sent(session, [job_id]).get(job_id, 0)
         if sent >= limit:
             raise DraftNotAllowedError(
-                f"Ya enviaste {sent} seguimientos a esta candidatura (máximo {limit}): "
+                f"Ya hay {sent} seguimientos enviados a esta candidatura (máximo {limit}): "
                 "no se propone otro."
             )
     else:
         milestone_id = _interview_done(session, job_id, data.milestone_id).id
         if thanked_milestones(session, [milestone_id]):
-            raise DraftNotAllowedError("Ya enviaste el agradecimiento de esa entrevista.")
+            raise DraftNotAllowedError("El agradecimiento de esa entrevista ya está enviado.")
 
     # El vigente del mismo tipo y destinatario (y entrevista, en un agradecimiento).
     current = session.scalars(

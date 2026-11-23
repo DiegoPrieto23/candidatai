@@ -257,7 +257,8 @@ def apply(session: Session, tier: Tier) -> TiersView:
         # Sin modelo, el agente usaría el suyo, que puede ser de pago o en la nube.
         raise PreferenceError(
             "tier",
-            "Elige antes el modelo local de este nivel («Editar»): sin él, el agente usaría "
+            "Antes hay que elegir el modelo local de este nivel («Editar»): sin él, el agente "
+            "usaría "
             "el que tenga configurado.",
         )
     prefs = ctx.prefs.model_copy(deep=True)

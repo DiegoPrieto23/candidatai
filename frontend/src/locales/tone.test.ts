@@ -50,8 +50,6 @@ const SECOND_PERSON = new RegExp(
 )
 /** En inglés, sin contracciones; el posesivo («the job's») sí vale. */
 const CONTRACTION = /\b\w+(?:n['’]t|['’](?:ll|ve|re|d|m))\b|\b(?:it|that|there|what|here)['’]s\b/i
-/** La ayuda (preguntas frecuentes) pasa al mismo tono en su propio repaso. */
-const SECOND_PERSON_PENDING = ['help']
 
 /**
  * Las intros de página (bajo el título de cada página) caben en una o dos líneas: lo demás va a una
@@ -85,7 +83,6 @@ describe('tono de los textos', () => {
       it('«es» es impersonal: sin «tú», sus formas ni sus imperativos', () => {
         const found: string[] = []
         for (const [ns, texts] of Object.entries(resources[language]!)) {
-          if (SECOND_PERSON_PENDING.includes(ns)) continue
           for (const [key, text] of entries(texts)) {
             const own = text.replace(/«[^»]*»/g, '«»')
             const match = own.match(SECOND_PERSON)
@@ -100,7 +97,6 @@ describe('tono de los textos', () => {
       it('«en» es formal: sin contracciones', () => {
         const found: string[] = []
         for (const [ns, texts] of Object.entries(resources[language]!)) {
-          if (SECOND_PERSON_PENDING.includes(ns)) continue
           for (const [key, text] of entries(texts)) {
             const match = text.match(CONTRACTION)
             if (match) found.push(`${ns}:${key} («${match[0]}»): ${text}`)

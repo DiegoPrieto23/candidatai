@@ -80,7 +80,8 @@ class TeamtailorConnector:
                 params={"per_page": PAGE_SIZE, "offset": page * PAGE_SIZE},
                 label=self.label,
                 not_found=(
-                    f"No existe la página de empleo «{config.slug}» en Teamtailor (404). Revisa "
+                    f"No existe la página de empleo «{config.slug}» en Teamtailor (404). Conviene "
+                    f"revisar "
                     "el slug: es lo que va antes de `.teamtailor.com`."
                 ),
             )

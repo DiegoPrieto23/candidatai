@@ -335,7 +335,7 @@ def render_warnings(
                 code="font_substituted",
                 message="Falta la fuente "
                 + ", ".join(substituted_fonts)
-                + " y el PDF usa otra: instálala para que se vea como la plantilla.",
+                + " y el PDF usa otra: instalada, se ve como la plantilla.",
             )
         )
     return warnings

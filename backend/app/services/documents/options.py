@@ -177,7 +177,7 @@ def without_docx_converter(
         RenderWarning(
             code="docx_converter_missing",
             message=f"«{template.meta.name}» es una plantilla de Word y no hay LibreOffice ni Word "
-            f"para pasarla a PDF: se usa «{fallback.meta.name}». Instala LibreOffice para usar "
+            f"para pasarla a PDF: se usa «{fallback.meta.name}». Con LibreOffice instalado se usa "
             "las de Word (`cai doctor` dice cómo).",
         )
     )
@@ -266,13 +266,13 @@ def resolve(
             warnings.append(
                 RenderWarning(
                     code="photo_excluded",
-                    message=f"Pediste foto, pero la plantilla «{meta.id}» no la admite.",
+                    message=f"Se pidió foto, pero la plantilla «{meta.id}» no la admite.",
                 )
             )
         elif not photo_available:
             warnings.append(
                 RenderWarning(
-                    code="photo_excluded", message="Pediste foto, pero no hay foto disponible."
+                    code="photo_excluded", message="Se pidió foto, pero no hay foto disponible."
                 )
             )
         else:

@@ -26,16 +26,18 @@ MCP_COMMAND = "docker exec -i candidatai cai-mcp"
 CLI_COMMAND = "docker exec -i candidatai cai"
 
 TERMINAL = (
-    "Estás en Docker: tu agente no está en el contenedor y no puedo abrirle una terminal. Copia la "
-    "orden y pégala en tu agente."
+    "CandidatAI funciona en Docker: el agente no está en el contenedor y no se le puede abrir una "
+    "terminal. Hay que copiar la "
+    "orden y pegarla en el agente."
 )
 BACKGROUND = (
-    "En Docker no hay segundo plano: tu agente no está en el contenedor. Usa los botones «en tu "
-    "agente», que copian la orden."
+    "En Docker no hay segundo plano: el agente no está en el contenedor. Sirven los botones del "
+    "agente, que copian la orden."
 )
 ASSISTED_APPLY = (
-    "En Docker no hay un navegador visible para rellenar el formulario y que pulses «Enviar». Abre "
-    "la oferta en tu navegador, envíala tú y pulsa «Marcar como enviada»."
+    "En Docker no hay un navegador visible para rellenar el formulario y pulsar «Enviar». La "
+    "oferta se abre "
+    "en el navegador habitual, se envía a mano y se pulsa «Marcar como enviada»."
 )
 
 

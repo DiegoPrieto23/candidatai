@@ -277,7 +277,7 @@ class AgentSpec(_Strict):
         """Los argumentos que eligen un modelo al lanzar el agente: un `preset` de `models.presets`
         o un `model` con `models.flag`. Nada si no se pide ninguno (el modelo por defecto)."""
         if model and preset:
-            raise ValueError("elige un modelo o un preset, no los dos")
+            raise ValueError("un modelo o un preset, no los dos")
         if preset:
             if preset not in self.models.presets:
                 raise ValueError(f"{self.info.display_name} no tiene el preset «{preset}»")

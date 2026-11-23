@@ -120,7 +120,8 @@ def _get(
         raise ConnectorError("not_found", not_found)
     if status in (401, 403):
         raise ConnectorError(
-            "unauthorized", f"{label} rechazó la petición (HTTP {status}): revisa las claves."
+            "unauthorized",
+            f"{label} rechazó la petición (HTTP {status}): conviene revisar las claves.",
         )
     if response.is_redirect:
         raise ConnectorError(

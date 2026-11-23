@@ -70,7 +70,8 @@ def _source(session: Session, field: SuggestionField) -> str:
         source = (current.summary.es or "").strip()
         if not source:
             raise ValueError(
-                "Tu perfil no tiene resumen en español: escríbelo y guárdalo antes de pedir la "
+                "El perfil no tiene resumen en español: hay que escribirlo y guardarlo antes de "
+                "pedir la "
                 "versión en inglés."
             )
         return source

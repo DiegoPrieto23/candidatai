@@ -650,7 +650,7 @@ def _unrecognized(
         filters_applied=_preferences(session) is not None,
         message=(
             "No se reconoce ninguna web de empleo conocida en esa dirección: se guardará como "
-            "plataforma que tu agente recorre con el navegador al buscar."
+            "plataforma que el agente recorre con el navegador al buscar."
         ),
         resolution=resolution,
     )

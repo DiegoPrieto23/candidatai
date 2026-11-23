@@ -55,7 +55,7 @@ _WORD = re.compile(r"\w+")
 
 EVIDENCE_LABELS = {
     EVIDENCE_EXTRACTION: "La oferta (su extracción)",
-    EVIDENCE_USER: "Tus indicaciones para la carta",
+    EVIDENCE_USER: "Indicaciones para la carta",
 }
 
 
@@ -504,13 +504,13 @@ def resolve_letter(
             warnings.append(
                 RenderWarning(
                     code="photo_excluded",
-                    message=f"Pediste foto, pero el diseño de carta «{meta.id}» no la admite.",
+                    message=f"Se pidió foto, pero el diseño de carta «{meta.id}» no la admite.",
                 )
             )
         elif not photo_available:
             warnings.append(
                 RenderWarning(
-                    code="photo_excluded", message="Pediste foto, pero no hay foto disponible."
+                    code="photo_excluded", message="Se pidió foto, pero no hay foto disponible."
                 )
             )
         else:
@@ -667,7 +667,7 @@ def _store_render(
                     code="font_substituted",
                     message="Falta la fuente "
                     + ", ".join(missing)
-                    + " y el PDF usa otra: instálala para que se vea como la plantilla.",
+                    + " y el PDF usa otra: instalada, se ve como la plantilla.",
                 )
             )
         # Fase 25.5: las mismas comprobaciones de maquetación que el CV (sin títulos de sección).

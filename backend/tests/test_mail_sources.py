@@ -164,7 +164,7 @@ def test_private_hosts_need_explicit_permission(session: Session) -> None:
             _imap("X", 993, host=host, allow_private=False), _plain
         )
         assert (result.ok, result.code) == (False, "host_not_allowed"), host
-        assert "Servidor en mi equipo o mi red" in result.message
+        assert "Servidor en este equipo o en la red local" in result.message
 
 
 # --- La cuenta de `.env` («Principal») ----------------------------------------------------------
@@ -201,7 +201,7 @@ def test_env_account_appears_as_principal(
         mail_sources.update_mail_source(
             session, principal.id, MailSourcePatch.model_validate({"host": "imap.otro.com"})
         )
-    with pytest.raises(mail_sources.MailSourceNotAllowedError, match="desactívala aquí"):
+    with pytest.raises(mail_sources.MailSourceNotAllowedError, match="se desactiva aquí"):
         mail_sources.delete_mail_source(session, principal.id)
     mail_sources.update_mail_source(
         session, principal.id, MailSourcePatch.model_validate({"enabled": False})
@@ -405,7 +405,7 @@ def test_secret_name_does_not_overwrite_an_existing_variable(session: Session) -
 @pytest.mark.parametrize(
     ("data", "fragment"),
     [
-        ({"label": "   "}, "Escribe un nombre"),
+        ({"label": "   "}, "Falta un nombre"),
         ({"kind": "folder", "folder": "CON"}, "Carpeta no válida"),
         ({"kind": "folder", "folder": "alertas."}, "Carpeta no válida"),
     ],

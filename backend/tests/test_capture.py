@@ -140,7 +140,7 @@ def test_closed_offer_is_existing_and_says_so(session: Session) -> None:
     record(session, first.job_id, EventType.DISCARDED, Actor.USER, {"reason": "other"})
     again = capture.capture(session, capture.CaptureInput(**_body()))
     assert again.status == "existing" and again.stage == Stage.CLOSED
-    assert "reabrirla" in again.message
+    assert "Se puede reabrir" in again.message
 
 
 def test_risk_in_captured_text_and_hidden_html(session: Session) -> None:
@@ -329,7 +329,7 @@ def test_api_missing_description_is_422(client: tuple[TestClient, str]) -> None:
     api, token = client
     response = _post(api, token, text="corto")
     assert response.status_code == 422
-    assert "Selecciona su texto" in response.json()["error"]["message"]
+    assert "seleccionar su texto" in response.json()["error"]["message"]
 
 
 def test_cors_is_only_for_the_ui(client: tuple[TestClient, str]) -> None:
@@ -356,7 +356,7 @@ def test_whole_page_text_does_not_complete_a_summary(session: Session, isolated_
     shutil.copy(FIXTURES / "linkedin_alert.eml", inbox / "a.eml")
     poll_email(session, fetch=_no_fetch)
     page_text = "Resultados de búsqueda: Data Engineer, Analytics Engineer... " * 10
-    with pytest.raises(ValueError, match="Selecciona el texto de la oferta"):
+    with pytest.raises(ValueError, match="seleccionar el texto de la oferta"):
         capture.capture(session, capture.CaptureInput(**_body(text=page_text, site="main")))
     summary = session.scalars(select(Job).where(Job.external_id == "4000000001")).one()
     assert summary.detail_level == "summary"

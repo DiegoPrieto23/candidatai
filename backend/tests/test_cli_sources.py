@@ -90,7 +90,7 @@ def test_test_of_a_failing_source_exits_1(db: None) -> None:
     runner.invoke(cli.app, ADD)
     result = runner.invoke(cli.app, ["sources", "test", "1"])
     assert result.exit_code == 1
-    assert "Revisa el slug" in result.stdout
+    assert "Conviene revisar el slug" in result.stdout
 
 
 @respx.mock

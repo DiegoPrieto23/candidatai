@@ -81,5 +81,5 @@ def ensure_current(url: str | None = None) -> None:
     if current != head:
         raise DatabaseNotReadyError(
             f"La base de datos no está al día (versión {current or 'vacía'}, última {head}). "
-            "Ejecuta `cai db upgrade`."
+            "Hay que ejecutar `cai db upgrade`."
         )

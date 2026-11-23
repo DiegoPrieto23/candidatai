@@ -49,7 +49,7 @@ EMPLOYMENT_LABEL = {
     "internship": "prácticas",
 }
 EMPLOYER_LABEL = {"consultancy": "una consultora", "agency": "una agencia de selección o ETT"}
-SALARY_REASON = "El sueldo publicado está por debajo de tu mínimo salarial."
+SALARY_REASON = "El sueldo publicado está por debajo del mínimo salarial."
 MONTHS_PER_YEAR = 12  # un sueldo mensual se pasa a anual ×12, no ×14
 SALARY_CURRENCY = "EUR"
 
@@ -122,7 +122,7 @@ def _seniority(ext: JobExtraction, profile: CandidateProfile) -> str | None:
     if ext.seniority == "unknown" or ext.seniority in accepted:
         return None
     labels = ", ".join(SENIORITY_LABEL[s] for s in SENIORITY_ORDER if s in accepted)
-    return f"Pide seniority {SENIORITY_LABEL[ext.seniority]}; solo aceptas: {labels}."
+    return f"Pide seniority {SENIORITY_LABEL[ext.seniority]}; solo se aceptan: {labels}."
 
 
 def _years(ext: JobExtraction, profile: CandidateProfile, policy: HardFilterPolicy) -> str | None:
@@ -132,12 +132,12 @@ def _years(ext: JobExtraction, profile: CandidateProfile, policy: HardFilterPoli
     high, low = profile.preferences.max_years_required, profile.preferences.min_years_required
     if high is not None and asked > high + policy.years_tolerance:
         return (
-            f"Pide {asked} años de experiencia; tu máximo es {high} "
+            f"Pide {asked} años de experiencia; el máximo es {high} "
             f"(+{policy.years_tolerance} de tolerancia)."
         )
     if low is not None and asked < low - policy.years_tolerance:
         return (
-            f"Pide {asked} años de experiencia; tu mínimo es {low} "
+            f"Pide {asked} años de experiencia; el mínimo es {low} "
             f"(−{policy.years_tolerance} de tolerancia)."
         )
     return None
@@ -191,12 +191,12 @@ def _contract(ext: JobExtraction, profile: CandidateProfile) -> str | None:
     kind = ext.contract_type
     if contracts and kind in CONTRACT_LABEL and kind not in contracts:
         accepted = ", ".join(CONTRACT_LABEL[c] for c in CONTRACT_LABEL if c in contracts)
-        problems.append(f"contrato {CONTRACT_LABEL[kind]} (aceptas: {accepted})")
+        problems.append(f"contrato {CONTRACT_LABEL[kind]} (se aceptan: {accepted})")
     shifts = profile.preferences.employment_types
     work = ext.employment_type  # `contract` no dice la jornada: pasa, como `unknown`
     if shifts and work in EMPLOYMENT_LABEL and work not in shifts:
         accepted = ", ".join(EMPLOYMENT_LABEL[e] for e in EMPLOYMENT_LABEL if e in shifts)
-        problems.append(f"{EMPLOYMENT_LABEL[work]} (aceptas: {accepted})")
+        problems.append(f"{EMPLOYMENT_LABEL[work]} (se aceptan: {accepted})")
     if problems:
         return "Tipo de contrato: " + "; ".join(problems) + "."
     return None
@@ -226,7 +226,7 @@ def _remote_mode(
         return "La oferta no dice la modalidad y la política exige conocerla."
     if ext.remote_mode not in wanted:
         accepted = ", ".join(REMOTE_LABEL[m] for m in wanted)
-        return f"Modalidad {REMOTE_LABEL[ext.remote_mode]}; aceptas: {accepted}."
+        return f"Modalidad {REMOTE_LABEL[ext.remote_mode]}; se aceptan: {accepted}."
     return None
 
 
@@ -252,7 +252,7 @@ def _location(
     if any(location_matches(loc, zones.excluded) for loc in ext.locations):
         return f"Ubicación descartada: {shown}."
     if any(location_matches(loc, zones.allowed) for loc in ext.locations):
-        return f"{shown} solo te vale en híbrido o remoto, y la oferta es presencial."
+        return f"{shown} solo vale en híbrido o remoto, y la oferta es presencial."
     return f"Fuera de zona: {shown}."
 
 
@@ -272,12 +272,12 @@ def _languages(
         if code is None:
             continue  # idioma que no sabemos interpretar: no descarta
         if code not in known:
-            problems.append(f"pide {req.language} y no está en tu perfil")
+            problems.append(f"pide {req.language} y no está en el perfil")
             continue
         wanted, have = language_rank(req.level), known[code]
         if wanted is not None and have is not None and have < wanted:
             level, own = _LEVEL_NAME[wanted], _LEVEL_NAME[have]
-            problems.append(f"pide {req.language} {level} y tienes {own}")
+            problems.append(f"pide {req.language} {level} y el perfil tiene {own}")
     if problems:
         return "Idiomas: " + "; ".join(problems) + "."
     return None
@@ -319,7 +319,7 @@ def _signals(ext: JobExtraction, company: str | None, profile: CandidateProfile)
         hits.append("empresa oculta o agencia")
     # `fixed_term` lo evalúa `_contract`: equivale a no aceptar contrato temporal.
     if hits:
-        return f"Excluida por tus preferencias (`exclude_signals`): {', '.join(hits)}."
+        return f"Excluida por las preferencias (`exclude_signals`): {', '.join(hits)}."
     return None
 
 

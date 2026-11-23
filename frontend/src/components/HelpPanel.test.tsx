@@ -22,7 +22,7 @@ describe('Ayuda del portal', () => {
     const panel = screen.getByRole('dialog', { name: 'Ayuda' })
     expect(within(panel).getByRole('searchbox', { name: 'Buscar en la ayuda' })).toHaveFocus()
     expect(within(panel).getByRole('heading', { name: 'Primeros pasos' })).toBeInTheDocument()
-    expect(within(panel).getByRole('button', { name: '¿Cómo creo mi perfil?' })).toHaveAttribute('aria-expanded', 'false')
+    expect(within(panel).getByRole('button', { name: '¿Cómo se crea el perfil?' })).toHaveAttribute('aria-expanded', 'false')
   })
 
   it('busca, despliega la respuesta y lleva a la pantalla donde se hace', async () => {
@@ -32,7 +32,7 @@ describe('Ayuda del portal', () => {
 
     const faq = within(panel).getByRole('region', { name: 'Preguntas frecuentes' })
     const question = within(faq).getAllByRole('button')[0]!
-    expect(question).toHaveTextContent('¿Puedo usar el diseño de mi propio CV?')
+    expect(question).toHaveTextContent('¿Se puede usar el diseño de un CV propio?')
     await userEvent.click(question)
     expect(within(faq).getByText(/Convertir en plantilla/)).toBeInTheDocument()
 
@@ -85,7 +85,7 @@ describe('Ayuda del portal', () => {
 
   it('dentro del panel, las letras no son atajos de la página', async () => {
     await userEvent.click(await openApp())
-    const question = screen.getByRole('button', { name: '¿Cómo creo mi perfil?' })
+    const question = screen.getByRole('button', { name: '¿Cómo se crea el perfil?' })
     expect(isTyping(question)).toBe(true)
     expect(isTyping(screen.getByRole('main'))).toBe(false)
   })

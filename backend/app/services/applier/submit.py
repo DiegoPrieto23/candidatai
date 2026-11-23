@@ -121,8 +121,10 @@ def click_submit(
 
 
 UNCONFIRMED = (
-    "No se ha reconocido la página de confirmación. Mira la pestaña: si la web muestra errores, "
-    "corrígelos y termina tú; si se envió, márcala como enviada. No se vuelve a enviar sola."
+    "No se ha reconocido la página de confirmación. Conviene mirar la pestaña: si la web muestra "
+    "errores, "
+    "se corrigen y se termina a mano; si se envió, se marca como enviada. No se vuelve a enviar "
+    "sola."
 )
 
 
@@ -149,7 +151,8 @@ def _wait_confirmation(
             log.write("blocked", ok=False, kind="captcha")
             return SubmitOutcome(
                 result="blocked",
-                message="Tras pulsar «Enviar» ha aparecido un captcha. Resuélvelo tú y termina "
+                message="Tras pulsar «Enviar» ha aparecido un captcha. Hay que resolverlo y "
+                "terminar a mano "
                 "en la web; no se vuelve a enviar sola.",
                 blocker=after.blocker,
             )

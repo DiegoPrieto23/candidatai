@@ -430,12 +430,12 @@ def plan(fields: list[FieldDescriptor], data: FillData, min_similarity: int) -> 
         elif p.kind == "question":
             _plan_question(p, data.answers, min_similarity)
         elif p.kind == "sensitive":
-            p.note = "Dato sensible: nunca se rellena solo. Decides tú."
+            p.note = "Dato sensible: nunca se rellena solo. La decisión es manual."
         elif p.kind == "consent":
             p.note = (
                 "Se marcará al confirmar el envío."
                 if field.required
-                else "Opcional: márcala tú si quieres."
+                else "Opcional: se marca a mano si interesa."
             )
     return plans
 
@@ -447,7 +447,7 @@ def _plan_question(p: FieldPlan, answers: list[PackageAnswer], min_similarity: i
     source = f"Respuesta del paquete: «{found.question}»"
     if not found.answer.strip():
         p.needs_user_input, p.source = True, source
-        p.note = "La respuesta espera un dato tuyo."
+        p.note = "La respuesta espera un dato personal."
         return
     if p.field.options:
         index = choose_option([o.label for o in p.field.options], found.answer)
@@ -457,7 +457,7 @@ def _plan_question(p: FieldPlan, answers: list[PackageAnswer], min_similarity: i
             return
         p.option, p.value = index, p.field.options[index].label
     elif p.field.control == "checkboxes":
-        p.note = "Varias casillas: elige tú."
+        p.note = "Varias casillas: la elección es manual."
         return
     else:
         p.value = found.answer
@@ -519,11 +519,11 @@ def _fill_combobox(page: Page, locator: Locator, value: str) -> str | None:
     try:
         options.first.wait_for(timeout=3000)
     except Exception:
-        return "Sin sugerencias para el texto escrito: revísalo."
+        return "Sin sugerencias para el texto escrito: conviene revisarlo."
     labels = options.all_inner_texts()
     index = choose_option(labels, value)
     if index is None:
-        return "Ninguna sugerencia encaja: revísalo."
+        return "Ninguna sugerencia encaja: conviene revisarlo."
     safe_click(options.nth(index))
     return None
 

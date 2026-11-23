@@ -165,5 +165,10 @@ Los skills de `.agents/skills/` siguen `docs/POLICIES.md` y usan estas convencio
   o los mensajes de la app estén en otro. Si la orden pide un idioma (lo que lanza la app desde el
   portal lo pide en el del portal), ese manda en la conversación; el CV y la carta siguen el idioma
   de la oferta.
+- **Tono**: lo que guardas en la app para que lo lea el usuario (valoraciones de encaje, respuestas
+  del Asistente, preguntas de `ask_user`, notas, guías y planes) va en tono formal e impersonal: en
+  español, sin «tú» ni «usted» («el perfil», «se recomienda preparar…»); en inglés, formal y sin
+  contracciones. Los CVs, las cartas y los mensajes a empresas siguen su propio estilo. La
+  conversación en tu ventana puede ser natural.
 - **Invocación**: cada agente tiene su sintaxis (`/generate-cv 42` en Claude Code,
   `$generate-cv 42` en Codex); también basta con pedirlo en lenguaje natural.

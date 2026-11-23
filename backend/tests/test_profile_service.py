@@ -246,7 +246,7 @@ def test_init_with_a_minimal_profile_writes_only_what_you_gave(isolated_env: Pat
     )
     dest = profile.init_profile(minimal=minimal)
     text = dest.read_text(encoding="utf-8")
-    assert text.startswith("# Tu perfil")
+    assert text.startswith("# El perfil")
     loaded = profile.load_from_yaml(dest)
     assert loaded.personal.name == "Demo Persona"
     assert loaded.personal.email is None

@@ -320,8 +320,9 @@ class MinimalProfile(BaseModel):
 
 
 MINIMAL_HEADER = (
-    "# Tu perfil: la fuente de verdad de tus CVs, cartas y respuestas. Creado desde «Mi perfil»\n"
-    "# («Empezar a mano»); complétalo allí o con tu agente (skill `update-profile`).\n"
+    "# El perfil: la fuente de verdad de los CVs, las cartas y las respuestas. Creado desde «Mi "
+    "perfil»\n"
+    "# («Empezar a mano»); se completa allí o con el agente (skill `update-profile`).\n"
 )
 
 

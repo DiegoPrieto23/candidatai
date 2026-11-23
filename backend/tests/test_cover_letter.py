@@ -336,7 +336,7 @@ def test_get_cover_letter_resolves_evidence(session: Session, approved_job: Job)
     assert info.company == "Acme 1" and info.job_title == "Data Engineer"
     view = info.letter
     assert view.evidence["extraction"] == "La oferta (su extracción)"
-    assert view.evidence["user"] == "Tus indicaciones para la carta"
+    assert view.evidence["user"] == "Indicaciones para la carta"
     assert view.evidence["st-migracion"].startswith("Historia «Migración de SSIS")
     assert view.verification is None and len(view.renders) == 1
 

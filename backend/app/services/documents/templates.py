@@ -242,7 +242,7 @@ def _scan(
                 meta = load_meta(folder)
             except (TemplateInvalidError, PermissionError) as exc:
                 reason = (
-                    "Sin permiso para leer la carpeta: dale permisos a tu usuario "
+                    "Sin permiso para leer la carpeta: hay que dar permisos al usuario del sistema "
                     "(docs/GUIA.md, «Problemas frecuentes»)."
                     if isinstance(exc, PermissionError)
                     else str(exc)

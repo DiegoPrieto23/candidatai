@@ -210,7 +210,7 @@ def answer(
     if prompt.kind == "question" and outcome == "done":
         clean = (text or "").strip()
         if not clean:
-            raise ValueError("Escribe o elige una respuesta.")
+            raise ValueError("Falta escribir o elegir una respuesta.")
         prompt.answer = clean[:MAX_ANSWER]
     prompt.status = outcome
     prompt.answered_at = now

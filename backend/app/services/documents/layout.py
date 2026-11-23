@@ -271,7 +271,7 @@ def _text_layer(pages: list[Page], expected: Expected) -> list[RenderWarning]:
             RenderWarning(
                 code="text_layer",
                 message=f"En el texto del PDF no está {', '.join(missing)} tal cual (iconos o "
-                "glifos rotos): un ATS no lo leería. Prueba otra plantilla.",
+                "glifos rotos): un ATS no lo leería. Conviene otra plantilla.",
                 page=1,
                 fix="template",
             )

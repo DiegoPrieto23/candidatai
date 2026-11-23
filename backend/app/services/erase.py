@@ -150,7 +150,7 @@ def erase_job(session: Session, job_id: int, confirm: str) -> EraseResult:
     company = session.get(Company, job.company_id)
     expected = company.name if company else ""
     if confirm.strip().casefold() != expected.strip().casefold():
-        raise EraseError(f"Para borrarla, escribe el nombre de la empresa: «{expected}».")
+        raise EraseError(f"Para borrarla, hay que escribir el nombre de la empresa: «{expected}».")
     title = job.title
     # La copia, antes de tocar nada (la hace otra conexión: aquí aún no ha cambiado nada).
     backup = backup_database()
@@ -168,7 +168,7 @@ def erase_all(session: Session, confirm: str) -> EraseResult:
     fuentes, los buzones, tu red de contactos y la configuración. `confirm` es «BORRAR» (o
     «DELETE», en la UI en inglés)."""
     if confirm.strip() not in ERASE_ALL_WORDS:
-        raise EraseError("Para vaciarlo todo, escribe «BORRAR».")
+        raise EraseError("Para vaciarlo todo, hay que escribir «BORRAR».")
     backup = backup_database()
     job_ids = list(session.scalars(select(Job.id)))
     erase_jobs(session, job_ids)

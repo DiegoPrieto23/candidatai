@@ -74,7 +74,7 @@ class PersonioConnector:
                 label=self.label,
                 not_found=(
                     f"No existe la empresa «{config.slug}» en Personio o no publica su feed "
-                    "(404). Revisa el slug: es lo que va antes de `.jobs.personio.de`."
+                    "(404). Conviene revisar el slug: es lo que va antes de `.jobs.personio.de`."
                 ),
             )
             items = _positions(root, self.label)

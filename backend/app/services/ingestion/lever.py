@@ -55,7 +55,8 @@ class LeverConnector:
             params={"mode": "json"},
             label=self.label,
             not_found=(
-                f"No existe la empresa «{config.slug}» en Lever (404). Revisa el slug o prueba "
+                f"No existe la empresa «{config.slug}» en Lever (404). Conviene revisar el slug o "
+                f"probar "
                 "la región `eu`."
             ),
         )

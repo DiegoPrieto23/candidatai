@@ -132,7 +132,7 @@ def test_thank_you_needs_an_interview_done(session: Session) -> None:
     saved = drafts.save_message_draft(session, job.id, THANKS)  # la última entrevista hecha
     assert saved.milestone_id == done and saved.kind == "thank_you"
     drafts.mark_draft_sent(session, saved.draft_id)
-    with pytest.raises(DraftNotAllowedError, match="Ya enviaste el agradecimiento"):
+    with pytest.raises(DraftNotAllowedError, match="agradecimiento de esa entrevista ya"):
         drafts.save_message_draft(session, job.id, THANKS)
 
 

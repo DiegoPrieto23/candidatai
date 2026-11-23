@@ -44,14 +44,15 @@ def set_default_template(
     templates.validate(template_id)  # que exista y sea válida antes de apuntar a ella
     if template_id in template_visibility.hidden_ids():
         raise ValueError(
-            f"«{template_id}» está eliminada de tu lista: restáurala en Plantillas antes de "
+            f"«{template_id}» está eliminada de la lista: hay que restaurarla en Plantillas antes "
+            f"de "
             "usarla por defecto."
         )
     path = path or profile_service.default_path()
     state = profile_editor.get_editable(session, path)
     if not state.exists:
         raise profile_service.ProfileNotFoundError(
-            f"No existe {path}: crea tu perfil con el skill `update-profile`."
+            f"No existe {path}: el perfil se crea con el skill `update-profile`."
         )
     preferences = (state.profile or {}).get("preferences")
     if not isinstance(preferences, dict) or not isinstance(preferences.get("cv"), dict):

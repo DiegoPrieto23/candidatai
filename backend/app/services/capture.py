@@ -115,7 +115,7 @@ def check_token(settings: Settings, token: str | None) -> bool:
     if not token_configured(settings):
         raise CaptureNotConfiguredError(
             "La extensión no está conectada: en CandidatAI, «Dónde buscar → Botón del navegador», "
-            "pulsa «Conectar»."
+            "se pulsa «Conectar»."
         )
     stored = settings.capture_token_path.read_text(encoding="utf-8").strip()
     return bool(token) and hmac.compare_digest(_digest(token or ""), stored)
@@ -253,7 +253,7 @@ def _complete(session: Session, job: Job, text: str, data: CaptureInput) -> Capt
 def _existing(session: Session, job: Job) -> CaptureResult:
     stage = _stage(session, job.id)
     if stage == Stage.CLOSED:
-        message = "Ya estaba, pero cerrada (descartada, caducada o duplicada). Puedes reabrirla."
+        message = "Ya estaba, pero cerrada (descartada, caducada o duplicada). Se puede reabrir."
     else:
         message = "Ya estaba en CandidatAI."
     return _result(session, job, "existing", message)
@@ -262,8 +262,9 @@ def _existing(session: Session, job: Job) -> CaptureResult:
 def _require_text(text: str) -> None:
     if len(text) < MIN_CAPTURE_CHARS:
         raise ValueError(
-            "No se encontró la descripción de la oferta en la página. Selecciona su texto con el "
-            "ratón y vuelve a pulsar el botón."
+            "No se encontró la descripción de la oferta en la página. Hay que seleccionar su "
+            "texto con el "
+            "ratón y volver a pulsar el botón."
         )
 
 
@@ -272,8 +273,9 @@ def _require_offer_text(data: CaptureInput, selection: str) -> None:
     lista de resultados y el agente extraería de ahí. Hace falta el extractor o una selección."""
     if data.site == "main" and not selection:
         raise ValueError(
-            "No se reconoce la descripción en esta página. Selecciona el texto de la oferta con el "
-            "ratón y vuelve a pulsar el botón."
+            "No se reconoce la descripción en esta página. Hay que seleccionar el texto de la "
+            "oferta con el "
+            "ratón y volver a pulsar el botón."
         )
 
 
@@ -298,8 +300,9 @@ def capture(session: Session, data: CaptureInput) -> CaptureResult:
         raise ValueError("No se encontró el título de la oferta en la página.")
     if not company:
         raise ValueError(
-            "No se encontró la empresa en la página. Selecciona el texto de la oferta incluyendo "
-            "el nombre de la empresa y vuelve a pulsar, o dala de alta en «Nueva oferta»."
+            "No se encontró la empresa en la página. Hay que seleccionar el texto de la oferta "
+            "incluyendo "
+            "el nombre de la empresa y volver a pulsar, o darla de alta en «Nueva oferta»."
         )
     stored = ingest.store_job(
         session,

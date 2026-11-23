@@ -38,7 +38,8 @@ Sigue `docs/POLICIES.md` §1, §4, §5 y §6. Trabajas con la petición de los a
    y espera con `wait_user_action` hasta que deje de estar `pending`. Con `skipped` o `expired`,
    no insistas: contesta con lo que tengas y di qué te faltaba.
 5. `save_assistant_answer(request_id, answer, links)`. La respuesta va en el idioma de la petición,
-   en texto llano y breve: primero lo que has hecho o encontrado, después lo que le toca a él. En
+   en texto llano y breve, en tono impersonal (en español, sin «tú»: «La oferta 42 encaja…», «Falta
+   revisar…»): primero lo que se ha hecho o encontrado, después lo que queda por hacer. En
    `links`, la ficha de cada oferta de la que hables (`job_id`) y la pantalla donde sigue
    (`screen`): `home`, `profile`, `skills`, `templates`, `search`, `searchSettings`, `sources`,
    `companies`, `email`, `extension`, `newJob`, `inbox`, `review`, `complete`, `board`,

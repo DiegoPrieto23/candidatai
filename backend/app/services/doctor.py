@@ -208,7 +208,9 @@ def check_photo(profile_path: Path, data_dir: Path) -> CheckResult:
     try:
         profile = profile_service.load_from_yaml(profile_path)
     except Exception as exc:  # perfil a medio escribir: lo explica `cai profile validate`
-        detail = f"no se puede leer el perfil ({type(exc).__name__}); usa cai profile validate"
+        detail = (
+            f"no se puede leer el perfil ({type(exc).__name__}); se valida con cai profile validate"
+        )
         return CheckResult(name=name, status=CheckStatus.WARN, detail=detail)
 
     found = photo.find_photo(profile, data_dir)
@@ -227,11 +229,11 @@ def check_photo(profile_path: Path, data_dir: Path) -> CheckResult:
             continue
     if with_photo and (policy.default or any(policy.by_country.values())):
         detail = (
-            f"tu perfil usa {', '.join(with_photo)}, con foto, pero no hay "
+            f"el perfil usa {', '.join(with_photo)}, con foto, pero no hay "
             f"data/{prefs.photo_file} ni data/photo.*: esos CVs saldrán sin foto"
         )
         return CheckResult(name=name, status=CheckStatus.WARN, detail=detail)
-    return CheckResult(name=name, status=CheckStatus.OK, detail="tus plantillas no piden foto")
+    return CheckResult(name=name, status=CheckStatus.OK, detail="las plantillas no piden foto")
 
 
 HTML_CHECK_TEMPLATE = "moderna-2col"
@@ -264,7 +266,8 @@ def check_html_engine() -> CheckResult:
         return CheckResult(
             name=name,
             status=CheckStatus.WARN,
-            detail=f"Chromium no instalado: ejecuta `{CHROMIUM_INSTALL}` (plantillas html)",
+            detail=f"Chromium no instalado: hay que ejecutar `{CHROMIUM_INSTALL}` (plantillas "
+            f"html)",
         )
     except Exception as exc:  # cualquier fallo de Chromium se enseña tal cual
         return CheckResult(name=name, status=CheckStatus.ERROR, detail=str(exc))
@@ -349,7 +352,7 @@ def check_email_alerts(
             return CheckResult(
                 name=name,
                 status=CheckStatus.OK,
-                detail="demo: el IMAP de `.env` no se usa (tu buzón real queda fuera); "
+                detail="demo: el IMAP de `.env` no se usa (el buzón real queda fuera); "
                 "deja correos .eml en la carpeta inbox/ de la demo",
             )
         if partial:
@@ -396,7 +399,7 @@ def check_email_replies(
             return CheckResult(
                 name=name,
                 status=CheckStatus.OK,
-                detail="demo: el IMAP de `.env` no se usa (tu buzón real queda fuera); "
+                detail="demo: el IMAP de `.env` no se usa (el buzón real queda fuera); "
                 "deja las respuestas .eml en la carpeta inbox/respuestas/ de la demo",
             )
         return CheckResult(
@@ -421,7 +424,7 @@ def check_email_replies(
         status=CheckStatus.OK,
         detail=f"carpeta «{folder}» accesible en solo lectura; solo se lee si activas «Leer aquí "
         "también las respuestas» en un buzón, y solo se descargan los correos de las empresas de "
-        "tus candidaturas enviadas",
+        "las candidaturas enviadas",
     )
 
 
@@ -515,7 +518,7 @@ def check_capture(settings: Settings) -> CheckResult:
             name=name,
             status=CheckStatus.OK,
             detail="sin configurar (opcional): en la UI, «Dónde buscar → Botón del navegador» "
-            "te guía",
+            "guía el proceso",
         )
     return CheckResult(
         name=name,
@@ -667,14 +670,14 @@ def check_docker(
         api = CheckResult(
             name="Docker · API",
             status=CheckStatus.OK,
-            detail="escucha en el contenedor; el compose la publica solo en 127.0.0.1 de tu equipo",
+            detail="escucha en el contenedor; el compose la publica solo en 127.0.0.1 del equipo",
         )
     else:
         api = CheckResult(
             name="Docker · API",
             status=CheckStatus.WARN,
             detail="CAI_IN_DOCKER=1 fuera de un contenedor: la API sigue solo en 127.0.0.1. "
-            "Quítalo de tu .env si no usas Docker",
+            "Sin Docker, conviene quitarlo del .env",
         )
     mounts = (container.DATA_MOUNT, container.DEMO_MOUNT)
     if settings.data_dir in mounts and is_mount(settings.data_dir):
@@ -692,7 +695,7 @@ def check_docker(
             "Monta uno en /data (lo hace docker-compose.yml)",
         )
     agent = CheckResult(
-        name="Docker · tu agente",
+        name="Docker · el agente",
         status=CheckStatus.OK,
         detail=f"fuera del contenedor. Por MCP: `{container.MCP_COMMAND}`; sin MCP: "
         f"`{container.CLI_COMMAND} … --json`",
@@ -700,8 +703,9 @@ def check_docker(
     limits = CheckResult(
         name="Docker · límites",
         status=CheckStatus.OK,  # esperados: no se arreglan dentro (ver la guía)
-        detail="los botones «en tu agente» copian la orden; sin «En segundo plano»; candidatura "
-        "asistida: abre la oferta en tu navegador y envíala tú; sin LibreOffice (motor html)",
+        detail="los botones del agente copian la orden; sin «En segundo plano»; candidatura "
+        "asistida: la oferta se abre en el navegador habitual y se envía a mano; sin LibreOffice "
+        "(motor html)",
     )
     return [api, data, agent, limits]
 

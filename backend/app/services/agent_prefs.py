@@ -63,7 +63,7 @@ CAPABILITY_NAMES: dict[Capability, str] = {
 REASON_TEXTS: dict[ReasonCode, str] = {
     "explicit": "elegido para esta ejecución",
     "action": "elegido para esta acción",
-    "default": "tu agente por defecto",
+    "default": "el agente por defecto",
     "env": "por CAI_AGENT",
     "first_installed": "el primero instalado",
     "none": "ninguno disponible",
@@ -93,7 +93,7 @@ class ModelPref(BaseModel):
         self.model = (self.model or "").strip() or None
         self.preset = (self.preset or "").strip() or None
         if self.model and self.preset:
-            raise ValueError("elige un modelo o un preset, no los dos")
+            raise ValueError("un modelo o un preset, no los dos")
         return self
 
 
@@ -162,17 +162,18 @@ def model_problem(
     """Por qué ese modelo o preset no vale para el agente (sin consultar la red), o `None`."""
     name = spec.info.display_name
     if model and preset:
-        return "Elige un modelo o un preset, no los dos."
+        return "Un modelo o un preset, no los dos."
     if preset and preset not in spec.models.presets:
         return f"{name} no tiene el preset «{preset[:40]}»."
     if model:
         if not spec.models.flag:
-            return f"{name} no sabe elegir el modelo al lanzarlo: déjalo vacío."
+            return f"{name} no sabe elegir el modelo al lanzarlo: el campo va vacío."
         example = f" (p. ej. {spec.models.example})" if spec.models.example else ""
         if not MODEL_RE.fullmatch(model):
             return (
-                f"El modelo «{model[:40]}» no es válido: empieza por una letra o un número, sin "
-                f"espacios, y usa solo letras, números y . : / @ - _{example}."
+                f"El modelo «{model[:40]}» no es válido: debe empezar por una letra o un número, "
+                f"sin "
+                f"espacios, y usar solo letras, números y . : / @ - _{example}."
             )
         if spec.models.pattern and not re.fullmatch(spec.models.pattern, model):
             return f"El modelo «{model[:40]}» no tiene el formato de {name}{example}."
@@ -283,7 +284,7 @@ def _checks(res: Resolution, action: str | None, mode: Mode) -> Resolution:
                 res,
                 "untrusted",
                 f"{name} es de nivel C: esta acción lee contenido no confiable y en segundo plano "
-                "nadie vería lo que hace. Usa «En terminal».",
+                "nadie vería lo que hace. Hay que usar «En terminal».",
             )
         warnings.append(
             f"{name} es de nivel C: esta acción lee contenido no confiable. Ejecútala en una "
@@ -373,6 +374,6 @@ def resolve(
         how = (
             spec.info.install.model_dump().get(agent_registry.current_platform()) if spec else None
         )
-        hint = f" Instálalo con: {how}" if how else ""
+        hint = f" Se instala con: {how}" if how else ""
         return _blocked(res, "not_installed", f"{res.display_name} no está instalado.{hint}")
     return _checks(res, action, mode)

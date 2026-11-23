@@ -482,7 +482,7 @@ def _check_edit(old: CvContent, new: CvContent) -> None:
     if _shape(old) != _shape(new) or not _kept_bullets(old, new):
         raise CvEditNotAllowedError(
             "Aquí se cambian textos y skills, y se quitan o reordenan logros. Para añadir un "
-            "logro o cambiar las secciones, pide una corrección."
+            "logro o cambiar las secciones, se pide una corrección."
         )
     blank = [field for field, text in _editable_texts(new) if not text.strip()]
     if blank:
@@ -564,7 +564,7 @@ def save_user_edit(session: Session, job_id: int, data: CvEditInput) -> EditResu
         raise service.DocumentNotFoundError(f"La oferta {job_id} aún no tiene CV.")
     if current.id != data.base_document_id:
         raise CvVersionConflictError(
-            "El CV ha cambiado mientras lo editabas: vuelve a abrirlo para no pisar lo nuevo."
+            "El CV ha cambiado durante la edición: hay que volver a abrirlo para no pisar lo nuevo."
         )
     old = _content(current)
     _check_edit(old, data.content)

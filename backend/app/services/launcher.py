@@ -55,31 +55,33 @@ PortState = Literal["free", "candidatai", "other"]
 Lang = Literal["es", "en"]
 MESSAGES: dict[str, dict[Lang, str]] = {
     "already_running": {
-        "es": "CandidatAI ya está en marcha en {url}: abro el navegador.",
+        "es": "CandidatAI ya está en marcha en {url}: se abre el navegador.",
         "en": "CandidatAI is already running at {url}: opening the browser.",
     },
     "port_busy": {
-        "es": "El puerto {port} lo usa otro programa. Ciérralo o usa `cai start --port <otro>`.",
+        "es": "El puerto {port} lo usa otro programa. Hay que cerrarlo o usar `cai start --port "
+        "<otro>`.",
         "en": "Port {port} is used by another program. Close it or use `cai start --port <other>`.",
     },
     "starting": {"es": "Arrancando CandidatAI…", "en": "Starting CandidatAI…"},
     "running": {"es": "CandidatAI en marcha: {url}", "en": "CandidatAI is running: {url}"},
     "keep_open": {
-        "es": "Deja esta ventana abierta mientras la uses. "
-        "Para cerrar: Ctrl+C o cierra la ventana.",
+        "es": "Esta ventana debe quedarse abierta mientras se usa la app. "
+        "Para cerrar: Ctrl+C o cerrar la ventana.",
         "en": "Keep this window open while you use it. To quit: Ctrl+C or close the window.",
     },
     "child_ended": {
-        "es": "«{name}» se ha cerrado: paro el resto. Detalles en data/logs/start-{name}.log.",
+        "es": "«{name}» se ha cerrado: se para el resto. Detalles en data/logs/start-{name}.log.",
         "en": "“{name}” has stopped: stopping the rest. Details in data/logs/start-{name}.log.",
     },
     "closing": {"es": "Cerrando CandidatAI…", "en": "Closing CandidatAI…"},
     "no_browser": {
-        "es": "No he podido abrir el navegador: abre {url} en el tuyo.",
-        "en": "Couldn't open the browser: open {url} in yours.",
+        "es": "No se ha podido abrir el navegador: hay que abrir {url} a mano.",
+        "en": "Could not open the browser: open {url} in yours.",
     },
     "no_ui": {
-        "es": "No está la UI compilada en {ui_dir}. Si has clonado el repositorio, compílala una "
+        "es": "No está la UI compilada en {ui_dir}. Con el repositorio clonado, hay que "
+        "compilarla una "
         "vez: `cd frontend; pnpm install; pnpm build` (o usa `cai start --dev`). Con el "
         "instalador ya viene compilada.",
         "en": "The built UI is not in {ui_dir}. If you cloned the repository, build it once: "
@@ -92,11 +94,11 @@ MESSAGES: dict[str, dict[Lang, str]] = {
     },
     "child_died": {
         "es": "«{name}» se ha cerrado al arrancar (código {code}). "
-        "Mira data/logs/start-{name}.log.",
+        "Detalles en data/logs/start-{name}.log.",
         "en": "“{name}” stopped while starting (code {code}). See data/logs/start-{name}.log.",
     },
     "timeout": {
-        "es": "La API no respondió en {seconds:g} s. Mira data/logs/start-api.log.",
+        "es": "La API no respondió en {seconds:g} s. Detalles en data/logs/start-api.log.",
         "en": "The API did not answer within {seconds:g} s. See data/logs/start-api.log.",
     },
 }

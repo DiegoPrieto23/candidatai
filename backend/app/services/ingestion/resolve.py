@@ -284,7 +284,7 @@ def check_url(url: str) -> str:
         ingest.check_request(httpx.Request("GET", url))
     except ingest.LinkedInUrlError as exc:
         raise ResolveError(
-            "LinkedIn no sirve como web de empleo de una empresa: usa la de su propia web."
+            "LinkedIn no sirve como web de empleo de una empresa: hace falta la de su propia web."
         ) from exc
     except (ingest.IngestError, httpx.InvalidURL, ValueError) as exc:
         raise ResolveError(str(exc)) from exc

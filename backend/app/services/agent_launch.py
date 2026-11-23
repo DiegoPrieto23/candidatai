@@ -249,7 +249,7 @@ def _check_profile_item(session: Session, profile_item: str | None) -> str:
     known |= {story.id for story in current.stories}
     if profile_item not in known:
         raise LaunchError(
-            "not_found", f"«{profile_item}» no es un logro ni una historia de tu perfil vigente."
+            "not_found", f"«{profile_item}» no es un logro ni una historia del perfil vigente."
         )
     return profile_item
 
@@ -411,14 +411,14 @@ def _no_background(launcher: _Launcher, res: Resolution, action: str | None) -> 
     """Por qué el agente no puede lanzar `action` en segundo plano, o `None` si puede."""
     if launcher.headless is None:
         return (
-            f"Tu agente ({res.display_name}) no tiene `launch.headless` en "
-            ".agents/manifest.yaml: usa «En terminal»."
+            f"El agente ({res.display_name}) no tiene `launch.headless` en "
+            ".agents/manifest.yaml: hay que usar «En terminal»."
         )
     allowed = launcher.headless.actions
     if action in ACTIONS and allowed is not None and action not in allowed:
         return (
             f"Con {res.display_name}, «{ACTIONS[action].label}» todavía no va en segundo plano "  # type: ignore[index]
-            "(solo lo comprobado): usa «En terminal» u otro agente."
+            "(solo lo comprobado): hay que usar «En terminal» o elegir otro agente."
         )
     if launcher.headless.ceiling == "config" and action in ACTIONS:
         return agent_run_config.ceiling_problem(action)  # type: ignore[arg-type]
@@ -597,7 +597,9 @@ def _check_milestone(
         elif rule == "guide":
             interviews.check_can_correct_guide(session, row)
             if not (row.prep_guide or {}).get("correction"):
-                raise LaunchError("invalid_request", "Escribe primero qué quieres cambiar.")
+                raise LaunchError(
+                    "invalid_request", "Antes hay que escribir qué se quiere cambiar."
+                )
         else:
             interviews.check_can_debrief(row, utcnow())
     except interviews.InterviewNotAllowedError as exc:
@@ -640,7 +642,9 @@ def check_target(
             if service.latest_document(session, job_id) is None:
                 raise LaunchError("invalid_request", "Esta oferta aún no tiene CV.")
             if spec.needs_correction and corrections.pending_row(session, job_id) is None:
-                raise LaunchError("invalid_request", "Escribe primero qué quieres corregir.")
+                raise LaunchError(
+                    "invalid_request", "Antes hay que escribir qué se quiere corregir."
+                )
     job_id = job_id if spec.needs_job else None
     milestone_id = milestone_id if spec.milestone else None
     if assistant_id is not None and session.get(AssistantRequest, assistant_id) is None:

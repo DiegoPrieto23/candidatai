@@ -379,7 +379,7 @@ def test_correct_guide_needs_a_guide_and_something_to_change(
         }
     response = client.post("/agent/launch", json=body, headers=JSON)
     assert response.status_code == 422
-    assert "qué quieres cambiar" in response.json()["error"]["message"]
+    assert "qué se quiere cambiar" in response.json()["error"]["message"]
 
     secret = "Quita lo de la competencia"
     asked = client.post(f"/milestones/{past}/guide/correction", json={"instruction": secret})

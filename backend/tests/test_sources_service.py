@@ -155,7 +155,7 @@ def test_preview_reports_a_failing_source(session: Session) -> None:
     result = service.preview_source(session, GREENHOUSE)
     assert result.found == 0
     assert [e.code for e in result.errors] == ["not_found"]
-    assert "Revisa el slug" in result.message
+    assert "Conviene revisar el slug" in result.message
 
 
 # --- Ejecución -------------------------------------------------------------------------------

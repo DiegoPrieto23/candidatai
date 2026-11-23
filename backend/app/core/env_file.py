@@ -31,7 +31,7 @@ class SecretNotWritableError(Exception):
 
     def __init__(self, name: str) -> None:
         super().__init__(
-            f"En Docker la app no puede guardar contraseñas: añade a tu .env la línea "
+            f"En Docker la app no puede guardar contraseñas: hay que añadir al .env la línea "
             f"`{name}=…` con la contraseña y recrea el contenedor (`docker compose up -d`)."
         )
         self.name = name

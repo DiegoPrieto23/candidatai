@@ -114,7 +114,7 @@ Where: “Where to search”.
 
 ### How do I follow a specific company's jobs?
 
-In “Where to search → Company career sites”, press “Add company” and paste its name and the address of its careers site as you see it. “Test” tells you which system it uses and which jobs fit you; if the address filters by city, that's kept. From then on it's checked every day. If the site isn't recognized, it's added to your job sites and your agent browses it when searching.
+In “Where to search → Company career sites”, press “Add company” and paste its name and the address of its careers site as you see it. “Test” tells you which system it uses and which jobs fit you; if the address filters by city, that is kept. From then on it is checked every day. If the site is not recognized, it is added to your job sites and your agent browses it when searching.
 
 Where: “Company career sites”.
 
@@ -162,7 +162,7 @@ Where: “More settings for your search”.
 
 ### What are the jobs “To complete”?
 
-The ones that arrived from an alert with only the title and the link. Open them on their job board and send them with the browser button to complete them, or discard the ones that don't interest you.
+The ones that arrived from an alert with only the title and the link. Open them on their job board and send them with the browser button to complete them, or discard the ones that do not interest you.
 
 Where: “To complete”.
 
@@ -244,7 +244,7 @@ Where: “Results”.
 
 ### What are the “Skills to build”?
 
-The skills the jobs you approve ask for that aren't in your profile yet. Mark them as yours, as a synonym of one in your profile or for the training plan your agent prepares.
+The skills the jobs you approve ask for that are not in your profile yet. Mark them as yours, as a synonym of one in your profile or for the training plan your agent prepares.
 
 Where: “Skills to build”.
 
@@ -280,13 +280,13 @@ A made-up candidate with jobs, CVs and processes to try the app. It lives in its
 
 The CandidatAI window has been closed or it has stopped. Open it again with its shortcut and reload the page.
 
-### A button doesn't open my agent
+### A button does not open my agent
 
 The button then shows the full instruction, with “Copy” and where to paste it. Check on the “Agent” page that your agent appears as ready.
 
 Where: “Agent”.
 
-### A Word template doesn't generate the CV
+### A Word template does not generate the CV
 
 Word templates use LibreOffice, which is free, to create the PDF. Install it and generate the CV again, or choose another template under “Design”.
 

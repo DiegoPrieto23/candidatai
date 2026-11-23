@@ -162,7 +162,7 @@ def test_one_failing_source_does_not_stop_the_rest(db: None) -> None:
     run = worker.run_pending()
     by_source = {o.result["source_id"]: o for o in run.outcomes if o.kind == "run_source"}  # type: ignore[index]
     assert by_source[broken].ok  # 404 no se reintenta: queda en `errors` de la ejecución
-    assert "Revisa el slug" in worker.describe(by_source[broken])
+    assert "Conviene revisar el slug" in worker.describe(by_source[broken])
     assert by_source[ok].result["created"] == 3  # type: ignore[index]
 
 

@@ -39,7 +39,8 @@ class GreenhouseConnector:
             API.format(slug=config.slug),
             params={"content": "true"},
             label=self.label,
-            not_found=f"No existe el tablero «{config.slug}» en Greenhouse (404). Revisa el slug.",
+            not_found=f"No existe el tablero «{config.slug}» en Greenhouse (404). Conviene "
+            f"revisar el slug.",
         )
         if not isinstance(data, dict) or not isinstance(data.get("jobs"), list):
             raise unexpected(self.label, "falta la lista `jobs`")

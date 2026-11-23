@@ -59,7 +59,7 @@ MAX_QUESTIONS = 10
 _QUESTION_WORDS = "|".join(re.escape(p.rstrip(":")) for p in (QUESTION_PREFIX, QUESTION_PREFIX_EN))
 QUESTION_RE = re.compile(rf"^[\W_]*(?:{_QUESTION_WORDS})\s*:\**\s*(.+)$", re.I)
 ANSI_RE = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")  # colores de la consola en stderr (OpenCode)
-STOPPED = "Se paró el worker mientras se ejecutaba. No se repite: lánzala otra vez si quieres."
+STOPPED = "Se paró el worker mientras se ejecutaba. No se repite: se puede lanzar otra vez."
 
 # Procesos en marcha y aviso de parada del worker (`stop_active`).
 _active: dict[int, subprocess.Popen[str]] = {}
@@ -560,7 +560,9 @@ def describe(outcome: AgentRunOutcome) -> str:
     if outcome.status == "done":
         return f"{base}: terminada."
     if outcome.status == "needs_user":
-        return f"{base}: necesita tu respuesta ({outcome.questions} preguntas). Mírala en la UI."
+        return (
+            f"{base}: necesita una respuesta ({outcome.questions} preguntas). Se responde en la UI."
+        )
     if outcome.status == "cancelled":
         return f"{base}: cancelada."
     return f"{base}: {outcome.status}. {outcome.error or ''}".strip()
