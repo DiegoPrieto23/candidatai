@@ -192,6 +192,19 @@
         "running": "Redactando el mensaje…",
         "done": "Borrador listo"
       }
-    }
+    },
+    "stop": "Detener",
+    "stopConfirm": "¿Detenerla? Lo que tu agente ya ha guardado se queda.",
+    "stopYes": "Sí, detener",
+    "stopFailed": "No se ha podido detener. Inténtalo otra vez.",
+    "stopNo": "Seguir",
+    "stopping": "Deteniendo…",
+    "stoppingBody": "Parando a tu agente. Tarda unos segundos.",
+    "cancelled": {
+      "title": "Detenida",
+      "body": "La has detenido. Lo que tu agente ya había guardado se queda."
+    },
+    "terminalStop": "Para pararla, cierra la ventana de tu agente.",
+    "markDone": "Marcar como terminada"
   }
 }

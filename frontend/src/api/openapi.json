@@ -25183,6 +25183,27 @@
             "type": "boolean",
             "title": "Background"
           },
+          "run_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Id"
+          },
+          "stopping": {
+            "type": "boolean",
+            "title": "Stopping",
+            "default": false
+          },
+          "stopped_by_user": {
+            "type": "boolean",
+            "title": "Stopped By User",
+            "default": false
+          },
           "status": {
             "type": "string",
             "enum": [

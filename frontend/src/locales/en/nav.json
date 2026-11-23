@@ -192,6 +192,19 @@
         "running": "Writing the message…",
         "done": "Draft ready"
       }
-    }
+    },
+    "stop": "Stop",
+    "stopConfirm": "Stop it? What your agent has already saved stays.",
+    "stopYes": "Yes, stop",
+    "stopFailed": "It couldn't be stopped. Try again.",
+    "stopNo": "Keep going",
+    "stopping": "Stopping…",
+    "stoppingBody": "Stopping your agent. It takes a few seconds.",
+    "cancelled": {
+      "title": "Stopped",
+      "body": "You stopped it. What your agent had already saved stays."
+    },
+    "terminalStop": "To stop it, close your agent's window.",
+    "markDone": "Mark as finished"
   }
 }

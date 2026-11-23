@@ -1452,7 +1452,12 @@ export function useCancelAgentRun() {
   return useMutation({
     mutationFn: (runId: number) =>
       unwrap(api.POST('/agent/runs/{run_id}/cancel', { params: { path: { run_id: runId } }, body: {} })),
-    onSuccess: () => client.invalidateQueries({ queryKey: keys.agentRuns }),
+    // El aviso de arriba sigue a la ejecución: pasa a «Deteniendo…» y después a «Detenida».
+    onSuccess: () =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: keys.agentRuns }),
+        client.invalidateQueries({ queryKey: keys.agentTasks }),
+      ]),
   })
 }
 

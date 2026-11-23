@@ -76,6 +76,10 @@ class AgentTaskView(BaseModel):
     milestone_id: int | None
     subject: str | None  # «Puesto · Empresa» si es de una oferta
     background: bool
+    # Fase 47.4: la ejecución en segundo plano (para «Detener»); `None` si se abrió en una terminal.
+    run_id: int | None = None
+    stopping: bool = False  # se pidió detenerla y el worker aún no ha parado el proceso
+    stopped_by_user: bool = False  # la detuvo el usuario (`outcome` = `stopped`)
     status: TaskStatus
     outcome: TaskOutcome | None
     done: int
@@ -198,6 +202,10 @@ def _view(session: Session, row: AgentTask, subject: str | None) -> AgentTaskVie
         milestone_id=row.milestone_id,
         subject=subject,
         background=row.run_id is not None,
+        run_id=row.run_id,
+        stopping=run is not None and run.status == "running" and run.cancel_requested,
+        # Solo si la cerró la cancelación: si el agente ya había dicho que paraba, fue él.
+        stopped_by_user=run is not None and run.status == "cancelled" and row.outcome is None,
         status=status,
         outcome=outcome,
         done=min(done, row.total) if row.total else done,

@@ -10,6 +10,11 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Detener a tu agente desde el aviso:** lo que va en segundo plano («Generando el CV…», «Leyendo
+  ofertas…») tiene un botón «Detener» en el aviso de arriba, con una confirmación corta. El aviso
+  pasa a «Deteniendo…» y, en unos segundos, a «Detenida», y lo que tu agente ya había guardado se
+  queda. Si lo abriste en una terminal, el aviso explica que se para cerrando esa ventana y ofrece
+  «Marcar como terminada».
 - **Por qué se cerró cada oferta, en la Bandeja:** columna «Motivo» en «Cerrada» y en «Todas»
   (descartada, no pasó los filtros, rechazada, retirada, caducada, cerrada por la empresa,
   duplicada o aceptada) y filtro «Motivo de cierre». Una duplicada ya no sale como «Descartada».

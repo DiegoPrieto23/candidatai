@@ -4279,6 +4279,18 @@ export interface components {
             subject: string | null;
             /** Background */
             background: boolean;
+            /** Run Id */
+            run_id?: number | null;
+            /**
+             * Stopping
+             * @default false
+             */
+            stopping: boolean;
+            /**
+             * Stopped By User
+             * @default false
+             */
+            stopped_by_user: boolean;
             /**
              * Status
              * @enum {string}
