@@ -8,6 +8,7 @@ import { AgentButton } from '@/components/AgentButton'
 import { FirstSteps } from '@/components/FirstSteps'
 import { FunnelFlow } from '@/components/FunnelFlow'
 import { GetAnAgent } from '@/components/GetAnAgent'
+import { Hint } from '@/components/Hint'
 import { KeyringNotice } from '@/components/KeyringNotice'
 import { ScoreBadge } from '@/components/MatchDetails'
 import { ErrorState } from '@/components/States'
@@ -154,6 +155,7 @@ const TRACK: { stage: Stage; actor: Actor; to: string }[] = [
 
 function Track() {
   const { t } = useTranslation('home')
+  const { t: tGuide } = useTranslation('inbox', { keyPrefix: 'guide' })
   const { data, isPending, isError, error, refetch } = useStatus()
   if (isError) return <ErrorState error={error} onRetry={() => void refetch()} />
   const counts = data?.by_stage
@@ -178,38 +180,49 @@ function Track() {
           const last = i === TRACK.length - 1
           return (
             <li key={stage} className="contents">
-              <Link
-                to={to}
-                className={cn(
-                  'group relative flex flex-col gap-1 px-4 py-3 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset',
-                  last && 'col-span-2 lg:col-span-1',
-                  yours ? 'bg-accent/70 hover:bg-accent' : 'bg-background hover:bg-foreground/[0.03]',
-                )}
+              {/* Qué es la etapa y quién actúa, al pasar el ratón y al enfocarla con el teclado. */}
+              <Hint
+                side="bottom"
+                className="max-w-sm"
+                text={
+                  <>
+                    {tGuide(`${stage}.what`)} <span className="font-medium">{t(`track.who.${actor}`)}</span>
+                  </>
+                }
               >
-                <span
+                <Link
+                  to={to}
                   className={cn(
-                    'text-[0.7rem] font-medium tracking-wide uppercase',
-                    yours ? 'text-accent-foreground' : 'text-muted-foreground/80',
+                    'group relative flex flex-col gap-1 px-4 py-3 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset',
+                    last && 'col-span-2 lg:col-span-1',
+                    yours ? 'bg-accent/70 hover:bg-accent' : 'bg-background hover:bg-foreground/[0.03]',
                   )}
                 >
-                  {t(`track.actor.${actor}`)}
-                </span>
-                {isPending ? (
-                  <Skeleton className="h-7 w-10" />
-                ) : (
                   <span
                     className={cn(
-                      'tabular text-2xl leading-7 font-semibold tracking-tight',
-                      count ? 'text-foreground' : 'text-muted-foreground/50',
+                      'text-[0.7rem] font-medium tracking-wide uppercase',
+                      yours ? 'text-accent-foreground' : 'text-muted-foreground/80',
                     )}
                   >
-                    {count}
+                    {t(`track.actor.${actor}`)}
                   </span>
-                )}
-                <span className="text-sm text-muted-foreground group-hover:text-foreground">
-                  {STAGE_LABEL[stage]}
-                </span>
-              </Link>
+                  {isPending ? (
+                    <Skeleton className="h-7 w-10" />
+                  ) : (
+                    <span
+                      className={cn(
+                        'tabular text-2xl leading-7 font-semibold tracking-tight',
+                        count ? 'text-foreground' : 'text-muted-foreground/50',
+                      )}
+                    >
+                      {count}
+                    </span>
+                  )}
+                  <span className="text-sm text-muted-foreground group-hover:text-foreground">
+                    {STAGE_LABEL[stage]}
+                  </span>
+                </Link>
+              </Hint>
             </li>
           )
         })}

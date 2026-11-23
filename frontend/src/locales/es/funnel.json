@@ -20,11 +20,10 @@
     "accepted": "Aceptadas"
   },
   "funnel": {
-    "duplicates": " Sin contar {{count}} duplicadas.",
+    "duplicates": "Sin contar {{count}} duplicadas.",
     "caption": "Ofertas por paso del embudo",
     "countHead": "Ofertas",
-    "fromPreviousHead": "% sobre el paso anterior",
-    "fromStartHead": "% sobre el total"
+    "fromPreviousHead": "% sobre el paso anterior"
   },
   "week": {
     "title": "Por semana",
@@ -263,6 +262,7 @@
   "flow": {
     "title": "¿Cómo van mis candidaturas?",
     "hint": "Hasta dónde ha llegado cada candidatura que has enviado y dónde están las que pararon.",
+    "hintLabel": "Qué muestra este gráfico",
     "everything": "Todo lo que has enviado",
     "noneYet": "Ninguna aún",
     "ofPrevious": "{{pct}} de {{step}}",
@@ -278,7 +278,8 @@
     "more": "Análisis completo",
     "numbers": "Ver las cifras",
     "stepHead": "Paso",
-    "whereTheyStopped": "Dónde están las que pararon",
+    "whereTheyStopped": "Dónde pararon",
+    "stopsOf": "{{step}}:",
     "empty": "Cuando envíes tu primera candidatura, aquí verás hasta dónde llega.",
     "emptyPeriod": "No enviaste ninguna candidatura de las ofertas vistas en este periodo.",
     "stops": {

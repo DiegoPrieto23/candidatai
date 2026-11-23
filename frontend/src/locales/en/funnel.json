@@ -20,11 +20,10 @@
     "accepted": "Accepted"
   },
   "funnel": {
-    "duplicates": " Not counting {{count}} duplicates.",
+    "duplicates": "Not counting {{count}} duplicates.",
     "caption": "Jobs per funnel step",
     "countHead": "Jobs",
-    "fromPreviousHead": "% of previous step",
-    "fromStartHead": "% of total"
+    "fromPreviousHead": "% of previous step"
   },
   "week": {
     "title": "By week",
@@ -263,6 +262,7 @@
   "flow": {
     "title": "How are my applications going?",
     "hint": "How far each application you've sent has made it, and where the ones that stopped are now.",
+    "hintLabel": "What this chart shows",
     "everything": "Everything you've sent",
     "noneYet": "None yet",
     "ofPrevious": "{{pct}} of {{step}}",
@@ -278,7 +278,8 @@
     "more": "Full analysis",
     "numbers": "Show the numbers",
     "stepHead": "Step",
-    "whereTheyStopped": "Where the ones that stopped are",
+    "whereTheyStopped": "Where they stopped",
+    "stopsOf": "{{step}}:",
     "empty": "Once you send your first application, you'll see here how far it gets.",
     "emptyPeriod": "You didn't apply to any of the jobs seen in this period.",
     "stops": {

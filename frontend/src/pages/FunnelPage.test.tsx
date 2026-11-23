@@ -132,18 +132,21 @@ describe('Resultados', () => {
     // Intl separa la cifra del «%» con un espacio duro.
     const text = (el: HTMLElement) => el.textContent?.replace(/ /g, ' ')
     expect(rows.map(text)).toEqual([
-      'Encontradas10—100 %',
-      'Pasan filtros880 %80 %',
-      'Aprobadas675 %60 %',
-      'Enviadas583 %50 %',
-      'Con respuesta360 %30 %',
-      'Entrevista133 %10 %',
-      'Oferta1100 %10 %',
-      'Aceptadas1100 %10 %',
+      'Encontradas10—',
+      'Pasan filtros880 %',
+      'Aprobadas675 %',
+      'Enviadas583 %',
+      'Con respuesta360 %',
+      'Entrevista133 %',
+      'Oferta1100 %',
+      'Aceptadas1100 %',
     ])
     // El gráfico lo dice en palabras a quien no lo ve, y cada rama lleva a esas candidaturas.
     expect(screen.getByRole('img', { name: /^5 enviadas, 3 con respuesta, 1 en entrevista, 1 con oferta y 1 aceptadas/ })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: '2 esperando' })).toHaveAttribute('href', '/bandeja?stage=applied')
+    // «Ver las cifras», corto: las paradas, agrupadas por paso; la explicación, en el ⓘ del título.
+    expect(screen.getByRole('link', { name: '2 esperando' }).closest('li')).toHaveTextContent(/^Enviadas: 2 esperando/)
+    expect(screen.getByRole('button', { name: 'Qué muestra este gráfico' })).toBeInTheDocument()
     expect(screen.getByText(/Sin contar 1 duplicadas/)).toBeInTheDocument()
 
     const response = screen.getByRole('region', { name: 'Primera respuesta' })
@@ -240,9 +243,9 @@ describe('Resultados', () => {
     const funnel = await screen.findByRole('table', { name: 'Ofertas por paso del embudo' })
     const text = (el: HTMLElement) => el.textContent?.replace(/\u00a0/g, ' ')
     const rows = within(funnel).getAllByRole('row').slice(1).map(text)
-    expect(rows[0]).toBe('Encontradas1—100 %')
-    expect(rows[1]).toBe('Pasan filtros00 %0 %')
-    expect(rows[2]).toBe('Aprobadas0—0 %')
+    expect(rows[0]).toBe('Encontradas1—')
+    expect(rows[1]).toBe('Pasan filtros00 %')
+    expect(rows[2]).toBe('Aprobadas0—')
     expect(document.body).not.toHaveTextContent('NaN')
   })
 

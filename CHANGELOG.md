@@ -227,6 +227,11 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   puesto ya no desaparece mientras la editas.
 
 ### Cambiado
+- **Portada más clara:** en «¿Cómo van mis candidaturas?», «Aceptadas» se alinea igual que los
+  demás pasos y la explicación pasa al ⓘ junto al título. «Ver las cifras» es más corto (paso,
+  cantidad y % del anterior) y agrupa en una línea por paso dónde pararon las candidaturas; lo
+  mismo en «Resultados». En «Recorrido de tus ofertas», cada etapa explica qué es y quién actúa al
+  pasar el ratón por encima o al llegar con el teclado.
 - **Tu agente, en el idioma del portal:** con el portal en inglés, lo que lanzas («Generar CV»,
   «Buscar ofertas», el Asistente, «En segundo plano», «Dejar para mi próxima sesión») abre la
   ventana con la orden y el título en inglés, y tu agente te contesta en inglés. La app recuerda el

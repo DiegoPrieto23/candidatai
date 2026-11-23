@@ -92,6 +92,22 @@ describe('Inicio', () => {
     expect(screen.queryByRole('navigation', { name: 'Ofertas por etapa' })).not.toBeInTheDocument()
   })
 
+  it('cada etapa del recorrido explica qué es y quién actúa, también con el teclado', async () => {
+    mockApi({
+      'GET /status': withStages({ pending_triage: 4 }),
+      'GET /followups': noFollowups,
+      'GET /upcoming': noUpcoming,
+      'GET /jobs': page([]),
+    })
+    renderApp('/')
+    const triage = await screen.findByRole('link', { name: /Te toca\s*4\s*Por revisar/ })
+    triage.focus()
+    const tooltip = await screen.findByRole('tooltip')
+    expect(tooltip).toHaveTextContent(/a la espera de que decidas/)
+    expect(tooltip).toHaveTextContent('Quién actúa: tú.')
+    expect(triage).toHaveAccessibleDescription(/a la espera de que decidas/)
+  })
+
   it('lista las ofertas por revisar con más encaje primero', async () => {
     const calls = mockApi({
       'GET /status': withStages({ pending_triage: 1 }),
