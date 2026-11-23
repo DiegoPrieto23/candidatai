@@ -42,7 +42,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton'
 import { errorMessage } from '@/lib/errors'
 import { i18n } from '@/lib/i18n'
-import { formatRelative, SOURCE_KIND_LABEL } from '@/lib/labels'
+import { SOURCE_KIND_LABEL, whenLabel } from '@/lib/labels'
 import { platformHome } from '@/lib/searches'
 import { cn } from '@/lib/utils'
 import { BusyLabel } from '@/components/StableLabel'
@@ -85,12 +85,6 @@ const CONNECTOR_KINDS = new Set<string>(KINDS.map((k) => k.value))
 function fieldErrors(error: unknown): Record<string, string> {
   if (!(error instanceof ApiError)) return {}
   return Object.fromEntries(error.details.map((d) => [d.field || 'form', d.reason]))
-}
-
-/** «Hoy», «Ayer», «Hace 3 días»… al principio de una línea. */
-function whenLabel(iso: string): string {
-  const text = formatRelative(iso)
-  return text.charAt(0).toLocaleUpperCase() + text.slice(1)
 }
 
 function placesOf(source: SourceView): string[] {
@@ -629,7 +623,7 @@ function CompanyDetails({ source }: { source: SourceView }) {
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1 text-foreground/80 underline-offset-2 hover:text-foreground hover:underline"
         >
-          {home.host}
+          {home.label}
           <ArrowSquareOutIcon className="size-3" aria-hidden />
         </a>
       )}

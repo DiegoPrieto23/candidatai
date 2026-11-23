@@ -143,8 +143,38 @@ describe('Buscar ofertas', () => {
     expect(screen.getByRole('button', { name: /^Buscar ahora/ })).toBeDisabled()
     await userEvent.click(box)
     expect(screen.getByRole('button', { name: /^Buscar ahora/ })).toBeEnabled()
-    const portals = screen.getByRole('region', { name: /^Portales ·/ })
-    expect(within(portals).getByRole('link', { name: 'Empresas con portal propio' })).toHaveAttribute('href', '/fuentes/empresas')
+    // Sin empresas, bajo los portales, el texto de siempre con su enlace.
+    const companies = await screen.findByRole('region', { name: 'Empresas con portal propio' })
+    expect(companies).toHaveTextContent('Ninguna todavía.')
+    expect(within(companies).getByRole('link', { name: 'Gestionar en «Dónde buscar»' })).toHaveAttribute('href', '/fuentes/empresas')
+  })
+
+  it('enseña las empresas con portal propio bajo los portales, activas primero, sin cambiar de página', async () => {
+    const company = (id: number, name: string, overrides: Record<string, unknown> = {}) => ({
+      ...platform(id, name),
+      kind: 'greenhouse',
+      kind_label: 'Greenhouse',
+      browse: null,
+      ...overrides,
+    })
+    const companies = [
+      company(20, 'Pausada SL', { active: false }),
+      company(21, 'Acme', { last_run: { started_at: new Date().toISOString(), finished_at: null, found: 5, created: 2, errors: [] } }),
+      ...Array.from({ length: 8 }, (_, i) => company(30 + i, `Empresa ${i}`)),
+    ]
+    mockApi(routes([platform(1, 'InfoJobs'), ...companies]))
+    renderApp('/buscar')
+    const region = await screen.findByRole('region', { name: /^Empresas con portal propio/ })
+    expect(region).toHaveTextContent('9 activas de 10')
+    const cards = await within(region).findAllByRole('listitem')
+    // Ocho como mucho; la pausada, al final, queda fuera.
+    expect(cards).toHaveLength(8)
+    expect(cards[0]).toHaveTextContent('Acme')
+    expect(cards[0]).toHaveTextContent('Activa')
+    expect(cards[0]).toHaveTextContent('Hoy: 2 ofertas nuevas para ti')
+    expect(cards[1]).toHaveTextContent('Aún no se ha revisado')
+    expect(within(region).queryByText('Pausada SL')).not.toBeInTheDocument()
+    expect(within(region).getByRole('link', { name: 'Ver las 10 en «Dónde buscar»' })).toHaveAttribute('href', '/fuentes/empresas')
   })
 
   it('con el mismo clic revisa las empresas y, sin portales elegidos, solo ellas (fase 45)', async () => {

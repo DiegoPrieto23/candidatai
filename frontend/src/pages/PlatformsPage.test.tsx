@@ -122,7 +122,8 @@ describe('Plataformas', () => {
       .find((link) => link.getAttribute('href') === tecno.browse!.search_urls[0])
     expect(search).toBeDefined()
     expect(search).toHaveAttribute('rel', 'noopener noreferrer')
-    expect(screen.getByRole('link', { name: 'tecnoempleo.com' })).toHaveAttribute('href', 'https://www.tecnoempleo.com')
+    // El dominio, tal cual lo usa el portal: con `www.`.
+    expect(screen.getByRole('link', { name: 'www.tecnoempleo.com' })).toHaveAttribute('href', 'https://www.tecnoempleo.com')
     // La URL completa, solo al desplegar.
     expect(screen.queryByText(tecno.browse!.search_urls[0])).not.toBeInTheDocument()
     for (const button of screen.getAllByRole('button', { name: 'Ver las URLs' })) await userEvent.click(button)

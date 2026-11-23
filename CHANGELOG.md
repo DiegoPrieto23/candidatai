@@ -227,6 +227,10 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   puesto ya no desaparece mientras la editas.
 
 ### Cambiado
+- **Tus empresas, a la vista en «Buscar»:** bajo los portales, las empresas con portal propio salen
+  en tarjetas compactas (logo, Activa o Pausada y su último recorrido), las activas primero y hasta
+  ocho; el resto y su gestión, en «Dónde buscar». La dirección de cada portal y de la web de cada
+  empresa se escribe tal cual la usa el sitio, con `www.` cuando lo lleva (`www.infojobs.net`).
 - **Portada más clara:** en «¿Cómo van mis candidaturas?», «Aceptadas» se alinea igual que los
   demás pasos y la explicación pasa al ⓘ junto al título. «Ver las cifras» es más corto (paso,
   cantidad y % del anterior) y agrupa en una línea por paso dónde pararon las candidaturas; lo

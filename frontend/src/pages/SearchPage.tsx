@@ -2,9 +2,11 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { CompassIcon } from '@phosphor-icons/react'
+import type { SourceView } from '@/api/client'
 import { usePlatforms, useSearchRun, useSources } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
 import { EmptyState, ErrorState } from '@/components/States'
+import { CompanyCards } from '@/components/search/CompanyCards'
 import { LaunchPanel } from '@/components/search/LaunchPanel'
 import { OffersPerPortal } from '@/components/search/OffersPerPortal'
 import { AddPortalCard, PortalCard, RunLegend, UnusableCard } from '@/components/search/PortalCard'
@@ -39,7 +41,15 @@ export function SearchPage({ moreOpen = false, onMore = () => {} }: { moreOpen?:
   const unusable = sources.filter((s) => !usable.includes(s))
   const chosen = usable.filter((s) => !skipped.has(s.id))
   const allChosen = chosen.length === usable.length
-  const companies = (allSources.data?.sources ?? []).filter((s) => s.active && COMPANY_KINDS.has(s.kind)).length
+  const companySources: SourceView[] = (allSources.data?.sources ?? []).filter((s) => COMPANY_KINDS.has(s.kind))
+  const companies = companySources.filter((s) => s.active).length
+  // Bajo los portales: las empresas también entran en la búsqueda, y se ven sin cambiar de página.
+  // Sin datos y con error, lo dice: no es lo mismo que no tener empresas.
+  const companyCards = allSources.data ? (
+    <CompanyCards companies={companySources} />
+  ) : allSources.isError ? (
+    <CompanyCards companies={[]} failed />
+  ) : null
   // Todos: la orden normal, «las plataformas activas».
   const search = { platform_ids: allChosen ? [] : chosen.map((s) => s.id) }
 
@@ -88,6 +98,7 @@ export function SearchPage({ moreOpen = false, onMore = () => {} }: { moreOpen?:
         >
           {t('empty.body')}
         </EmptyState>
+        {companyCards}
         <SearchFooter portals={[]} />
       </div>
     )
@@ -105,10 +116,6 @@ export function SearchPage({ moreOpen = false, onMore = () => {} }: { moreOpen?:
           <h3 id={PORTALS_ID} tabIndex={-1} className="scroll-mt-24 font-semibold outline-none">
             {t('portals.title')} <span className="font-normal text-muted-foreground">· {t('portals.chosen', { chosen: chosen.length, total: usable.length })}</span>
           </h3>
-          <span className="flex flex-wrap items-center gap-x-5 gap-y-2">
-            <Link to="/fuentes/empresas" className="text-sm text-primary underline-offset-4 hover:underline">
-              {t('portals.companies')}
-            </Link>
           {usable.length > 1 && (
             <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
               <input
@@ -122,7 +129,6 @@ export function SearchPage({ moreOpen = false, onMore = () => {} }: { moreOpen?:
               {allChosen ? t('selectNone') : t('selectAll')}
             </label>
           )}
-          </span>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
           <ul aria-label={t('platforms')} className="contents">
@@ -155,6 +161,8 @@ export function SearchPage({ moreOpen = false, onMore = () => {} }: { moreOpen?:
         </div>
         {usable.some((s) => s.last_run && s.last_run.found > 0) && <RunLegend />}
       </section>
+
+      {companyCards}
 
       <SearchFooter portals={usable} />
     </div>

@@ -176,6 +176,12 @@ export function formatDateTime(iso: string): string {
   }).format(new Date(iso))
 }
 
+/** «Hoy», «Ayer», «Hace 3 días»… al principio de una línea. */
+export function whenLabel(iso: string): string {
+  const text = formatRelative(iso)
+  return text.charAt(0).toLocaleUpperCase() + text.slice(1)
+}
+
 /** «hoy», «ayer», «hace 3 días»… y la fecha a partir de un mes. */
 export function formatRelative(iso: string, now: Date = new Date()): string {
   const date = new Date(iso)

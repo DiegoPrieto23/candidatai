@@ -71,8 +71,15 @@
       "known": "Ya las tenías",
       "created": "Nuevas",
       "reopened": "Reabiertas"
-    },
-    "companies": "Empresas con portal propio"
+    }
+  },
+  "companies": {
+    "title": "Empresas con portal propio",
+    "active": "{{active}} activas de {{total}}",
+    "manage": "Gestionar en «Dónde buscar»",
+    "more": "Ver las {{count}} en «Dónde buscar»",
+    "empty": "Ninguna todavía. La app revisa cada día la web de empleo de las empresas que se añadan, sin agente.",
+    "error": "No se han podido cargar las empresas. Se pueden ver en «Dónde buscar»."
   },
   "last": {
     "title": "Última búsqueda:",

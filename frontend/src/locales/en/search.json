@@ -71,8 +71,15 @@
       "known": "Already had",
       "created": "New",
       "reopened": "Reopened"
-    },
-    "companies": "Companies with their own careers site"
+    }
+  },
+  "companies": {
+    "title": "Companies with their own careers site",
+    "active": "{{active}} of {{total}} active",
+    "manage": "Manage in “Where to search”",
+    "more": "See all {{count}} in “Where to search”",
+    "empty": "None yet. The app checks the careers site of each company added every day, without an agent.",
+    "error": "The companies couldn't be loaded. They can be seen in “Where to search”."
   },
   "last": {
     "title": "Last search:",
