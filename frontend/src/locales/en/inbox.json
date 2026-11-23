@@ -22,7 +22,8 @@
     "stage": "Stage",
     "added": "Added",
     "closed": "Closed",
-    "actions": "Actions"
+    "actions": "Actions",
+    "reason": "Reason"
   },
   "loadingJobs": "Loading jobs",
   "count_one": "{{count}} job",
@@ -44,6 +45,8 @@
     "fit_50": "Fit of 50 or more",
     "fit_70": "Fit of 70 or more",
     "fit_85": "Fit of 85 or more",
+    "reason": "Close reason",
+    "reasonAny": "Any reason",
     "clear": "Clear filters"
   },
   "allStages": "All",
@@ -132,5 +135,25 @@
     "profile": "Fit not calculated: your profile is missing. Create it in “My profile”.",
     "unread": "Fit not calculated: your agent hasn't read the job yet.",
     "other": "Fit not calculated yet."
+  },
+  "closeReason": {
+    "discarded": "Discarded",
+    "filtered_out": "Did not pass the filters",
+    "rejected": "Rejected",
+    "withdrawn": "Withdrawn",
+    "expired": "Expired",
+    "closed_by_company": "Closed by the company",
+    "duplicate": "Duplicate",
+    "accepted": "Accepted"
+  },
+  "stagePicker": {
+    "label": "Stages",
+    "all": "All",
+    "none": "None",
+    "summaryAll": "All stages",
+    "summarySome": "{{count}} of {{total}} stages",
+    "summaryNone": "No stages",
+    "emptyTitle": "No stages selected",
+    "emptyBody": "Select at least one stage under “Stages” to see jobs."
   }
 }

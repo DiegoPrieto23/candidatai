@@ -28,7 +28,14 @@ import { StageBadge } from '@/components/StageBadge'
 import { StageGuide } from '@/components/StageGuide'
 import { EmptyState, ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -50,33 +57,126 @@ import { cn } from '@/lib/utils'
 const MODE_FILTERS = ['onsite', 'hybrid', 'remote', 'unknown'] as const
 const SALARY_FILTERS = ['yes', 'no'] as const
 const FIT_FILTERS = ['none', '50', '70', '85'] as const
+type CloseReason = NonNullable<JobRow['close_reason']>
+const CLOSE_REASONS: readonly CloseReason[] = [
+  'discarded',
+  'filtered_out',
+  'rejected',
+  'withdrawn',
+  'expired',
+  'closed_by_company',
+  'duplicate',
+  'accepted',
+]
 
 interface Filters {
   mode?: (typeof MODE_FILTERS)[number]
   salary?: (typeof SALARY_FILTERS)[number]
   fit?: (typeof FIT_FILTERS)[number]
+  /** Motivo de cierre: solo en «Cerrada» y en «Todas». */
+  reason?: CloseReason
 }
 
-/** Los filtros viven en la URL (`mode`, `salary`, `fit`), como la etapa y el orden; lo que no vale se ignora. */
-function parseFilters(params: URLSearchParams): Filters {
+/** Los filtros viven en la URL (`mode`, `salary`, `fit`, `reason`), como la etapa y el orden; lo que no vale se ignora. */
+function parseFilters(params: URLSearchParams, stage: Stage | undefined): Filters {
   const mode = params.get('mode')
   const salary = params.get('salary')
   const fit = params.get('fit')
+  const reason = params.get('reason')
   return {
     mode: MODE_FILTERS.find((value) => value === mode),
     salary: SALARY_FILTERS.find((value) => value === salary),
     fit: FIT_FILTERS.find((value) => value === fit),
+    reason: showsReason(stage) ? CLOSE_REASONS.find((value) => value === reason) : undefined,
   }
 }
 
+/** El motivo de cierre se ve y se filtra en «Cerrada» y en «Todas». */
+function showsReason(stage: Stage | undefined): boolean {
+  return stage === undefined || stage === 'closed'
+}
+
 /** De los filtros de la URL a los parámetros de la API. */
-function filterQuery({ mode, salary, fit }: Filters) {
+function filterQuery({ mode, salary, fit, reason }: Filters) {
   return {
     remote_mode: mode,
     has_salary: salary ? salary === 'yes' : undefined,
     has_score: fit === 'none' ? false : undefined,
     min_score: fit && fit !== 'none' ? Number(fit) : undefined,
+    close_reason: reason,
   }
+}
+
+const STAGES_NONE = 'none'
+
+/**
+ * Las etapas marcadas en «Todas» (`?stages=cv_ready,closed`): sin el parámetro, todas
+ * (`undefined`); `none`, ninguna. Lo que no es una etapa se ignora.
+ */
+function parseStages(params: URLSearchParams): Stage[] | undefined {
+  const raw = params.get('stages')
+  if (raw === null) return undefined
+  if (raw === STAGES_NONE) return []
+  const picked = raw.split(',').filter(isStage)
+  if (!picked.length || picked.length === STAGES.length) return undefined
+  return STAGES.filter((s) => picked.includes(s))
+}
+
+/** De las etapas marcadas al valor de la URL: todas, sin parámetro. */
+function stagesParam(stages: readonly Stage[]): string | null {
+  if (stages.length === STAGES.length) return null
+  return stages.length ? stages.join(',') : STAGES_NONE
+}
+
+/** En «Todas»: qué etapas se ven, con casillas, «Todas» y «Ninguna». */
+function StagePicker({ stages, onChange }: { stages: Stage[] | undefined; onChange: (stages: Stage[]) => void }) {
+  const { t } = useTranslation('inbox')
+  const { data } = useStatus()
+  const picked: readonly Stage[] = stages ?? STAGES
+  const summary =
+    stages === undefined
+      ? t('stagePicker.summaryAll')
+      : picked.length === 0
+        ? t('stagePicker.summaryNone')
+        : t('stagePicker.summarySome', { count: picked.length, total: STAGES.length })
+  const toggle = (stage: Stage) =>
+    onChange(STAGES.filter((s) => (s === stage ? !picked.includes(s) : picked.includes(s))))
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="outline"
+          aria-label={`${t('stagePicker.label')}: ${summary}`}
+          className={cn('h-9 min-w-44 justify-between bg-card font-normal', stages !== undefined && 'border-ring bg-secondary/40')}
+        >
+          {summary}
+          <CaretDownIcon className="text-muted-foreground" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" aria-label={t('stagePicker.label')}>
+        {/* Elementos del menú, no botones: así se llega con las flechas, y no cierran el menú. */}
+        <DropdownMenuItem onSelect={(e) => { e.preventDefault(); onChange([...STAGES]) }}>
+          {t('stagePicker.all')}
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={(e) => { e.preventDefault(); onChange([]) }}>
+          {t('stagePicker.none')}
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        {STAGES.map((stage) => (
+          <DropdownMenuCheckboxItem
+            key={stage}
+            checked={picked.includes(stage)}
+            onCheckedChange={() => toggle(stage)}
+            // Marcar varias sin que el menú se cierre en cada una.
+            onSelect={(e) => e.preventDefault()}
+          >
+            <span className="flex-1">{STAGE_LABEL[stage]}</span>
+            <span className="tabular text-xs text-muted-foreground">{data?.by_stage[stage] ?? 0}</span>
+          </DropdownMenuCheckboxItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
 }
 
 const ANY = 'any'
@@ -117,18 +217,25 @@ function FilterSelect({
 /** Modalidad, salario y encaje: filtros de la lista que se suman a la etapa y a la búsqueda. */
 function InboxFilters({
   filters,
+  stage,
+  stages,
   onChange,
   onClear,
 }: {
   filters: Filters
+  stage: Stage | undefined
+  stages: Stage[] | undefined
   onChange: (changes: Record<string, string | null>) => void
   onClear: () => void
 }) {
   const { t } = useTranslation('inbox')
-  const active = Boolean(filters.mode || filters.salary || filters.fit)
+  const active = Boolean(filters.mode || filters.salary || filters.fit || filters.reason || stages)
   const set = (key: string) => (value: string | undefined) => onChange({ [key]: value ?? null, page: null })
   return (
     <div role="group" aria-label={t('filters.label')} className="-mt-2 mb-4 flex flex-wrap items-center gap-2">
+      {stage === undefined && (
+        <StagePicker stages={stages} onChange={(next) => onChange({ stages: stagesParam(next), page: null })} />
+      )}
       <FilterSelect
         label={t('filters.mode')}
         value={filters.mode}
@@ -150,6 +257,15 @@ function InboxFilters({
         options={FIT_FILTERS.map((value) => ({ value, label: t(`filters.fit_${value}`) }))}
         onChange={set('fit')}
       />
+      {showsReason(stage) && (
+        <FilterSelect
+          label={t('filters.reason')}
+          value={filters.reason}
+          any={t('filters.reasonAny')}
+          options={CLOSE_REASONS.map((value) => ({ value, label: t(`closeReason.${value}`) }))}
+          onChange={set('reason')}
+        />
+      )}
       {active && (
         <Button variant="ghost" size="sm" onClick={onClear}>
           <XIcon />
@@ -303,6 +419,13 @@ function SortHeader({
   )
 }
 
+/** Por qué se cerró; en las abiertas, un guion. */
+function CloseReasonLabel({ reason }: { reason: JobRow['close_reason'] }) {
+  const { t } = useTranslation('inbox')
+  if (!reason) return <span className="text-muted-foreground/60">—</span>
+  return <span>{t(`closeReason.${reason}`)}</span>
+}
+
 /** Cuándo y cómo se cerró, con la fecha completa y el evento en el globo nativo. */
 function ClosedDate({ job }: { job: JobRow }) {
   if (!job.closed_at) return <span className="text-muted-foreground/60">—</span>
@@ -388,12 +511,14 @@ function JobTable({
   sort,
   onSort,
   closedView,
+  reasonView,
   actions,
 }: {
   jobs: JobRow[]
   sort: Sort
   onSort: (sort: Sort) => void
   closedView: boolean
+  reasonView: boolean
   actions?: QuickActions
 }) {
   const { t } = useTranslation('inbox')
@@ -429,6 +554,7 @@ function JobTable({
               {t('columns.fit')}
             </SortHeader>
             <th className="pb-3 font-medium">{t('columns.stage')}</th>
+            {reasonView && <th className="pb-3 pr-6 font-medium">{t('columns.reason')}</th>}
             <SortHeader
               field="date"
               current={sort}
@@ -492,6 +618,11 @@ function JobTable({
               <td className="py-3.5 pr-6">
                 <StageBadge stage={job.stage} />
               </td>
+              {reasonView && (
+                <td className="py-3.5 pr-6 whitespace-nowrap text-muted-foreground">
+                  <CloseReasonLabel reason={job.close_reason} />
+                </td>
+              )}
               <td
                 className={cn(
                   'py-3.5 text-right whitespace-nowrap text-muted-foreground',
@@ -555,6 +686,7 @@ function JobTable({
                   ) : (
                     <time dateTime={job.first_seen_at}>{formatRelative(job.first_seen_at)}</time>
                   )}
+                  {reasonView && job.close_reason && <span>{t(`closeReason.${job.close_reason}`)}</span>}
                 </p>
               </Link>
               {actions && (
@@ -646,7 +778,10 @@ export function InboxPage() {
   const stage = isStage(stageParam) ? stageParam : undefined
   const page = Math.max(1, Number(params.get('page')) || 1)
   const sort = parseSort(params, stage)
-  const filters = parseFilters(params)
+  const filters = parseFilters(params, stage)
+  // Varias etapas a la vez, solo en «Todas».
+  const stages = stage === undefined ? parseStages(params) : undefined
+  const noStages = stages?.length === 0
   const quick = stage !== undefined && QUICK_DISCARD.includes(stage)
   const event = useJobEvent()
   // Ofertas descartadas que se ocultan ya, antes de que la API responda.
@@ -674,7 +809,7 @@ export function InboxPage() {
     )
   }, [q, setParams])
 
-  const { data, isPending, isError, error, refetch, isPlaceholderData } = useJobs({ stage, q, page, ...sort, ...filterQuery(filters) })
+  const { data, isPending, isError, error, refetch, isPlaceholderData } = useJobs({ stage, stages, q, page, ...sort, ...filterQuery(filters) }, { enabled: !noStages })
 
   const update = (changes: Record<string, string | null>, replace = false) => {
     const next = new URLSearchParams(params)
@@ -692,7 +827,7 @@ export function InboxPage() {
   }
 
   const total = data?.total ?? 0
-  const filtered = Boolean(stage || q || filters.mode || filters.salary || filters.fit)
+  const filtered = Boolean(stage || stages || q || filters.mode || filters.salary || filters.fit || filters.reason)
   const visible = (data?.items ?? []).filter((job) => !hidden.has(job.id))
   const picked = quick ? visible.filter((job) => selected.has(job.id)) : []
 
@@ -805,8 +940,10 @@ export function InboxPage() {
 
       <InboxFilters
         filters={filters}
+        stage={stage}
+        stages={stages}
         onChange={(changes) => update(changes)}
-        onClear={() => update({ mode: null, salary: null, fit: null, page: null })}
+        onClear={() => update({ mode: null, salary: null, fit: null, reason: null, stages: null, page: null })}
       />
 
       <div className="mb-4 space-y-3 empty:hidden">
@@ -853,7 +990,11 @@ export function InboxPage() {
           isPlaceholderData && 'opacity-60',
         )}
       >
-        {isPending ? (
+        {noStages ? (
+          <EmptyState icon={<TrayIcon className="size-6" weight="duotone" />} title={t('stagePicker.emptyTitle')}>
+            {t('stagePicker.emptyBody')}
+          </EmptyState>
+        ) : isPending ? (
           <TableSkeleton />
         ) : isError ? (
           <ErrorState error={error} onRetry={() => refetch()} className="m-4 border-0" />
@@ -904,6 +1045,7 @@ export function InboxPage() {
               sort={sort}
               onSort={setSort}
               closedView={stage === 'closed'}
+              reasonView={showsReason(stage)}
               actions={actions}
             />
           </div>

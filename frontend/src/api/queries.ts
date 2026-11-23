@@ -104,6 +104,10 @@ export interface JobsParams {
   has_salary?: boolean
   has_score?: boolean
   min_score?: number
+  /** Varias etapas a la vez (en «Todas»); sin ellas, todas. */
+  stages?: Stage[]
+  /** Solo las cerradas con este motivo. */
+  close_reason?: JobsQuery['close_reason']
 }
 
 export function useStatus() {
@@ -115,7 +119,7 @@ export function useStatus() {
   })
 }
 
-export function useJobs(params: JobsParams, options: { refetchInterval?: number } = {}) {
+export function useJobs(params: JobsParams, options: { refetchInterval?: number; enabled?: boolean } = {}) {
   return useQuery({
     ...options,
     queryKey: keys.jobs(params),
@@ -135,6 +139,8 @@ export function useJobs(params: JobsParams, options: { refetchInterval?: number 
               has_salary: params.has_salary,
               has_score: params.has_score,
               min_score: params.min_score,
+              stages: params.stages,
+              close_reason: params.close_reason,
             },
           },
         }),

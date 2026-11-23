@@ -10,6 +10,12 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Por qué se cerró cada oferta, en la Bandeja:** columna «Motivo» en «Cerrada» y en «Todas»
+  (descartada, no pasó los filtros, rechazada, retirada, caducada, cerrada por la empresa,
+  duplicada o aceptada) y filtro «Motivo de cierre». Una duplicada ya no sale como «Descartada».
+- **Varias etapas a la vez en «Todas»:** el desplegable «Etapas» tiene una casilla por etapa (todas
+  marcadas al principio), «Todas» y «Ninguna», y lo marcado queda en la dirección de la página, así
+  que se puede guardar o compartir la vista (p. ej. solo «CV listo» y «Cerrada»).
 - **Borrar las ofertas duplicadas:** la Bandeja avisa de las ofertas duplicadas que se guardaban
   antes (la misma vacante que otra, con un título casi igual, cerrada como duplicada). «Ver y
   borrar» enseña la lista, cada una con su original, y las borra con una confirmación corta, tras

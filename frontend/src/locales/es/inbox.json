@@ -22,7 +22,8 @@
     "stage": "Etapa",
     "added": "Alta",
     "closed": "Cerrada",
-    "actions": "Acciones"
+    "actions": "Acciones",
+    "reason": "Motivo"
   },
   "loadingJobs": "Cargando ofertas",
   "count_one": "{{count}} oferta",
@@ -44,6 +45,8 @@
     "fit_50": "Encaje de 50 o más",
     "fit_70": "Encaje de 70 o más",
     "fit_85": "Encaje de 85 o más",
+    "reason": "Motivo de cierre",
+    "reasonAny": "Cualquier motivo",
     "clear": "Limpiar filtros"
   },
   "allStages": "Todas",
@@ -132,5 +135,25 @@
     "profile": "Sin encaje calculado: falta tu perfil. Créalo en «Mi perfil».",
     "unread": "Sin encaje calculado: tu agente aún no ha leído la oferta.",
     "other": "Sin encaje calculado todavía."
+  },
+  "closeReason": {
+    "discarded": "Descartada",
+    "filtered_out": "No pasó los filtros",
+    "rejected": "Rechazada",
+    "withdrawn": "Retirada",
+    "expired": "Caducada",
+    "closed_by_company": "Cerrada por la empresa",
+    "duplicate": "Duplicada",
+    "accepted": "Aceptada"
+  },
+  "stagePicker": {
+    "label": "Etapas",
+    "all": "Todas",
+    "none": "Ninguna",
+    "summaryAll": "Todas las etapas",
+    "summarySome": "{{count}} de {{total}} etapas",
+    "summaryNone": "Ninguna etapa",
+    "emptyTitle": "Ninguna etapa marcada",
+    "emptyBody": "Marca al menos una etapa en «Etapas» para ver ofertas."
   }
 }

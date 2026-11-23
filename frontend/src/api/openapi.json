@@ -226,7 +226,7 @@
           "jobs"
         ],
         "summary": "List Jobs",
-        "description": "Bandeja: filtrada por etapa, texto (título o empresa), modalidad, salario y encaje, ordenada\npor fecha de alta, score o salario anualizado (por defecto, las más recientes primero; sin el\ndato, al final).",
+        "description": "Bandeja: filtrada por etapa (una o varias), texto (título o empresa), modalidad, salario,\nencaje y motivo de cierre, ordenada por fecha de alta, score o salario anualizado (por\ndefecto, las más recientes primero; sin el dato, al final).",
         "operationId": "list_jobs",
         "parameters": [
           {
@@ -411,6 +411,55 @@
               "title": "Min Score"
             },
             "description": "Encaje (score) mínimo."
+          },
+          {
+            "name": "stages",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Stage"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Varias etapas a la vez (`?stages=cv_ready&stages=closed`).",
+              "title": "Stages"
+            },
+            "description": "Varias etapas a la vez (`?stages=cv_ready&stages=closed`)."
+          },
+          {
+            "name": "close_reason",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "discarded",
+                    "filtered_out",
+                    "rejected",
+                    "withdrawn",
+                    "expired",
+                    "closed_by_company",
+                    "duplicate",
+                    "accepted"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Solo las cerradas con este motivo.",
+              "title": "Close Reason"
+            },
+            "description": "Solo las cerradas con este motivo."
           }
         ],
         "responses": {
@@ -32116,6 +32165,27 @@
               }
             ],
             "title": "Closed By"
+          },
+          "close_reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "discarded",
+                  "filtered_out",
+                  "rejected",
+                  "withdrawn",
+                  "expired",
+                  "closed_by_company",
+                  "duplicate",
+                  "accepted"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Close Reason"
           }
         },
         "type": "object",
@@ -32479,6 +32549,27 @@
               }
             ],
             "title": "Closed By"
+          },
+          "close_reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "discarded",
+                  "filtered_out",
+                  "rejected",
+                  "withdrawn",
+                  "expired",
+                  "closed_by_company",
+                  "duplicate",
+                  "accepted"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Close Reason"
           },
           "reached": {
             "anyOf": [

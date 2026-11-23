@@ -53,9 +53,9 @@ export interface paths {
         };
         /**
          * List Jobs
-         * @description Bandeja: filtrada por etapa, texto (título o empresa), modalidad, salario y encaje, ordenada
-         *     por fecha de alta, score o salario anualizado (por defecto, las más recientes primero; sin el
-         *     dato, al final).
+         * @description Bandeja: filtrada por etapa (una o varias), texto (título o empresa), modalidad, salario,
+         *     encaje y motivo de cierre, ordenada por fecha de alta, score o salario anualizado (por
+         *     defecto, las más recientes primero; sin el dato, al final).
          */
         get: operations["list_jobs"];
         put?: never;
@@ -6739,6 +6739,8 @@ export interface components {
             closed_at?: string | null;
             /** Closed By */
             closed_by?: string | null;
+            /** Close Reason */
+            close_reason?: ("discarded" | "filtered_out" | "rejected" | "withdrawn" | "expired" | "closed_by_company" | "duplicate" | "accepted") | null;
         };
         /** JobRunCost */
         JobRunCost: {
@@ -6819,6 +6821,8 @@ export interface components {
             reopening?: components["schemas"]["ReopeningOf"] | null;
             /** Closed By */
             closed_by?: string | null;
+            /** Close Reason */
+            close_reason?: ("discarded" | "filtered_out" | "rejected" | "withdrawn" | "expired" | "closed_by_company" | "duplicate" | "accepted") | null;
             /** Reached */
             reached?: ("before_applying" | "applied" | "interview" | "offer") | null;
         };
@@ -10403,6 +10407,10 @@ export interface operations {
                 has_score?: boolean | null;
                 /** @description Encaje (score) mínimo. */
                 min_score?: number | null;
+                /** @description Varias etapas a la vez (`?stages=cv_ready&stages=closed`). */
+                stages?: components["schemas"]["Stage"][] | null;
+                /** @description Solo las cerradas con este motivo. */
+                close_reason?: ("discarded" | "filtered_out" | "rejected" | "withdrawn" | "expired" | "closed_by_company" | "duplicate" | "accepted") | null;
             };
             header?: never;
             path?: never;

@@ -219,7 +219,7 @@ Proyección del estado de candidatura para consultas rápidas; se recalcula desd
 | applied_at | datetime? | |
 | last_event_at | datetime | Lo mueve cualquier evento, también una nota posterior al cierre |
 | closed_at | datetime? | Fase 27.6: `occurred_at` del evento que la cerró; `NULL` si no está cerrada (lo limpia `reopened`). Una nota posterior no lo mueve |
-| closed_by | str? | Tipo de ese evento: `discarded`, `rejected`, `withdrawn`, `expired`, `accepted`, `duplicate_detected` o `hard_filter_failed` |
+| closed_by | str? | Tipo de ese evento: `discarded`, `rejected`, `withdrawn`, `expired`, `accepted`, `duplicate_detected` o `hard_filter_failed`. La Bandeja lo traduce a un **motivo de cierre** (`close_reason`, sin columna propia): el mismo nombre para `rejected`, `withdrawn`, `expired` y `accepted`; `duplicate` y `filtered_out` para los dos últimos; y un `discarded` es `closed_by_company` si el motivo del último descarte es `closed` y `discarded` si no |
 
 ### `events` (fuente de verdad)
 | Columna | Tipo | Notas |

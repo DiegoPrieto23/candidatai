@@ -95,10 +95,17 @@ def list_jobs(
     min_score: Annotated[
         int | None, Query(ge=0, le=100, description="Encaje (score) mínimo.")
     ] = None,
+    stages: Annotated[
+        list[Stage] | None,
+        Query(description="Varias etapas a la vez (`?stages=cv_ready&stages=closed`)."),
+    ] = None,
+    close_reason: Annotated[
+        jobs.CloseReason | None, Query(description="Solo las cerradas con este motivo.")
+    ] = None,
 ) -> jobs.JobPage:
-    """Bandeja: filtrada por etapa, texto (título o empresa), modalidad, salario y encaje, ordenada
-    por fecha de alta, score o salario anualizado (por defecto, las más recientes primero; sin el
-    dato, al final)."""
+    """Bandeja: filtrada por etapa (una o varias), texto (título o empresa), modalidad, salario,
+    encaje y motivo de cierre, ordenada por fecha de alta, score o salario anualizado (por
+    defecto, las más recientes primero; sin el dato, al final)."""
     return jobs.search_jobs(
         session,
         stage=stage.value if stage else None,
@@ -112,6 +119,8 @@ def list_jobs(
         has_salary=has_salary,
         has_score=has_score,
         min_score=min_score,
+        stages=[value.value for value in stages] if stages is not None else None,
+        reason=close_reason,
     )
 
 
