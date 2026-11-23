@@ -37,5 +37,30 @@
     "stays": "Se quedan tu perfil, tus plantillas, tus fuentes, tus buzones, tu red de contactos y la configuración.",
     "doneTitle": "Ofertas y candidaturas borradas",
     "close": "Entendido"
+  },
+  "duplicates": {
+    "bannerTitle_one": "Hay {{count}} oferta duplicada",
+    "bannerTitle_other": "Hay {{count}} ofertas duplicadas",
+    "bannerText": "Son la misma vacante que otra oferta, con un título casi igual. Ya no se crean, pero las guardadas antes siguen en «Cerradas».",
+    "review": "Ver y borrar",
+    "title_one": "¿Borrar {{count}} oferta duplicada?",
+    "title_other": "¿Borrar {{count}} ofertas duplicadas?",
+    "lead": "Cada una desaparece con su historial. La original se queda y conserva sus publicaciones, así que una búsqueda nueva las reconoce sin abrirlas.",
+    "erasableList": "Duplicadas que se borran",
+    "sameAs": "Misma vacante que",
+    "keptTitle_one": "Se queda {{count}}",
+    "keptTitle_other": "Se quedan {{count}}",
+    "keep": {
+      "no_longer_duplicate": "ya no está cerrada como duplicada",
+      "own_work": "tiene algo propio (CV, notas, candidatura…)"
+    },
+    "backup": "Antes se guarda una copia de seguridad de la base de datos en la carpeta de datos.",
+    "erase_one": "Borrar {{count}} duplicada",
+    "erase_other": "Borrar {{count}} duplicadas",
+    "erasing": "Borrando…",
+    "cancel": "Cancelar",
+    "done_one": "{{count}} oferta duplicada borrada. Copia de seguridad previa: {{backup}}",
+    "done_other": "{{count}} ofertas duplicadas borradas. Copia de seguridad previa: {{backup}}",
+    "close": "Cerrar"
   }
 }

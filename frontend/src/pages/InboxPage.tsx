@@ -19,6 +19,7 @@ import { type JobSort, PAGE_SIZE, type SortDirection, useEditableProfile, useJob
 import { DiscardDialog, type DiscardChoice } from '@/components/DiscardDialog'
 import { Hint } from '@/components/Hint'
 import { SignalBadges } from '@/components/JobSignals'
+import { DuplicatesBanner } from '@/components/Duplicates'
 import { ReopenedBadge, RepublishedBanner } from '@/components/Reopenings'
 import { KnownBadge } from '@/components/KnownBadge'
 import { Pager } from '@/components/Pager'
@@ -810,6 +811,7 @@ export function InboxPage() {
 
       <div className="mb-4 space-y-3 empty:hidden">
         <RepublishedBanner />
+        <DuplicatesBanner />
         {done.length > 0 && (
           <div role="status" className="flex items-center gap-3 rounded-xl border bg-card px-4 py-2.5 text-sm animate-in fade-in slide-in-from-top-1">
             <ProhibitIcon className="size-[18px] shrink-0 text-muted-foreground" />

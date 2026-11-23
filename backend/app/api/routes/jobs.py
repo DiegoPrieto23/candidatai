@@ -4,7 +4,16 @@ from fastapi import APIRouter, Depends, Query, Request, status
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 
 from app.api.deps import EmptyBody, SessionDep, require_ui, require_ui_read
-from app.services import agent_costs, erase, events, ingest, jobs, liveness, reopenings
+from app.services import (
+    agent_costs,
+    duplicates,
+    erase,
+    events,
+    ingest,
+    jobs,
+    liveness,
+    reopenings,
+)
 from app.services.matching import service as matching
 from app.services.pipeline import EventType, Stage
 
@@ -29,6 +38,12 @@ class AddFromTextBody(_Body):
 
 class EraseJobBody(_Body):
     confirm: str = Field(description="El nombre de la empresa, escrito por el usuario.")
+
+
+class EraseDuplicatesBody(_Body):
+    job_ids: list[int] = Field(
+        min_length=1, max_length=100_000, description="Las duplicadas de la vista previa."
+    )
 
 
 class CheckOpenBody(_Body):
@@ -108,6 +123,23 @@ def list_jobs(
 def list_republished_jobs(session: SessionDep) -> reopenings.RepublishedList:
     """Ofertas que cerraste tú y han vuelto a publicarse (fase 45): el aviso de la Bandeja."""
     return reopenings.list_republished(session)
+
+
+@router.get("/duplicates", operation_id="list_duplicates")
+def list_duplicates(session: SessionDep) -> duplicates.DuplicateList:
+    """Ofertas guardadas como duplicadas de otra, con su original y si se pueden borrar."""
+    return duplicates.list_duplicates(session)
+
+
+@router.post(
+    "/duplicates/erase",
+    operation_id="erase_duplicates",
+    dependencies=[Depends(require_ui)],
+)
+def erase_duplicates(session: SessionDep, body: EraseDuplicatesBody) -> duplicates.DuplicatesErased:
+    """Borra las duplicadas de la vista previa que no tienen nada propio, tras copiar la base de
+    datos. Solo desde la UI."""
+    return duplicates.erase_duplicates(session, body.job_ids)
 
 
 @router.post(

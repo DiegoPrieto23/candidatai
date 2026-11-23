@@ -269,7 +269,7 @@ describe('Buscar ofertas', () => {
   })
 
   it('sin navegador, consulta las fuentes con API una a una', async () => {
-    const result = (id: number, created: number) => ({ source_id: id, name: 'x', kind: 'lever', run_id: 1, skipped: null, found: 3, after_filters: 3, created, existing: 0, duplicates: 0, job_ids: [], errors: [], message: '' })
+    const result = (id: number, created: number) => ({ source_id: id, name: 'x', kind: 'lever', run_id: 1, skipped: null, found: 3, after_filters: 3, created, existing: 0, job_ids: [], errors: [], message: '' })
     const calls = mockApi(
       routes(
         [

@@ -56,9 +56,9 @@ def test_survives_demo_jobs_and_duplicates(db: None, capsys: pytest.CaptureFixtu
         )
     assert script.main() == 0
     out = capsys.readouterr().out
-    assert "19 ofertas creadas, 0 ya existían, 1 cerradas como duplicado" in out
-    assert "(duplicado de la oferta 3: sin extracción)" in out
-    assert len(all_jobs()) == 23
+    # La que choca ya no entra como duplicada: es la misma vacante, que ya existía.
+    assert "19 ofertas creadas, 1 ya existían" in out
+    assert len(all_jobs()) == 22
 
 
 def test_companies_do_not_clash_with_demo_jobs() -> None:

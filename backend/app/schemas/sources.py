@@ -591,8 +591,7 @@ class SourceRunResult(BaseModel):
     found: int
     after_filters: int
     created: int
-    existing: int  # ya estaban (por id en la fuente o por huella)
-    duplicates: int  # nuevas, pero cerradas como duplicado difuso de otra
+    existing: int  # ya estaban (por id en la fuente, por huella o con un título casi igual)
     job_ids: list[int]  # ofertas creadas, en `pending_extraction`
     errors: list[Issue]
     message: str

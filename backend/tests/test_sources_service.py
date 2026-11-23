@@ -205,7 +205,8 @@ def test_running_twice_does_not_duplicate_anything(session: Session, with_profil
 
 @respx.mock
 def test_job_already_added_by_hand_is_not_duplicated(session: Session, with_profile: None) -> None:
-    """La misma oferta dada de alta antes por texto (misma huella) cuenta como ya existente."""
+    """La misma oferta dada de alta antes por texto (misma huella) cuenta como ya existente, y la
+    de título casi igual («Senior Data Engineer (m/f/d)») también."""
     from app.services import ingest
 
     ingest.add_from_text(
@@ -214,7 +215,7 @@ def test_job_already_added_by_hand_is_not_duplicated(session: Session, with_prof
     mock_greenhouse()
     source = service.add_source(session, GREENHOUSE)
     result = service.run_source(session, source.id)
-    assert (result.created, result.existing) == (2, 1)
+    assert (result.created, result.existing) == (1, 2)
 
 
 @respx.mock
@@ -324,18 +325,32 @@ def test_manual_sources_cannot_run(session: Session) -> None:
 
 
 @respx.mock
-def test_fuzzy_duplicates_across_sources_still_count(session: Session, with_profile: None) -> None:
-    """Dentro de una fuente, ids distintos no son duplicados difusos; frente a otra fuente, sí."""
+def test_fuzzy_duplicates_across_sources_are_not_created(
+    session: Session, with_profile: None
+) -> None:
+    """Dentro de una fuente, ids distintos no son duplicados difusos; frente a otra fuente, sí, y
+    no se crean: cuentan como ya existentes."""
     from app.services import ingest
 
-    ingest.add_from_text(session, "Data Engineer", "Acme Datos", "Pegada.", location="Ourense")
+    pasted = ingest.add_from_text(
+        session, "Data Engineer", "Acme Datos", "Pegada.", location="Ourense"
+    )
     mock_greenhouse()
     source = service.add_source(session, GREENHOUSE)
     result = service.run_source(session, source.id)
-    assert result.created == 3
     # «Data Engineer» y «Senior Data Engineer» de Greenhouse se parecen a la de Ourense.
-    assert result.duplicates == 2
-    assert "cerradas como duplicadas" in result.message
+    assert (result.created, result.existing) == (1, 2)
+    assert pasted.job_id not in result.job_ids
+    assert "duplicad" not in result.message
+
+
+@respx.mock
+def test_same_source_ids_are_not_fuzzy_duplicates(session: Session, with_profile: None) -> None:
+    mock_greenhouse()
+    source = service.add_source(session, GREENHOUSE)
+    result = service.run_source(session, source.id)
+    # «Data Engineer» y «Senior Data Engineer (m/f/d)» llevan ids distintos en Greenhouse.
+    assert (result.created, result.existing) == (3, 0)
 
 
 # --- Robustez (revisión de la fase) ----------------------------------------------------------

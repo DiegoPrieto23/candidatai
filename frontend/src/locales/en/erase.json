@@ -37,5 +37,30 @@
     "stays": "Your profile, templates, sources, mailboxes, contacts network and settings stay.",
     "doneTitle": "Jobs and applications deleted",
     "close": "Got it"
+  },
+  "duplicates": {
+    "bannerTitle_one": "There is {{count}} duplicate job",
+    "bannerTitle_other": "There are {{count}} duplicate jobs",
+    "bannerText": "They are the same opening as another job, with an almost identical title. They are no longer created, but the ones saved earlier remain under “Closed”.",
+    "review": "Review and delete",
+    "title_one": "Delete {{count}} duplicate job?",
+    "title_other": "Delete {{count}} duplicate jobs?",
+    "lead": "Each one is removed with its history. The original stays and keeps their postings, so a new search recognises them without opening them.",
+    "erasableList": "Duplicates to delete",
+    "sameAs": "Same opening as",
+    "keptTitle_one": "{{count}} stays",
+    "keptTitle_other": "{{count}} stay",
+    "keep": {
+      "no_longer_duplicate": "it is no longer closed as a duplicate",
+      "own_work": "it has its own work (CV, notes, application…)"
+    },
+    "backup": "A backup of the database is saved in the data folder first.",
+    "erase_one": "Delete {{count}} duplicate",
+    "erase_other": "Delete {{count}} duplicates",
+    "erasing": "Deleting…",
+    "cancel": "Cancel",
+    "done_one": "{{count}} duplicate job deleted. Backup taken first: {{backup}}",
+    "done_other": "{{count}} duplicate jobs deleted. Backup taken first: {{backup}}",
+    "close": "Close"
   }
 }

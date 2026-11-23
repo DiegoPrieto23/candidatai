@@ -117,6 +117,21 @@ def test_same_offer_from_another_page_is_existing(session: Session) -> None:
     assert (second.status, second.job_id) == ("existing", first.job_id)
 
 
+def test_same_vacancy_with_a_near_title_is_existing(session: Session) -> None:
+    first = capture.capture(
+        session, capture.CaptureInput(**_body(url="https://empleo.demo.invalid/ofertas/77"))
+    )
+    # La misma vacante con un título casi igual: no se crea otra oferta.
+    second = capture.capture(
+        session,
+        capture.CaptureInput(
+            **_body(url="https://otra.demo.invalid/o/78", title="Data Engineer (m/f/d)")
+        ),
+    )
+    assert (second.status, second.job_id) == ("existing", first.job_id)
+    assert len(session.scalars(select(Job)).all()) == 1
+
+
 def test_closed_offer_is_existing_and_says_so(session: Session) -> None:
     from app.services.events import record
     from app.services.pipeline import Actor, EventType

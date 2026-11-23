@@ -97,7 +97,7 @@ las reabiertas las cuenta por `jobs` de esas fuentes desde que empezó, para ir 
 | risk_flags | JSON | Riesgo de inyección detectado por el código: `hidden_text`, `injection_phrase`… |
 | signals | JSON | Observaciones que no son riesgo (fase 16): `possibly_closed`, `liveness`, `open_confirmed`, `reposted`; y de oferta dudosa (fase 25.3): `salary_range_wide`, `employer_hidden`, `fixed_term`, `stale_repost`, `ai_screening`. Ver §Fase 16 |
 | fingerprint | str (índice) | Ver abajo. Única hasta la fase 45: una reapertura comparte la huella con la oferta de la que viene (migración `0042`) |
-| duplicate_of | FK jobs? | Si se detecta como duplicado difuso |
+| duplicate_of | FK jobs? | Duplicada difusa de esa oferta. Solo en las guardadas antes de la fase 47: desde entonces un duplicado difuso no crea oferta (ver abajo) |
 | reopening_of | FK jobs? | Fase 45: reapertura de esta oferta cerrada (ver «Ofertas que vuelven a publicarse») |
 | posted_at | datetime? | |
 | first_seen_at | datetime | |
@@ -108,10 +108,21 @@ de él: con los índices, la Bandeja y el embudo no tienen que leerlas de la fil
 
 **Huella:** `sha256(normalized_company | normalized_title | normalized_location)`, donde
 `normalized_title` quita seniority genérica entre paréntesis, emojis, dobles espacios y pasa a
-minúsculas. Además, un chequeo difuso (rapidfuzz, umbral en `config/policies.yaml`) entre ofertas
-de la misma empresa en los últimos 60 días marca `duplicate_of`. Excepción (fase 09): dos ofertas
-de la misma fuente con conector y `external_id` distintos nunca son duplicado difuso entre sí (el
-ATS ya dice que son publicaciones distintas).
+minúsculas. Sin huella igual, un chequeo difuso (rapidfuzz, umbral en `config/policies.yaml`)
+busca la misma vacante con un título casi igual entre las ofertas de la misma empresa de los últimos
+60 días (`ingest.fuzzy_original`; con empates, la que sigue viva y después la más reciente). Una
+duplicada antigua, por huella o por título, lleva siempre a su original. Desde la fase 47 se trata como la huella: no se crea oferta, se anota la publicación en
+la original y el alta devuelve `created: false` con `duplicate_of`; y si la original la cerró la
+empresa hace más de `dedup.reopen_after_days`, entra como reapertura. Excepción (fase 09): dos
+ofertas de la misma fuente o plataforma con `external_id` distintos nunca son duplicado difuso
+entre sí (el portal ya dice que son publicaciones distintas). Antes de la 47 el duplicado difuso
+se guardaba con `duplicate_of` y se cerraba con `duplicate_detected`; esas filas siguen hasta que
+el usuario las borra desde la Bandeja (`services/duplicates.py`): solo las que siguen cerradas como
+duplicadas y no tienen nada propio (un evento que no sea automático —lo son `found`,
+`detail_captured`, `duplicate_detected`, `extracted`, `extraction_failed`, `hard_filter_failed`,
+`injection_suspected`, `closure_suspected` y `scored`— o una fila con enlace
+obligatorio fuera de `events`, `applications`, `job_sightings`, `job_extractions` y `matches`),
+tras la copia previa y pasando sus publicaciones a la original.
 
 **Ofertas que vuelven a publicarse (fase 45, `ingest.republication`).** Cuando llega una oferta que
 ya está y la guardada se cerró hace más de `dedup.reopen_after_days` (30 por defecto), decide quién

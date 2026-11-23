@@ -92,13 +92,14 @@ def test_add_text_and_list() -> None:
                   "--file", str(path)]
     )  # fmt: skip
     assert result.exit_code == 0, result.output
-    assert "duplicado de la oferta 1" in result.stdout
+    # La misma vacante con un título casi igual ya no crea otra oferta.
+    assert "misma vacante que la oferta 1" in result.stdout
 
     result = runner.invoke(cli.app, ["jobs", "list", "--json"])
     assert result.exit_code == 0, result.output
     jobs = json.loads(result.stdout)["jobs"]
-    assert [(j["id"], j["stage"]) for j in jobs] == [(2, "closed"), (1, "pending_extraction")]
-    assert jobs[1]["location"] == "Bilbao"
+    assert [(j["id"], j["stage"]) for j in jobs] == [(1, "pending_extraction")]
+    assert jobs[0]["location"] == "Bilbao"
     assert "Buscamos" not in result.stdout  # nunca el texto crudo
 
     result = runner.invoke(cli.app, ["jobs", "list", "--stage", "pending_extraction", "--json"])
@@ -106,7 +107,8 @@ def test_add_text_and_list() -> None:
 
     result = runner.invoke(cli.app, ["jobs", "list"])
     assert result.exit_code == 0
-    assert "Data Analyst SQL · Acme (duplicado de 1)" in result.stdout
+    assert "Data Analyst · Acme" in result.stdout
+    assert "Data Analyst SQL" not in result.stdout
 
 
 def test_add_text_missing_file() -> None:

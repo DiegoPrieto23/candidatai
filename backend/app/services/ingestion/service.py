@@ -804,8 +804,6 @@ def _store(session: Session, source: Source, raw: RawJob, result: SourceRunResul
         return
     result.created += 1
     result.job_ids.append(stored.job_id)
-    if stored.duplicate_of is not None:
-        result.duplicates += 1
 
 
 def run_source(
@@ -828,7 +826,6 @@ def run_source(
         after_filters=0,
         created=0,
         existing=0,
-        duplicates=0,
         job_ids=[],
         errors=[],
         message="",
@@ -868,8 +865,6 @@ def run_source(
     result.message = f"{label}: " + _summary(
         result.found, result.after_filters, result.created, result.existing
     )
-    if result.duplicates:
-        result.message += f" ({result.duplicates} cerradas como duplicadas)"
     if result.errors:
         result.message += f"; {len(result.errors)} avisos"
     return _finish(session, source, run, result, ok=True)

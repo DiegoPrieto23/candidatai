@@ -317,14 +317,10 @@ def capture(session: Session, data: CaptureInput) -> CaptureResult:
     job = session.get(Job, stored.job_id)
     assert job is not None
     if not stored.created:
-        # Misma huella (empresa, título y ubicación) que una oferta ya guardada.
+        # La misma oferta ya guardada: misma huella (empresa, título y ubicación) o la misma
+        # vacante con un título casi igual. La extensión ve la que ya estaba, no otra nueva.
         if _stage(session, job.id) == Stage.PENDING_DETAIL:
             _require_offer_text(data, selection)
             return _complete(session, job, text, data)
         return _existing(session, job)
-    message = "Nueva: lista para extraer."
-    if job.duplicate_of is not None:
-        message = (
-            f"Nueva, pero parece un duplicado de la oferta {job.duplicate_of} y queda cerrada."
-        )
-    return _result(session, job, "new", message)
+    return _result(session, job, "new", "Nueva: lista para extraer.")

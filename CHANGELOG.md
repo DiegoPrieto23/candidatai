@@ -10,6 +10,13 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 ## [Sin publicar]
 
 ### Añadido
+- **Borrar las ofertas duplicadas:** la Bandeja avisa de las ofertas duplicadas que se guardaban
+  antes (la misma vacante que otra, con un título casi igual, cerrada como duplicada). «Ver y
+  borrar» enseña la lista, cada una con su original, y las borra con una confirmación corta, tras
+  una copia de seguridad de la base de datos. Las que se reabrieron o tienen algo propio (un CV,
+  notas, una candidatura…) se quedan, y la lista dice por qué. La original conserva sus enlaces, así
+  que una búsqueda nueva los reconoce sin abrirlos. Tu agente puede consultarlas con
+  `list_duplicates` (`cai jobs duplicates`).
 - **Borrar una oferta o vaciarlo todo:** arriba en la ficha de cada oferta, junto a «Ver original»,
   «Borrar oferta» la quita con todo lo suyo (historial, CVs, cartas, entrevistas, borradores y los
   correos que solo eran de ella); su aviso explica que borrar no es descartar, que la cierra y la
@@ -209,6 +216,12 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   puesto ya no desaparece mientras la editas.
 
 ### Cambiado
+- **La misma vacante con un título casi igual ya no se da de alta otra vez:** en lugar de guardarse
+  como oferta nueva y cerrarse como duplicada, se anota como una publicación más de la original,
+  venga de un alta manual, de la extensión, de un conector, de una alerta o de una búsqueda de tu
+  agente. `check_known` la reconoce antes de abrirla (`same_offer`), y si la original la cerró la
+  empresa hace más de 30 días, entra como reapertura. El resumen de cada fuente ya no cuenta
+  «cerradas como duplicadas»: entran en «ya estaban».
 - **«Respuestas» agrupa los correos de cada candidatura:** los de una misma oferta salen juntos, el
   más reciente arriba y los anteriores plegados debajo («4 correos anteriores de esta candidatura»),
   que despliegas con un clic. Un rechazo propuesto, y la opción «Rechazo» al cambiar o decidir qué

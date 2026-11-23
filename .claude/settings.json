@@ -22,6 +22,7 @@
       "mcp__candidatai__get_job",
       "mcp__candidatai__check_job_open",
       "mcp__candidatai__check_known",
+      "mcp__candidatai__list_duplicates",
       "mcp__candidatai__get_search_titles",
       "mcp__candidatai__save_extraction",
       "mcp__candidatai__get_extraction",

@@ -275,7 +275,6 @@ describe('Empresas objetivo', () => {
       after_filters: 3,
       created: 2,
       existing: 1,
-      duplicates: 0,
       job_ids: [7, 8],
       errors: [],
       message: 'Greenhouse · Acme Datos: 12 ofertas encontradas, 3 tras filtros, 2 nuevas, 1 ya estaba',

@@ -285,6 +285,23 @@ export function useRepublishedJobs() {
   })
 }
 
+/** Ofertas guardadas como duplicadas de otra (ya no se crean): el aviso de la Bandeja. */
+export function useDuplicateJobs() {
+  return useQuery({
+    queryKey: [...keys.allJobs, 'duplicates'] as const,
+    queryFn: () => unwrap(api.GET('/jobs/duplicates')),
+  })
+}
+
+/** Borra las duplicadas de la vista previa que no tienen nada propio (con copia previa). */
+export function useEraseDuplicates() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (jobIds: number[]) => unwrap(api.POST('/jobs/duplicates/erase', { body: { job_ids: jobIds } })),
+    onSuccess: () => client.invalidateQueries(),
+  })
+}
+
 /** «Ignorar» el aviso «Ha vuelto a publicarse». Reabrir va por `useJobEvent` (`reopened`). */
 export function useDismissRepublished() {
   const client = useQueryClient()

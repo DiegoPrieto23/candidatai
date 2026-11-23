@@ -609,6 +609,220 @@
         }
       }
     },
+    "/jobs/duplicates": {
+      "get": {
+        "tags": [
+          "jobs"
+        ],
+        "summary": "List Duplicates",
+        "description": "Ofertas guardadas como duplicadas de otra, con su original y si se pueden borrar.",
+        "operationId": "list_duplicates",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DuplicateList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/duplicates/erase": {
+      "post": {
+        "tags": [
+          "jobs"
+        ],
+        "summary": "Erase Duplicates",
+        "description": "Borra las duplicadas de la vista previa que no tienen nada propio, tras copiar la base de\ndatos. Solo desde la UI.",
+        "operationId": "erase_duplicates",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EraseDuplicatesBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DuplicatesErased"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/jobs/{job_id}/republished/dismiss": {
       "post": {
         "tags": [
@@ -28989,6 +29203,149 @@
         "type": "object",
         "title": "DraftSentBody"
       },
+      "DuplicateList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/DuplicateView"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "erasable": {
+            "type": "integer",
+            "title": "Erasable"
+          },
+          "kept": {
+            "type": "integer",
+            "title": "Kept"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "erasable",
+          "kept"
+        ],
+        "title": "DuplicateList"
+      },
+      "DuplicateView": {
+        "properties": {
+          "job_id": {
+            "type": "integer",
+            "title": "Job Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "first_seen_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "First Seen At"
+          },
+          "original_id": {
+            "type": "integer",
+            "title": "Original Id"
+          },
+          "original_title": {
+            "type": "string",
+            "title": "Original Title"
+          },
+          "original_stage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original Stage"
+          },
+          "keep_reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "no_longer_duplicate",
+                  "own_work"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Keep Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "title",
+          "company",
+          "url",
+          "first_seen_at",
+          "original_id",
+          "original_title",
+          "original_stage",
+          "keep_reason"
+        ],
+        "title": "DuplicateView"
+      },
+      "DuplicatesErased": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok",
+            "default": true
+          },
+          "deleted_jobs": {
+            "type": "integer",
+            "title": "Deleted Jobs"
+          },
+          "kept": {
+            "type": "integer",
+            "title": "Kept"
+          },
+          "moved_sightings": {
+            "type": "integer",
+            "title": "Moved Sightings"
+          },
+          "backup": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Backup"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "deleted_jobs",
+          "kept",
+          "moved_sightings",
+          "backup",
+          "message"
+        ],
+        "title": "DuplicatesErased"
+      },
       "EditPlatformBody": {
         "properties": {
           "name": {
@@ -29357,6 +29714,26 @@
           "confirm"
         ],
         "title": "EraseAllBody"
+      },
+      "EraseDuplicatesBody": {
+        "properties": {
+          "job_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "maxItems": 100000,
+            "minItems": 1,
+            "title": "Job Ids",
+            "description": "Las duplicadas de la vista previa."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "job_ids"
+        ],
+        "title": "EraseDuplicatesBody"
       },
       "EraseJobBody": {
         "properties": {
@@ -40466,10 +40843,6 @@
             "type": "integer",
             "title": "Existing"
           },
-          "duplicates": {
-            "type": "integer",
-            "title": "Duplicates"
-          },
           "job_ids": {
             "items": {
               "type": "integer"
@@ -40500,7 +40873,6 @@
           "after_filters",
           "created",
           "existing",
-          "duplicates",
           "job_ids",
           "errors",
           "message"
