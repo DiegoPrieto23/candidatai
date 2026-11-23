@@ -1,7 +1,7 @@
 {
   "title": "CV",
   "verification": {
-    "pending": "Sin verificar todavía. Las versiones que redacta o corrige tu agente se verifican solas; las que editas tú, con este botón.",
+    "pending": "Sin verificar todavía. Las versiones que redacta o corrige el agente se verifican solas; las editadas a mano, con este botón.",
     "passed": "Verificado: nada inventado ni exagerado",
     "failed": "El verificador encontró problemas",
     "blocker": "Bloqueante",
@@ -12,7 +12,7 @@
   },
   "template": {
     "legend": "Plantilla",
-    "yourCv": "Tu CV",
+    "yourCv": "CV propio",
     "ats": "Apta para ATS",
     "notAts": "No apta para ATS",
     "withPhoto": " · con foto",
@@ -20,7 +20,7 @@
   },
   "photo": {
     "legend": "Foto",
-    "autoHint": "Automática: según el país de la oferta y tus preferencias de foto, si has añadido una.",
+    "autoHint": "Automática: según el país de la oferta y las preferencias de foto, si hay una foto añadida.",
     "unsupported": "Esta plantilla no lleva foto."
   },
   "accent": "Color de acento",
@@ -37,13 +37,13 @@
   },
   "renderAria": "Diseño {{id}}",
   "toSend": "Para enviar",
-  "sentOne": "El que enviaste",
+  "sentOne": "El enviado",
   "templateChanged": "Plantilla cambiada",
   "pages": "Páginas",
   "keywords": "Keywords",
   "missingKeywords": "Faltan: {{list}}",
   "keywordsOf": "{{present}} de {{total}}",
-  "templateChangedHint": "La plantilla ha cambiado desde este diseño: vuelve a generarlo para ver cómo queda ahora.",
+  "templateChangedHint": "La plantilla ha cambiado desde este diseño: al volver a generarlo se ve cómo queda ahora.",
   "viewPdf": "Ver PDF",
   "compare": "Comparar",
   "useThis": "Usar este para enviar",
@@ -53,10 +53,10 @@
   "pdfOf": "PDF del diseño {{id}}",
   "otherRenders_one": "Ver {{count}} diseño más",
   "otherRenders_other": "Ver {{count}} diseños más",
-  "pickAnother": "Marca otro diseño para verlos lado a lado.",
+  "pickAnother": "Al marcar otro diseño, se ven lado a lado.",
   "none": {
     "title": "Aún sin CV",
-    "hint": "Tu agente redacta el CV desde tu perfil, lo verifica y le da formato. Después podrás cambiar plantilla, foto y color aquí, sin IA.",
+    "hint": "El agente redacta el CV desde el perfil, lo verifica y le da formato. Después se pueden cambiar plantilla, foto y color aquí, sin IA.",
     "generate": "Generar CV",
     "never": "Esta oferta no llegó a tener CV."
   },
@@ -80,25 +80,25 @@
   "layout": {
     "page": "Página {{page}}",
     "fix": {
-      "template": "Prueba otra plantilla en «Diseño», sin agente.",
-      "content": "Hay que recortar contenido: «Generar CV» con tu agente recorta lo menos relevante para la oferta."
+      "template": "Otra plantilla en «Diseño», sin agente.",
+      "content": "Hay que recortar contenido: «Generar CV» con el agente recorta lo menos relevante para la oferta."
     }
   },
   "brief": {
     "label": "Indicaciones para este CV (opcional)",
-    "placeholder": "Qué quieres que tenga en cuenta: qué proyecto destacar o qué dejar fuera…",
-    "hint": "Se guardan solas y tu agente las usa cada vez que redacta este CV. Solo orientan: lo que diga el CV sale de tu perfil.",
+    "placeholder": "Qué tener en cuenta: qué proyecto destacar o qué dejar fuera…",
+    "hint": "Se guardan solas y el agente las usa cada vez que redacta este CV. Solo orientan: lo que diga el CV sale del perfil.",
     "saving": "Guardando…",
-    "saved": "Guardadas: tu agente las usará al redactar este CV."
+    "saved": "Guardadas: el agente las usará al redactar este CV."
   },
   "correction": {
-    "label": "Qué quieres corregir",
-    "placeholder": "Por ejemplo: acorta el resumen o cambia «lideré» por «participé».",
-    "hint": "Tu agente cambia solo esto, sin rehacer el CV, y conserva la versión anterior. Todo sale de tu perfil.",
+    "label": "Qué corregir",
+    "placeholder": "Por ejemplo: acortar el resumen o cambiar «lideré» por «participé».",
+    "hint": "El agente cambia solo esto, sin rehacer el CV, y conserva la versión anterior. Todo sale del perfil.",
     "submit": "Pedir corrección",
-    "pending": "Esperando a tu agente:",
+    "pending": "Esperando al agente:",
     "cancel": "Cancelar",
-    "declined": "Tu agente no ha podido aplicarla:",
+    "declined": "El agente no ha podido aplicarla:",
     "suggest": {
       "shorter": "Acorta el resumen",
       "focus": "Da prioridad a lo que pide la oferta",
@@ -111,7 +111,7 @@
     "current": "Vigente",
     "restore": "Volver a esta versión",
     "viewPdf": "Ver PDF",
-    "asked": "Pediste:",
+    "asked": "Cambios pedidos:",
     "verified": "Verificada",
     "rejected": "No pasó la verificación",
     "unverified": "Sin verificar",
@@ -121,9 +121,9 @@
     "removed": "Quitado:",
     "added": "Añadido:",
     "origin": {
-      "generated": "Redactada por tu agente",
-      "correction": "Corregida por tu agente",
-      "edit": "Editada por ti"
+      "generated": "Redactada por el agente",
+      "correction": "Corregida por el agente",
+      "edit": "Editada a mano"
     },
     "sections": {
       "subtitle": "Subtítulo",
@@ -139,7 +139,7 @@
   },
   "edit": {
     "form": "Editar el texto del CV",
-    "hint": "Cambia los textos, quita o reordena logros y organiza las skills en grupos. Se guarda una versión nueva con el mismo diseño, sin agente y sin verificar. Para añadir un logro o cambiar las secciones, pide una corrección.",
+    "hint": "Se cambian los textos, se quitan o reordenan logros y se organizan las skills en grupos. Se guarda una versión nueva con el mismo diseño, sin agente y sin verificar. Para añadir un logro o cambiar las secciones, se pide una corrección.",
     "subtitle": "Subtítulo",
     "summary": "Resumen",
     "bulletAria": "{{title}}, viñeta {{position}}",
@@ -148,7 +148,7 @@
     "bulletRemove": "Quitar la viñeta {{position}} de {{title}}",
     "groupName": "Nombre del grupo {{position}}",
     "skillsTitle": "Skills",
-    "skillsHint": "Cada grupo sale en el CV con su nombre y sus skills, en este orden. Escribe una skill y pulsa Intro para añadirla.",
+    "skillsHint": "Cada grupo sale en el CV con su nombre y sus skills, en este orden. Una skill se añade escribiéndola y pulsando Intro.",
     "groupPlaceholder": "Nombre del grupo (p. ej. Lenguajes)",
     "unnamed": "grupo {{position}}",
     "groupUp": "Subir el grupo «{{group}}»",
@@ -164,16 +164,16 @@
     "addSkillPlaceholder": "Añadir skill y pulsar Intro",
     "skillRepeated": "«{{skill}}» ya está en este grupo.",
     "skillsFull": "Un grupo admite hasta {{max}} skills.",
-    "pendingSkill": "Pulsa Intro para añadir «{{skill}}»; si no, no se guarda.",
-    "groupEmpty": "Sin skills: añade una o quita el grupo.",
+    "pendingSkill": "Falta pulsar Intro para añadir «{{skill}}»; si no, no se guarda.",
+    "groupEmpty": "Sin skills: falta añadir una o quitar el grupo.",
     "addGroup": "Añadir grupo",
     "incomplete": "Para guardar, cada grupo necesita un nombre y al menos una skill.",
     "save": "Guardar versión nueva",
     "saving": "Guardando y generando el PDF…",
-    "warningsTitle": "Guardado, pero revisa esto: la app no puede comprobar que cada frase diga lo mismo que tu perfil.",
+    "warningsTitle": "Guardado, pero conviene revisar esto: la app no puede comprobar que cada frase diga lo mismo que el perfil.",
     "warning": {
-      "skill": "«{{value}}» no está en tu perfil, o es una skill básica que esta oferta no pide.",
-      "number": "La cifra «{{value}}» no aparece en tu perfil."
+      "skill": "«{{value}}» no está en el perfil, o es una skill básica que esta oferta no pide.",
+      "number": "La cifra «{{value}}» no aparece en el perfil."
     }
   },
   "panel": {
@@ -184,7 +184,7 @@
   },
   "preview": {
     "page": "Página {{page}} de {{total}} del CV",
-    "failed": "No se ha podido mostrar la vista previa. Puedes abrir el PDF con «Ver PDF».",
+    "failed": "No se ha podido mostrar la vista previa. El PDF se abre con «Ver PDF».",
     "show": "Ver aquí",
     "others": "Otros diseños de este CV"
   }

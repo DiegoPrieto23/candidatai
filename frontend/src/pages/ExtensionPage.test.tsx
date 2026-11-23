@@ -46,13 +46,13 @@ describe('«Dónde buscar → Botón del navegador»', () => {
     })
     renderApp('/fuentes/extension')
 
-    expect(await screen.findByRole('heading', { name: 'Cárgala en tu navegador' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Cargarla en el navegador' })).toBeInTheDocument()
     expect(screen.getByText('chrome://extensions')).toBeInTheDocument()
     // La ventana de elegir carpeta no recuerda la del paso 1: la ruta, a la vista y para copiar.
     expect(screen.getByText(STATUS.folder)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Copiar la ruta de la carpeta de la extensión' })).toBeInTheDocument()
-    expect(screen.getByText(/pega esta ruta/)).toBeInTheDocument()
-    expect(screen.getByText(/Esperando a que la cargues/)).toBeInTheDocument()
+    expect(screen.getByText(/pegar esta ruta/)).toBeInTheDocument()
+    expect(screen.getByText(/Esperando a que se cargue/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Conectar' })).toBeDisabled()
     expect(screen.queryByText(/funciona en Chrome, Edge o Brave/)).not.toBeInTheDocument()
 
@@ -64,7 +64,7 @@ describe('«Dónde buscar → Botón del navegador»', () => {
   it('«Ver cómo se hace» va junto al título del paso 3 y abre la animación justo debajo', async () => {
     mockApi({ 'GET /status': status(), 'GET /capture/extension': STATUS })
     renderApp('/fuentes/extension')
-    const title = await screen.findByRole('heading', { name: 'Fíjala en la barra y úsala' })
+    const title = await screen.findByRole('heading', { name: 'Fijarla en la barra y usarla' })
     const toggle = within(title.parentElement as HTMLElement).getByRole('button', { name: 'Ver cómo se hace' })
     expect(toggle).toHaveAttribute('aria-expanded', 'false')
     expect(screen.queryByRole('img', { name: /Enviar a CandidatAI/ })).not.toBeInTheDocument()
@@ -100,7 +100,7 @@ describe('«Dónde buscar → Botón del navegador»', () => {
     mockApi({ 'GET /status': status(), 'GET /capture/extension': { ...STATUS, configured: true } })
     renderApp('/fuentes/extension')
 
-    expect(await screen.findByText(/Tienes una versión antigua de la extensión/)).toBeInTheDocument()
+    expect(await screen.findByText(/La extensión instalada es una versión antigua/)).toBeInTheDocument()
   })
 
   it('si la extensión rechaza la clave, lo dice', async () => {
@@ -128,7 +128,7 @@ describe('«Dónde buscar → Botón del navegador»', () => {
 
     // Lo dice antes de los pasos, que no salen: con Firefox no se puede seguir.
     expect(await screen.findByText(/funciona en Chrome, Edge y Brave/)).toBeInTheDocument()
-    const picker = screen.getByRole('radiogroup', { name: '¿Qué navegador usas?' })
+    const picker = screen.getByRole('radiogroup', { name: 'Navegador' })
     expect(within(picker).getByRole('radio', { name: /Firefox/ })).toHaveAttribute('aria-checked', 'true')
     expect(screen.queryByText('firefox://extensions')).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Conectar' })).not.toBeInTheDocument()
@@ -138,7 +138,7 @@ describe('«Dónde buscar → Botón del navegador»', () => {
     mockApi({ 'GET /status': status(), 'GET /capture/extension': STATUS })
     renderApp('/fuentes/extension')
 
-    const picker = await screen.findByRole('radiogroup', { name: '¿Qué navegador usas?' })
+    const picker = await screen.findByRole('radiogroup', { name: 'Navegador' })
     // Detecta Chrome (el de la prueba) y enseña sus pasos.
     expect(within(picker).getByRole('radio', { name: /Chrome \(este\)/ })).toHaveAttribute('aria-checked', 'true')
     expect(screen.getByText('chrome://extensions')).toBeInTheDocument()
@@ -147,8 +147,8 @@ describe('«Dónde buscar → Botón del navegador»', () => {
     expect(screen.getByText('edge://extensions')).toBeInTheDocument()
     expect(screen.getByText(/en el panel de la izquierda/)).toBeInTheDocument()
     expect(screen.getByText('Cargar desempaquetada')).toBeInTheDocument()
-    expect(screen.getAllByText((_, el) => el?.tagName === 'LI' && /^Pulsa el botón Extensiones/.test(el.textContent ?? ''))).toHaveLength(1)
-    expect(screen.getByText(/abre CandidatAI en Edge/)).toBeInTheDocument()
+    expect(screen.getAllByText((_, el) => el?.tagName === 'LI' && /^Pulsar el botón Extensiones/.test(el.textContent ?? ''))).toHaveLength(1)
+    expect(screen.getByText(/CandidatAI se abre en Edge/)).toBeInTheDocument()
     // Se recuerda para la próxima vez.
     expect(localStorage.getItem('cai.browser')).toBe('edge')
   })

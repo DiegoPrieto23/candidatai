@@ -22,7 +22,7 @@ CV = FIXTURES.parent / "cv-ficticio.pdf"
 
 
 def _start_by_hand(page: Page) -> None:
-    """En «Mi perfil» sin perfil: «Empezar a mano», lo mínimo y «Crear mi perfil» abre el editor."""
+    """En «Mi perfil» sin perfil: «Empezar a mano», lo mínimo y «Crear el perfil» abre el editor."""
     page.get_by_role("button", name=t("profileEditor.noProfile.byHand.open")).click()
     form = page.get_by_role("region", name=t("profileEditor.noProfile.byHand.title"))
     form.get_by_label(t("profileEditor.fields.name"), exact=True).fill("Candidata Prueba E2E")

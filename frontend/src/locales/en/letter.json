@@ -35,7 +35,7 @@
     "greeting": "Greeting",
     "paragraph": "Paragraph {{n}}",
     "signOff": "Sign-off",
-    "hint": "{{count}} of {{max}} words. It's saved as a new “Edited by you” letter, not verified. An empty paragraph is removed.",
+    "hint": "{{count}} of {{max}} words. It is saved as a new “Edited by you” letter, not verified. An empty paragraph is removed.",
     "needsParagraph": "The letter needs at least one paragraph.",
     "saving": "Saving…",
     "save": "Save",

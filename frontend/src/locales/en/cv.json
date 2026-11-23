@@ -20,7 +20,7 @@
   },
   "photo": {
     "legend": "Photo",
-    "autoHint": "Automatic: based on the job's country and your photo preferences, if you've added one.",
+    "autoHint": "Automatic: based on the job's country and your photo preferences, if you have added one.",
     "unsupported": "This template has no photo."
   },
   "accent": "Accent color",
@@ -98,7 +98,7 @@
     "submit": "Request correction",
     "pending": "Waiting for your agent:",
     "cancel": "Cancel",
-    "declined": "Your agent couldn’t apply it:",
+    "declined": "Your agent could not apply it:",
     "suggest": {
       "shorter": "Shorten the summary",
       "focus": "Prioritize what the job asks for",
@@ -164,16 +164,16 @@
     "addSkillPlaceholder": "Add a skill and press Enter",
     "skillRepeated": "“{{skill}}” is already in this group.",
     "skillsFull": "A group can have up to {{max}} skills.",
-    "pendingSkill": "Press Enter to add “{{skill}}”; otherwise it isn't saved.",
+    "pendingSkill": "Press Enter to add “{{skill}}”; otherwise it is not saved.",
     "groupEmpty": "No skills: add one or remove the group.",
     "addGroup": "Add group",
     "incomplete": "To save, each group needs a name and at least one skill.",
     "save": "Save new version",
     "saving": "Saving and generating the PDF…",
-    "warningsTitle": "Saved, but check this: the app can’t confirm that each sentence says the same as your profile.",
+    "warningsTitle": "Saved, but check this: the app cannot confirm that each sentence says the same as your profile.",
     "warning": {
-      "skill": "“{{value}}” isn’t in your profile, or it’s a basic skill this job doesn’t ask for.",
-      "number": "The figure “{{value}}” doesn’t appear in your profile."
+      "skill": "“{{value}}” is not in your profile, or it is a basic skill this job does not ask for.",
+      "number": "The figure “{{value}}” does not appear in your profile."
     }
   },
   "panel": {
@@ -184,7 +184,7 @@
   },
   "preview": {
     "page": "Page {{page}} of {{total}} of the CV",
-    "failed": "The preview couldn’t be shown. You can open the PDF with “View PDF”.",
+    "failed": "The preview could not be shown. You can open the PDF with “View PDF”.",
     "show": "Show here",
     "others": "Other designs of this CV"
   }

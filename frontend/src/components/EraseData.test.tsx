@@ -41,10 +41,10 @@ describe('Borrar datos', () => {
     expect(within(dialog).getByText(/Borrar no es descartar/)).toBeInTheDocument()
     expect(within(dialog).getByText(/Antes se guarda una copia de seguridad/)).toBeInTheDocument()
     expect(within(dialog).queryByRole('textbox')).not.toBeInTheDocument()
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Entiendo, continuar' }))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Entendido, continuar' }))
 
     const erase = within(dialog).getByRole('button', { name: 'Borrar para siempre' })
-    const input = within(dialog).getByLabelText(new RegExp(`escribe el nombre de la empresa: ${view.company}`))
+    const input = within(dialog).getByLabelText(new RegExp(`escribir el nombre de la empresa: ${view.company}`))
     await userEvent.type(input, 'Otra')
     expect(erase).toBeDisabled()
     await userEvent.clear(input)
@@ -69,15 +69,15 @@ describe('Borrar datos', () => {
 
     await userEvent.click(button)
     const dialog = await screen.findByRole('dialog')
-    expect(within(dialog).getByRole('heading')).toHaveTextContent('¿Vaciar todas tus ofertas y candidaturas?')
-    expect(within(dialog).getByText(/Se quedan tu perfil/)).toBeInTheDocument()
+    expect(within(dialog).getByRole('heading')).toHaveTextContent('¿Vaciar todas las ofertas y candidaturas?')
+    expect(within(dialog).getByText(/Se quedan el perfil/)).toBeInTheDocument()
     await userEvent.click(within(dialog).getByRole('button', { name: 'Sí, continuar' }))
     expect(within(dialog).getByRole('heading')).toHaveTextContent('Última comprobación')
     expect(within(dialog).queryByRole('textbox')).not.toBeInTheDocument()
     await userEvent.click(within(dialog).getByRole('button', { name: 'Sí, continuar' }))
 
     const erase = within(dialog).getByRole('button', { name: 'Vaciar para siempre' })
-    const input = within(dialog).getByLabelText('Para confirmar, escribe BORRAR')
+    const input = within(dialog).getByLabelText('Para confirmar, escribir BORRAR')
     await userEvent.type(input, 'borrar')
     expect(erase).toBeDisabled() // en mayúsculas, como se pide
     await userEvent.clear(input)

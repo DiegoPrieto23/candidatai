@@ -230,6 +230,12 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   puesto ya no desaparece mientras la editas.
 
 ### Cambiado
+- **Textos del portal en tono formal e impersonal:** en español, la app ya no tutea ni habla en primera
+  persona: «Pulsa «Guardar» para subir tu CV» pasa a «Se pulsa «Guardar» para subir el CV», y «tu agente», a
+  «el agente». Algunos botones cambian de nombre, como «Aceptar la oferta» (antes «Acepto la oferta»), «Marcar
+  como enviado» (antes «Ya lo he enviado»), «Dejar para la próxima sesión» o «Crear el perfil desde un CV». En
+  inglés, sin contracciones. La ayuda, los mensajes del servidor y las guías pasan al mismo tono en las
+  próximas versiones.
 - **Editar el CV tú, con más margen:** en «Editar texto», las skills se ven por grupos: el nombre del
   grupo arriba y cada skill como una etiqueta con «×» para quitarla y un campo para añadir otra con
   Intro. Hay «Añadir grupo» y botones para subir, bajar o quitar cada grupo (con confirmación si tiene

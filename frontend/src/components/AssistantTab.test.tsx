@@ -81,7 +81,7 @@ async function openAssistant(extra: Record<string, unknown>) {
     ...extra,
   })
   renderApp('/bandeja')
-  await screen.findByText('Tu bandeja está vacía')
+  await screen.findByText('La bandeja está vacía')
   // El botón con rótulo de la esquina abre el panel directamente en la pestaña del agente.
   await userEvent.click(screen.getByRole('button', { name: 'Asistente' }))
   const panel = screen.getByRole('dialog', { name: 'Tu asistente' })
@@ -155,7 +155,7 @@ describe('Asistente', () => {
     expect(send).toBeDisabled()
     // Ni rastro de los dos botones de antes.
     expect(within(panel).queryByRole('button', { name: 'Enviar ahora' })).not.toBeInTheDocument()
-    expect(within(panel).queryByRole('button', { name: 'Dejar para mi próxima sesión' })).not.toBeInTheDocument()
+    expect(within(panel).queryByRole('button', { name: 'Dejar para la próxima sesión' })).not.toBeInTheDocument()
 
     await userEvent.type(field, '  ¿Qué tengo{Shift>}{Enter}{/Shift}pendiente?  ')
     expect(field).toHaveValue('  ¿Qué tengo\npendiente?  ')

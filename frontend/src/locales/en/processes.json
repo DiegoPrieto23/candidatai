@@ -28,7 +28,7 @@
   "upcomingEmpty": "Nothing in the next 7 days.",
   "calendar": {
     "toggle": "Bring the milestones into your calendar",
-    "google": "<strong>Google Calendar:</strong> download the file and import it (Settings → Import & export). Google can't subscribe to an address on your computer, so import it again when your milestones change: events are updated, not duplicated.",
+    "google": "<strong>Google Calendar:</strong> download the file and import it (Settings → Import & export). Google cannot subscribe to an address on your computer, so import it again when your milestones change: events are updated, not duplicated.",
     "others": "<strong>Outlook, Apple Calendar or Thunderbird:</strong> subscribe to this address (it updates itself while CandidatAI is open):",
     "download": "Download the file",
     "copy": "Copy address"
@@ -51,7 +51,7 @@
   "columns": {
     "open": "Customize columns",
     "title": "Board columns",
-    "description": "Columns are only a way of viewing the board in this browser: grouping, ordering or renaming columns doesn't change any job's stage. Between {{min}} and {{max}} columns.",
+    "description": "Columns are only a way of viewing the board in this browser: grouping, ordering or renaming columns does not change any job's stage. Between {{min}} and {{max}} columns.",
     "columnsTitle_one": "{{count}} column",
     "columnsTitle_other": "{{count}} columns",
     "drag": "Drag column “{{name}}”",

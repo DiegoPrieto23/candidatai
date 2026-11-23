@@ -277,7 +277,7 @@ las más recientes primero.
   menos de `max_followups` enviados (si no, `not_allowed`) y sin `milestone_id`; un
   agradecimiento con una entrevista hecha (`milestone_id`, por defecto la última; si no hay,
   `not_allowed`). Sustituye el borrador vigente del mismo tipo (y entrevista). **No envía
-  nada ni registra eventos**: en la ficha, el usuario lo copia y pulsa «Ya lo he enviado»
+  nada ni registra eventos**: en la ficha, el usuario lo copia y pulsa «Marcar como enviado»
   (`POST /drafts/{id}/sent`, solo desde la UI), que en un seguimiento registra `followup_sent`
   con `payload.draft_id`; o «Descartar». Los mensajes de LinkedIn y los correos a personas
   (`linkedin`, `email`, fase 18) tienen sus reglas en §Contactos.
@@ -350,7 +350,7 @@ las más recientes primero.
   `contact_id` (de esa oferta) o `network_contact_id` (una persona de `network` de esa oferta),
   no los dos; el borrador guarda su nombre. Desde `approved` hasta
   `in_process` (si no, `not_allowed`). Sustituye el vigente del mismo tipo y destinatario. Lo usa
-  `draft-message`. «Ya lo he enviado» no registra evento.
+  `draft-message`. «Marcar como enviado» no registra evento.
 - `save_company_research(job_id, research)`: el dosier de `research-company`. Uno por empresa
   (lo comparten sus ofertas). `research`:
 

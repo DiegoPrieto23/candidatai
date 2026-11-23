@@ -5,15 +5,15 @@
     "summary_other": "{{count}} buzones",
     "withErrors_one": "{{count}} con error",
     "withErrors_other": "{{count}} con error",
-    "demo": "Estás en la demo: no se lee ningún correo de verdad, solo unos de ejemplo.",
-    "empty": "Aún no hay ningún buzón. Añade el correo donde te llegan las alertas.",
+    "demo": "Modo demo: no se lee ningún correo de verdad, solo unos de ejemplo.",
+    "empty": "Aún no hay ningún buzón. Se añade el correo donde llegan las alertas.",
     "loadFailed": "No se pudieron cargar los buzones: {{error}}"
   },
   "add": "Añadir buzón",
   "row": {
     "folderKind": "Correos guardados en una carpeta",
     "readsReplies": "Lee respuestas",
-    "noPassword": "Falta la contraseña de aplicación de este buzón: escríbela en «Editar» para leer sus alertas.",
+    "noPassword": "Falta la contraseña de aplicación de este buzón: se escribe en «Editar» para leer sus alertas.",
     "lastPolled": "Leído {{when}}",
     "never": "Aún no se ha leído",
     "lastError": "No se pudo leer la última vez.",
@@ -30,8 +30,8 @@
     "secretRef": "Referencia de la contraseña: {{ref}}",
     "storage": {
       "keyring": "Contraseña en el llavero del sistema",
-      "file": "Contraseña guardada en un fichero de tu equipo, sin cifrar.",
-      "fileNoKeyring": "Contraseña guardada en un fichero de tu equipo: este equipo no tiene llavero del sistema.",
+      "file": "Contraseña guardada en un fichero del equipo, sin cifrar.",
+      "fileNoKeyring": "Contraseña guardada en un fichero del equipo: este equipo no tiene llavero del sistema.",
       "environment": "Contraseña configurada fuera de la app",
       "move": "Mover al llavero",
       "moving": "Moviendo…"
@@ -40,7 +40,7 @@
   "dialog": {
     "addTitle": "Añadir buzón",
     "editTitle": "Editar «{{name}}»",
-    "description": "La app solo lee: tus correos se quedan tal cual. La contraseña se guarda cifrada en el llavero del sistema.",
+    "description": "La app solo lee: los correos se quedan tal cual. La contraseña se guarda cifrada en el llavero del sistema.",
     "provider": "Proveedor",
     "guide": "Guía completa",
     "officialLinks": "Ayuda oficial",
@@ -53,8 +53,8 @@
     "testFailed": "No se pudo conectar",
     "envLine": "En Docker, la contraseña se configura en el contenedor, como secreto o como variable de entorno: la guía del correo explica cómo.",
     "advanced": "Servidor y cifrado",
-    "descriptionFile": "La app solo lee: tus correos se quedan tal cual. La contraseña se guarda en un fichero de tu equipo.",
-    "descriptionDocker": "La app solo lee: tus correos se quedan tal cual. La contraseña se configura en el contenedor.",
+    "descriptionFile": "La app solo lee: los correos se quedan tal cual. La contraseña se guarda en un fichero del equipo.",
+    "descriptionDocker": "La app solo lee: los correos se quedan tal cual. La contraseña se configura en el contenedor.",
     "envLineName": "Nombre que tiene que llevar: {{line}}"
   },
   "fields": {
@@ -63,7 +63,7 @@
     "user": "Correo electrónico",
     "userIcloud": "Usuario de iCloud",
     "password": "Contraseña de aplicación",
-    "passwordKeep": "Déjala vacía para no cambiarla",
+    "passwordKeep": "Vacía, no cambia",
     "host": "Servidor IMAP",
     "port": "Puerto",
     "security": "Cifrado",
@@ -72,77 +72,77 @@
     "folder": "Carpeta o etiqueta de las alertas",
     "folderHint": "INBOX es la bandeja de entrada. En Gmail, el nombre de la etiqueta tal cual.",
     "folderName": "Nombre de la carpeta",
-    "folderNameHint": "Se crea en {{path}}. Deja ahí los .eml o .mbox.",
+    "folderNameHint": "Se crea en {{path}}. Ahí se dejan los .eml o .mbox.",
     "readReplies": "Leer aquí también las respuestas de las empresas",
-    "readRepliesHint": "La app mira el remitente, la fecha y el asunto de los correos de tu bandeja de entrada desde tu candidatura abierta más antigua, y guarda solo los de las empresas de tus candidaturas. Solo lee y no envía nada; la etapa de una oferta cambia cuando aceptas la propuesta.",
-    "allowPrivate": "Servidor en mi equipo o mi red",
-    "allowPrivateHint": "Solo para un servidor propio: por seguridad, la app no se conecta a direcciones locales si no lo marcas.",
+    "readRepliesHint": "La app mira el remitente, la fecha y el asunto de los correos de la bandeja de entrada desde la candidatura abierta más antigua, y guarda solo los de las empresas de las candidaturas. Solo lee y no envía nada; la etapa de una oferta cambia al aceptar la propuesta.",
+    "allowPrivate": "Servidor en este equipo o en la red local",
+    "allowPrivateHint": "Solo para un servidor propio: por seguridad, la app no se conecta a direcciones locales sin esta marca.",
     "readRepliesHintAria": "Qué correos lee"
   },
   "providers": {
     "gmail": {
       "name": "Gmail",
-      "step1": "Activa la <a>verificación en dos pasos</a> en tu cuenta de Google.",
-      "step2": "Crea una <a>contraseña de aplicación</a> y cópiala: Google solo enseña sus 16 letras una vez.",
-      "step3": "Opcional: crea una etiqueta (p. ej. «Alertas empleo») y un <a>filtro</a> que lleve ahí los correos de LinkedIn o InfoJobs. Escribe ese nombre en «Carpeta».",
+      "step1": "Activar la <a>verificación en dos pasos</a> en la cuenta de Google.",
+      "step2": "Crear una <a>contraseña de aplicación</a> y copiarla: Google solo enseña sus 16 letras una vez.",
+      "step3": "Opcional: crear una etiqueta (p. ej. «Alertas empleo») y un <a>filtro</a> que lleve ahí los correos de LinkedIn o InfoJobs. Ese nombre va en «Carpeta».",
       "step4": "Solo sirve con cuentas personales de Google sin Protección Avanzada: en las de trabajo o de un centro educativo, Google no da contraseñas de aplicación.",
       "linkHelp": "Ayuda de Google sobre contraseñas de aplicación"
     },
     "outlook": {
       "name": "Outlook / Hotmail",
-      "intro": "Microsoft ya no deja entrar por IMAP con contraseña en las cuentas de trabajo o de un centro educativo, y ha anunciado que también lo quitará en las personales, como Outlook.com o Hotmail. La app no usa el inicio de sesión de Microsoft, así que hay dos caminos que funcionan:",
+      "intro": "Microsoft ya no permite entrar por IMAP con contraseña en las cuentas de trabajo o de un centro educativo, y ha anunciado que también lo quitará en las personales, como Outlook.com o Hotmail. La app no usa el inicio de sesión de Microsoft, así que hay dos caminos que funcionan:",
       "forwardTitle": "Reenvía las alertas a otra cuenta (recomendado)",
-      "forwardBody": "En Outlook.com: Configuración → Correo → Reglas, una regla para los correos de LinkedIn, InfoJobs… con «Reenviar a» tu Gmail. O Configuración → Correo → Reenvío, para reenviarlo todo. Después añade aquí ese Gmail.",
+      "forwardBody": "En Outlook.com: Configuración → Correo → Reglas, una regla para los correos de LinkedIn, InfoJobs… con «Reenviar a» una cuenta de Gmail. O Configuración → Correo → Reenvío, para reenviarlo todo. Después se añade aquí ese Gmail.",
       "forwardButton": "Ir a Gmail",
       "exportTitle": "Exporta las alertas como .eml",
-      "exportBody": "En Outlook en la web, abre una alerta → ⋯ → Descargar: se guarda como .eml. Déjalas en la carpeta de un buzón de tipo «Carpeta de correos».",
+      "exportBody": "En Outlook en la web, una alerta → ⋯ → Descargar: se guarda como .eml. Se dejan en la carpeta de un buzón de tipo «Carpeta de correos».",
       "exportButton": "Ir a «Carpeta de correos»",
       "imapTitle": "Probar por IMAP igualmente",
-      "imapBody": "Puede que aún funcione en una cuenta personal con contraseña de aplicación (con la verificación en dos pasos activada). Si falla con «usuario o contraseña», usa uno de los dos caminos de arriba.",
+      "imapBody": "Puede que aún funcione en una cuenta personal con contraseña de aplicación (con la verificación en dos pasos activada). Si falla con «usuario o contraseña», queda uno de los dos caminos de arriba.",
       "linkForwarding": "Reenvío en Outlook",
       "linkBasicAuth": "Microsoft: apps que no pueden conectar con contraseña"
     },
     "yahoo": {
       "name": "Yahoo",
-      "step1": "En la seguridad de tu cuenta de Yahoo, ve a «Conexiones externas» y genera una <a>contraseña de aplicación</a>.",
-      "step2": "Escribe aquí tu dirección completa y esa contraseña.",
+      "step1": "En la seguridad de la cuenta de Yahoo, en «Conexiones externas», generar una <a>contraseña de aplicación</a>.",
+      "step2": "Se escriben aquí la dirección completa y esa contraseña.",
       "linkImap": "Datos IMAP de Yahoo"
     },
     "icloud": {
       "name": "iCloud",
-      "step1": "Activa la autenticación de doble factor en tu cuenta de Apple.",
+      "step1": "Activar la autenticación de doble factor en la cuenta de Apple.",
       "step2": "En account.apple.com → Inicio de sesión y seguridad, genera una <a>contraseña específica de app</a>.",
-      "step3": "Usuario de iCloud: lo que va antes de @icloud.com. Si no conecta, prueba con la dirección completa.",
+      "step3": "Usuario de iCloud: lo que va antes de @icloud.com. Si no conecta, se prueba con la dirección completa.",
       "linkImap": "Datos IMAP de iCloud"
     },
     "imap": {
       "name": "Otro (IMAP)",
-      "step1": "Busca en la ayuda de tu proveedor sus datos IMAP: servidor y puerto (casi siempre 993 con SSL).",
-      "step2": "Si tu proveedor da contraseñas de aplicación, usa una: no la de siempre.",
-      "step3": "Proton Mail no da IMAP directo y su Bridge usa un certificado propio que la app no acepta: exporta los correos como .eml."
+      "step1": "Los datos IMAP están en la ayuda del proveedor: servidor y puerto (casi siempre 993 con SSL).",
+      "step2": "Si el proveedor da contraseñas de aplicación, se usa una: no la de siempre.",
+      "step3": "Proton Mail no da IMAP directo y su Bridge usa un certificado propio que la app no acepta: se exportan los correos como .eml."
     },
     "folder": {
       "name": "Carpeta de correos",
-      "step1": "Exporta los correos de alertas como .eml (o un .mbox) desde tu programa de correo.",
-      "step2": "Déjalos en la carpeta de este buzón: la app los lee sin moverlos ni borrarlos.",
+      "step1": "Exportar los correos de alertas como .eml (o un .mbox) desde el programa de correo.",
+      "step2": "Se dejan en la carpeta de este buzón: la app los lee sin moverlos ni borrarlos.",
       "step3": "Sirve con cualquier proveedor, también Outlook o Proton."
     }
   },
   "errors": {
-    "imap_auth": "Revisa el correo electrónico o el usuario y que la contraseña sea de aplicación, no la habitual.",
-    "imap_folder": "Esa carpeta o etiqueta no existe: escribe el nombre exacto (en Gmail, el de la etiqueta).",
-    "network": "No se pudo conectar: revisa el servidor, el puerto y tu conexión.",
-    "host_not_allowed": "Es una dirección de tu equipo o tu red. Si es tu propio servidor, marca «Servidor en mi equipo o mi red».",
-    "no_password": "Escribe la contraseña de aplicación de tu correo.",
-    "demo": "Estás en la demo: no se lee ningún buzón real.",
-    "inbox_error": "Esa carpeta ya no existe: vuelve a crearla con «Editar» o quita el buzón.",
+    "imap_auth": "Conviene revisar el correo electrónico o el usuario, y que la contraseña sea de aplicación, no la habitual.",
+    "imap_folder": "Esa carpeta o etiqueta no existe: hace falta el nombre exacto (en Gmail, el de la etiqueta).",
+    "network": "No se pudo conectar: conviene revisar el servidor, el puerto y la conexión.",
+    "host_not_allowed": "Es una dirección de este equipo o de la red local. Si es un servidor propio, se marca «Servidor en este equipo o en la red local».",
+    "no_password": "Falta la contraseña de aplicación del correo.",
+    "demo": "Modo demo: no se lee ningún buzón real.",
+    "inbox_error": "Esa carpeta ya no existe: se vuelve a crear con «Editar» o se quita el buzón.",
     "time_budget": "No dio tiempo en esta pasada: se leerá en la siguiente.",
-    "imap_error": "El servidor respondió con un error. Vuelve a probar más tarde."
+    "imap_error": "El servidor respondió con un error. Conviene volver a probar más tarde."
   },
   "keyringNotice": {
-    "title": "Guarda tus contraseñas en el llavero del sistema",
-    "body_one": "Una contraseña está en un fichero de tu equipo, sin cifrar. En el llavero queda cifrada y protegida por tu sesión.",
-    "body_other": "{{count}} contraseñas están en un fichero de tu equipo, sin cifrar. En el llavero quedan cifradas y protegidas por tu sesión.",
+    "title": "Guardar las contraseñas en el llavero del sistema",
+    "body_one": "Una contraseña está en un fichero del equipo, sin cifrar. En el llavero queda cifrada y protegida por la sesión del sistema.",
+    "body_other": "{{count}} contraseñas están en un fichero del equipo, sin cifrar. En el llavero quedan cifradas y protegidas por la sesión del sistema.",
     "item": {
       "mailbox": "Buzón «{{name}}»",
       "mailboxInstall": "Buzón configurado al instalar",
@@ -152,6 +152,6 @@
     "move": "Mover al llavero",
     "moving": "Moviendo…",
     "later": "Ahora no",
-    "failed": "No se pudieron mover todas: inténtalo de nuevo o revisa el llavero del sistema."
+    "failed": "No se pudieron mover todas: conviene intentarlo de nuevo o revisar el llavero del sistema."
   }
 }

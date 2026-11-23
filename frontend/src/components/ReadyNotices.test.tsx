@@ -38,12 +38,12 @@ describe('Aviso de «listo» tras abrir el agente', () => {
     renderApp('/jobs/1?tab=application')
     const section = await screen.findByRole('region', { name: 'CV' })
     await userEvent.click(await within(section).findByRole('button', { name: 'Generar CV' }))
-    expect(await screen.findByText(/Te aviso aquí en cuanto esté/)).toBeInTheDocument()
-    expect(screen.queryByText('Tu CV está listo')).not.toBeInTheDocument()
+    expect(await screen.findByText(/El aviso aparecerá aquí en cuanto esté/)).toBeInTheDocument()
+    expect(screen.queryByText('El CV está listo')).not.toBeInTheDocument()
 
     // Un render anterior al clic no cuenta; uno nuevo, sí.
     cv = jobCv([renderResult(1, { selected: true, created_at: later() })], { verification: VERIFIED })
-    const notice = (await screen.findByText('Tu CV está listo', {}, POLL)).closest('[role="status"]') as HTMLElement
+    const notice = (await screen.findByText('El CV está listo', {}, POLL)).closest('[role="status"]') as HTMLElement
     expect(within(notice).getByText('Data Engineer · Brétema Analytics')).toBeInTheDocument()
     expect(within(notice).getByRole('link', { name: 'Abrir PDF' })).toHaveAttribute(
       'href',
@@ -51,7 +51,7 @@ describe('Aviso de «listo» tras abrir el agente', () => {
     )
     expect(calls.filter((c) => c.path === '/jobs/1/cv').length).toBeGreaterThan(1)
     await userEvent.click(within(notice).getByRole('button', { name: 'Cerrar aviso' }))
-    expect(screen.queryByText('Tu CV está listo')).not.toBeInTheDocument()
+    expect(screen.queryByText('El CV está listo')).not.toBeInTheDocument()
   }, 15_000)
 
   it('no avisa de un CV que no cabe o que aún no está verificado', async () => {
@@ -67,16 +67,16 @@ describe('Aviso de «listo» tras abrir el agente', () => {
     renderApp('/jobs/1?tab=application')
     const section = await screen.findByRole('region', { name: 'CV' })
     await userEvent.click(await within(section).findByRole('button', { name: 'Generar CV' }))
-    await screen.findByText(/Te aviso aquí en cuanto esté/)
+    await screen.findByText(/El aviso aparecerá aquí en cuanto esté/)
 
     const tooLong = { code: 'too_long', message: 'El CV ocupa 2 páginas y el máximo es 1.' }
     cv = jobCv([renderResult(1, { selected: false, created_at: later(), warnings: [tooLong] })], { verification: VERIFIED })
     await new Promise((resolve) => setTimeout(resolve, 5500))
-    expect(screen.queryByText('Tu CV está listo')).not.toBeInTheDocument()
+    expect(screen.queryByText('El CV está listo')).not.toBeInTheDocument()
 
     cv = jobCv([renderResult(2, { selected: true, created_at: later() })], { verification: null })
     await new Promise((resolve) => setTimeout(resolve, 5500))
-    expect(screen.queryByText('Tu CV está listo')).not.toBeInTheDocument()
+    expect(screen.queryByText('El CV está listo')).not.toBeInTheDocument()
   }, 20_000)
 
   it('avisa cuando está la guía de la entrevista', async () => {
@@ -93,10 +93,10 @@ describe('Aviso de «listo» tras abrir el agente', () => {
     renderApp('/jobs/1?tab=process')
     const section = await screen.findByRole('region', { name: 'Proceso' })
     await userEvent.click(await within(section).findByRole('button', { name: 'Preparar' }))
-    await screen.findByText(/Te aviso aquí en cuanto esté/)
+    await screen.findByText(/El aviso aparecerá aquí en cuanto esté/)
 
     guide = { file: '1-5-acme-guia.pdf', language: 'es', title: 'Data Engineer', saved_at: later(), agent_name: null, restored: false }
-    const notice = (await screen.findByText('Tu guía de la entrevista está lista', {}, POLL)).closest(
+    const notice = (await screen.findByText('La guía de la entrevista está lista', {}, POLL)).closest(
       '[role="status"]',
     ) as HTMLElement
     expect(within(notice).getByRole('link', { name: 'Abrir PDF' })).toHaveAttribute(

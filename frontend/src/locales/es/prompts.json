@@ -1,24 +1,24 @@
 {
-  "enableNotifications": "Avisarme también con notificaciones de Windows",
+  "enableNotifications": "Avisar también con notificaciones de Windows",
   "where": {
     "appBrowser": "en el navegador de CandidatAI",
-    "source": "en {{source}}, en tu navegador",
-    "browser": "en tu navegador"
+    "source": "en {{source}}, en el navegador",
+    "browser": "en el navegador"
   },
-  "description": "Hace falta que lo hagas tú, {{where}}. CandidatAI nunca lo resuelve por ti.",
+  "description": "Este paso se hace a mano, {{where}}. CandidatAI nunca lo resuelve de forma automática.",
   "openPage": "Abrir la página",
-  "expires": "Si no contestas en {{time}}, el aviso caduca.",
-  "agentContinues": "Si no contestas en {{time}}, el agente sigue con lo siguiente.",
+  "expires": "Sin respuesta en {{time}}, el aviso caduca.",
+  "agentContinues": "Sin respuesta en {{time}}, el agente sigue con lo siguiente.",
   "timeUp": "Se ha acabado el tiempo.",
   "skip": "Saltar",
   "done": "Ya está",
   "question": {
-    "description": "Lo necesita para seguir. También puedes contestarle en su ventana.",
-    "label": "Tu respuesta",
-    "placeholder": "Escribe tu respuesta…",
-    "placeholderOther": "O escribe otra respuesta…",
-    "expires": "Si no contestas en {{time}}, te lo preguntará en su ventana.",
-    "timeUp": "Se ha acabado el tiempo: te lo preguntará en su ventana.",
+    "description": "El agente lo necesita para seguir. También se puede contestar en su ventana.",
+    "label": "Respuesta",
+    "placeholder": "Escribir la respuesta…",
+    "placeholderOther": "O escribir otra respuesta…",
+    "expires": "Sin respuesta en {{time}}, el agente lo preguntará en su ventana.",
+    "timeUp": "Se ha acabado el tiempo: el agente lo preguntará en su ventana.",
     "inTerminal": "Contestar en la terminal",
     "send": "Enviar"
   }

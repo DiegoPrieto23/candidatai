@@ -26,5 +26,5 @@ def get_job_package(session: SessionDep, job_id: int) -> answers.JobPackage:
 def save_user_answers(
     session: SessionDep, job_id: int, body: ApplicationAnswers
 ) -> answers.SaveAnswersResult:
-    """Edición del usuario: crea un documento nuevo «Editadas por ti»; el anterior se conserva."""
+    """Edición del usuario: crea un documento nuevo «Editadas a mano»; el anterior se conserva."""
     return answers.save_user_answers(session, job_id, body)

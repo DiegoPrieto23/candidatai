@@ -59,7 +59,7 @@ describe('Sección Carta de presentación', () => {
     const main = within(section).getByRole('button', { name: 'Escribir carta' })
     const group = main.closest<HTMLElement>('[data-slot="agent-button"]')!
     await userEvent.click(within(group).getByRole('button', { name: 'Más formas de lanzarlo' }))
-    expect(await screen.findByRole('menuitem', { name: /Dejar para mi próxima sesión/ })).toBeInTheDocument()
+    expect(await screen.findByRole('menuitem', { name: /Dejar para la próxima sesión/ })).toBeInTheDocument()
     await userEvent.click(screen.getByRole('menuitem', { name: /En segundo plano/ }))
     await waitFor(() =>
       expect(calls.find((c) => c.method === 'POST' && c.path === '/agent/runs')?.body).toEqual({
@@ -192,7 +192,7 @@ describe('Sección Carta de presentación', () => {
     renderApp('/jobs/1?tab=application')
     // Ya enviada: lo de antes de enviar está plegado.
     const section = await screen.findByRole('region', { name: NAME })
-    expect(await within(section).findByText('Editada por ti')).toBeInTheDocument()
+    expect(await within(section).findByText('Editada a mano')).toBeInTheDocument()
     expect(within(section).getByRole('button', { name: 'Copiar texto' })).toBeEnabled()
     expect(within(section).queryByRole('button', { name: /Editar|Añadir/ })).not.toBeInTheDocument()
     expect(within(section).queryByRole('button', { name: 'Volver a redactar' })).not.toBeInTheDocument()

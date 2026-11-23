@@ -20,7 +20,7 @@
     "edit": "Edit “{{title}}”",
     "done": "Mark “{{title}}” as done",
     "doneLater": "You can mark it as done from the day of the interview",
-    "undoDone": "Undo “done” on “{{title}}”: its day hasn't come yet",
+    "undoDone": "Undo “done” on “{{title}}”: its day has not come yet",
     "cancel": "Cancel “{{title}}”",
     "delete": "Delete “{{title}}”"
   },
@@ -75,7 +75,7 @@
     "followupDue": "{{count}} days without a reply: time for a follow-up.",
     "cvSent": "CV sent",
     "cvSelected": "CV selected to send",
-    "offer": "You have an offer: before accepting, check what's worth clarifying.",
+    "offer": "You have an offer: before accepting, check what is worth clarifying.",
     "offerQuestions": "Questions before accepting",
     "followupSent": "Follow-up sent"
   }

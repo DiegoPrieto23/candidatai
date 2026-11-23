@@ -35,9 +35,9 @@ describe('Paquete de candidatura en la ficha', () => {
     })
     renderApp('/jobs/1?tab=application')
     const section = await screen.findByRole('region', { name: NAME })
-    expect(await within(section).findByText('1 respuesta espera un dato tuyo (salario, disponibilidad…).')).toBeInTheDocument()
+    expect(await within(section).findByText('1 respuesta espera un dato personal (salario, disponibilidad…).')).toBeInTheDocument()
     expect(within(section).queryByRole('link', { name: 'Abrir PDF' })).not.toBeInTheDocument()
-    expect(within(section).getByText(/Falta un dato tuyo/)).toBeInTheDocument()
+    expect(within(section).getByText(/Falta un dato personal/)).toBeInTheDocument()
     expect(within(section).getByRole('button', { name: 'Copiar la respuesta 2' })).toBeDisabled()
     expect(within(section).queryByText('Carta de presentación')).not.toBeInTheDocument()
     // Ningún botón envía nada.
@@ -120,7 +120,7 @@ describe('Paquete de candidatura en la ficha', () => {
     renderApp('/jobs/1?tab=application')
     // Ya enviada: lo de antes de enviar está plegado.
     const section = await screen.findByRole('region', { name: NAME })
-    expect(await within(section).findByText('Editadas por ti')).toBeInTheDocument()
+    expect(await within(section).findByText('Editadas a mano')).toBeInTheDocument()
     expect(within(section).getByRole('button', { name: 'Copiar la respuesta 1' })).toBeEnabled()
     expect(within(section).queryByRole('button', { name: /Editar/ })).not.toBeInTheDocument()
     expect(within(section).queryByRole('button', { name: 'Añadir pregunta' })).not.toBeInTheDocument()

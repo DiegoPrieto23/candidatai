@@ -24,7 +24,7 @@ def list_job_drafts(session: SessionDep, job_id: int) -> drafts.DraftList:
 def mark_draft_sent(
     session: SessionDep, draft_id: int, body: drafts.DraftSentBody
 ) -> drafts.DraftActionResult:
-    """«Ya lo he enviado»: un seguimiento registra `followup_sent`."""
+    """«Marcar como enviado»: un seguimiento registra `followup_sent`."""
     return drafts.mark_draft_sent(session, draft_id, body.occurred_at)
 
 

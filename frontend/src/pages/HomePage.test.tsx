@@ -23,14 +23,14 @@ describe('Inicio', () => {
     renderApp('/')
     const heading = await screen.findByRole('heading', {
       level: 1,
-      name: 'Tienes 28 ofertas por revisar, 1 CV listo para enviar y 1 seguimiento pendiente.',
+      name: 'Por hacer: 28 ofertas por revisar, 1 CV listo para enviar y 1 seguimiento pendiente.',
     })
     expect(within(heading).getByRole('link', { name: '28 ofertas por revisar' })).toHaveAttribute('href', '/bandeja/revision')
     expect(within(heading).getByRole('link', { name: '1 CV listo para enviar' })).toHaveAttribute(
       'href',
       '/bandeja?stage=cv_ready',
     )
-    expect(screen.getByText(/Para tu agente: 3 por leer/)).toBeInTheDocument()
+    expect(screen.getByText(/Para el agente: 3 por leer/)).toBeInTheDocument()
   })
 
   it('con portales en los que buscar, «Buscar ofertas» lanza la búsqueda con lo guardado', async () => {
@@ -63,7 +63,7 @@ describe('Inicio', () => {
       },
     })
     renderApp('/')
-    const band = await screen.findByRole('region', { name: 'Guarda tus contraseñas en el llavero del sistema' })
+    const band = await screen.findByRole('region', { name: 'Guardar las contraseñas en el llavero del sistema' })
     expect(screen.getByRole('main')).toContainElement(band)
     expect(within(band).getByText('Buzón «Principal»')).toBeInTheDocument()
     await userEvent.click(within(band).getByRole('button', { name: 'Ahora no' }))
@@ -73,7 +73,7 @@ describe('Inicio', () => {
   it('sin nada pendiente lo dice', async () => {
     mockApi({ 'GET /status': status(), 'GET /followups': noFollowups, 'GET /upcoming': noUpcoming, 'GET /jobs': page([]) })
     renderApp('/')
-    expect(await screen.findByRole('heading', { level: 1, name: 'Nada pendiente por tu parte.' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Nada pendiente.' })).toBeInTheDocument()
     expect(await screen.findByText(/No hay ofertas por revisar/)).toBeInTheDocument()
   })
 
@@ -85,7 +85,7 @@ describe('Inicio', () => {
       'GET /jobs': page([]),
     })
     renderApp('/')
-    const triage = await screen.findByRole('link', { name: /Te toca\s*4\s*Por revisar/ })
+    const triage = await screen.findByRole('link', { name: /Por hacer\s*4\s*Por revisar/ })
     expect(triage).toHaveAttribute('href', '/bandeja/revision')
     expect(screen.getByRole('link', { name: /Empresa\s*2\s*Enviada/ })).toHaveAttribute('href', '/bandeja?stage=applied')
     // En Inicio no sale la fila de recuentos de la cabecera.
@@ -100,12 +100,12 @@ describe('Inicio', () => {
       'GET /jobs': page([]),
     })
     renderApp('/')
-    const triage = await screen.findByRole('link', { name: /Te toca\s*4\s*Por revisar/ })
+    const triage = await screen.findByRole('link', { name: /Por hacer\s*4\s*Por revisar/ })
     triage.focus()
     const tooltip = await screen.findByRole('tooltip')
-    expect(tooltip).toHaveTextContent(/a la espera de que decidas/)
-    expect(tooltip).toHaveTextContent('Quién actúa: tú.')
-    expect(triage).toHaveAccessibleDescription(/a la espera de que decidas/)
+    expect(tooltip).toHaveTextContent(/a la espera de una decisión/)
+    expect(tooltip).toHaveTextContent('Quién actúa: quien busca empleo.')
+    expect(triage).toHaveAccessibleDescription(/a la espera de una decisión/)
   })
 
   it('lista las ofertas por revisar con más encaje primero', async () => {
@@ -139,14 +139,14 @@ describe('Primeros pasos (app recién instalada)', () => {
     })
     renderApp('/')
     const steps = await screen.findByRole('region', { name: 'Primeros pasos' })
-    expect(within(steps).getByRole('button', { name: 'Subir mi CV' })).toBeInTheDocument()
-    expect(within(steps).getByRole('button', { name: 'Crear mi perfil desde mi CV' })).toBeInTheDocument()
-    expect(within(steps).getByRole('button', { name: 'Configurar con mi agente' })).toBeInTheDocument()
-    expect(within(steps).getByRole('link', { name: 'o añade un portal tú' })).toHaveAttribute('href', '/fuentes/plataformas')
+    expect(within(steps).getByRole('button', { name: 'Subir el CV' })).toBeInTheDocument()
+    expect(within(steps).getByRole('button', { name: 'Crear el perfil desde un CV' })).toBeInTheDocument()
+    expect(within(steps).getByRole('button', { name: 'Configurar con el agente' })).toBeInTheDocument()
+    expect(within(steps).getByRole('link', { name: 'o añadir un portal a mano' })).toHaveAttribute('href', '/fuentes/plataformas')
     // Qué hace la app y qué es tu agente, con un enlace a «Agente»; y el perfil sin agente.
-    expect(within(steps).getByText(/ordena tu búsqueda de empleo/)).toBeInTheDocument()
+    expect(within(steps).getByText(/ordena la búsqueda de empleo/)).toBeInTheDocument()
     expect(within(steps).getByRole('link', { name: 'Qué es y cómo se instala, en «Agente»' })).toHaveAttribute('href', '/agente')
-    expect(within(steps).getByRole('link', { name: /Empieza a mano en «Mi perfil»/ })).toHaveAttribute('href', '/perfil')
+    expect(within(steps).getByRole('link', { name: /Se puede empezar a mano en «Mi perfil»/ })).toHaveAttribute('href', '/perfil')
     expect(within(steps).getByRole('link', { name: /en «Cómo funciona»/ })).toHaveAttribute('href', '/como-funciona')
   })
 
@@ -160,13 +160,13 @@ describe('Primeros pasos (app recién instalada)', () => {
     })
     renderApp('/')
     expect(
-      await screen.findByRole('heading', { level: 1, name: 'Te quedan 2 primeros pasos para empezar.' }),
+      await screen.findByRole('heading', { level: 1, name: 'Quedan 2 primeros pasos para empezar.' }),
     ).toBeInTheDocument()
     await screen.findByRole('region', { name: 'Primeros pasos' })
     // En la página: el botón del agente de la esquina es del marco y está en todas.
     const page = within(screen.getByRole('main'))
     const filled = page.getAllByRole('button').filter((b) => b.getAttribute('data-variant') === 'default')
-    expect(filled.map((b) => b.textContent)).toEqual(['Subir mi CV'])
+    expect(filled.map((b) => b.textContent)).toEqual(['Subir el CV'])
     // Sin portales, buscar no podría hacer nada: el botón lleva a elegirlos y lo dice.
     const go = screen.getByRole('link', { name: 'Ir a buscar ofertas' })
     expect(go).toHaveAttribute('href', '/buscar')
@@ -186,7 +186,7 @@ describe('Primeros pasos (app recién instalada)', () => {
       'GET /context/documents/cv': [],
     })
     renderApp('/')
-    const notice = await screen.findByRole('region', { name: 'Necesitas un agente de IA' })
+    const notice = await screen.findByRole('region', { name: 'Hace falta un agente de IA' })
     expect(within(notice).getByText(/No es la app de chat de Claude ni claude\.ai/)).toBeInTheDocument()
     expect(await within(notice).findByLabelText('Orden para instalar Claude Code')).toHaveTextContent(
       'irm https://claude.ai/install.ps1 | iex',
@@ -208,7 +208,7 @@ describe('Primeros pasos (app recién instalada)', () => {
     })
     renderApp('/')
     await screen.findByRole('region', { name: 'Primeros pasos' })
-    expect(screen.queryByRole('region', { name: 'Necesitas un agente de IA' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: 'Hace falta un agente de IA' })).not.toBeInTheDocument()
   })
 
   it('con el perfil hecho, ese paso queda marcado; con los dos, desaparece', async () => {
@@ -216,7 +216,7 @@ describe('Primeros pasos (app recién instalada)', () => {
     const view = renderApp('/')
     const steps = await screen.findByRole('region', { name: 'Primeros pasos' })
     expect(within(steps).getByRole('link', { name: /Perfil creado/ })).toHaveAttribute('href', '/perfil')
-    expect(within(steps).queryByRole('button', { name: 'Subir mi CV' })).not.toBeInTheDocument()
+    expect(within(steps).queryByRole('button', { name: 'Subir el CV' })).not.toBeInTheDocument()
     view.unmount()
 
     const source = { id: 1, kind: 'agent_browse', name: 'InfoJobs' }
@@ -238,10 +238,10 @@ describe('Primeros pasos (app recién instalada)', () => {
     renderApp('/')
     const heading = await screen.findByRole('heading', {
       level: 1,
-      name: 'Tienes 2 respuestas de empresas por revisar.',
+      name: 'Por hacer: 2 respuestas de empresas por revisar.',
     })
     expect(within(heading).getByRole('link')).toHaveAttribute('href', '/respuestas')
-    expect(screen.getByText(/Para tu agente: 3 correos sin clasificar/)).toBeInTheDocument()
+    expect(screen.getByText(/Para el agente: 3 correos sin clasificar/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Revisar respuestas/ })).toBeInTheDocument()
   })
 })

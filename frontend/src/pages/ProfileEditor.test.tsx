@@ -333,7 +333,7 @@ describe('Mi perfil editable', () => {
       const sur = await company('Sur Analytics')
       await waitFor(() => expect(sur.header).toHaveAttribute('aria-expanded', 'true'))
       expect(within(sur.article).getByText('No puede estar vacío.')).toBeInTheDocument()
-      expect(within(block).getByText('Revisa 1 empresa: tiene errores.')).toBeInTheDocument()
+      expect(within(block).getByText('1 empresa tiene errores.')).toBeInTheDocument()
     })
 
     it('una empresa nueva sigue desplegada después de guardarla', async () => {
@@ -382,7 +382,7 @@ describe('Mi perfil editable', () => {
     await userEvent.type(within(story).getByLabelText('Resultado'), '-35 %.')
     const save = within(block).getByRole('button', { name: 'Guardar' })
     expect(save).toBeDisabled()
-    expect(within(block).getByText('Elige al menos una evidencia.')).toBeInTheDocument()
+    expect(within(block).getByText('Hace falta al menos una evidencia.')).toBeInTheDocument()
 
     await userEvent.click(within(block).getByRole('checkbox', { name: /Migré 40 procesos ETL/ }))
     expect(within(block).getByRole('checkbox', { name: /TFG de predicción/ })).not.toBeChecked()
@@ -437,7 +437,7 @@ describe('Mi perfil editable', () => {
     })
     renderApp('/perfil')
     await openTab('Documentos')
-    for (const name of ['Cómo quieres tus CVs y cartas', 'Notas para tu agente', 'Tus archivos']) {
+    for (const name of ['Preferencias de CVs y cartas', 'Notas para el agente', 'Archivos']) {
       expect(await screen.findByRole('region', { name })).toBeInTheDocument()
     }
     const cv = screen.getByRole('region', { name: 'CV' })
@@ -472,8 +472,8 @@ describe('Mi perfil editable', () => {
     await userEvent.click(within(row).getByRole('button', { name: 'Editar «Criterios»' }))
     await userEvent.type(await within(row).findByLabelText('Texto de Criterios'), 'Nada de viajes.')
     expect(within(row).queryByRole('button', { name: 'Plegar «Criterios»' })).not.toBeInTheDocument()
-    expect(within(row).getByText(/guárdalos o descártalos para plegarlo/)).toBeInTheDocument()
-    await openTab('Sobre ti')
+    expect(within(row).getByText(/hay que guardarlos o descartarlos para plegarlo/)).toBeInTheDocument()
+    await openTab('Datos personales')
     const notice = screen.getByText('Sin guardar:').parentElement!
     await userEvent.click(within(notice).getByRole('button', { name: /Criterios/ }))
     expect(screen.getByRole('tab', { name: 'Documentos' })).toHaveAttribute('aria-selected', 'true')
@@ -520,7 +520,7 @@ describe('Mi perfil editable', () => {
     await userEvent.clear(headline)
     await userEvent.type(headline, 'Analytics Engineer')
     await userEvent.click(within(block).getByRole('button', { name: 'Guardar' }))
-    expect(await within(block).findByRole('alert')).toHaveTextContent('Tu perfil ha cambiado desde que abriste la página')
+    expect(await within(block).findByRole('alert')).toHaveTextContent('El perfil ha cambiado desde que se abrió la página')
     expect(within(block).getByRole('button', { name: 'Recargar' })).toBeInTheDocument()
   })
 
@@ -529,7 +529,7 @@ describe('Mi perfil editable', () => {
     renderApp('/perfil')
     const block = await screen.findByRole('region', { name: 'Datos y resumen' })
     expect(within(block).getByLabelText('Teléfono')).toHaveValue('+34 600 000 000')
-    expect(within(block).getByText(/Tu agente no lo ve/)).toBeInTheDocument()
+    expect(within(block).getByText(/El agente no lee esta información/)).toBeInTheDocument()
   })
 
   it('en inglés', async () => {
@@ -547,7 +547,7 @@ describe('Mi perfil editable', () => {
   })
 
   it('«Mejorar con mi agente» lleva el id del logro y no se puede dejar para luego', async () => {
-    const agent = { agent: 'claude', display_name: 'Claude Code', model: null, preset: null, reason: 'default', reason_text: 'tu agente por defecto', blocked: null, blocked_code: null, warning: null }
+    const agent = { agent: 'claude', display_name: 'Claude Code', model: null, preset: null, reason: 'default', reason_text: 'el agente por defecto', blocked: null, blocked_code: null, warning: null }
     const action = (id: string) => ({ id, label: id, needs_job: false, needs_milestone: false, needs_profile_item: id === 'improve-profile-item', prompt: null, background: false, agent, alternatives: [], background_agent: null })
     const calls = mockApi({
       ...BASE,
@@ -564,17 +564,17 @@ describe('Mi perfil editable', () => {
     await openTab('Experiencia y formación')
     await openCompany('Norte Consulting')
     const achievement = await screen.findByRole('group', { name: 'Migré 40 procesos ETL a Python.' })
-    const improve = within(achievement).getByRole('button', { name: 'Mejorar con mi agente' })
+    const improve = within(achievement).getByRole('button', { name: 'Mejorar con el agente' })
     await waitFor(() => expect(improve).toBeEnabled())
     await userEvent.click(improve)
     await waitFor(() => expect(calls.some((c) => c.path === '/agent/launch')).toBe(true))
     expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ lang: 'es', action: 'improve-profile-item', profile_item: 'exp-norte/a1' })
     await userEvent.click(within(improve.closest<HTMLElement>('[data-slot="agent-button"]')!).getByRole('button', { name: /con Claude Code/ }))
-    expect(screen.queryByRole('menuitem', { name: /Dejar para mi próxima sesión/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('menuitem', { name: /Dejar para la próxima sesión/ })).not.toBeInTheDocument()
   })
 
   it('sin perfil, se sube el CV y tu agente lo crea a partir de él', async () => {
-    const agent = { agent: 'claude', display_name: 'Claude Code', model: null, preset: null, reason: 'default', reason_text: 'tu agente por defecto', blocked: null, blocked_code: null, warning: null }
+    const agent = { agent: 'claude', display_name: 'Claude Code', model: null, preset: null, reason: 'default', reason_text: 'el agente por defecto', blocked: null, blocked_code: null, warning: null }
     const action = (id: string) => ({ id, label: id, needs_job: false, needs_milestone: false, needs_profile_item: false, prompt: null, background: false, agent, alternatives: [], background_agent: null })
     const uploaded: unknown[] = []
     const calls = mockApi({
@@ -605,20 +605,20 @@ describe('Mi perfil editable', () => {
       'POST /agent/launch': { ok: true, agent: 'claude', prompt: 'Usa el skill update-profile…', message: 'ok' },
     })
     renderApp('/perfil')
-    expect(await screen.findByRole('heading', { name: 'Empieza por tu CV' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Empezar por el CV' })).toBeInTheDocument()
     // Sin perfil, «Mejorar el contenido de mi perfil» todavía no toca.
-    expect(screen.queryByRole('button', { name: 'Mejorar el contenido de mi perfil' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Mejorar el contenido del perfil' })).not.toBeInTheDocument()
     // Solo se suben el CV y LinkedIn; el resto de carpetas se rellenan a mano.
-    const folders = await screen.findByRole('region', { name: 'Tus archivos' })
+    const folders = await screen.findByRole('region', { name: 'Archivos' })
     expect(within(folders).getAllByRole('button', { name: /^Subir/ })).toHaveLength(1)
 
-    await userEvent.upload(screen.getByLabelText('Tu CV'), new File(['%PDF-1.7'], 'CV Lucía.pdf', { type: 'application/pdf' }))
+    await userEvent.upload(screen.getByLabelText('CV'), new File(['%PDF-1.7'], 'CV Lucía.pdf', { type: 'application/pdf' }))
     expect(await screen.findByText('CV subido: cv-lucia.pdf')).toBeInTheDocument()
     const post = calls.find((c) => c.method === 'POST' && c.path === '/context/documents/cv')
     expect(post?.body).toEqual({ filename: 'CV Lucía.pdf', content_base64: btoa('%PDF-1.7') })
     expect(screen.getByRole('button', { name: 'Subir otro CV' })).toBeInTheDocument()
 
-    const create = screen.getByRole('button', { name: 'Crear mi perfil desde mi CV' })
+    const create = screen.getByRole('button', { name: 'Crear el perfil desde un CV' })
     await waitFor(() => expect(create).toBeEnabled())
     await userEvent.click(create)
     await waitFor(() => expect(calls.some((c) => c.path === '/agent/launch')).toBe(true))
@@ -804,14 +804,14 @@ describe('Mi perfil editable', () => {
     expect(await within(block).findByRole('button', { name: 'Subir foto' })).toBeInTheDocument()
     await userEvent.upload(within(block).getByLabelText('Elegir una foto'), new File(['x'], 'yo.png', { type: 'image/png' }))
     // Primero se encuadra; no se sube nada hasta guardar.
-    const dialog = await screen.findByRole('dialog', { name: 'Encuadra tu foto' })
+    const dialog = await screen.findByRole('dialog', { name: 'Encuadrar la foto' })
     expect(calls.some((c) => c.method === 'PUT')).toBe(false)
     // Sin plantilla por defecto con otra forma, el recuadro es redondo.
     expect(within(dialog).getByTestId('fake-cropper')).toHaveAttribute('data-shape', 'round')
     expect(within(dialog).getByRole('slider', { name: 'Zoom' })).toBeInTheDocument()
     await userEvent.click(within(dialog).getByRole('button', { name: 'Guardar foto' }))
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
-    expect(await within(block).findByRole('img', { name: 'Tu foto actual' })).toBeInTheDocument()
+    expect(await within(block).findByRole('img', { name: 'Foto actual' })).toBeInTheDocument()
     // Se sube el recorte, la original y el recuadro.
     expect(calls.find((c) => c.method === 'PUT')?.body).toEqual({
       content_base64: btoa('recorte'),
@@ -841,7 +841,7 @@ describe('Mi perfil editable', () => {
     renderApp('/perfil')
     const block = await screen.findByRole('region', { name: 'Foto para el CV (opcional)' })
     await userEvent.click(await within(block).findByRole('button', { name: 'Volver a encuadrar' }))
-    const dialog = await screen.findByRole('dialog', { name: 'Encuadra tu foto' })
+    const dialog = await screen.findByRole('dialog', { name: 'Encuadrar la foto' })
     expect(calls.some((c) => c.path === '/profile/photo/original')).toBe(true)
     const cropper = within(dialog).getByTestId('fake-cropper')
     expect(JSON.parse(cropper.getAttribute('data-initial') ?? 'null')).toEqual(crop)
@@ -898,7 +898,7 @@ describe('Mi perfil editable', () => {
       'POST /profile/suggestions/7/used': { suggestions: [] },
     })
     renderApp('/perfil')
-    const panel = await screen.findByRole('region', { name: 'Propuesta de tu agente' })
+    const panel = await screen.findByRole('region', { name: 'Propuesta del agente' })
     expect(within(panel).getByText('Data Engineer with three years.')).toBeInTheDocument()
     expect(within(panel).queryByText(/otra versión/)).not.toBeInTheDocument()
     await userEvent.click(within(panel).getByRole('button', { name: /Usar en el campo/ }))
@@ -926,10 +926,10 @@ describe('Mi perfil editable', () => {
       'POST /profile/suggestions/8/discard': { suggestions: [] },
     })
     renderApp('/perfil')
-    const panel = await screen.findByRole('region', { name: 'Propuesta de tu agente' })
-    expect(within(panel).getByText(/Se hizo con otra versión de tu resumen en español/)).toBeInTheDocument()
+    const panel = await screen.findByRole('region', { name: 'Propuesta del agente' })
+    expect(within(panel).getByText(/Se hizo con otra versión del resumen en español/)).toBeInTheDocument()
     await userEvent.click(within(panel).getByRole('button', { name: /Descartar/ }))
-    await waitFor(() => expect(screen.queryByRole('region', { name: 'Propuesta de tu agente' })).not.toBeInTheDocument())
+    await waitFor(() => expect(screen.queryByRole('region', { name: 'Propuesta del agente' })).not.toBeInTheDocument())
     expect(calls.some((c) => c.path === '/profile/suggestions/8/discard')).toBe(true)
     expect(screen.getByLabelText('Resumen (inglés)')).toHaveValue('')
   })
@@ -990,8 +990,8 @@ describe('Mi perfil editable', () => {
     const nav = screen.getByRole('navigation', { name: 'Ir a un apartado' })
     expect(within(nav).getByRole('link', { name: /^Idiomas.*sin guardar/ })).toBeInTheDocument()
 
-    await userEvent.click(within(notice).getByRole('button', { name: 'Ir a «Datos y resumen» (Sobre ti) para guardarlo' }))
-    expect(screen.getByRole('tab', { name: 'Sobre ti' })).toHaveAttribute('aria-selected', 'true')
+    await userEvent.click(within(notice).getByRole('button', { name: 'Ir a «Datos y resumen» (Datos personales) para guardarlo' }))
+    expect(screen.getByRole('tab', { name: 'Datos personales' })).toHaveAttribute('aria-selected', 'true')
     await waitFor(() => expect(document.activeElement).toBe(personal))
   })
 
@@ -1076,15 +1076,15 @@ describe('Mi perfil › Historial', () => {
     mockApi(routes)
     renderApp('/perfil')
     await openTab('Historial')
-    const list = await screen.findByRole('list', { name: 'Versiones de tu perfil' })
+    const list = await screen.findByRole('list', { name: 'Versiones del perfil' })
     const rows = within(list).getAllByRole('listitem')
     expect(rows).toHaveLength(3)
     expect(within(rows[0]).getByText(`Hoy, ${hm(10, 3)}`)).toBeInTheDocument()
     expect(within(rows[0]).getByText('Actual')).toBeInTheDocument()
     expect(within(rows[0]).getByText('Experiencia (2 cambios) · Datos privados (ha cambiado)')).toBeInTheDocument()
     expect(within(rows[0]).getByText('Desde la app')).toBeInTheDocument()
-    expect(within(rows[1]).getByText('Tu agente')).toBeInTheDocument()
-    expect(within(rows[2]).getByText('Tu primer perfil')).toBeInTheDocument()
+    expect(within(rows[1]).getByText('El agente')).toBeInTheDocument()
+    expect(within(rows[2]).getByText('Primer perfil')).toBeInTheDocument()
 
     // La actual, abierta: por bloques, «Antes → Ahora», con etiqueta además del color.
     const experience = await within(rows[0]).findByRole('region', { name: 'Experiencia' })
@@ -1111,7 +1111,7 @@ describe('Mi perfil › Historial', () => {
     })
     renderApp('/perfil')
     await openTab('Historial')
-    const list = await screen.findByRole('list', { name: 'Versiones de tu perfil' })
+    const list = await screen.findByRole('list', { name: 'Versiones del perfil' })
     const row = within(list).getAllByRole('listitem')[1]
     await userEvent.click(within(row).getByRole('button', { name: new RegExp(`Hoy, ${hm(10, 2)}`) }))
     const skills = await within(row).findByRole('region', { name: 'Skills' })
@@ -1126,7 +1126,7 @@ describe('Mi perfil › Historial', () => {
     expect(within(dialog).getByText('Datos y resumen')).toBeInTheDocument()
     expect(within(dialog).getByText('Skills')).toBeInTheDocument()
     await userEvent.click(within(dialog).getByRole('button', { name: 'Volver a esta versión' }))
-    expect(await screen.findByText(`Hecho: tu perfil ha vuelto a la versión de hoy, ${hm(10, 2)}.`)).toBeInTheDocument()
+    expect(await screen.findByText(`Hecho: el perfil ha vuelto a la versión de hoy, ${hm(10, 2)}.`)).toBeInTheDocument()
     const post = calls.find((c) => c.method === 'POST' && c.path === '/profile/versions/2/restore')
     expect(post?.body).toEqual({ file_hash: 'h1' })
   })
@@ -1136,9 +1136,9 @@ describe('Mi perfil › Historial', () => {
     renderApp('/perfil')
     await userEvent.type(await screen.findByLabelText('Titular'), ' senior')
     await openTab('Historial')
-    expect(await screen.findByText('Guarda o descarta antes los bloques con cambios.')).toBeInTheDocument()
+    expect(await screen.findByText('Antes hay que guardar o descartar los bloques con cambios.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Deshacer el último cambio/ })).toBeDisabled()
-    const row = within(screen.getByRole('list', { name: 'Versiones de tu perfil' })).getAllByRole('listitem')[1]
+    const row = within(screen.getByRole('list', { name: 'Versiones del perfil' })).getAllByRole('listitem')[1]
     await userEvent.click(within(row).getByRole('button', { name: new RegExp(`Hoy, ${hm(10, 2)}`) }))
     expect(await within(row).findByRole('button', { name: /^Volver a esta versión/ })).toBeDisabled()
   })

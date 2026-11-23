@@ -15,7 +15,7 @@ Flujo (POLICIES §5):
    uso y encola `apply_submit`.
 5. `run_submit` (worker): consume el token, pulsa el envío, captura la confirmación y registra
    `applied` con la captura como evidencia. Si no se reconoce la confirmación, no registra nada.
-6. «Lo termino yo»: `focus` trae la pestaña al frente y deja enviar; `mark_manual_done` registra
+6. «Terminar a mano»: `focus` trae la pestaña al frente y deja enviar; `mark_manual_done` registra
    `applied_manually`.
 
 Las funciones `run_*` las llama el worker: abren sus propias sesiones cortas, para no tener una
@@ -1167,7 +1167,7 @@ def _record_applied(session: Session, attempt: ApplicationAttempt) -> bool:
     return True
 
 
-# --- Abrir, «Lo termino yo» y navegador -----------------------------------------------------
+# --- Abrir, «Terminar a mano» y navegador -----------------------------------------------------
 
 
 def run_open(attempt_id: int) -> dict[str, Any]:
@@ -1195,7 +1195,7 @@ def run_open(attempt_id: int) -> dict[str, Any]:
 
 
 def focus(session: Session, attempt_id: int) -> AttemptView:
-    """«Lo termino yo»: encola traer la pestaña al frente y dejar que envíes tú."""
+    """«Terminar a mano»: encola traer la pestaña al frente y dejar que envíes tú."""
     _no_docker()
     attempt = _get(session, attempt_id)
     if attempt.status not in REVIEWABLE:

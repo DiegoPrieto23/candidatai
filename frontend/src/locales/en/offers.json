@@ -20,7 +20,7 @@
     "max": "max.",
     "floor": "Your minimum: {{amount}} gross per year. ",
     "noFloor": "Add your minimum salary in “Search jobs → More settings” to compare it. ",
-    "private": "Only you see this: your agent doesn't get your minimum or these differences. They're numbers, not a recommendation."
+    "private": "Only you see this: your agent does not get your minimum or these differences. They are numbers, not a recommendation."
   },
   "received": {
     "title": "Offer received",
@@ -37,8 +37,8 @@
       "start": "Start date",
       "respondBy": "Reply by",
       "benefits": "Benefits",
-      "notes": "Notes (your agent reads them: don't put your numbers here)",
-      "private": "Private amounts: your agent doesn't see the base or the bonus.",
+      "notes": "Notes (your agent reads them: do not put your numbers here)",
+      "private": "Private amounts: your agent does not see the base or the bonus.",
       "privateHint": "It never sees your minimum or the difference with it.",
       "cancel": "Cancel",
       "saving": "Saving…",

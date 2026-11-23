@@ -55,7 +55,7 @@ describe('Skills', () => {
     expect(screen.getAllByRole('link', { name: /Data Engineer · Brétema Analytics/ })[0]).toHaveAttribute('href', '/jobs/7')
     expect(calls.find((c) => c.path === '/skills/gaps')?.search.get('days')).toBe('60')
     // Hay una marcada «La tengo»: aparece el botón para añadirlas al perfil.
-    expect(screen.getByRole('button', { name: /Añadir al perfil las que tengo \(1\)/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Añadir al perfil las marcadas «La tengo» \(1\)/ })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Plan de formación/ })).toBeInTheDocument()
     // El periodo explica qué ofertas cuenta.
     expect(screen.getByRole('button', { name: 'Qué ofertas cuenta el periodo' })).toBeInTheDocument()
@@ -118,7 +118,7 @@ describe('Skills', () => {
     const dialog = await screen.findByRole('dialog', { name: '«Data Warehousing» es lo mismo que…' })
     expect(within(dialog).getByRole('button', { name: 'Son lo mismo' })).toBeDisabled()
 
-    await userEvent.type(within(dialog).getByRole('textbox', { name: 'Buscar en tu perfil' }), 'snow')
+    await userEvent.type(within(dialog).getByRole('textbox', { name: 'Buscar en el perfil' }), 'snow')
     expect(within(dialog).getAllByRole('radio')).toHaveLength(1)
     await userEvent.click(within(dialog).getByRole('radio', { name: /Snowflake/ }))
     await userEvent.click(within(dialog).getByRole('button', { name: 'Son lo mismo' }))
@@ -190,7 +190,7 @@ describe('Skills', () => {
       'GET /profile/editable': { exists: false, file_hash: null, profile: null, issues: [], profile_version_id: null, undo_available: 0 },
     })
     renderApp('/skills')
-    expect(await screen.findByText('Aún no tienes perfil')).toBeInTheDocument()
+    expect(await screen.findByText('Aún no hay perfil')).toBeInTheDocument()
     expect(screen.getByRole('heading', { level: 1, name: 'Habilidades por desarrollar' })).toBeInTheDocument()
     expect(calls.some((c) => c.path.startsWith('/skills/gaps'))).toBe(false)
   })
@@ -202,12 +202,12 @@ describe('Skills', () => {
       'GET /skills/gaps': { status: 404, body: { ok: false, error: { type: 'not_found', message: 'Sin perfil', details: [] } } },
     })
     const first = renderApp('/skills')
-    expect(await screen.findByText('Aún no tienes perfil')).toBeInTheDocument()
+    expect(await screen.findByText('Aún no hay perfil')).toBeInTheDocument()
     first.unmount()
 
     mockApi({ 'GET /status': status(), 'GET /agent': AGENT, 'GET /skills/gaps': view({ gaps: [] }) })
     renderApp('/skills')
-    expect(await screen.findByText('Tu perfil cubre lo que piden tus ofertas')).toBeInTheDocument()
+    expect(await screen.findByText('El perfil cubre lo que piden las ofertas')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Añadir al perfil/ })).not.toBeInTheDocument()
   })
 })

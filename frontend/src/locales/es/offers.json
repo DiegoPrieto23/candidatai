@@ -4,8 +4,8 @@
     "rows": {
       "annualBase": "Fijo anual",
       "annualTotal": "Total anual (con variable)",
-      "baseVsFloor": "Fijo frente a tu mínimo",
-      "totalVsFloor": "Total frente a tu mínimo",
+      "baseVsFloor": "Fijo frente al mínimo",
+      "totalVsFloor": "Total frente al mínimo",
       "published": "Rango publicado",
       "baseVsRange": "Fijo frente al rango",
       "mode": "Modalidad",
@@ -18,9 +18,9 @@
     "notPublished": "No lo indicaba",
     "min": "mín.",
     "max": "máx.",
-    "floor": "Tu mínimo: {{amount}} brutos al año. ",
-    "noFloor": "Añade tu sueldo mínimo en «Buscar ofertas → Más ajustes» para compararla con él. ",
-    "private": "Solo lo ves tú: tu agente no recibe tu mínimo ni estas diferencias. Son cuentas, no una recomendación."
+    "floor": "Sueldo mínimo: {{amount}} brutos al año. ",
+    "noFloor": "Para compararla, se añade el sueldo mínimo en «Buscar ofertas → Más ajustes». ",
+    "private": "Información privada: el agente no recibe el sueldo mínimo ni estas diferencias. Son cuentas, no una recomendación."
   },
   "received": {
     "title": "Oferta recibida",
@@ -37,9 +37,9 @@
       "start": "Incorporación",
       "respondBy": "Responder antes de",
       "benefits": "Beneficios",
-      "notes": "Notas (las lee tu agente: no pongas aquí tus cifras)",
-      "private": "Importes privados: tu agente no ve el fijo ni el variable.",
-      "privateHint": "Tu mínimo y la diferencia con él no los ve nunca.",
+      "notes": "Notas (las lee el agente: sin cifras económicas)",
+      "private": "Importes privados: el agente no ve el fijo ni el variable.",
+      "privateHint": "El sueldo mínimo y la diferencia con él nunca llegan al agente.",
       "cancel": "Cancelar",
       "saving": "Guardando…",
       "save": "Guardar oferta"
@@ -56,8 +56,8 @@
       "perYear": "{{amount}} al año",
       "perMonth": "{{amount}} al mes"
     },
-    "noted": "Anotada el {{date}}. Compárala con tu mínimo en Procesos.",
-    "prompt": "¿Te han hecho una oferta? Anótala para compararla y preparar la negociación.",
+    "noted": "Anotada el {{date}}. La comparación con el sueldo mínimo está en Procesos.",
+    "prompt": "¿Ha llegado una oferta? Anotarla permite compararla y preparar la negociación.",
     "private": "Importes privados",
     "edit": "Editar",
     "add": "Anotar oferta",

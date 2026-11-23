@@ -14,7 +14,7 @@
   "noneChosen": "Choose at least one job board.",
   "searchNow": "Search now",
   "strip": {
-    "label": "What you're going to search for",
+    "label": "What you are going to search for",
     "roles": "Roles",
     "places": "Where",
     "count": "How many",
@@ -23,7 +23,7 @@
     "rolePlaceholder": "For example, BI Engineer",
     "placePlaceholder": "City, region or remote",
     "addTyped": "Add “{{text}}”",
-    "suggestions": "From jobs you've approved",
+    "suggestions": "From jobs you have approved",
     "approved_one": "{{count}} approved",
     "approved_other": "{{count}} approved",
     "remove": "Remove {{item}}",
@@ -34,7 +34,7 @@
     "removed": "Removed “{{item}}”: saved to your profile.",
     "undo": "Undo",
     "undone": "Undone: your profile is back as it was.",
-    "noProfile": "What you're after is saved in your profile: <to>create it first</to>.",
+    "noProfile": "What you are after is saved in your profile: <to>create it first</to>.",
     "modes": "Work mode",
     "levels": "Level",
     "changed": "Changed “{{item}}”: saved to your profile.",
@@ -62,7 +62,7 @@
     "unusable": {
       "off": "Off",
       "blocked": "Blocked",
-      "noAgent": "Your agent isn't allowed here"
+      "noAgent": "Your agent is not allowed here"
     },
     "change": "Change in “Where to search”",
     "legend": {
@@ -79,14 +79,14 @@
     "manage": "Manage in “Where to search”",
     "more": "See all {{count}} in “Where to search”",
     "empty": "None yet. The app checks the careers site of each company added every day, without an agent.",
-    "error": "The companies couldn't be loaded. They can be seen in “Where to search”."
+    "error": "The companies could not be loaded. They can be seen in “Where to search”."
   },
   "last": {
     "title": "Last search:",
     "summary_one": "{{count}} new job out of {{found}} seen",
     "summary_other": "{{count}} new jobs out of {{found}} seen",
     "inbox": "See them in the inbox",
-    "never": "you haven't searched with your agent yet."
+    "never": "you have not searched with your agent yet."
   },
   "plan": {
     "perPortal": {
@@ -129,7 +129,7 @@
     "portals_other": "{{count}} job boards",
     "companies_one": "{{count}} company",
     "companies_other": "{{count}} companies",
-    "companiesHint": "Companies with their own careers site are checked at the same time, without your agent: the app reads their whole jobs page and brings in what's new. Those checked recently are skipped.",
+    "companiesHint": "Companies with their own careers site are checked at the same time, without your agent: the app reads their whole jobs page and brings in what is new. Those checked recently are skipped.",
     "companiesHintLabel": "What happens with companies",
     "companiesOnly_one": "No job boards chosen: it will only check the company.",
     "companiesOnly_other": "No job boards chosen: it will only check the {{count}} companies.",
@@ -149,16 +149,16 @@
     "languages": "Working languages",
     "contract": "Contract and hours",
     "anyIfEmpty": "With none ticked, all of them are fine.",
-    "ruleHint": "Each filter applies only when the job states that detail: a job that doesn't state the contract type passes the contract filter, and one with no published salary passes the minimum salary one.",
+    "ruleHint": "Each filter applies only when the job states that detail: a job that does not state the contract type passes the contract filter, and one with no published salary passes the minimum salary one.",
     "ruleHintLabel": "Jobs without that detail",
-    "discard": "Jobs you don't want",
+    "discard": "Jobs you do not want",
     "keywords": "Words in the title",
     "keywordsHintLabel": "Which words rule a job out",
-    "employerLabel": "Employers you don't want",
+    "employerLabel": "Employers you do not want",
     "employer": {
       "consultancy": "Consultancies that place their staff with a client",
       "agency": "Temp and recruitment agencies",
-      "employer_hidden": "Jobs that don't say which company is hiring"
+      "employer_hidden": "Jobs that do not say which company is hiring"
     },
     "reset": "Reset",
     "discardChanges": "Discard changes",

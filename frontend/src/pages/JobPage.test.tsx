@@ -19,7 +19,7 @@ describe('Ficha de oferta', () => {
     expect(await screen.findByText('Python')).toBeInTheDocument()
     expect(screen.getByText('Terraform')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('tab', { name: 'Historial y notas' }))
-    expect(screen.getByText('Leída por tu agente')).toBeInTheDocument()
+    expect(screen.getByText('Leída por el agente')).toBeInTheDocument()
     expect(screen.getByText(/Agente claude-code/)).toBeInTheDocument()
     expect(screen.queryByRole('region', { name: 'Aviso de posible inyección' })).not.toBeInTheDocument()
   })
@@ -62,9 +62,9 @@ describe('Ficha de oferta', () => {
       'GET /profile/editable': withProfile,
     })
     renderApp('/jobs/1')
-    const box = await screen.findByRole('region', { name: 'Para saber si te encaja' })
-    expect(within(box).getByText('Crea tu perfil')).toHaveTextContent('Crea tu perfil: Hecho')
-    expect(within(box).getByText('Que tu agente la lea')).toHaveTextContent('Que tu agente la lea: Falta')
+    const box = await screen.findByRole('region', { name: 'Para saber si encaja' })
+    expect(within(box).getByText('Crear el perfil')).toHaveTextContent('Crear el perfil: Hecho')
+    expect(within(box).getByText('Que el agente la lea')).toHaveTextContent('Que el agente la lea: Falta')
     expect(within(box).queryByRole('link', { name: /Ir a «Mi perfil»/ })).not.toBeInTheDocument()
     expect(within(box).getByRole('button', { name: 'Valorar las ofertas nuevas' })).toBeInTheDocument()
   })
@@ -76,10 +76,10 @@ describe('Ficha de oferta', () => {
       'GET /profile/editable': noProfile,
     })
     renderApp('/jobs/1')
-    const box = await screen.findByRole('region', { name: 'Para saber si te encaja' })
-    expect(within(box).getByText('Crea tu perfil')).toHaveTextContent('Crea tu perfil: Falta')
+    const box = await screen.findByRole('region', { name: 'Para saber si encaja' })
+    expect(within(box).getByText('Crear el perfil')).toHaveTextContent('Crear el perfil: Falta')
     expect(within(box).getByRole('link', { name: /Ir a «Mi perfil»/ })).toHaveAttribute('href', '/perfil')
-    expect(within(box).getByText('Que tu agente la lea')).toHaveTextContent('Que tu agente la lea: Falta')
+    expect(within(box).getByText('Que el agente la lea')).toHaveTextContent('Que el agente la lea: Falta')
     expect(within(box).getByRole('button', { name: 'Valorar las ofertas nuevas' })).toBeInTheDocument()
   })
 
@@ -92,8 +92,8 @@ describe('Ficha de oferta', () => {
     const box = await screen.findByRole('region', { name: 'Falta el texto de la oferta' })
     expect(within(box).getByRole('link', { name: /Abrir la oferta/ })).toHaveAttribute('href', 'https://www.linkedin.com/jobs/view/1')
     expect(box).toHaveTextContent('Enviar a CandidatAI')
-    expect(within(box).getByRole('link', { name: 'Instálalo en unos minutos' })).toHaveAttribute('href', '/fuentes/extension')
-    expect(screen.queryByRole('region', { name: 'Para saber si te encaja' })).not.toBeInTheDocument()
+    expect(within(box).getByRole('link', { name: 'Se instala en unos minutos' })).toHaveAttribute('href', '/fuentes/extension')
+    expect(screen.queryByRole('region', { name: 'Para saber si encaja' })).not.toBeInTheDocument()
   })
 
   it('guarda una nota y recarga la ficha', async () => {
@@ -119,7 +119,7 @@ describe('Ficha de oferta', () => {
 
     await waitFor(() => expect(screen.getByText('Llamar el lunes')).toBeInTheDocument())
     expect(calls.find((c) => c.method === 'POST')?.body).toEqual({ type: 'note', note: 'Llamar el lunes' })
-    expect(screen.getByText('Tú', { exact: false })).toBeInTheDocument()
+    expect(screen.getByText('Usuario', { exact: false })).toBeInTheDocument()
     expect(screen.getByLabelText('Añadir nota')).toHaveValue('')
   })
 
@@ -163,15 +163,15 @@ describe('Ficha de oferta', () => {
     expect(await screen.findByRole('tooltip')).toHaveTextContent(/No cuenta: hace falta la comparación por significado/)
 
     // Las letras de nivel, con su leyenda.
-    expect(within(panel).getByText(/Tu nivel en cada skill/)).toHaveTextContent('F fuerte · bás. conocimientos básicos')
+    expect(within(panel).getByText(/Nivel en cada skill/)).toHaveTextContent('F fuerte · bás. conocimientos básicos')
   })
 
   it('leída y sin perfil: el encaje dice que falta el perfil y que la lectura ya está', async () => {
     mockApi({ 'GET /status': status(), 'GET /jobs/1': jobView() }) // /match sin simular: 404
     renderApp('/jobs/1')
-    const box = await screen.findByRole('region', { name: 'Para saber si te encaja' })
-    expect(within(box).getByText('Crea tu perfil')).toHaveTextContent('Crea tu perfil: Falta')
-    expect(within(box).getByText('Que tu agente la lea')).toHaveTextContent('Que tu agente la lea: Hecho')
+    const box = await screen.findByRole('region', { name: 'Para saber si encaja' })
+    expect(within(box).getByText('Crear el perfil')).toHaveTextContent('Crear el perfil: Falta')
+    expect(within(box).getByText('Que el agente la lea')).toHaveTextContent('Que el agente la lea: Hecho')
     expect(within(box).queryByRole('button', { name: 'Valorar las ofertas nuevas' })).not.toBeInTheDocument()
   })
 
@@ -236,7 +236,7 @@ describe('Ficha de oferta', () => {
     expect(screen.queryByRole('button', { name: 'Descartar' })).not.toBeInTheDocument()
     const dialog = await screen.findByRole('dialog')
     expect(within(dialog).getByRole('heading', { name: 'Cerrar candidatura' })).toBeInTheDocument()
-    await userEvent.click(within(dialog).getByRole('radio', { name: /Te retiras del proceso/ }))
+    await userEvent.click(within(dialog).getByRole('radio', { name: /Retirada del proceso/ }))
     await userEvent.type(within(dialog).getByRole('textbox', { name: /Nota/ }), 'Acepté otra')
     await userEvent.click(within(dialog).getByRole('button', { name: /Registrar|Guardar|Confirmar|Mover/ }))
     await waitFor(() =>

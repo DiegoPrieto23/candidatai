@@ -7,7 +7,7 @@
   "approve": "Aprobar",
   "discard": "Descartar",
   "detail": "Ficha",
-  "noScore": "Sin encaje calculado: primero crea tu perfil en «Mi perfil».",
+  "noScore": "Sin encaje calculado: primero hay que crear el perfil en «Mi perfil».",
   "done": {
     "approved": "Aprobada",
     "discarded": "Descartada",
@@ -25,11 +25,11 @@
     "discard": "descartar",
     "detail": "ficha"
   },
-  "profileMissing": "<strong>Sin perfil no se puede calcular el encaje.</strong> Créalo en «Mi perfil» o pídeselo a tu agente a partir de tu CV.",
+  "profileMissing": "<strong>Sin perfil no se puede calcular el encaje.</strong> Se crea en «Mi perfil» o lo prepara el agente a partir del CV.",
   "saveFailed": "No se pudo guardar: {{error}}",
   "empty": {
     "title": "Nada por revisar",
-    "body": "Cuando tu agente lea ofertas nuevas («Valorar las ofertas nuevas»), aparecerán aquí ordenadas por encaje."
+    "body": "Cuando el agente lea ofertas nuevas («Valorar las ofertas nuevas»), aparecerán aquí ordenadas por encaje."
   },
   "queue": "Ofertas por revisar",
   "discardDialog": {
@@ -38,7 +38,7 @@
     "note": "Nota",
     "noteRequired": "(obligatoria con «Otro motivo»)",
     "noteOptional": "(opcional)",
-    "notePlaceholder": "Lo que quieras recordar de esta decisión",
+    "notePlaceholder": "Lo que conviene recordar de esta decisión",
     "cancel": "Cancelar",
     "discarding": "Descartando…",
     "discard": "Descartar"

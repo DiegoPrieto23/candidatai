@@ -8,7 +8,7 @@
   "injection": {
     "label": "Possible injection warning",
     "title": "Possible content aimed at an AI",
-    "body": "The text of this posting might try to manipulate an agent. It's treated only as data, but review it calmly before trusting the extraction.",
+    "body": "The text of this posting might try to manipulate an agent. It is treated only as data, but review it calmly before trusting the extraction.",
     "detectedBy": "Detected by {{who}}",
     "system": "the system"
   },
@@ -43,7 +43,7 @@
     "reason": "Reason: {{reason}}",
     "score": "Fit {{score}}/100",
     "duplicateOf": "Duplicate of job {{id}}.",
-    "closureSuspected": "{{detail}}. It hasn't been closed: you decide."
+    "closureSuspected": "{{detail}}. It has not been closed: you decide."
   },
   "timeline": {
     "title": "History",
@@ -75,12 +75,12 @@
   },
   "loading": "Loading job",
   "back": "Job inbox",
-  "invalidId": "That job ID isn't valid.",
+  "invalidId": "That job ID is not valid.",
   "viewOriginal": "View original",
   "addedOn": "Added on {{date}}",
   "postedOn": ". Posted on {{date}}",
   "archive": {
-    "pending": "No copy of what you sent yet: it's saved automatically a few seconds after you mark it as sent.",
+    "pending": "No copy of what you sent yet: it is saved automatically a few seconds after you mark it as sent.",
     "label": "Archived application",
     "title": "Copy of what you sent",
     "open": "Open folder",
@@ -93,12 +93,12 @@
   },
   "missingDetail": {
     "title": "The job description is missing",
-    "body": "It came as a summary from an email alert and carries little more than the title and company. For safety your agent doesn't go into LinkedIn, so you complete it yourself with the browser's “Send to CandidatAI” button. Then your agent can read it.",
+    "body": "It came as a summary from an email alert and carries little more than the title and company. For safety your agent does not go into LinkedIn, so you complete it yourself with the browser's “Send to CandidatAI” button. Then your agent can read it.",
     "open": "Open the job on its job board (on LinkedIn, signed in).",
     "openNoUrl": "Look the job up on its job board: no link was saved.",
     "openButton": "Open the job",
     "send": "In that tab, click the <strong>Send to CandidatAI</strong> button in the browser toolbar. The description is saved here and the job moves to “To read”.",
-    "install": "Don't have the button yet? <guide>Install it in a few minutes</guide>."
+    "install": "Do not have the button yet? <guide>Install it in a few minutes</guide>."
   },
   "fitSteps": {
     "title": "To know whether it fits you",

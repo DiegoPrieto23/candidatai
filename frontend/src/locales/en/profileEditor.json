@@ -6,14 +6,14 @@
     "history": "History"
   },
   "noProfile": {
-    "title": "You don't have a profile yet",
-    "unreadable": "Your profile file has an error and can't be read. Ask your agent to fix it (“check and fix my profile”).",
+    "title": "You do not have a profile yet",
+    "unreadable": "Your profile file has an error and cannot be read. Ask your agent to fix it (“check and fix my profile”).",
     "start": {
       "title": "Start with your CV",
       "intro": "The quickest way: your agent builds it from your CV, with nothing for you to fill in. No CV or no agent? Start by hand, below.",
       "upload": "Upload your CV, as PDF or Word. It stays on your computer, with your documents.",
-      "agent": "Your agent reads it and fills in your profile section by section. It asks about what the CV doesn't say, such as your skill levels or the figures behind your achievements, and shows you each change before saving it.",
-      "review": "When it's done, your profile shows up here on its own, ready to review block by block.",
+      "agent": "Your agent reads it and fills in your profile section by section. It asks about what the CV does not say, such as your skill levels or the figures behind your achievements, and shows you each change before saving it.",
+      "review": "When it is done, your profile shows up here on its own, ready to review block by block.",
       "uploadButton": "Upload my CV",
       "uploadAnother": "Upload another CV",
       "uploading": "Uploading…",
@@ -22,14 +22,14 @@
       "dropOr": "Drag your CV here or upload it from your computer",
       "dropHere": "Drop it to upload",
       "formats": "PDF or Word; .txt or .md also work",
-      "wrongType": "That format isn't supported. Upload a PDF, a Word file (.docx), a .txt or a .md."
+      "wrongType": "That format is not supported. Upload a PDF, a Word file (.docx), a .txt or a .md."
     },
     "byHand": {
       "title": "Start by hand",
       "intro": "No CV or no agent? Write the basics and fill in the rest block by block, right here.",
       "open": "Start by hand",
-      "headlineHint": "What you'd put under your name on a CV, e.g. “Data Analyst · SQL · Power BI”.",
-      "role": "Role you're looking for",
+      "headlineHint": "What you would put under your name on a CV, e.g. “Data Analyst · SQL · Power BI”.",
+      "role": "Role you are looking for",
       "roleHint": "One to start with; add more later in “Search jobs”.",
       "summary": "Summary (optional)",
       "summaryHint": "Two or three sentences about you. Left empty, your headline is used.",
@@ -72,9 +72,9 @@
     "reload": "Reload"
   },
   "errors": {
-    "validation": "Some fields need a look: they're marked below.",
+    "validation": "Some fields need a look: they are marked below.",
     "conflict": "Your profile changed since you opened this page (you edited it by hand, or your agent did). Press Reload to see it and make your change again.",
-    "partial": "Part of this block was saved and part wasn't: your profile has been reloaded. Check the block and save what's missing again."
+    "partial": "Part of this block was saved and part was not: your profile has been reloaded. Check the block and save what is missing again."
   },
   "preview": {
     "title": "This is how your profile will change",
@@ -164,8 +164,8 @@
     "cv": {
       "title": "CV preferences",
       "hint": "Template, length, photo and instructions for all your CVs. Instructions for one job are given when you generate it.",
-      "rules_one": "You have {{count}} template rule (by ATS or country): it's kept. To change it, ask your agent.",
-      "rules_other": "You have {{count}} template rules (by ATS or country): they're kept. To change them, ask your agent."
+      "rules_one": "You have {{count}} template rule (by ATS or country): it is kept. To change it, ask your agent.",
+      "rules_other": "You have {{count}} template rules (by ATS or country): they are kept. To change them, ask your agent."
     },
     "letter": {
       "title": "Cover letter preferences",
@@ -185,7 +185,7 @@
       "policyOff": "To include it in your CVs, turn on “Put a photo on the CV” in the “Documents” tab.",
       "reframe": "Reframe",
       "opening": "Opening…",
-      "originalFailed": "The photo couldn't be opened for framing. Please try again.",
+      "originalFailed": "The photo could not be opened for framing. Please try again.",
       "crop": {
         "title": "Frame your photo",
         "description": "Drag the photo to position it and use the zoom to get closer. This is how it will appear on your CVs.",
@@ -194,7 +194,7 @@
         "cancel": "Cancel",
         "save": "Save photo",
         "saving": "Saving…",
-        "failed": "The photo couldn't be cropped. Try another image."
+        "failed": "The photo could not be cropped. Try another image."
       }
     }
   },
@@ -202,7 +202,7 @@
     "name": "Name",
     "headline": "Headline",
     "headlineHint": "One line under your name, e.g. \"Data Engineer · Python · SQL\".",
-    "privateContact": "Private: only goes in the CV you hand in. Your agent doesn't see it.",
+    "privateContact": "Private: only goes in the CV you hand in. Your agent does not see it.",
     "email": "Email",
     "phone": "Phone",
     "linkedin": "LinkedIn",
@@ -264,7 +264,7 @@
     "evidenceHint": "The achievements or projects in your profile that back this story.",
     "evidenceRequired": "Pick at least one piece of evidence.",
     "noEvidence": "No achievements or projects to cite yet: add them first under Experience or Projects.",
-    "roles": "Roles you're looking for",
+    "roles": "Roles you are looking for",
     "rolesHint": "By priority. Anything unlike them gets a lower fit.",
     "seniority": "Levels you would apply for",
     "workLanguages": "Working languages",
@@ -288,7 +288,7 @@
     "cvInstructions": "Instructions for your CVs",
     "instructionsHint": "Emphasis or style. They guide the writing but are never a fact: new information goes in its own section.",
     "avoid": "What it must never say",
-    "avoidHint": "Phrases or topics you don't want to see.",
+    "avoidHint": "Phrases or topics you do not want to see.",
     "tone": "Tone",
     "maxWords": "Maximum words",
     "maxWordsHint": "Between 50 and 600. Empty: the app's default.",
@@ -308,11 +308,11 @@
     "yearsHintExact": "Empty: no limit.",
     "salaryFloor": "Minimum salary",
     "salaryUnit": "EUR gross per year",
-    "salaryHint": "Only the app sees it, never your agent. It discards jobs with a lower published salary (a monthly one counts ×12); if none is published, it doesn't apply.",
+    "salaryHint": "Only the app sees it, never your agent. It discards jobs with a lower published salary (a monthly one counts ×12); if none is published, it does not apply.",
     "salarySave": "Save salary",
     "salarySaved": "Salary saved",
     "salaryInvalid": "Enter a whole number of euros above 0, or leave it empty.",
-    "salaryLoadError": "Your minimum salary couldn't be read: reload the page before changing it.",
+    "salaryLoadError": "Your minimum salary could not be read: reload the page before changing it.",
     "discardKeywords": "Words that discard a job",
     "discardKeywordsHint": "If the title contains one (whole word, accents ignored), the job is discarded. Also before saving jobs from your sources.",
     "policyKeywords": "The app's settings also rule out: {{words}}.",
@@ -334,11 +334,11 @@
       "agency": "Exclude temp and recruitment agencies"
     },
     "employerKindsHint": "Your agent notes it when it reads each job.",
-    "employerHidden": "Exclude jobs that don't say which company is hiring",
+    "employerHidden": "Exclude jobs that do not say which company is hiring",
     "addLanguage": "Type a language",
     "addCountry": "Type a country",
-    "unknownLanguage": "“{{text}}” isn't a language on the list.",
-    "unknownCountry": "“{{text}}” isn't a country on the list."
+    "unknownLanguage": "“{{text}}” is not a language on the list.",
+    "unknownCountry": "“{{text}}” is not a country on the list."
   },
   "star": {
     "situation": {
@@ -388,7 +388,7 @@
     "editorLabel": "Text of {{name}}",
     "emptyPreview": "Nothing written yet (the guide comments are not shown here).",
     "size": "{{size}} KB of {{max}} KB",
-    "newFile": "doesn't exist yet: it's created when you save"
+    "newFile": "does not exist yet: it is created when you save"
   },
   "style": {
     "title": "Writing samples",
@@ -403,7 +403,7 @@
     "showText": "Show extracted text",
     "hideText": "Hide text",
     "delete": "Delete {{name}}",
-    "risk": "It contains phrases aimed at an AI (\"{{excerpt}}\"): your agent will read it as data and won't follow them."
+    "risk": "It contains phrases aimed at an AI (\"{{excerpt}}\"): your agent will read it as data and will not follow them."
   },
   "history": {
     "title": "History",
@@ -471,11 +471,11 @@
     "technicalLabel": "Technical change in this version",
     "restore": "Go back to this version",
     "isCurrent": "This is the current version",
-    "notRestorable": "You can't go back to this version: it doesn't fit the current profile format.",
+    "notRestorable": "You cannot go back to this version: it does not fit the current profile format.",
     "sameAsCurrent": "Your profile is already like this version.",
     "confirmTitle": "Go back to the version from {{when}}?",
     "confirmBlocks": "These blocks of your profile will change:",
-    "confirmNote": "It's saved as a new version: nothing is lost and you can undo it. The scores of your jobs are recalculated.",
+    "confirmNote": "It is saved as a new version: nothing is lost and you can undo it. The scores of your jobs are recalculated.",
     "cancel": "Cancel",
     "restored": "Done: your profile is back to the version from {{when}}.",
     "older": "Show older versions",
@@ -518,7 +518,7 @@
       "action": "Action",
       "result": "Result",
       "evidence": "Evidence",
-      "roles": "Roles you're looking for",
+      "roles": "Roles you are looking for",
       "seniority_target": "Levels",
       "max_years_required": "Years of experience required, at most",
       "min_years_required": "Years of experience required, at least",
@@ -547,7 +547,7 @@
       "default_format": "Format"
     },
     "confirmPrivate": "Your private data (the minimum salary) also goes back to how it was in that version.",
-    "confirmInternal": "Only internal profile data that isn't shown here changes."
+    "confirmInternal": "Only internal profile data that is not shown here changes."
   },
   "summarySuggestion": {
     "generate": "Generate English summary",
@@ -556,6 +556,6 @@
     "use": "Use in the field",
     "discard": "Discard",
     "saveFirst": "Your agent translates the saved summary. Save your changes to the Spanish summary first.",
-    "saveFirstLabel": "Why it's disabled"
+    "saveFirstLabel": "Why it is disabled"
   }
 }

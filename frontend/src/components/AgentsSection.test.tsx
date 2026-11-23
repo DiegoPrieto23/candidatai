@@ -349,7 +349,7 @@ describe('Niveles de gasto y modelos locales (fase 24.6)', () => {
     await openFineTune()
     const economy = await screen.findByRole('listitem', { name: 'Económico' })
     expect(within(economy).getAllByText('OpenCode')).toHaveLength(2)
-    expect(within(economy).getByText(/Pon el modelo local/)).toBeInTheDocument()
+    expect(within(economy).getByText(/hay que poner el modelo local/)).toBeInTheDocument()
     const balanced = screen.getByRole('listitem', { name: 'Equilibrado' })
     expect(within(balanced).getAllByText('Claude Code · haiku')).toHaveLength(2)
     await userEvent.click(within(balanced).getByRole('button', { name: 'Aplicar' }))

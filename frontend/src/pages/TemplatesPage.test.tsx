@@ -41,7 +41,7 @@ describe('Galería de plantillas', () => {
     const own = screen.getByRole('article', { name: 'Mi CV' })
     expect(within(own).getByText('Sin vista previa')).toBeInTheDocument()
     expect(within(own).getByText('2 columnas')).toBeInTheDocument()
-    expect(within(own).getByText('Tuya')).toBeInTheDocument()
+    expect(within(own).getByText('Propia')).toBeInTheDocument()
   })
 
   it('lista las plantillas que no son válidas y por qué', async () => {
@@ -93,7 +93,7 @@ describe('Galería de plantillas', () => {
         'GET /templates/default': { template_id: null },
       })
       renderApp('/plantillas')
-      expect(await screen.findByText('Aún no has subido ningún CV de ejemplo')).toBeInTheDocument()
+      expect(await screen.findByText('Aún no se ha subido ningún CV de ejemplo')).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /Subir nueva plantilla/ })).toBeInTheDocument()
     })
 
@@ -120,7 +120,7 @@ describe('Galería de plantillas', () => {
         'POST /uploads': pending,
       })
       renderApp('/plantillas')
-      await screen.findByText('Aún no has subido ningún CV de ejemplo')
+      await screen.findByText('Aún no se ha subido ningún CV de ejemplo')
       const file = new File(['docx'], 'Mi CV.docx', {
         type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       })
@@ -144,11 +144,11 @@ describe('Galería de plantillas', () => {
         'GET /templates/default': { template_id: null },
       })
       renderApp('/plantillas')
-      await screen.findByText('Aún no has subido ningún CV de ejemplo')
-      const section = screen.getByRole('region', { name: 'Crea una plantilla desde un CV' })
+      await screen.findByText('Aún no se ha subido ningún CV de ejemplo')
+      const section = screen.getByRole('region', { name: 'Crear una plantilla desde un CV' })
       const file = new File(['%PDF'], 'canva.pdf', { type: 'application/pdf' })
       fireEvent.dragOver(section, { dataTransfer: { types: ['Files'], files: [file] } })
-      expect(screen.getByText('Suelta el fichero para subirlo')).toBeInTheDocument()
+      expect(screen.getByText('Soltar el fichero para subirlo')).toBeInTheDocument()
       fireEvent.drop(section, { dataTransfer: { types: ['Files'], files: [file] } })
       const step = await screen.findByRole('form', { name: 'Nombre de la plantilla' })
       expect(within(step).getByLabelText('Nombre de la plantilla')).toHaveValue('Mi CV 2')
@@ -182,7 +182,7 @@ describe('Galería de plantillas', () => {
       expect(within(card).getByText('Pendiente de importar')).toBeInTheDocument()
       // La orden para copiar, plegada: lo normal es el botón que abre el agente.
       expect(within(card).queryByText('import-cv-template data/uploads/mi-cv.docx')).not.toBeInTheDocument()
-      await userEvent.click(within(card).getByRole('button', { name: '¿Prefieres pedírselo tú a tu agente?' }))
+      await userEvent.click(within(card).getByRole('button', { name: '¿Pedírselo directamente al agente?' }))
       expect(within(card).getByText('import-cv-template data/uploads/mi-cv.docx')).toBeInTheDocument()
       expect(within(card).queryByText(/recrea el diseño/)).not.toBeInTheDocument()
       const pdf = screen.getByRole('listitem', { name: 'canva.pdf' })
@@ -270,7 +270,7 @@ describe('Galería de plantillas', () => {
       })
       renderApp('/plantillas')
       const card = await screen.findByRole('article', { name: 'Mi CV' })
-      expect(within(card).getByText('Tu CV')).toBeInTheDocument()
+      expect(within(card).getByText('CV propio')).toBeInTheDocument()
       await userEvent.click(within(card).getByRole('button', { name: /Usar por defecto/ }))
       expect(calls.some((c) => c.method === 'POST' && c.path === '/templates/mi-cv/default')).toBe(true)
       const rules = await within(card).findByRole('list', { name: 'Reglas que eligen otra plantilla' })
@@ -319,8 +319,8 @@ describe('Galería de plantillas', () => {
       const card = await screen.findByRole('article', { name: 'Clásica con foto' })
       await userEvent.click(within(card).getByRole('button', { name: 'Eliminar Clásica con foto' }))
       const dialog = await screen.findByRole('dialog')
-      expect(within(dialog).getByText('¿Eliminar «Clásica con foto» de tu lista?')).toBeInTheDocument()
-      expect(within(dialog).getByText(/no se borra del programa y la puedes restaurar/)).toBeInTheDocument()
+      expect(within(dialog).getByText('¿Eliminar «Clásica con foto» de la lista?')).toBeInTheDocument()
+      expect(within(dialog).getByText(/no se borra del programa y se puede restaurar/)).toBeInTheDocument()
       await userEvent.click(within(dialog).getByRole('button', { name: 'Eliminar' }))
       await waitFor(() =>
         expect(calls.some((c) => c.method === 'DELETE' && c.path === '/templates/clasica-foto')).toBe(true),
@@ -379,7 +379,7 @@ describe('Galería de plantillas', () => {
       await within(card).findByText('Plantilla por defecto')
       await userEvent.click(within(card).getByRole('button', { name: 'Eliminar Mi CV' }))
       const dialog = await screen.findByRole('dialog')
-      expect(within(dialog).getByText(/Es tu plantilla por defecto/)).toBeInTheDocument()
+      expect(within(dialog).getByText(/Es la plantilla por defecto/)).toBeInTheDocument()
       expect(calls.some((c) => c.method === 'DELETE')).toBe(false)
 
       await userEvent.click(within(dialog).getByRole('button', { name: 'Eliminar' }))

@@ -17,18 +17,18 @@
   "copySubject": "Copiar asunto",
   "copySubjectAria": "Copiar el asunto: {{subject}}",
   "chars": "{{count}}/{{max}} caracteres",
-  "attach": "Adjunta tú:",
+  "attach": "Adjuntar a mano:",
   "attachments": "Adjuntos",
   "copyText": "Copiar texto",
-  "sent": "Ya lo he enviado",
+  "sent": "Marcar como enviado",
   "discard": "Descartar",
   "saveFailed": "No se pudo guardar: {{error}}",
-  "intro": "Tu agente los redacta; la app nunca envía nada.",
+  "intro": "El agente los redacta; la app nunca envía nada.",
   "followups": " {{sent}} de {{max}} seguimientos enviados",
   "capped": ": no conviene insistir más",
   "draftMessage": "Redactar mensaje",
   "draftFollowup": "Redactar seguimiento",
   "loadFailed": "No se pudieron cargar los borradores: {{error}}",
-  "none": "Sin borradores. Tu agente redacta un mensaje de LinkedIn o un correo para alguien de la empresa.",
-  "noneSent": "Sin borradores. Tu agente redacta un mensaje de LinkedIn o un correo para alguien de la empresa, un seguimiento si la candidatura lleva días sin respuesta o un agradecimiento tras una entrevista."
+  "none": "Sin borradores. El agente redacta un mensaje de LinkedIn o un correo para alguien de la empresa.",
+  "noneSent": "Sin borradores. El agente redacta un mensaje de LinkedIn o un correo para alguien de la empresa, un seguimiento si la candidatura lleva días sin respuesta o un agradecimiento tras una entrevista."
 }

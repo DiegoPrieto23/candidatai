@@ -143,7 +143,7 @@ ACTIONS: dict[ActionId, Action] = {
     # «Dónde buscar»: el modo configurar del mismo skill. Pregunta dónde buscas y te recomienda
     # portales antes de guardar nada, así que solo en terminal.
     "configure-platforms": Action(
-        "Configurar con mi agente",
+        "Configurar con el agente",
         "Usa el skill search-jobs de CandidatAI en modo configurar: ayúdame a elegir en qué "
         "portales de empleo buscar y prepara sus búsquedas a partir de los puestos y las "
         "ubicaciones de mi perfil.",
@@ -288,7 +288,7 @@ ACTIONS: dict[ActionId, Action] = {
     # Página «Skills» (fase 14). Los nombres de las skills salen de las ofertas, así que no van en
     # la orden: el agente los lee de las marcas con `get_skill_gaps`.
     "add-skills": Action(
-        "Añadir al perfil las que tengo",
+        "Añadir al perfil las marcadas «La tengo»",
         "Usa el skill update-profile de CandidatAI para añadir a mi perfil las skills que he "
         "marcado como «La tengo» en la página «Habilidades por desarrollar» (get_skill_gaps con "
         "status have).",
@@ -304,7 +304,7 @@ ACTIONS: dict[ActionId, Action] = {
     # «Mi perfil» sin perfil: crearlo desde el CV que se sube ahí (`data/documentos/cv/`).
     # Pregunta lo que el CV no dice y antes de escribir, así que solo en terminal.
     "create-profile": Action(
-        "Crear mi perfil desde mi CV",
+        "Crear el perfil desde un CV",
         "Usa el skill update-profile de CandidatAI para crear mi perfil a partir del CV que he "
         "subido a data/documentos/cv/.",
         skill="update-profile",
@@ -322,7 +322,7 @@ ACTIONS: dict[ActionId, Action] = {
     # «Mi perfil» (fase 25.7b): mejorar un logro o una historia, o proponer historias. Preguntan
     # antes de escribir, así que solo en terminal; «Mejorar» lleva el id del elemento.
     "improve-profile-item": Action(
-        "Mejorar con mi agente",
+        "Mejorar con el agente",
         "Usa el skill update-profile de CandidatAI en modo «Mejorar un elemento» con "
         "{profile_item} de mi perfil.",
         skill="update-profile",
@@ -344,7 +344,7 @@ ACTIONS: dict[ActionId, Action] = {
         background=("get_profile", "save_profile_suggestion"),
     ),
     "propose-stories": Action(
-        "Proponer historias desde mi experiencia",
+        "Proponer historias desde la experiencia",
         "Usa el skill update-profile de CandidatAI en modo «Proponer historias desde mi "
         "experiencia».",
         skill="update-profile",
@@ -373,7 +373,7 @@ ACTIONS: dict[ActionId, Action] = {
     ),
     # Resultados (fase 20): retrospectiva. Solo propone: los pesos y filtros los cambia el usuario.
     "review-search": Action(
-        "Revisar mi búsqueda",
+        "Revisar la búsqueda",
         "Usa el skill review-search de CandidatAI para hacer la retrospectiva de mi búsqueda: "
         "qué funciona y qué cambiar.",
     ),

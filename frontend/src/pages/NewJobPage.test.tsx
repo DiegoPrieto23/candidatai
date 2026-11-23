@@ -93,14 +93,14 @@ describe('Alta de ofertas', () => {
 
   it('con el botón del navegador ya conectado, lo dice en una línea en vez de mandar a instalarlo', async () => {
     await submitLinkedIn(true)
-    expect(await screen.findByText('Tu botón del navegador está conectado.')).toBeInTheDocument()
+    expect(await screen.findByText('El botón del navegador está conectado.')).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Instalar el botón del navegador' })).not.toBeInTheDocument()
   })
 
   it('instalado pero sin conectar, sigue llevando a «Botón del navegador»', async () => {
     await submitLinkedIn(false)
     expect(await screen.findByRole('link', { name: 'Instalar el botón del navegador' })).toBeInTheDocument()
-    expect(screen.queryByText('Tu botón del navegador está conectado.')).not.toBeInTheDocument()
+    expect(screen.queryByText('El botón del navegador está conectado.')).not.toBeInTheDocument()
   })
 
   it('«Pegar texto» del aviso de LinkedIn cambia de pestaña con la URL rellena', async () => {
@@ -127,7 +127,7 @@ describe('Alta de ofertas', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Dar de alta' }))
 
     const alert = await screen.findByRole('alert')
-    expect(alert).toHaveTextContent('No he podido abrir esa página')
+    expect(alert).toHaveTextContent('No se ha podido abrir esa página')
     expect(alert).not.toHaveTextContent('WinError')
     await userEvent.click(screen.getByRole('button', { name: 'Pegar el texto' }))
     expect(await screen.findByLabelText(/^Enlace(?! de)/)).toHaveValue('https://example.com/jobs/9')

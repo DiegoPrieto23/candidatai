@@ -44,7 +44,7 @@
   "response": {
     "title": "First reply",
     "hint": "From sending to the first reply, interview, test, offer or rejection.",
-    "none": "You haven't sent any application in this period yet.",
+    "none": "You have not sent any application in this period yet.",
     "median": "Median",
     "mean": "Mean",
     "replied": "Replied",
@@ -76,8 +76,8 @@
     "caption": "Funnel by role type",
     "head": "Role",
     "others": "Others",
-    "notExtracted_one": "Your agent still has to read {{count}} job: it doesn't count here until then.",
-    "notExtracted_other": "Your agent still has to read {{count}} jobs: they don't count here until then."
+    "notExtracted_one": "Your agent still has to read {{count}} job: it does not count here until then.",
+    "notExtracted_other": "Your agent still has to read {{count}} jobs: they do not count here until then."
   },
   "byReferral": {
     "title": "By referral",
@@ -112,9 +112,9 @@
   "calibration": {
     "title": "Is the fit right?",
     "hint": "Reply and interview rates of the applications you sent (in the chosen period, by sending date) based on what you knew when you sent them.",
-    "note": "A rough guide. In brackets, the 95 % interval: if two groups overlap, there's no clear difference. Weights and filters never change on their own: your agent proposes and you decide.",
+    "note": "A rough guide. In brackets, the 95 % interval: if two groups overlap, there is no clear difference. Weights and filters never change on their own: your agent proposes and you decide.",
     "review": "Review my search",
-    "none": "You haven't sent any application in this period yet. It makes sense from about {{min}}-30 sent.",
+    "none": "You have not sent any application in this period yet. It makes sense from about {{min}}-30 sent.",
     "summary": "<strong>{{applied}}</strong> sent · reply <strong>{{reply}}</strong> · interview <strong>{{interview}}</strong>",
     "caution": " · with fewer than {{min}}, take it with a big pinch of salt",
     "lowData": "little data",
@@ -221,7 +221,7 @@
     "medianReply": "Companies take a median of <strong>{{days}}</strong> to reply.",
     "fastestChannel": "They reply sooner {{channel}}: a median of <strong>{{days}}</strong>, versus {{slowDays}} {{slowChannel}}.",
     "bestSource": "Your source with the most replies is <strong>{{name}}</strong>, at {{rate}}.",
-    "none": "Once you've sent about {{count}} applications, you'll see here what works for you."
+    "none": "Once you have sent about {{count}} applications, you will see here what works for you."
   },
   "questions": {
     "channels": "Where do I get more replies, and sooner?",
@@ -237,7 +237,7 @@
   },
   "cost": {
     "title": "Agent cost",
-    "hint": "What this period's jobs used in background runs, as each agent reports it (terminal sessions don't count). In dollars if the agent gives them; otherwise, in tokens.",
+    "hint": "What this period's jobs used in background runs, as each agent reports it (terminal sessions do not count). In dollars if the agent gives them; otherwise, in tokens.",
     "none": "No background runs with jobs from this period.",
     "total": "Total",
     "perApplied": "Per sent application",
@@ -247,7 +247,7 @@
   "story": {
     "title": "Your search in numbers",
     "hint": "Since the first posting, whatever the period above. Numbers only: no companies, roles or amounts.",
-    "note": "In case you want to tell people how it's going. The app never publishes it: you copy it, if you want.",
+    "note": "In case you want to tell people how it is going. The app never publishes it: you copy it, if you want.",
     "period": "From {{start}} to {{end}}",
     "evaluated": "Evaluated",
     "applied": "Applications",
@@ -261,9 +261,9 @@
   "more": "More analysis",
   "flow": {
     "title": "How are my applications going?",
-    "hint": "How far each application you've sent has made it, and where the ones that stopped are now.",
+    "hint": "How far each application you have sent has made it, and where the ones that stopped are now.",
     "hintLabel": "What this chart shows",
-    "everything": "Everything you've sent",
+    "everything": "Everything you have sent",
     "noneYet": "None yet",
     "ofPrevious": "{{pct}} of {{step}}",
     "chartLabel": "{{applied}} sent, {{replied}} with a reply, {{interview}} at interview, {{offer}} with an offer and {{accepted}} accepted. The detail is under “Show the numbers”.",
@@ -274,14 +274,14 @@
       "heardBack": "heard back",
       "reachedInterview": "reached interview"
     },
-    "biggest": "The biggest group: {{what}}, {{pct}} of what you've sent.",
+    "biggest": "The biggest group: {{what}}, {{pct}} of what you have sent.",
     "more": "Full analysis",
     "numbers": "Show the numbers",
     "stepHead": "Step",
     "whereTheyStopped": "Where they stopped",
     "stopsOf": "{{step}}:",
-    "empty": "Once you send your first application, you'll see here how far it gets.",
-    "emptyPeriod": "You didn't apply to any of the jobs seen in this period.",
+    "empty": "Once you send your first application, you will see here how far it gets.",
+    "emptyPeriod": "You did not apply to any of the jobs seen in this period.",
     "stops": {
       "applied": {
         "open_one": "{{count}} waiting",
@@ -324,6 +324,6 @@
         "expired_other": "{{count}} expired"
       }
     },
-    "stopHint": "{{what}} · {{pct}} of what you've sent"
+    "stopHint": "{{what}} · {{pct}} of what you have sent"
   }
 }

@@ -139,7 +139,7 @@ tuyo como agente por defecto en **Configurar agentes**. Desde ese momento, boton
 **Valorar las ofertas nuevas** o **Generar CV** lo abren en una ventana aparte con la orden
 ya escrita: ves lo que hace y lo apruebas. Si no puede abrirlo, el botón te enseña la orden entera,
 con **Copiar**, para que la pegues en tu agente. Su flechita ofrece además **En segundo plano** (sin ventana;
-un aviso te dice cuándo termina) y **Dejar para mi próxima sesión**.
+un aviso te dice cuándo termina) y **Dejar para la próxima sesión**.
 
 <!-- media:provisional -->
 <img src="img/es/agent.webp" alt="Página Agente: agente por defecto, uno por acción y ejecuciones en segundo plano" width="88%">
@@ -176,7 +176,7 @@ rellenarlo a mano: tu agente lo crea a partir de tu CV. Sin CV o sin agente, tam
 empezarlo a mano.
 
 Lo más fácil es desde la app. Abre **Mi perfil**: mientras no tengas perfil, te propone empezar por
-tu CV. Pulsa **Subir mi CV** (PDF o Word) y luego **Crear mi perfil desde mi CV**, que abre tu
+tu CV. Pulsa **Subir el CV** (PDF o Word) y luego **Crear el perfil desde un CV**, que abre tu
 agente en una terminal con la orden ya escrita. Lee tu CV, te pregunta lo que no dice (el nivel de
 tus skills, las cifras de tus logros, qué buscas) y no guarda nada sin tu OK. Cuando termina, tu
 perfil aparece solo en **Mi perfil**: sigue en el paso 3.

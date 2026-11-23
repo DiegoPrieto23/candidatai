@@ -108,7 +108,7 @@ describe('Buzones de las alertas (fase 27.4)', () => {
     expect(within(dialog).getByLabelText('Usuario de iCloud')).toBeInTheDocument()
 
     await userEvent.click(within(dialog).getByRole('tab', { name: 'Outlook / Hotmail' }))
-    expect(within(dialog).getByText(/Microsoft ya no deja entrar por IMAP/)).toBeInTheDocument()
+    expect(within(dialog).getByText(/Microsoft ya no permite entrar por IMAP/)).toBeInTheDocument()
     await userEvent.click(within(dialog).getByRole('button', { name: 'Ir a Gmail' }))
     expect(within(dialog).getByRole('tab', { name: 'Gmail', selected: true })).toBeInTheDocument()
     await userEvent.click(within(dialog).getByRole('tab', { name: 'Outlook / Hotmail' }))
@@ -141,7 +141,7 @@ describe('Buzones de las alertas (fase 27.4)', () => {
     await userEvent.type(within(dialog).getByLabelText('Contraseña de aplicación'), 'x')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Guardar' }))
     expect(await within(dialog).findByText(/En Docker, la contraseña se configura en el contenedor/)).toBeInTheDocument()
-    expect(within(dialog).getByText('La app solo lee: tus correos se quedan tal cual. La contraseña se configura en el contenedor.')).toBeInTheDocument()
+    expect(within(dialog).getByText('La app solo lee: los correos se quedan tal cual. La contraseña se configura en el contenedor.')).toBeInTheDocument()
     await userEvent.click(within(dialog).getByRole('button', { name: /Detalles técnicos/ }))
     expect(within(dialog).getByText('CAI_IMAP_GMAIL_PASSWORD')).toBeInTheDocument()
     expect(screen.getByRole('dialog')).toBeInTheDocument()
@@ -164,7 +164,7 @@ describe('Buzones de las alertas (fase 27.4)', () => {
     )
     renderApp('/fuentes/correo')
     expect(await screen.findByText('Contraseña en el llavero del sistema')).toBeInTheDocument()
-    expect(screen.getByText('Contraseña guardada en un fichero de tu equipo, sin cifrar.')).toBeInTheDocument()
+    expect(screen.getByText('Contraseña guardada en un fichero del equipo, sin cifrar.')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Mover al llavero' }))
     expect(calls.find((c) => c.path === '/secrets/move-to-keyring')?.body).toEqual({ names: ['CAI_IMAP_BUZON_2_PASSWORD'] })
   })
@@ -184,7 +184,7 @@ describe('Buzones de las alertas (fase 27.4)', () => {
       }),
     )
     const view = renderApp('/fuentes/correo')
-    const notice = await screen.findByRole('region', { name: 'Guarda tus contraseñas en el llavero del sistema' })
+    const notice = await screen.findByRole('region', { name: 'Guardar las contraseñas en el llavero del sistema' })
     expect(within(notice).getByText('Buzón «Gmail» · Clave de Adzuna')).toBeInTheDocument()
     expect(calls.some((c) => c.path === '/secrets/move-to-keyring')).toBe(false) // nada sin pulsar
     await userEvent.click(within(notice).getByRole('button', { name: 'Mover al llavero' }))
@@ -192,11 +192,11 @@ describe('Buzones de las alertas (fase 27.4)', () => {
       names: ['CAI_IMAP_GMAIL_PASSWORD', 'CAI_ADZUNA_APP_KEY'],
     })
     await userEvent.click(within(notice).getByRole('button', { name: 'Ahora no' }))
-    expect(screen.queryByText('Guarda tus contraseñas en el llavero del sistema')).not.toBeInTheDocument()
+    expect(screen.queryByText('Guardar las contraseñas en el llavero del sistema')).not.toBeInTheDocument()
     view.unmount()
     renderApp('/fuentes/correo')
     await screen.findAllByRole('button', { name: 'Añadir buzón' })
-    expect(screen.queryByText('Guarda tus contraseñas en el llavero del sistema')).not.toBeInTheDocument()
+    expect(screen.queryByText('Guardar las contraseñas en el llavero del sistema')).not.toBeInTheDocument()
   })
 
   it('el panel enseña el estado, se abre solo con un error y prueba, desactiva y quita', async () => {
@@ -220,7 +220,7 @@ describe('Buzones de las alertas (fase 27.4)', () => {
     expect(await screen.findByText(/2 buzones/)).toBeInTheDocument()
     expect(screen.getByText(/1 con error/)).toBeInTheDocument()
     expect(screen.getByText(/Falta la contraseña de aplicación de este buzón/)).toBeInTheDocument()
-    expect(screen.getByText(/escribe el nombre exacto/)).toBeInTheDocument()
+    expect(screen.getByText(/hace falta el nombre exacto/)).toBeInTheDocument()
     // Las variables y el mensaje del servidor, solo en «Detalles técnicos».
     expect(screen.queryByText(/CAI_IMAP|\.env/)).not.toBeInTheDocument()
     const details = screen.getAllByRole('button', { name: 'Detalles técnicos' })
@@ -273,7 +273,7 @@ describe('Buzones de las alertas (fase 27.4)', () => {
     expect(screen.queryByRole('button', { name: 'Escribir la contraseña' })).not.toBeInTheDocument()
     await userEvent.click(await screen.findByRole('button', { name: 'Editar Principal' }))
     const dialog = await screen.findByRole('dialog')
-    expect(within(dialog).getByText('Déjala vacía para no cambiarla')).toBeInTheDocument()
+    expect(within(dialog).getByText('Vacía, no cambia')).toBeInTheDocument()
     await userEvent.click(within(dialog).getByRole('button', { name: 'Guardar' }))
     expect(calls.find((c) => c.method === 'PATCH')?.body).toEqual({ label: 'Principal', read_replies: false })
   })

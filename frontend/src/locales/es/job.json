@@ -2,13 +2,13 @@
   "added": {
     "exists": "Esta oferta ya estaba dada de alta. No se ha cambiado nada.",
     "duplicate": "Dada de alta, pero parece un duplicado de la <to>oferta {{id}}</to>, así que queda cerrada.",
-    "created": "Oferta dada de alta. Tu agente la leerá cuando pulses «Valorar las ofertas nuevas».",
+    "created": "Oferta dada de alta. El agente la leerá con «Valorar las ofertas nuevas».",
     "close": "Cerrar"
   },
   "injection": {
     "label": "Aviso de posible inyección",
     "title": "Posible contenido dirigido a una IA",
-    "body": "El texto de esta oferta podría intentar manipular a un agente. Se trata solo como datos, pero revísala con calma antes de confiar en la extracción.",
+    "body": "El texto de esta oferta podría intentar manipular a un agente. Se trata solo como datos, pero conviene revisarla con calma antes de confiar en la extracción.",
     "detectedBy": "Detectado por {{who}}",
     "system": "el sistema"
   },
@@ -37,13 +37,13 @@
   },
   "original": {
     "title": "Texto original",
-    "hint": "Tal cual se guardó. Si dentro hubiera instrucciones para una IA, ni la app ni tu agente las siguen: lo tratan solo como datos."
+    "hint": "Tal cual se guardó. Si dentro hubiera instrucciones para una IA, ni la app ni el agente las siguen: lo tratan solo como datos."
   },
   "events": {
     "reason": "Motivo: {{reason}}",
     "score": "Encaje {{score}}/100",
     "duplicateOf": "Duplicado de la oferta {{id}}.",
-    "closureSuspected": "{{detail}}. No se ha cerrado: decides tú."
+    "closureSuspected": "{{detail}}. No se ha cerrado: la decisión es manual."
   },
   "timeline": {
     "title": "Historial",
@@ -53,7 +53,7 @@
   },
   "note": {
     "label": "Añadir nota",
-    "placeholder": "Qué te ha dicho el recruiter, dudas, próximos pasos…",
+    "placeholder": "Lo que ha dicho el recruiter, dudas, próximos pasos…",
     "saving": "Guardando…",
     "save": "Guardar nota"
   },
@@ -82,7 +82,7 @@
   "archive": {
     "pending": "Aún sin copia de lo enviado: se guarda sola unos segundos después de marcarla como enviada.",
     "label": "Candidatura archivada",
-    "title": "Copia de lo que enviaste",
+    "title": "Copia de lo enviado",
     "open": "Abrir carpeta",
     "openAria": "Abrir la carpeta archivada de la candidatura"
   },
@@ -93,20 +93,20 @@
   },
   "missingDetail": {
     "title": "Falta el texto de la oferta",
-    "body": "Llegó como resumen desde una alerta por correo y trae poco más que el título y la empresa. Por seguridad tu agente no entra en LinkedIn, así que la completas tú con el botón «Enviar a CandidatAI» del navegador. Después tu agente ya puede leerla.",
-    "open": "Abre la oferta en su portal (en LinkedIn, con tu sesión iniciada).",
-    "openNoUrl": "Busca la oferta en su portal: no tiene enlace guardado.",
+    "body": "Llegó como resumen desde una alerta por correo y trae poco más que el título y la empresa. Por seguridad el agente no entra en LinkedIn, así que se completa a mano con el botón «Enviar a CandidatAI» del navegador. Después el agente ya puede leerla.",
+    "open": "Abrir la oferta en su portal (en LinkedIn, con la sesión iniciada).",
+    "openNoUrl": "Buscar la oferta en su portal: no tiene enlace guardado.",
     "openButton": "Abrir la oferta",
-    "send": "En esa pestaña, pulsa el botón <strong>Enviar a CandidatAI</strong> de la barra del navegador. La descripción se guarda aquí y la oferta pasa a «Por leer».",
-    "install": "¿Aún no tienes el botón? <guide>Instálalo en unos minutos</guide>."
+    "send": "En esa pestaña, pulsar el botón <strong>Enviar a CandidatAI</strong> de la barra del navegador. La descripción se guarda aquí y la oferta pasa a «Por leer».",
+    "install": "¿Aún sin el botón? <guide>Se instala en unos minutos</guide>."
   },
   "fitSteps": {
-    "title": "Para saber si te encaja",
+    "title": "Para saber si encaja",
     "intro": "La app calcula el encaje (de 0 a 100) cuando tiene las dos cosas:",
-    "profile": "Crea tu perfil",
-    "profileHint": "Tu experiencia y tus skills, para compararlas con la oferta.",
+    "profile": "Crear el perfil",
+    "profileHint": "La experiencia y las skills, para compararlas con la oferta.",
     "profileAction": "Ir a «Mi perfil»",
-    "read": "Que tu agente la lea",
+    "read": "Que el agente la lea",
     "readHint": "Saca el nivel, la modalidad, las skills y el salario.",
     "done": "Hecho",
     "pending": "Falta"

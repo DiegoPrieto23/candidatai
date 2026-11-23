@@ -22,7 +22,7 @@ Dónde: «Inicio».
 
 ### ¿Cómo creo mi perfil?
 
-En «Mi perfil», pulsa «Subir mi CV» y luego «Crear mi perfil desde mi CV». Tu agente lee el CV, te pregunta lo que falte y te enseña el resultado. Después puedes retocar cada bloque en la misma página.
+En «Mi perfil», pulsa «Subir el CV» y luego «Crear el perfil desde un CV». Tu agente lee el CV, te pregunta lo que falte y te enseña el resultado. Después puedes retocar cada bloque en la misma página.
 
 Dónde: «Mi perfil».
 
@@ -74,7 +74,7 @@ En el aviso de abajo a la derecha, que sale en cualquier página con lo que llev
 
 Dónde: «Agente».
 
-### ¿Qué es «Dejar para mi próxima sesión»?
+### ¿Qué es «Dejar para la próxima sesión»?
 
 Guarda el encargo para más tarde. La próxima vez que abras tu agente, pulsa «Atender encargos» en la página «Agente» y los hará uno a uno.
 
@@ -188,7 +188,7 @@ Dónde: «Plantillas de CV».
 
 ### ¿Cómo pongo, cambio o quito la foto del CV?
 
-En «Mi perfil», apartado «Sobre ti». Cada plantilla la recorta a su forma, y se incluye o no según el país de la oferta.
+En «Mi perfil», apartado «Datos personales». Cada plantilla la recorta a su forma, y se incluye o no según el país de la oferta.
 
 Dónde: «Mi perfil».
 

@@ -14,10 +14,10 @@
     "added": "«{{skill}}» cuenta ya como «{{profile}}». El encaje de las ofertas se recalcula en segundo plano.",
     "existed": "«{{skill}}» ya contaba como «{{profile}}».",
     "title": "«{{skill}}» es lo mismo que…",
-    "description": "Elige la skill de tu perfil que significa lo mismo. Se guarda como sinónimo y se recalcula el encaje de tus ofertas.",
-    "search": "Buscar en tu perfil",
-    "list": "Skills de tu perfil",
-    "none": "Ninguna skill de tu perfil coincide.",
+    "description": "La skill del perfil que significa lo mismo. Se guarda como sinónimo y se recalcula el encaje de las ofertas.",
+    "search": "Buscar en el perfil",
+    "list": "Skills del perfil",
+    "none": "Ninguna skill del perfil coincide.",
     "cancel": "Cancelar",
     "saving": "Guardando…",
     "submit": "Son lo mismo"
@@ -32,23 +32,23 @@
     "gap": "No la tengo"
   },
   "noProfile": {
-    "title": "Aún no tienes perfil",
-    "body": "Los huecos se calculan frente a tu perfil. Créalo en «Mi perfil» o pídeselo a tu agente."
+    "title": "Aún no hay perfil",
+    "body": "Los huecos se calculan frente al perfil. Se crea en «Mi perfil» o lo prepara el agente."
   },
   "title": "Habilidades por desarrollar",
-  "intro": "Lo que piden tus ofertas y aún no figura en tu perfil. Marca cada skill como tuya, como sinónimo de una de tu perfil o para tu plan de formación.",
-  "addHave": "Añadir al perfil las que tengo ({{count}})",
+  "intro": "Lo que piden las ofertas y aún no figura en el perfil. Cada skill se marca como propia, como sinónimo de una del perfil o para el plan de formación.",
+  "addHave": "Añadir al perfil las marcadas «La tengo» ({{count}})",
   "training": "Plan de formación",
   "period": "Periodo",
   "days": "{{count}} días",
   "kind": "Tipo",
   "mark": "Marca",
   "covered": {
-    "title": "Tu perfil cubre lo que piden tus ofertas",
-    "body": "Todo lo que piden {{jobs}} ofertas está en tu perfil (abiertas y aprobadas o enviadas en los últimos {{days}} días)."
+    "title": "El perfil cubre lo que piden las ofertas",
+    "body": "Todo lo que piden {{jobs}} ofertas está en el perfil (abiertas y aprobadas o enviadas en los últimos {{days}} días)."
   },
-  "missing": "Skills que piden tus ofertas",
-  "summary": "{{count}} skills que piden {{jobs}} ofertas de los últimos {{days}} días y aún no figuran en tu perfil.",
+  "missing": "Skills que piden las ofertas",
+  "summary": "{{count}} skills que piden {{jobs}} ofertas de los últimos {{days}} días y aún no figuran en el perfil.",
   "tableLabel": "Skills por desarrollar, por frecuencia",
   "cols": {
     "skill": "Skill",
@@ -58,8 +58,8 @@
     "actions": "Acciones"
   },
   "noneFiltered": "Ninguna con este filtro.",
-  "weightHint": "Cuánto pesa en tus ofertas: suma 1 por cada oferta que la pide como obligatoria y 0,5 si es deseable, multiplicado por el encaje de la oferta.",
+  "weightHint": "Cuánto pesa en las ofertas: suma 1 por cada oferta que la pide como obligatoria y 0,5 si es deseable, multiplicado por el encaje de la oferta.",
   "weightHelp": "Qué es el peso",
-  "periodHint": "Cuenta las ofertas abiertas y las que aprobaste o enviaste en ese periodo. Con menos días ves lo que piden ahora; con más, lo que se repite a lo largo de tu búsqueda.",
+  "periodHint": "Cuenta las ofertas abiertas y las aprobadas o enviadas en ese periodo. Con menos días se ve lo que se pide ahora; con más, lo que se repite a lo largo de la búsqueda.",
   "periodHelp": "Qué ofertas cuenta el periodo"
 }

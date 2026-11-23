@@ -13,9 +13,9 @@
     "found": "Dada de alta",
     "detail_captured": "Descripción capturada",
     "duplicate_detected": "Duplicado detectado",
-    "extracted": "Leída por tu agente",
+    "extracted": "Leída por el agente",
     "hard_filter_failed": "No pasa los filtros",
-    "extraction_failed": "Tu agente no pudo leerla",
+    "extraction_failed": "El agente no pudo leerla",
     "injection_suspected": "Posible contenido dirigido a una IA",
     "closure_suspected": "Puede que ya no esté publicada",
     "scored": "Encaje calculado",
@@ -31,7 +31,7 @@
     "application_prepared": "Candidatura preparada",
     "application_filled": "Formulario rellenado (sin enviar)",
     "applied": "Candidatura enviada",
-    "applied_manually": "Enviada por tu cuenta",
+    "applied_manually": "Enviada a mano",
     "reply_received": "Respuesta recibida",
     "interview_scheduled": "Entrevista programada",
     "interview_done": "Entrevista hecha",
@@ -71,7 +71,7 @@
     "hidden_text": "Texto oculto en la página original"
   },
   "actor": {
-    "user": "Tú",
+    "user": "Usuario",
     "agent": "Agente",
     "agentNamed": "Agente {{name}}",
     "system": "Sistema"
@@ -88,7 +88,7 @@
     "salary": "Salario o condiciones",
     "company": "Empresa o sector",
     "closed": "Ya no está publicada",
-    "not_interested": "No me interesa (título o empresa)",
+    "not_interested": "Sin interés (título o empresa)",
     "other": "Otro motivo"
   },
   "component": {
@@ -171,18 +171,18 @@
     "portal_manual": "Portal de empleo (a mano)"
   },
   "moveHint": {
-    "applied": "La enviaste con el CV seleccionado en la app.",
-    "applied_manually": "La enviaste por tu cuenta (con o sin el CV de la app).",
-    "reply_received": "Te han contestado.",
-    "interview_scheduled": "Tienes una entrevista: se crea su hito con fecha y hora.",
-    "interview_done": "Ya hiciste una entrevista que no tenías anotada.",
-    "test_assigned": "Te han mandado una prueba: se crea su hito con la fecha de entrega.",
-    "offer_received": "Te han hecho una oferta.",
-    "discarded": "La dejas antes de enviarla.",
-    "rejected": "La empresa te ha descartado.",
-    "withdrawn": "Te retiras del proceso.",
+    "applied": "Enviada con el CV seleccionado en la app.",
+    "applied_manually": "Enviada a mano (con o sin el CV de la app).",
+    "reply_received": "La empresa ha contestado.",
+    "interview_scheduled": "Hay una entrevista: se crea su hito con fecha y hora.",
+    "interview_done": "Entrevista ya hecha que no estaba anotada.",
+    "test_assigned": "Ha llegado una prueba: se crea su hito con la fecha de entrega.",
+    "offer_received": "Ha llegado una oferta.",
+    "discarded": "Se deja antes de enviarla.",
+    "rejected": "La empresa ha descartado la candidatura.",
+    "withdrawn": "Retirada del proceso.",
     "expired": "La oferta ha caducado o no hubo respuesta.",
-    "accepted": "Has aceptado la oferta.",
+    "accepted": "Oferta aceptada.",
     "reopened": "Vuelve a la etapa en la que estaba al cerrarse."
   },
   "hardFilter": {
@@ -193,7 +193,7 @@
     "language": "Idioma",
     "title_keyword": "Palabras del título",
     "signal": "No dice qué empresa contrata",
-    "salary": "Por debajo de tu sueldo mínimo",
+    "salary": "Por debajo del sueldo mínimo",
     "contract": "Tipo de contrato o jornada",
     "employer_kind": "Tipo de empresa"
   },

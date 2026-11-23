@@ -4,7 +4,7 @@ Comprobaciones estáticas sobre el código de la app (complementan los tests con
 el servidor local cuenta 0 envíos al rellenar y exactamente 1 con el token):
 - solo `applier/submit.py` pulsa el botón de envío (`click_submit`, `data-cai-submit`);
 - `click_submit` solo lo llama `service.run_submit`, después de `tokens.consume`;
-- el bloqueo del envío solo lo retiran `submit.py` y «Lo termino yo» (`run_focus`);
+- el bloqueo del envío solo lo retiran `submit.py` y «Terminar a mano» (`run_focus`);
 - los clics de los rellenadores solo pasan por `safe_click` y `check_box`, que rechazan los
   controles de envío, y nada pulsa teclas (un Enter podría enviar el formulario);
 - la confirmación se emite solo en `confirm_submission`, que no está en la interfaz para agentes.

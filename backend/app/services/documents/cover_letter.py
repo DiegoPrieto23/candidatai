@@ -815,7 +815,7 @@ def mark_user_paragraphs(
 def save_user_letter(
     session: Session, job_id: int, content: CoverLetterContent
 ) -> SaveLetterResult:
-    """La edición a mano (UI): documento nuevo sin verificación, «Editada por ti».
+    """La edición a mano (UI): documento nuevo sin verificación, «Editada a mano».
 
     Siguen las comprobaciones del código (evidencias, palabras, skills). El render usa las
     opciones del render seleccionado de la carta anterior, si lo hay.

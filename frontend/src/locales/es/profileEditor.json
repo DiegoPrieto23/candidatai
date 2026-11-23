@@ -1,56 +1,56 @@
 {
   "tabs": {
-    "about": "Sobre ti",
+    "about": "Datos personales",
     "career": "Experiencia y formación",
     "documents": "Documentos",
     "history": "Historial"
   },
   "noProfile": {
-    "title": "Aún no tienes perfil",
-    "unreadable": "Tu fichero de perfil tiene un error y no se puede leer. Pide a tu agente que lo arregle («revisa y arregla mi perfil»).",
+    "title": "Aún no hay perfil",
+    "unreadable": "El fichero del perfil tiene un error y no se puede leer. El agente puede arreglarlo («revisa y arregla mi perfil»).",
     "start": {
-      "title": "Empieza por tu CV",
-      "intro": "Lo más rápido: tu agente lo crea a partir de tu CV, sin que rellenes nada. Sin CV o sin agente, empieza a mano, más abajo.",
-      "upload": "Sube tu CV, en PDF o Word. Se guarda en tu equipo, con tus documentos.",
-      "agent": "Tu agente lo lee y rellena tu perfil sección a sección. Te pregunta lo que el CV no dice, como el nivel de tus skills o las cifras de tus logros, y te enseña cada cambio antes de guardarlo.",
-      "review": "Cuando termine, tu perfil aparece aquí solo, para que lo revises bloque a bloque.",
-      "uploadButton": "Subir mi CV",
+      "title": "Empezar por el CV",
+      "intro": "Lo más rápido: el agente lo crea a partir del CV, sin rellenar nada. Sin CV o sin agente, se empieza a mano, más abajo.",
+      "upload": "Subir el CV, en PDF o Word. Se guarda en este equipo, con los documentos.",
+      "agent": "El agente lo lee y rellena el perfil sección a sección. Pregunta lo que el CV no dice, como el nivel de las skills o las cifras de los logros, y muestra cada cambio antes de guardarlo.",
+      "review": "Al terminar, el perfil aparece aquí solo, para revisarlo bloque a bloque.",
+      "uploadButton": "Subir el CV",
       "uploadAnother": "Subir otro CV",
       "uploading": "Subiendo…",
-      "fileLabel": "Tu CV",
+      "fileLabel": "CV",
       "uploaded": "CV subido: {{name}}",
-      "dropOr": "Arrastra aquí tu CV o súbelo desde tu equipo",
-      "dropHere": "Suéltalo para subirlo",
+      "dropOr": "Arrastrar aquí el CV o subirlo desde el equipo",
+      "dropHere": "Soltar para subirlo",
       "formats": "PDF o Word; también .txt o .md",
-      "wrongType": "Ese formato no se admite. Sube un PDF, un Word (.docx), un .txt o un .md."
+      "wrongType": "Ese formato no se admite. Se aceptan PDF, Word (.docx), .txt y .md."
     },
     "byHand": {
       "title": "Empezar a mano",
-      "intro": "Sin CV o sin agente: escribe lo básico y completa el resto bloque a bloque, aquí mismo.",
+      "intro": "Sin CV o sin agente: lo básico aquí y el resto bloque a bloque, en esta misma página.",
       "open": "Empezar a mano",
-      "headlineHint": "Lo que pondrías bajo tu nombre en un CV, p. ej. «Analista de datos · SQL · Power BI».",
-      "role": "Puesto que buscas",
-      "roleHint": "Uno para empezar; luego añades más en «Buscar ofertas».",
+      "headlineHint": "Lo que iría bajo el nombre en un CV, p. ej. «Analista de datos · SQL · Power BI».",
+      "role": "Puesto buscado",
+      "roleHint": "Uno para empezar; luego se añaden más en «Buscar ofertas».",
       "summary": "Resumen (opcional)",
-      "summaryHint": "Dos o tres frases sobre ti. Si lo dejas vacío, se usa tu titular.",
-      "defaults": "Lo demás, como la modalidad o la foto en el CV, empieza abierto a todo y lo cambias en «Buscar ofertas» y en «Documentos». Tu experiencia y tus skills, en «Experiencia y formación».",
-      "required": "Hace falta para crear tu perfil.",
-      "pickOne": "Elige al menos uno.",
-      "create": "Crear mi perfil",
+      "summaryHint": "Dos o tres frases de presentación. Vacío, se usa el titular.",
+      "defaults": "Lo demás, como la modalidad o la foto en el CV, empieza abierto a todo y se cambia en «Buscar ofertas» y en «Documentos». La experiencia y las skills, en «Experiencia y formación».",
+      "required": "Hace falta para crear el perfil.",
+      "pickOne": "Hace falta al menos uno.",
+      "create": "Crear el perfil",
       "creating": "Creando…",
       "cancel": "Cancelar",
-      "exists": "Ya tienes un perfil: lo acaba de crear tu agente o se creó en otra pestaña. Ahora lo abro."
+      "exists": "Ya hay un perfil: lo acaba de crear el agente o se creó en otra pestaña. Se abre ahora."
     }
   },
   "issues": {
-    "title": "Tu perfil tiene errores. Puedes arreglarlos aquí: hasta entonces, ningún bloque se guarda."
+    "title": "El perfil tiene errores. Se pueden arreglar aquí: hasta entonces, ningún bloque se guarda."
   },
   "unsaved": {
     "badge": "Sin guardar",
-    "confirm": "Tienes cambios sin guardar en «Mi perfil». ¿Salir sin guardarlos?",
+    "confirm": "Hay cambios sin guardar en «Mi perfil». ¿Salir sin guardarlos?",
     "list": "Sin guardar:",
     "goTo": "Ir a «{{block}}» ({{tab}}) para guardarlo",
-    "hint": "Pulsa uno para ir hasta él y guardarlo."
+    "hint": "Cada uno lleva hasta su bloque para guardarlo."
   },
   "fold": {
     "expandAll": "Desplegar todo",
@@ -73,29 +73,29 @@
   },
   "errors": {
     "validation": "Hay campos que revisar: están marcados abajo.",
-    "conflict": "Tu perfil ha cambiado desde que abriste la página (lo editaste a mano o tu agente). Pulsa «Recargar» para verlo y vuelve a hacer tu cambio.",
-    "partial": "Una parte de este bloque ya se guardó y otra no: he recargado tu perfil. Revisa el bloque y vuelve a guardar lo que falte."
+    "conflict": "El perfil ha cambiado desde que se abrió la página (a mano o por el agente). «Recargar» lo muestra y después se repite el cambio.",
+    "partial": "Una parte de este bloque ya se guardó y otra no: el perfil se ha recargado. Conviene revisar el bloque y volver a guardar lo que falte."
   },
   "preview": {
-    "title": "Así cambiará tu perfil",
-    "rescore": "Al guardar se recalcula el encaje de tus ofertas abiertas.",
-    "diff": "Cambios en tu perfil",
+    "title": "Así cambiará el perfil",
+    "rescore": "Al guardar se recalcula el encaje de las ofertas abiertas.",
+    "diff": "Cambios en el perfil",
     "confirm": "Guardar estos cambios",
     "cancel": "Volver a editar",
     "noChanges": "Sin cambios en el fichero."
   },
   "agent": {
-    "improve": "Mejorar con mi agente",
-    "propose": "Proponer historias desde mi experiencia"
+    "improve": "Mejorar con el agente",
+    "propose": "Proponer historias desde la experiencia"
   },
   "blocks": {
     "personal": {
       "title": "Datos y resumen",
-      "hint": "El nombre, los enlaces y el resumen salen en tus CVs. El correo y el teléfono, solo en el CV que entregas: tu agente nunca los ve."
+      "hint": "El nombre, los enlaces y el resumen salen en los CVs. El correo y el teléfono, solo en el CV que se entrega: el agente nunca los ve."
     },
     "experience": {
       "title": "Experiencia",
-      "hint": "Cada logro es algo que un CV puede afirmar: escríbelo como pasó, con la métrica real si la tienes.",
+      "hint": "Cada logro es algo que un CV puede afirmar: se escribe como pasó, con la métrica real si la hay.",
       "add": "Añadir empresa",
       "empty": "Aún no hay experiencia.",
       "untitled": "Empresa nueva",
@@ -105,8 +105,8 @@
       "achievementCount_one": "{{count}} logro",
       "achievementCount_other": "{{count}} logros",
       "achievementNumber": "Logro {{number}}",
-      "errorsIn_one": "Revisa {{count}} empresa: tiene errores.",
-      "errorsIn_other": "Revisa {{count}} empresas: tienen errores."
+      "errorsIn_one": "{{count}} empresa tiene errores.",
+      "errorsIn_other": "{{count}} empresas tienen errores."
     },
     "projects": {
       "title": "Proyectos",
@@ -126,20 +126,20 @@
     },
     "extra": {
       "title": "Otras secciones",
-      "hint": "Voluntariado, premios, publicaciones…: salen en el CV tal cual las escribas.",
+      "hint": "Voluntariado, premios, publicaciones…: salen en el CV tal cual se escriben.",
       "add": "Añadir sección",
       "untitled": "Sección nueva",
       "addItem": "Añadir elemento"
     },
     "languages": {
       "title": "Idiomas",
-      "hint": "Con tu nivel real. Salen en tus CVs y deciden qué ofertas pasan tus filtros cuando piden un idioma.",
+      "hint": "Con el nivel real. Salen en los CVs y deciden qué ofertas pasan los filtros cuando piden un idioma.",
       "add": "Añadir idioma"
     },
     "skills": {
       "title": "Skills",
-      "hint": "Los niveles son privados: deciden qué puede afirmar un CV, pero nunca salen en él. Al guardar se recalcula el encaje de tus ofertas.",
-      "levels": "F: fuerte, la usas a diario · C+: la has usado en proyectos reales · C: la conoces · B: básica, solo como «conocimientos de».",
+      "hint": "Los niveles son privados: deciden qué puede afirmar un CV, pero nunca salen en él. Al guardar se recalcula el encaje de las ofertas.",
+      "levels": "F: fuerte, de uso diario · C+: usada en proyectos reales · C: conocida · B: básica, solo como «conocimientos de».",
       "addSkill": "Añadir skill",
       "filterLabel": "Filtrar skills por nivel",
       "categoryFilterLabel": "Filtrar skills por categoría",
@@ -152,29 +152,29 @@
       "noCategoryMatch": "Ninguna categoría con «{{query}}».",
       "clearFilters": "Quitar filtros",
       "noneMatch": "Ninguna skill con estos filtros.",
-      "reorderHint": "Para cambiar el orden, quita los filtros."
+      "reorderHint": "Para cambiar el orden, hay que quitar los filtros."
     },
     "stories": {
       "title": "Historias STAR",
-      "hint": "Para entrevistas: situación, tarea, acción y resultado. Cada una cita al menos un logro o proyecto de tu perfil.",
+      "hint": "Para entrevistas: situación, tarea, acción y resultado. Cada una cita al menos un logro o proyecto del perfil.",
       "add": "Añadir historia",
       "untitled": "Historia nueva",
       "needEvidence": "Cada historia necesita al menos una evidencia para poder guardarse."
     },
     "cv": {
       "title": "Preferencias de CV",
-      "hint": "Plantilla, extensión, foto e indicaciones para todos tus CVs. Las de una oferta se dan al generarlo.",
-      "rules_one": "Tienes {{count}} regla de plantilla (por ATS o país): se mantiene. Para cambiarla, pídeselo a tu agente.",
-      "rules_other": "Tienes {{count}} reglas de plantilla (por ATS o país): se mantienen. Para cambiarlas, pídeselo a tu agente."
+      "hint": "Plantilla, extensión, foto e indicaciones para todos los CVs. Las de una oferta se dan al generarlo.",
+      "rules_one": "Hay {{count}} regla de plantilla (por ATS o país): se mantiene. Para cambiarla, se le pide al agente.",
+      "rules_other": "Hay {{count}} reglas de plantilla (por ATS o país): se mantienen. Para cambiarlas, se le pide al agente."
     },
     "letter": {
       "title": "Preferencias de carta",
-      "hint": "Para todas tus cartas. Las indicaciones de cada oferta están en su ficha y mandan sobre estas."
+      "hint": "Para todas las cartas. Las indicaciones de cada oferta están en su ficha y mandan sobre estas."
     },
     "photo": {
       "title": "Foto para el CV (opcional)",
-      "hint": "Tus CVs pueden llevarla o no. Se queda en tu equipo y solo la usa la app al dar formato al CV.",
-      "preview": "Tu foto actual",
+      "hint": "Los CVs pueden llevarla o no. Se queda en este equipo y solo la usa la app al dar formato al CV.",
+      "preview": "Foto actual",
       "choose": "Elegir una foto",
       "upload": "Subir foto",
       "replace": "Cambiar foto",
@@ -182,27 +182,27 @@
       "confirmRemove": "Sí, quitar la foto",
       "cancel": "Cancelar",
       "formats": "JPG, PNG o WebP, de hasta 10 MB. Al elegirla, la encuadras.",
-      "policyOff": "Para que tus CVs la lleven, activa «Poner foto en el CV» en la pestaña «Documentos».",
+      "policyOff": "Para que los CVs la lleven, hay que activar «Poner foto en el CV» en la pestaña «Documentos».",
       "reframe": "Volver a encuadrar",
       "opening": "Abriendo…",
-      "originalFailed": "No se ha podido abrir la foto para encuadrarla. Inténtalo de nuevo.",
+      "originalFailed": "No se ha podido abrir la foto para encuadrarla. Conviene intentarlo de nuevo.",
       "crop": {
-        "title": "Encuadra tu foto",
-        "description": "Arrastra la foto para colocarla y usa el zoom para acercarla. Así saldrá en tus CVs.",
+        "title": "Encuadrar la foto",
+        "description": "La foto se arrastra para colocarla y el zoom la acerca. Así saldrá en los CVs.",
         "area": "Zona de encuadre de la foto",
         "zoom": "Zoom",
         "cancel": "Cancelar",
         "save": "Guardar foto",
         "saving": "Guardando…",
-        "failed": "No se ha podido recortar la foto. Prueba con otra imagen."
+        "failed": "No se ha podido recortar la foto. Conviene probar con otra imagen."
       }
     }
   },
   "fields": {
     "name": "Nombre",
     "headline": "Titular",
-    "headlineHint": "Una línea bajo tu nombre, p. ej. «Data Engineer · Python · SQL».",
-    "privateContact": "Privado: solo va en el CV que entregas. Tu agente no lo ve.",
+    "headlineHint": "Una línea bajo el nombre, p. ej. «Data Engineer · Python · SQL».",
+    "privateContact": "Información que solo aparece en el CV que se entrega. El agente no lee esta información.",
     "email": "Correo",
     "phone": "Teléfono",
     "linkedin": "LinkedIn",
@@ -223,15 +223,15 @@
     "context": "Contexto de la empresa",
     "contextHint": "A qué se dedica o qué equipo era, en una frase.",
     "achievement": "Logro",
-    "achievementHint": "Qué hiciste y qué pasó, sin adornos. Tu agente puede ayudarte a redactarlo mejor.",
+    "achievementHint": "Qué se hizo y qué pasó, sin adornos. El agente puede ayudar a redactarlo mejor.",
     "metrics": "Métrica",
     "metricsHint": "Solo la real, p. ej. «-35 % de tiempo de carga».",
     "source": "Fuente",
     "sourceHint": "Enlace público que lo demuestra.",
     "skills": "Skills",
-    "skillsHint": "Solo las de tu perfil (con nivel o básicas): añade antes las que falten en «Skills e idiomas».",
+    "skillsHint": "Solo las del perfil (con nivel o básicas): las que falten se añaden antes en «Skills e idiomas».",
     "nda": "Confidencial (NDA): el CV no da detalles internos ni el cliente",
-    "addTag": "Escribe y pulsa Intro",
+    "addTag": "Escribir y pulsar Intro",
     "add": "Añadir",
     "removeTag": "Quitar {{item}}",
     "moveUp": "Subir {{item}}",
@@ -251,32 +251,32 @@
     "item": "Elemento",
     "language": "Idioma",
     "level": "Nivel",
-    "choose": "Elige…",
+    "choose": "Elegir…",
     "native": "Nativo",
-    "otherLevel": "Otro (escríbelo)",
+    "otherLevel": "Otro (escribirlo)",
     "otherLevelText": "Nivel (texto libre)",
     "skill": "Skill",
     "category": "Categoría",
     "basicSkills": "Skills básicas",
-    "basicSkillsHint": "Las conoces por encima: solo salen si la oferta las pide, como «conocimientos de».",
+    "basicSkillsHint": "Conocidas por encima: solo salen si la oferta las pide, como «conocimientos de».",
     "storyTitle": "Título de la historia",
     "evidence": "Evidencias",
-    "evidenceHint": "Los logros o proyectos de tu perfil que respaldan esta historia.",
-    "evidenceRequired": "Elige al menos una evidencia.",
-    "noEvidence": "Aún no hay logros ni proyectos que citar: añádelos antes en «Experiencia» o «Proyectos».",
-    "roles": "Puestos que buscas",
+    "evidenceHint": "Los logros o proyectos del perfil que respaldan esta historia.",
+    "evidenceRequired": "Hace falta al menos una evidencia.",
+    "noEvidence": "Aún no hay logros ni proyectos que citar: se añaden antes en «Experiencia» o «Proyectos».",
+    "roles": "Puestos buscados",
     "rolesHint": "Por prioridad. Lo que no se parezca se puntúa más bajo.",
-    "seniority": "Niveles a los que te presentarías",
+    "seniority": "Niveles a los que presentarse",
     "workLanguages": "Idiomas de trabajo",
     "remoteModes": "Modalidad",
     "locations": {
       "label": "Ubicaciones",
-      "hint": "Si aceptas el remoto, esas ofertas valen estés donde estés. Si solo añades ubicaciones para descartar, valen todas las demás.",
+      "hint": "Con el remoto aceptado, esas ofertas valen desde cualquier lugar. Si solo hay ubicaciones para descartar, valen todas las demás.",
       "hintLabel": "Cómo se aplican las ubicaciones",
       "preferred": "Cualquier modalidad",
       "allowed": "Solo híbrido o remoto",
       "excluded": "Descartar",
-      "modeFor": "Qué aceptas en {{place}}",
+      "modeFor": "Qué se acepta en {{place}}",
       "add": "Añadir ubicación"
     },
     "defaultTemplate": "Plantilla por defecto",
@@ -285,10 +285,10 @@
     "maxPagesAuto": "El de cada plantilla",
     "photoDefault": "Poner foto en el CV",
     "photoNo": "Países sin foto",
-    "cvInstructions": "Indicaciones para tus CVs",
+    "cvInstructions": "Indicaciones para los CVs",
     "instructionsHint": "Énfasis o estilo. Orientan la redacción, pero nunca son un hecho: un dato nuevo va en su sección.",
     "avoid": "Qué no debe decir nunca",
-    "avoidHint": "Frases o temas que no quieres ver.",
+    "avoidHint": "Frases o temas que no deben aparecer.",
     "tone": "Tono",
     "maxWords": "Máximo de palabras",
     "maxWordsHint": "Entre 50 y 600. Vacío: el de la app.",
@@ -298,7 +298,7 @@
     "formatNone": "Sin preferencia",
     "formatText": "Texto",
     "letterInstructions": "Qué contar siempre",
-    "letterInstructionsHint": "Tu motivación, cómo llegaste a tu campo… La carta puede citarlo como dicho por ti, así que escríbelo con tus palabras.",
+    "letterInstructionsHint": "La motivación, cómo se llegó a este campo… La carta puede citarlo como una declaración propia, así que conviene escribirlo con palabras propias.",
     "years": "Años de experiencia que pida la oferta",
     "minYears": "Desde",
     "maxYearsShort": "Hasta",
@@ -308,13 +308,13 @@
     "yearsHintExact": "Vacío: sin límite.",
     "salaryFloor": "Sueldo mínimo",
     "salaryUnit": "€ brutos al año",
-    "salaryHint": "Solo lo ve la app, nunca tu agente. Descarta las ofertas con un sueldo publicado menor (uno mensual cuenta ×12); si no está publicado, no aplica.",
+    "salaryHint": "Solo lo ve la app, nunca el agente. Descarta las ofertas con un sueldo publicado menor (uno mensual cuenta ×12); si no está publicado, no aplica.",
     "salarySave": "Guardar sueldo",
     "salarySaved": "Sueldo guardado",
-    "salaryInvalid": "Escribe un número entero de euros mayor que 0, o déjalo vacío.",
-    "salaryLoadError": "No se pudo leer tu sueldo mínimo: recarga la página antes de cambiarlo.",
+    "salaryInvalid": "Hace falta un número entero de euros mayor que 0, o el campo vacío.",
+    "salaryLoadError": "No se pudo leer el sueldo mínimo: hay que recargar la página antes de cambiarlo.",
     "discardKeywords": "Palabras que descartan una oferta",
-    "discardKeywordsHint": "Si el título las contiene (palabra completa, sin importar tildes), la oferta se descarta. También antes de guardar las ofertas de tus fuentes.",
+    "discardKeywordsHint": "Si el título las contiene (palabra completa, sin importar tildes), la oferta se descarta. También antes de guardar las ofertas de las fuentes.",
     "policyKeywords": "También descartan las de la configuración de la app: {{words}}.",
     "contractTypes": "Tipo de contrato",
     "contract": {
@@ -333,29 +333,29 @@
       "consultancy": "Excluir consultoras que asignan a su personal a un cliente",
       "agency": "Excluir ETT y agencias de selección"
     },
-    "employerKindsHint": "Lo indica tu agente al leer cada oferta.",
+    "employerKindsHint": "Lo indica el agente al leer cada oferta.",
     "employerHidden": "Excluir las que no dicen qué empresa contrata",
-    "addLanguage": "Escribe un idioma",
-    "addCountry": "Escribe un país",
+    "addLanguage": "Escribir un idioma",
+    "addCountry": "Escribir un país",
     "unknownLanguage": "«{{text}}» no es un idioma de la lista.",
     "unknownCountry": "«{{text}}» no es un país de la lista."
   },
   "star": {
     "situation": {
       "label": "Situación",
-      "hint": "El contexto: dónde estabas y qué pasaba."
+      "hint": "El contexto: dónde y qué pasaba."
     },
     "task": {
       "label": "Tarea",
-      "hint": "Qué te tocaba resolver a ti."
+      "hint": "Qué había que resolver."
     },
     "action": {
       "label": "Acción",
-      "hint": "Qué hiciste tú, en primera persona."
+      "hint": "Qué se hizo, en primera persona."
     },
     "result": {
       "label": "Resultado",
-      "hint": "Qué pasó al final, con números si los tienes."
+      "hint": "Qué pasó al final, con números si los hay."
     }
   },
   "levels": {
@@ -392,7 +392,7 @@
   },
   "style": {
     "title": "Muestras de estilo",
-    "hint": "Cartas antiguas, correos o posts tuyos (.txt, .md, .docx, .pdf). Tu agente toma de ellos el tono, nunca los hechos.",
+    "hint": "Cartas antiguas, correos o posts propios (.txt, .md, .docx, .pdf). El agente toma de ellos el tono, nunca los hechos.",
     "upload": "Subir muestra",
     "uploading": "Subiendo…",
     "fileLabel": "Muestra de estilo",
@@ -403,28 +403,28 @@
     "showText": "Ver texto extraído",
     "hideText": "Ocultar texto",
     "delete": "Borrar {{name}}",
-    "risk": "Trae frases dirigidas a una IA («{{excerpt}}»): tu agente la leerá como dato y no las seguirá."
+    "risk": "Trae frases dirigidas a una IA («{{excerpt}}»): el agente la leerá como dato y no las seguirá."
   },
   "history": {
     "title": "Historial",
-    "hint": "Cada vez que tu perfil cambia (al guardar aquí, cuando lo cambia tu agente o al deshacer) queda una versión. Ábrela para ver qué cambió y vuelve a ella si quieres.",
+    "hint": "Cada vez que el perfil cambia (al guardar aquí, cuando lo cambia el agente o al deshacer) queda una versión. Cada una muestra qué cambió y permite volver a ella.",
     "undo": "Deshacer el último cambio",
-    "undone": "Hecho: tu perfil ha vuelto a como estaba antes del último guardado.",
-    "saveFirst": "Guarda o descarta antes los bloques con cambios.",
+    "undone": "Hecho: el perfil ha vuelto a como estaba antes del último guardado.",
+    "saveFirst": "Antes hay que guardar o descartar los bloques con cambios.",
     "copies_one": "{{count}} copia guardada",
     "copies_other": "{{count}} copias guardadas",
-    "listLabel": "Versiones de tu perfil",
+    "listLabel": "Versiones del perfil",
     "current": "Actual",
-    "first": "Tu primer perfil",
+    "first": "Primer perfil",
     "noChanges": "Sin cambios en los datos",
     "count_one": "{{block}} (1 cambio)",
     "count_other": "{{block}} ({{count}} cambios)",
     "privateChanged": "{{block}} (ha cambiado)",
     "origin": {
       "ui": "Desde la app",
-      "agent": "Tu agente",
-      "undo": "Deshiciste un cambio",
-      "restore": "Volviste a una versión",
+      "agent": "El agente",
+      "undo": "Cambio deshecho",
+      "restore": "Vuelta a una versión",
       "demo": "Demo"
     },
     "when": {
@@ -458,7 +458,7 @@
     "no": "No",
     "privateHidden": "Ha cambiado. La cifra no se enseña aquí.",
     "blocks": {
-      "search": "Tu búsqueda",
+      "search": "Búsqueda",
       "private": "Datos privados"
     },
     "languages": {
@@ -472,12 +472,12 @@
     "restore": "Volver a esta versión",
     "isCurrent": "Es la versión actual",
     "notRestorable": "No se puede volver a esta versión: no encaja con el formato actual del perfil.",
-    "sameAsCurrent": "Tu perfil ya está como en esta versión.",
+    "sameAsCurrent": "El perfil ya está como en esta versión.",
     "confirmTitle": "¿Volver a la versión de {{when}}?",
-    "confirmBlocks": "Cambiarán estos bloques de tu perfil:",
-    "confirmNote": "Se guarda como una versión nueva: no se pierde nada y puedes deshacerlo. Los scores de tus ofertas se recalculan.",
+    "confirmBlocks": "Cambiarán estos bloques del perfil:",
+    "confirmNote": "Se guarda como una versión nueva: no se pierde nada y se puede deshacer. Los scores de las ofertas se recalculan.",
     "cancel": "Cancelar",
-    "restored": "Hecho: tu perfil ha vuelto a la versión de {{when}}.",
+    "restored": "Hecho: el perfil ha vuelto a la versión de {{when}}.",
     "older": "Ver versiones anteriores",
     "fields": {
       "name": "Nombre",
@@ -518,7 +518,7 @@
       "action": "Acción",
       "result": "Resultado",
       "evidence": "Evidencias",
-      "roles": "Puestos que buscas",
+      "roles": "Puestos buscados",
       "seniority_target": "Niveles",
       "max_years_required": "Años de experiencia que piden, como mucho",
       "min_years_required": "Años de experiencia que piden, como poco",
@@ -532,7 +532,7 @@
       "discard_title_keywords": "Palabras que descartan un título",
       "contract_types": "Tipos de contrato",
       "employment_types": "Jornada",
-      "excluded_employer_kinds": "Empleadores que descartas",
+      "excluded_employer_kinds": "Empleadores descartados",
       "default_template": "Plantilla por defecto",
       "photo_file": "Foto",
       "max_pages": "Máximo de páginas",
@@ -546,16 +546,16 @@
       "sign_off": "Despedida",
       "default_format": "Formato"
     },
-    "confirmPrivate": "Tus datos privados (el sueldo mínimo) también vuelven a como estaban en esa versión.",
+    "confirmPrivate": "Los datos privados (el sueldo mínimo) también vuelven a como estaban en esa versión.",
     "confirmInternal": "Solo cambian datos internos del perfil que no se ven aquí."
   },
   "summarySuggestion": {
     "generate": "Generar resumen en inglés",
-    "label": "Propuesta de tu agente",
-    "outdated": "Se hizo con otra versión de tu resumen en español.",
+    "label": "Propuesta del agente",
+    "outdated": "Se hizo con otra versión del resumen en español.",
     "use": "Usar en el campo",
     "discard": "Descartar",
-    "saveFirst": "Tu agente traduce el resumen guardado. Guarda antes los cambios del resumen en español.",
+    "saveFirst": "El agente traduce el resumen guardado. Antes hay que guardar los cambios del resumen en español.",
     "saveFirstLabel": "Por qué está desactivado"
   }
 }

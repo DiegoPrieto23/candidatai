@@ -157,14 +157,13 @@ The UI is for anyone looking for a job, not only for developers, and it should r
 commercial app. Every text goes in `frontend/src/locales/es` and `frontend/src/locales/en`, and
 follows these rules (the examples show the Spanish text and its English version):
 
-1. **Professional tone.** No colloquialisms. Not «con tu OK» / “with your OK”, but «Te enseña los
-   cambios antes de guardarlos» / “It shows you the changes before saving them”, «Tú decides qué se
-   guarda» / “You decide what gets saved” or «Solo con tu confirmación» / “Only with your
-   confirmation”.
+1. **Professional tone.** No colloquialisms. Not «con tu OK» / “with your OK”, but «Muestra los
+   cambios antes de guardarlos» / “It shows you the changes before saving them” or «Solo con
+   confirmación» / “Only with your confirmation”.
 2. **Positive.** Say what there is or what you can do, not what is missing or what doesn't happen
    (a bar says “table service at the counter only”, not “no table service outside”). Not «No hace
-   falta: sin foto, tus CVs salen sin ella» / “You don't need one: without a photo, your CVs go
-   without it”, but «Tus CVs pueden llevarla o no» / “Your CVs can include it or not”.
+   falta: sin foto, los CVs salen sin ella» / “You do not need one: without a photo, your CVs go
+   without it”, but «Los CVs pueden llevarla o no» / “Your CVs can include it or not”.
 3. **One explanation per idea, in its place.** If a rule applies to several fields (“what a job
    doesn't say never discards it”), say it once, in the header of the block.
 4. **What's only needed the first time goes in a hint** (the `Hint` component), not in the
@@ -177,9 +176,16 @@ follows these rules (the examples show the Spanish text and its English version)
 7. **A label isn't clarified in brackets.** If «Usuario (tu dirección)» / “User (your address)”
    needs a clarification, the label is wrong: «Correo electrónico» / “Email address”.
 8. **Optional is marked once**, in the field label, not in the label and again in the hint.
+9. **Formal and impersonal.** In Spanish, no «tú» or «usted»: instructions in the infinitive or with
+   «se», and articles instead of possessives. Not «Pulsa «Guardar» para subir tu CV» but «Se pulsa
+   «Guardar» para subir el CV», and «el agente», not «tu agente». The app does not speak in the first
+   person either (not «Te aviso aquí» but «El aviso aparecerá aquí»). In English, a formal register that keeps
+   “you” where dropping it sounds forced, with no contractions: “It does not”, not “It doesn't”.
 
 `frontend/src/locales/jargon.test.ts` and `tone.test.ts` catch the most common slips: technical
-words, colloquial or negative phrases, and page intros longer than two lines.
+words, colloquial or negative phrases, the Spanish «tú» (pronouns, verb forms and its clear
+imperatives, ignoring what is quoted in «»), English contractions, and page intros longer than two
+lines.
 
 ## Changelog, versions and releases
 

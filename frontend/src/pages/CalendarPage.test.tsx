@@ -79,7 +79,7 @@ describe('Calendario', () => {
     expect(within(dialog).getByText('Programado')).toBeInTheDocument()
     expect(within(dialog).getByRole('link', { name: 'Ver la oferta' })).toHaveAttribute('href', '/jobs/3')
     expect(within(dialog).getByRole('link', { name: 'https://meet.example.com/abc' })).toBeInTheDocument()
-    expect(within(dialog).getByRole('link', { name: /Añadir a mi calendario/ })).toHaveAttribute(
+    expect(within(dialog).getByRole('link', { name: /Añadir al calendario/ })).toHaveAttribute(
       'href',
       expect.stringContaining('/milestones/7/ics'),
     )
@@ -138,7 +138,7 @@ describe('Calendario: añadir un hito', () => {
     const list = await screen.findByRole('listbox', { name: 'Oferta' })
     // Solo los procesos abiertos; con pocos, sin caja de búsqueda.
     expect(within(list).queryByText('Empresa 4')).not.toBeInTheDocument()
-    expect(screen.queryByRole('combobox', { name: 'Busca por empresa o puesto' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('combobox', { name: 'Buscar por empresa o puesto' })).not.toBeInTheDocument()
     await userEvent.click(within(list).getByRole('option', { name: /Empresa 3/ }))
     expect(within(dialog).getByRole('button', { name: 'Oferta' })).toHaveTextContent('Empresa 3 · Oferta 3')
     await userEvent.type(within(dialog).getByLabelText('Título (opcional)'), 'Técnica')
@@ -159,7 +159,7 @@ describe('Calendario: añadir un hito', () => {
     await userEvent.click(within(day).getByRole('button', { name: 'Añadir un hito el jueves, 15 de octubre' }))
     const dialog = await screen.findByRole('dialog')
     await userEvent.click(await within(dialog).findByRole('button', { name: 'Oferta' }))
-    const search = await screen.findByRole('combobox', { name: 'Busca por empresa o puesto' })
+    const search = await screen.findByRole('combobox', { name: 'Buscar por empresa o puesto' })
     await waitFor(() => expect(search).toHaveFocus())
     await userEvent.type(search, 'BRETEMA data')
     const list = screen.getByRole('listbox', { name: 'Oferta' })

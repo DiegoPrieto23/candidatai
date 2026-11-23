@@ -1,7 +1,7 @@
 """Borradores de mensajes: seguimiento y agradecimiento (fase 15), LinkedIn y correo (fase 18).
 
 El agente redacta (`save_message_draft`); la app **nunca envía nada** (regla dura 5). El usuario
-copia el texto, lo manda él y pulsa «Ya lo he enviado» en la UI; solo un seguimiento registra un
+copia el texto, lo manda él y pulsa «Marcar como enviado» en la UI; solo un seguimiento registra un
 evento (`followup_sent`). Como mucho `followups.max_followups` seguimientos (2) por candidatura;
 un agradecimiento, solo tras una entrevista hecha.
 
@@ -380,7 +380,7 @@ def _draft(session: Session, draft_id: int) -> MessageDraft:
 def mark_draft_sent(
     session: Session, draft_id: int, occurred_at: datetime | None = None
 ) -> DraftActionResult:
-    """«Ya lo he enviado» (solo desde la UI): el usuario lo mandó desde su correo. Un seguimiento
+    """«Marcar como enviado» (solo desde la UI): el usuario lo mandó desde su correo. Un seguimiento
     registra `followup_sent` (actor `user`, `payload.draft_id`)."""
     row = _draft(session, draft_id)
     event_id = None

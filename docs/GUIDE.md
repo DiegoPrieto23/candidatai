@@ -448,7 +448,7 @@ The worker runs the automatic sources every day at `connectors.daily_at`
   status**. Interviews and tests create a dated
   milestone you can export to your calendar (`.ics`). On the job page, **What happened?** also
   records what doesn't change the stage (another reply, another interview, a test, the offer) and
-  links to **Log offer** and **Milestones** for the details; **I accept the offer** shows up once
+  links to **Log offer** and **Milestones** for the details; **Accept the offer** shows up once
   there's an offer.
   With **Customize columns** you pick 3 to 5 columns: each stage goes to the column you choose in its
   selector (e.g. **Approved** and **CV ready** together), each column shows its stages as tags and a

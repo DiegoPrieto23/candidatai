@@ -199,7 +199,7 @@ describe('Mensajes en Borradores', () => {
     expect(within(section).queryByRole('button', { name: /Redactar seguimiento/ })).not.toBeInTheDocument()
     expect(within(section).queryByText(/seguimientos enviados/)).not.toBeInTheDocument()
 
-    await userEvent.click(within(linkedin).getByRole('button', { name: 'Ya lo he enviado' }))
+    await userEvent.click(within(linkedin).getByRole('button', { name: 'Marcar como enviado' }))
     await waitFor(() => expect(calls.some((c) => c.path === '/drafts/5/sent')).toBe(true))
   })
 })

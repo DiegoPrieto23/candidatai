@@ -1,7 +1,7 @@
 {
   "noScore": "Fit not calculated",
   "scoreAria": "Fit of {{score}} out of 100",
-  "noSkills": "The posting doesn't list any.",
+  "noSkills": "The posting does not list any.",
   "basicShort": "bas.",
   "inProfile": "In your profile: {{skill}}. ",
   "notInProfile": "Not in your profile",
@@ -19,14 +19,14 @@
     "assessment": "Agent's assessment"
   },
   "notes": {
-    "off": "The app only recognises your skills when they're named as in the job: it misses synonyms and similar phrases, like “ETL” and “data pipelines”.",
-    "notInstalled": "Meaning-based comparison isn't on: it's optional and the guide explains how to turn it on.",
-    "unavailable": "Right now the app only recognises your skills when they're named as in the job: it misses synonyms and similar phrases.",
-    "failed": "Couldn't compare synonyms ({{error}}): the app only recognises your skills when they're named as in the job.",
-    "noMust": "The job doesn't say which skills are required, so that part doesn't count in the fit.",
-    "noNice": "The job doesn't say which skills are nice-to-have, so that part doesn't count in the fit."
+    "off": "The app only recognises your skills when they are named as in the job: it misses synonyms and similar phrases, like “ETL” and “data pipelines”.",
+    "notInstalled": "Meaning-based comparison is not on: it is optional and the guide explains how to turn it on.",
+    "unavailable": "Right now the app only recognises your skills when they are named as in the job: it misses synonyms and similar phrases.",
+    "failed": "Could not compare synonyms ({{error}}): the app only recognises your skills when they are named as in the job.",
+    "noMust": "The job does not say which skills are required, so that part does not count in the fit.",
+    "noNice": "The job does not say which skills are nice-to-have, so that part does not count in the fit."
   },
-  "belowAssessThreshold": "Your agent doesn't assess it in the background: its fit ({{score}}) is below the minimum ({{threshold}}). Change it on the “Agent” page or assess it “In a terminal”.",
+  "belowAssessThreshold": "Your agent does not assess it in the background: its fit ({{score}}) is below the minimum ({{threshold}}). Change it on the “Agent” page or assess it “In a terminal”.",
   "salaryGap": "{{amount}} below your minimum (only you see this).",
   "semantic": {
     "learnMore": "What it adds and how to turn it on",
@@ -100,7 +100,7 @@
     "nice_to_have_coverage": "How many of the job's nice-to-have skills you have."
   },
   "componentPoints": "Here it adds {{points}} of the {{max}} points it can give.",
-  "componentOff": "It doesn't count: it needs meaning-based comparison. Its points are spread across the other parts.",
+  "componentOff": "It does not count: it needs meaning-based comparison. Its points are spread across the other parts.",
   "componentHintLabel": "What “{{name}}” measures",
   "levelLegend": "Your level in each skill:"
 }

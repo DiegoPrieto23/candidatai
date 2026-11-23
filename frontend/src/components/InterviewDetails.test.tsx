@@ -62,7 +62,7 @@ describe('Entrevistas en la ficha (fase 17)', () => {
     await userEvent.click(await within(section).findByRole('button', { name: 'Pedir cambios a la guía' }))
     const apply = within(section).getByRole('button', { name: 'Aplicar cambios' })
     expect(apply).toBeDisabled()
-    await userEvent.type(within(section).getByLabelText('Qué quieres cambiar'), 'Sin código.')
+    await userEvent.type(within(section).getByLabelText('Qué cambiar'), 'Sin código.')
     await userEvent.click(apply)
     await waitFor(() => expect(calls.some((c) => c.path === '/agent/launch')).toBe(true))
     expect(calls.find((c) => c.path === '/milestones/5/guide/correction')?.body).toEqual({ instruction: 'Sin código.' })
@@ -157,7 +157,7 @@ describe('Entrevistas en la ficha (fase 17)', () => {
     const section = await screen.findByRole('region', { name: 'Proceso' })
     await userEvent.click(await within(section).findByRole('button', { name: /^Versión anterior/ }))
     expect(await within(section).findByRole('button', { name: 'Volver a la versión anterior' })).toBeDisabled()
-    expect(within(section).getByText(/Primero cancela los cambios pedidos/)).toBeInTheDocument()
+    expect(within(section).getByText(/Antes hay que cancelar los cambios pedidos/)).toBeInTheDocument()
   })
 
   it('con la entrevista cancelada explica por qué no se piden cambios, y se ve sin poder volver', async () => {

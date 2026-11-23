@@ -6,8 +6,8 @@
   "closeNotice": "Cerrar aviso",
   "loading": "Cargando alertas",
   "title": "Por completar",
-  "summary_one": "{{count}} oferta resumen de tus alertas por correo. Ábrelas en su portal y envíalas con el botón «Enviar a CandidatAI» para completarlas, o descártalas.",
-  "summary_other": "{{count}} ofertas resumen de tus alertas por correo. Ábrelas en su portal y envíalas con el botón «Enviar a CandidatAI» para completarlas, o descártalas.",
+  "summary_one": "{{count}} oferta resumen de las alertas por correo. Para completarla, se abre en su portal y se envía con el botón «Enviar a CandidatAI»; si no interesa, se descarta.",
+  "summary_other": "{{count}} ofertas resumen de las alertas por correo. Para completarlas, se abren en su portal y se envían con el botón «Enviar a CandidatAI»; las que no interesen, se descartan.",
   "reading": "Leyendo el correo…",
   "poll": "Revisar correo ahora",
   "addMailbox": "Añadir buzón",
@@ -23,16 +23,16 @@
   "saveFailed": "No se pudo guardar: {{error}}",
   "empty": {
     "title": "Sin alertas pendientes",
-    "body": "Las ofertas de tus alertas de LinkedIn, InfoJobs y otros portales que llegan como resumen aparecen aquí. Los buzones de los que salen se configuran en «Dónde buscar»."
+    "body": "Las ofertas de las alertas de LinkedIn, InfoJobs y otros portales que llegan como resumen aparecen aquí. Los buzones de los que salen se configuran en «Dónde buscar»."
   },
-  "passing": "Encajan con tus preferencias",
-  "failing": "No encajan con tus filtros",
-  "failingCount": "No encajan con tus filtros ({{count}})",
+  "passing": "Encajan con las preferencias",
+  "failing": "No encajan con los filtros",
+  "failingCount": "No encajan con los filtros ({{count}})",
   "email": {
     "title": "Alertas por correo",
-    "intro": "Los buzones donde te llegan las alertas de empleo, como las de LinkedIn o InfoJobs. La app solo los lee y sus ofertas entran en la Bandeja.",
+    "intro": "Los buzones donde llegan las alertas de empleo, como las de LinkedIn o InfoJobs. La app solo los lee y sus ofertas entran en la Bandeja.",
     "emptyTitle": "Aún no hay ningún buzón",
-    "emptyBody": "Añade el buzón donde te llegan, como Gmail u Outlook, o una carpeta con correos guardados (.eml).",
+    "emptyBody": "Se puede añadir el buzón donde llegan, como Gmail u Outlook, o una carpeta con correos guardados (.eml).",
     "goToComplete": "Las ofertas que llegan como resumen están en la Bandeja de ofertas, en"
   }
 }

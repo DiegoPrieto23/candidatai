@@ -3,16 +3,16 @@
   "roleOf": "{{name}}'s role in the process",
   "add": "Add",
   "cancel": "Cancel",
-  "probable": "LinkedIn says “{{company}}”: check it's the same one.",
+  "probable": "LinkedIn says “{{company}}”: check it is the same one.",
   "alreadyContact": "Already a contact in the process",
   "import": {
     "hint": "Import your LinkedIn connections to see who you know at each company. On LinkedIn: Settings → Data privacy → Get a copy of your data → Connections. Put the file in <code>data/{{file}}</code>.",
     "importing": "Importing…",
     "button": "Import my connections",
-    "missing": "The file isn't in that folder yet."
+    "missing": "The file is not in that folder yet."
   },
   "title": "Your network",
-  "loadFailed": "Couldn't load your network: {{error}}",
+  "loadFailed": "Could not load your network: {{error}}",
   "nobody": "Nobody in your network works at {{company}}.",
   "youKnow_one": "You know {{count}} person at {{company}}.",
   "youKnow_other": "You know {{count}} people at {{company}}.",

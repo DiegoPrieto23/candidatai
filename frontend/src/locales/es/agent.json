@@ -1,7 +1,7 @@
 {
   "actions": {
     "search-jobs": "Buscar ofertas",
-    "configure-platforms": "Configurar con mi agente",
+    "configure-platforms": "Configurar con el agente",
     "process-jobs": "Valorar las ofertas nuevas",
     "assess-fit": "Valorar las que están por revisar",
     "assess-fit-job": "Valorar esta oferta",
@@ -9,12 +9,12 @@
     "correct-cv": "Corregir CV",
     "verify-cv": "Verificar CV",
     "generate-cover-letter": "Escribir carta",
-    "add-skills": "Añadir al perfil las que tengo",
+    "add-skills": "Añadir al perfil las marcadas «La tengo»",
     "training-plan": "Plan de formación",
     "review-replies": "Revisar respuestas",
     "draft-follow-ups": "Redactar seguimientos",
     "broaden-search": "Ampliar búsqueda",
-    "review-search": "Revisar mi búsqueda",
+    "review-search": "Revisar la búsqueda",
     "draft-follow-up": "Redactar seguimiento",
     "prepare-interview": "Preparar entrevista",
     "correct-interview-guide": "Cambiar guía",
@@ -25,12 +25,12 @@
     "handle-requests": "Atender encargos",
     "offer-questions": "Dudas antes de aceptar",
     "prepare-negotiation": "Preparar negociación",
-    "expand": "Mejorar el contenido de mi perfil",
-    "create-profile": "Crear mi perfil desde mi CV",
+    "expand": "Mejorar el contenido del perfil",
+    "create-profile": "Crear el perfil desde un CV",
     "import-profile-from-cv": "Importar información desde un CV",
-    "improve-profile-item": "Mejorar con mi agente",
+    "improve-profile-item": "Mejorar con el agente",
     "translate-summary": "Generar resumen en inglés",
-    "propose-stories": "Proponer historias desde mi experiencia",
+    "propose-stories": "Proponer historias desde la experiencia",
     "import-cv-template": "Convertir en plantilla",
     "assistant": "Asistente"
   },
@@ -38,16 +38,16 @@
   "done": "Hecho.",
   "cancelled": "Cancelado.",
   "remove": "Quitar",
-  "noRequests": "No hay encargos. En cualquier botón del agente, el desplegable ofrece «Dejar para mi próxima sesión».",
+  "noRequests": "No hay encargos. En cualquier botón del agente, el desplegable ofrece «Dejar para la próxima sesión».",
   "pendingRequests": "Encargos pendientes",
   "handle": "Atender encargos",
   "recentlyClosed": "Cerrados recientemente",
   "title": "Agente",
-  "intro": "Tus agentes y lo que les has dejado para su próxima sesión. Usan tu suscripción: no pagas aparte por cada ejecución.",
-  "nextSession": "Para tu próxima sesión",
+  "intro": "Los agentes y lo que queda para su próxima sesión. Usan la suscripción del agente: sin pago aparte por cada ejecución.",
+  "nextSession": "Para la próxima sesión",
   "costs": {
     "title": "Coste",
-    "intro": "Lo que han gastado las ejecuciones en segundo plano, según lo que dice cada agente. Los tokens son la unidad en que los agentes miden el texto que leen y escriben: más tokens, más uso de tu suscripción.",
+    "intro": "Lo que han gastado las ejecuciones en segundo plano, según lo que dice cada agente. Los tokens son la unidad en que los agentes miden el texto que leen y escriben: más tokens, más uso de la suscripción.",
     "window": "Periodo",
     "days_one": "Último día",
     "days_other": "Últimos {{count}} días",
@@ -64,14 +64,14 @@
     "byAgent": "Por agente",
     "byModel": "Por modelo",
     "empty": "Ninguna ejecución en este periodo.",
-    "terminal": "Solo cuenta lo que se ejecuta en segundo plano: lo que haces en una terminal no llega a la app. «Tamaño de las instrucciones» es lo que pesan las de cada acción, para saber dónde recortar.",
+    "terminal": "Solo cuenta lo que se ejecuta en segundo plano: lo que se hace en una terminal no llega a la app. «Tamaño de las instrucciones» es lo que pesan las de cada acción, para saber dónde recortar.",
     "threshold": "Umbral antes de gastar",
-    "thresholdIntro": "«Valorar las ofertas nuevas» en segundo plano solo valora las ofertas con este encaje o más, para no gastar en las que casi seguro no encajan; «Por revisar» dice por qué se quedó sin valorar cada una. El mínimo para pasar a «Por revisar» es {{triage}}; por defecto, este es {{default}}.",
+    "thresholdIntro": "«Valorar las ofertas nuevas» en segundo plano solo valora las ofertas con este encaje o más, para no gastar en las que casi seguro no encajan; «Por revisar» indica por qué se quedó sin valorar cada una. El mínimo para pasar a «Por revisar» es {{triage}}; por defecto, este es {{default}}.",
     "thresholdLabel": "Encaje mínimo",
     "thresholdSave": "Guardar",
     "thresholdReset": "Volver a {{value}}",
     "thresholdSource": {
-      "ui": "Lo has cambiado aquí.",
+      "ui": "Cambiado aquí.",
       "policies": "Viene de la configuración por defecto de la app.",
       "default": "Por defecto: el mínimo de «Por revisar» menos 10."
     },
@@ -84,13 +84,13 @@
     "runs": "Ejecuciones",
     "shared_one": "repartida entre {{count}} oferta",
     "shared_other": "repartida entre {{count}} ofertas",
-    "terminal": "No cuenta lo que hagas en una terminal: ahí el agente no devuelve su uso."
+    "terminal": "No cuenta lo que se hace en una terminal: ahí el agente no devuelve su uso."
   },
   "semantic": "Comparación por significado",
   "summary": {
-    "ready": "Tu agente: {{agent}}, listo",
-    "readyHint": "Los botones con el robot de toda la app lo abren en una ventana aparte con la orden ya escrita: ahí ves lo que hace y lo apruebas.",
-    "cantOpen": "Tu agente: no puedo abrirlo desde aquí",
-    "cantOpenHint": "{{reason}} Los botones con el robot te enseñan la orden para que la copies y la pegues en tu agente."
+    "ready": "Agente: {{agent}}, listo",
+    "readyHint": "Los botones con el robot de toda la app lo abren en una ventana aparte con la orden ya escrita: ahí se ve lo que hace y se aprueba.",
+    "cantOpen": "Agente: no se puede abrir desde aquí",
+    "cantOpenHint": "{{reason}} Los botones con el robot muestran la orden para copiarla y pegarla en el agente."
   }
 }

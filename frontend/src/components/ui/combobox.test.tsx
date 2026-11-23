@@ -26,8 +26,8 @@ function Controlled({ options = MANY, spy }: { options?: ComboboxOption[]; spy?:
           setValue(v)
         }}
         options={options}
-        placeholder="Elige una oferta…"
-        searchLabel="Busca por empresa o puesto"
+        placeholder="Elegir una oferta…"
+        searchLabel="Buscar por empresa o puesto"
         noMatch={(q) => `Ninguna oferta coincide con «${q}»`}
       />
     </>
@@ -35,7 +35,7 @@ function Controlled({ options = MANY, spy }: { options?: ComboboxOption[]; spy?:
 }
 
 const trigger = () => screen.getByRole('button', { name: 'Oferta' })
-const search = () => screen.findByRole('combobox', { name: 'Busca por empresa o puesto' })
+const search = () => screen.findByRole('combobox', { name: 'Buscar por empresa o puesto' })
 
 describe('matchesQuery', () => {
   it('busca todas las palabras, sin tildes ni mayúsculas', () => {
@@ -49,7 +49,7 @@ describe('matchesQuery', () => {
 describe('Combobox', () => {
   it('pide elegir mientras está vacío y enseña empresa y puesto al elegir', async () => {
     render(<Controlled options={FEW} />)
-    expect(trigger()).toHaveTextContent('Elige una oferta…')
+    expect(trigger()).toHaveTextContent('Elegir una oferta…')
     await userEvent.click(trigger())
     const list = await screen.findByRole('listbox', { name: 'Oferta' })
     const option = within(list).getByRole('option', { name: /Néboa Data/ })
@@ -136,8 +136,8 @@ describe('Combobox', () => {
       label: 'Oferta',
       value: null,
       onChange: spy,
-      placeholder: 'Elige una oferta…',
-      searchLabel: 'Busca por empresa o puesto',
+      placeholder: 'Elegir una oferta…',
+      searchLabel: 'Buscar por empresa o puesto',
       noMatch: (q: string) => q,
     }
     const { rerender } = render(<Combobox {...props} options={FEW} />)

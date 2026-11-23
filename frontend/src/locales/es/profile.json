@@ -2,36 +2,36 @@
   "sections": {
     "estilo-redaccion": {
       "title": "Estilo de redacción",
-      "hint": "Tono, estructura, palabras que usas y que evitas. Lo usan los CVs y las cartas."
+      "hint": "Tono, estructura y palabras que se usan y que se evitan. Lo usan los CVs y las cartas."
     },
     "perfil-conductual": {
       "title": "Perfil conductual",
-      "hint": "Cómo trabajas, fortalezas, tests de personalidad. Para preparar entrevistas."
+      "hint": "Forma de trabajar, fortalezas, tests de personalidad. Para preparar entrevistas."
     },
     "criterios": {
       "title": "Criterios",
-      "hint": "Deal-breakers (lo que no aceptarías en ningún caso, como guardias o viajar cada semana) y preferencias en texto libre. La valoración de encaje los cita como riesgo."
+      "hint": "Deal-breakers (lo que no se aceptaría en ningún caso, como guardias o viajar cada semana) y preferencias en texto libre. La valoración de encaje los cita como riesgo."
     },
     "narrativa": {
       "title": "Narrativa",
-      "hint": "Tu historia, motivación y cómo explicas los cambios. Para entrevistas."
+      "hint": "Trayectoria, motivación y cómo se explican los cambios. Para entrevistas."
     }
   },
   "folders": {
-    "cv": "Tus CVs anteriores (PDF o Word)",
-    "linkedin": "Exportaciones de tu perfil de LinkedIn",
+    "cv": "CVs anteriores (PDF o Word)",
+    "linkedin": "Exportaciones del perfil de LinkedIn",
     "titulos": "Títulos y certificados",
     "referencias": "Cartas de referencia",
-    "candidaturas": "Lo que enviaste en cada candidatura (se llena solo)",
-    "estilo": "Muestras de cómo escribes (cartas, correos, posts): el agente toma de ellas el tono, nunca los hechos."
+    "candidaturas": "Lo enviado en cada candidatura (se llena solo)",
+    "estilo": "Muestras de redacción propia (cartas, correos, posts): el agente toma de ellas el tono, nunca los hechos."
   },
   "upload": {
     "cv": "Subir CV",
     "linkedin": "Subir exportación",
     "uploading": "Subiendo…",
     "fileLabel": {
-      "cv": "Tu CV (PDF, Word o texto)",
-      "linkedin": "Tu exportación de LinkedIn (el archivo comprimido que te envía LinkedIn, o tu perfil en PDF)"
+      "cv": "CV (PDF, Word o texto)",
+      "linkedin": "Exportación de LinkedIn (el archivo comprimido que envía LinkedIn, o el perfil en PDF)"
     }
   },
   "state": {
@@ -43,13 +43,13 @@
   "files_other": "{{count}} ficheros",
   "openContext": "Abrir la carpeta del contexto",
   "openDocuments": "Abrir la carpeta de documentos",
-  "expand": "Mejorar el contenido de mi perfil",
+  "expand": "Mejorar el contenido del perfil",
   "import": {
     "button": "Importar información desde un CV",
     "title": "Importar información desde un CV",
-    "intro": "Sube un CV (PDF o Word) y tu agente añade a tu perfil lo que le falte, como experiencia o logros. Te enseña las diferencias antes de guardar.",
-    "stepUpload": "Sube el CV",
-    "stepAgent": "Tu agente lo lee y lo compara con tu perfil"
+    "intro": "Con un CV (PDF o Word), el agente añade al perfil lo que le falte, como experiencia o logros. Muestra las diferencias antes de guardar.",
+    "stepUpload": "Subir el CV",
+    "stepAgent": "El agente lo lee y lo compara con el perfil"
   },
   "title": "Mi perfil",
   "intro": "Todo lo que diga un CV, una carta o una respuesta sale de aquí. Cada bloque se guarda por separado y se puede deshacer.",
@@ -70,22 +70,22 @@
     "estilo": "Estilo"
   },
   "docs": {
-    "lead": "Cómo quieres tus CVs y cartas, y lo que lee tu agente para escribirlos. Nada de aquí cuenta como un hecho: eso sale de tu perfil.",
-    "prefsTitle": "Cómo quieres tus CVs y cartas",
+    "lead": "Cómo deben ser los CVs y las cartas, y lo que lee el agente para escribirlos. Nada de aquí cuenta como un hecho: eso sale del perfil.",
+    "prefsTitle": "Preferencias de CVs y cartas",
     "cv": "CV",
     "letter": "Carta",
-    "notesTitle": "Notas para tu agente",
+    "notesTitle": "Notas para el agente",
     "notesLead": "Orientan el tono, las entrevistas y los riesgos de una oferta.",
-    "notesHint": "Nunca respaldan un hecho: lo que diga un CV o una carta tiene que estar en tu perfil. Cada nota trae unas preguntas que te guían; también puedes pedírsela a tu agente.",
-    "filesTitle": "Tus archivos",
-    "filesLead": "Lo que tu agente puede leer para crear o ampliar tu perfil.",
-    "filesHint": "Tus documentos fuente. Tu agente los lee siempre preguntándote antes de escribir en tu perfil.",
+    "notesHint": "Nunca respaldan un hecho: lo que diga un CV o una carta tiene que estar en el perfil. Cada nota trae unas preguntas de guía; también puede redactarla el agente.",
+    "filesTitle": "Archivos",
+    "filesLead": "Lo que el agente puede leer para crear o ampliar el perfil.",
+    "filesHint": "Los documentos fuente. El agente los lee y siempre pregunta antes de escribir en el perfil.",
     "about": "Qué es «{{name}}»",
     "fold": "Plegar",
     "foldNamed": "Plegar «{{name}}»",
     "view": "Ver",
     "viewNamed": "Ver «{{name}}»",
-    "unsavedOpen": "Tiene cambios sin guardar: guárdalos o descártalos para plegarlo.",
+    "unsavedOpen": "Tiene cambios sin guardar: hay que guardarlos o descartarlos para plegarlo.",
     "samples_one": "{{count}} muestra",
     "samples_other": "{{count}} muestras",
     "noSamples": "Ninguna todavía",
@@ -113,14 +113,14 @@
       "instructions": "con lo que contar siempre",
       "avoid_one": "{{count}} cosa que no decir",
       "avoid_other": "{{count}} cosas que no decir",
-      "none": "Sin preferencias: tu agente usa las de la app"
+      "none": "Sin preferencias: el agente usa las de la app"
     }
   },
   "short": {
-    "estilo-redaccion": "Tono, estructura, palabras que usas y que evitas",
-    "perfil-conductual": "Cómo trabajas y tus fortalezas, para entrevistas",
-    "criterios": "Lo que no aceptarías y tus preferencias",
-    "narrativa": "Tu historia y cómo explicas los cambios",
-    "samples": "Cartas, correos o posts tuyos, para tomar tu tono"
+    "estilo-redaccion": "Tono, estructura y palabras que se usan y que se evitan",
+    "perfil-conductual": "Forma de trabajar y fortalezas, para entrevistas",
+    "criterios": "Lo que no se aceptaría y las preferencias",
+    "narrativa": "Trayectoria y cómo se explican los cambios",
+    "samples": "Cartas, correos o posts propios, para tomar el tono"
   }
 }

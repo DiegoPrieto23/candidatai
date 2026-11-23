@@ -10,7 +10,7 @@ Nada de esto se esquiva: el navegador se lanza sin trucos para parecer humano.
 
 `arm_submit_block` instala en la página, mientras se rellena, un bloqueo del evento `submit` y de
 `form.submit()`/`requestSubmit()`. Se rearma antes de cada campo (una navegación lo quitaría).
-Solo `submit.py` lo retira, justo antes de pulsar el envío confirmado, y «Lo termino yo»
+Solo `submit.py` lo retira, justo antes de pulsar el envío confirmado, y «Terminar a mano»
 (`release_submit_block`). Protege de accidentes, no de una web hostil: un script de la propia
 página podría cambiar la marca de `window`.
 """
@@ -142,5 +142,5 @@ def blocked_submits(page: Page) -> int:
 
 
 def release_submit_block(page: Page) -> None:
-    """Deja enviar: lo usan `submit.py` (con confirmación) y «Lo termino yo»."""
+    """Deja enviar: lo usan `submit.py` (con confirmación) y «Terminar a mano»."""
     page.evaluate("() => { window.__jhAllowSubmit = true; }")

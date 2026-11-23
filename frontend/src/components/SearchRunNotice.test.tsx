@@ -49,7 +49,7 @@ describe('Aviso de la búsqueda', () => {
     mockApi(routes(run({ status: 'finished', outcome: 'done', portals_done: 3, problems: 1, finished_at: '2026-11-03T10:30:00Z' })))
     renderApp('/como-funciona')
     expect(await screen.findByText('Búsqueda terminada')).toBeInTheDocument()
-    expect(screen.getByText('12 vistas · 9 pasan tus filtros · 5 ya las tenías · 4 nuevas.')).toBeInTheDocument()
+    expect(screen.getByText('12 vistas · 9 pasan los filtros · 5 ya estaban · 4 nuevas.')).toBeInTheDocument()
     expect(screen.getByText(/^1 problema en los portales/)).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Ver en la Bandeja' })).toHaveAttribute('href', '/bandeja')
   })
@@ -57,14 +57,14 @@ describe('Aviso de la búsqueda', () => {
   it('dice si tu agente no ha podido buscar, y no finge que hay resultado', async () => {
     mockApi(routes(run({ status: 'finished', outcome: 'no_browser', portals_done: 0, created: 0, found: 0 })))
     renderApp('/como-funciona')
-    expect(await screen.findByText('Tu agente no ha podido buscar')).toBeInTheDocument()
+    expect(await screen.findByText('El agente no ha podido buscar')).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Ver en la Bandeja' })).not.toBeInTheDocument()
   })
 
   it('si se queda sin noticias, lo dice en vez de seguir «buscando»', async () => {
     mockApi(routes(run({ status: 'stale' })))
     renderApp('/como-funciona')
-    expect(await screen.findByText('Sin noticias de tu agente')).toBeInTheDocument()
+    expect(await screen.findByText('Sin noticias del agente')).toBeInTheDocument()
     expect(screen.queryByText('Buscando ofertas…')).not.toBeInTheDocument()
   })
 
@@ -72,10 +72,10 @@ describe('Aviso de la búsqueda', () => {
     const calls = mockApi(routes(run()))
     renderApp('/como-funciona')
     await userEvent.click(await screen.findByRole('button', { name: 'Minimizar el aviso' }))
-    expect(screen.queryByText('Tu agente sigue trabajando en su ventana.')).not.toBeInTheDocument()
+    expect(screen.queryByText('El agente sigue trabajando en su ventana.')).not.toBeInTheDocument()
     expect(screen.getByText('1/3')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Buscando ofertas…: abrir el aviso' }))
-    expect(screen.getByText('Tu agente sigue trabajando en su ventana.')).toBeInTheDocument()
+    expect(screen.getByText('El agente sigue trabajando en su ventana.')).toBeInTheDocument()
     expect(calls.some((c) => c.method === 'POST')).toBe(false)
   })
 
@@ -86,7 +86,7 @@ describe('Aviso de la búsqueda', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Minimizar el aviso' }))
     current = run({ status: 'finished', outcome: 'done', portals_done: 3 })
     await waitFor(() => expect(screen.getByText('Búsqueda terminada')).toBeInTheDocument(), { timeout: 6000 })
-    expect(screen.getByText('12 vistas · 9 pasan tus filtros · 5 ya las tenías · 4 nuevas.')).toBeInTheDocument()
+    expect(screen.getByText('12 vistas · 9 pasan los filtros · 5 ya estaban · 4 nuevas.')).toBeInTheDocument()
   }, 10_000)
 
   it('mientras busca también se puede cerrar con la X', async () => {
@@ -117,7 +117,7 @@ describe('Aviso de la búsqueda', () => {
     mockApi(routes(run({ outcome: 'done', portals_finished: true, portals_done: 3, companies_total: 2, companies_done: 1 })))
     renderApp('/')
     expect(await screen.findByText('Buscando ofertas…')).toBeInTheDocument()
-    expect(screen.getByText('La app está revisando las webs de empleo de tus empresas.')).toBeInTheDocument()
+    expect(screen.getByText('La app está revisando las webs de empleo de las empresas seguidas.')).toBeInTheDocument()
     expect(screen.getByText('3 de 3 portales · 1 de 2 empresas · 4 ofertas nuevas')).toBeInTheDocument()
   })
 
@@ -128,7 +128,7 @@ describe('Aviso de la búsqueda', () => {
     renderApp('/')
     expect(
       await screen.findByText(
-        '12 vistas · 9 pasan tus filtros · 5 ya las tenías · 4 nuevas (de ellas, 2 reabiertas). Alcanzó el límite: quedan 3 sin abrir.',
+        '12 vistas · 9 pasan los filtros · 5 ya estaban · 4 nuevas (de ellas, 2 reabiertas). Alcanzó el límite: quedan 3 sin abrir.',
       ),
     ).toBeInTheDocument()
   })

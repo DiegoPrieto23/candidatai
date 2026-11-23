@@ -177,7 +177,7 @@ describe('Resultados', () => {
     const titles = screen.getByRole('table', { name: 'Embudo por tipo de puesto' })
     expect(within(titles).getByRole('rowheader', { name: 'Otros' })).toBeInTheDocument()
     expect(within(titles).queryByRole('rowheader', { name: 'Sin leer' })).not.toBeInTheDocument()
-    expect(screen.getByText('Falta que tu agente lea 1 oferta: no cuenta aquí hasta entonces.')).toBeInTheDocument()
+    expect(screen.getByText('Falta que el agente lea 1 oferta: no cuenta aquí hasta entonces.')).toBeInTheDocument()
   })
 
   it('responde arriba con frases y agrupa lo demás por pregunta', async () => {
@@ -185,30 +185,30 @@ describe('Resultados', () => {
     renderApp('/resultados')
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Resultados' })).toBeInTheDocument()
-    const cards = await screen.findByRole('list', { name: 'Lo que dicen tus datos' })
+    const cards = await screen.findByRole('list', { name: 'Lo que dicen los datos' })
     const text = (el: HTMLElement) => el.textContent?.replace(/ /g, ' ')
     expect(within(cards).getAllByRole('listitem').map(text)).toEqual([
       // Referencia, 2 de 2, frente al resto, 1 de 3.
-      'Dónde te responden másTe responden más por referencia: 100 % frente a 33 % en el resto.',
+      'Dónde responden másResponden más por referencia: 100 % frente a 33 % en el resto.',
       'Cuánto tardanLas empresas tardan 2 días de mediana en responder.',
       'Dónde responden antesResponden antes por referencia: 1 día de mediana, frente a 4 días en los portales de empleo.',
-      'Tu mejor fuenteTu fuente con más respuesta es Greenhouse Acme, con un 67 %.',
+      'Mejor fuenteLa fuente con más respuesta es Greenhouse Acme, con un 67 %.',
     ])
-    for (const question of ['¿Por dónde me responden más y antes?', '¿Dónde se quedan mis candidaturas?', '¿Qué puestos me responden?', '¿Por qué descarto?']) {
+    for (const question of ['¿Por dónde responden más y antes?', '¿Dónde se quedan las candidaturas?', '¿Qué puestos reciben respuesta?', '¿Por qué se descartan ofertas?']) {
       expect(screen.getByRole('heading', { level: 2, name: question })).toBeInTheDocument()
     }
     const channels = screen.getByRole('table', { name: 'Respuesta por canal' })
     const referral = within(channels).getByRole('row', { name: /Referencia/ })
     expect(within(referral).getAllByRole('cell').map(text)).toEqual(['2', '2', '100 %', '1 día'])
     // Sin ofertas, el canal no sale.
-    expect(within(channels).queryByRole('rowheader', { name: 'Añadidas por ti' })).not.toBeInTheDocument()
+    expect(within(channels).queryByRole('rowheader', { name: 'Añadidas a mano' })).not.toBeInTheDocument()
   })
 
   it('sin candidaturas suficientes, dice cuándo saldrán las frases', async () => {
     mockApi({ 'GET /status': status(), 'GET /stats/funnel': stats() })
     renderApp('/resultados')
-    expect(await screen.findByText('Con unas 10 candidaturas enviadas, aquí verás qué te funciona.')).toBeInTheDocument()
-    expect(screen.queryByRole('list', { name: 'Lo que dicen tus datos' })).not.toBeInTheDocument()
+    expect(await screen.findByText('Con unas 10 candidaturas enviadas, aquí se verá qué funciona.')).toBeInTheDocument()
+    expect(screen.queryByRole('list', { name: 'Lo que dicen los datos' })).not.toBeInTheDocument()
   })
 
   it('el nombre de una fuente se ve tal cual, sin tomarse por marcado', async () => {
@@ -303,7 +303,7 @@ describe('Resultados', () => {
     renderApp('/resultados')
 
     await openMore()
-    const panel = await screen.findByRole('region', { name: 'Tu búsqueda en números' })
+    const panel = await screen.findByRole('region', { name: 'La búsqueda en números' })
     expect(within(panel).getByText('Evaluadas').nextSibling).toHaveTextContent('62')
     expect(within(panel).getByText('Ofertas recibidas').nextSibling).toHaveTextContent('1')
     expect(within(panel).getByText(/^Del 13 ago 2026 al 5 oct 2026/)).toBeInTheDocument()
@@ -418,7 +418,7 @@ describe('¿Acierta el encaje?', () => {
     await openMore()
     const panel = await screen.findByRole('region', { name: '¿Acierta el encaje?' })
     expect(within(panel).getByText(/Orientativo/)).toBeInTheDocument()
-    expect(within(panel).getByRole('button', { name: 'Revisar mi búsqueda' })).toBeInTheDocument()
+    expect(within(panel).getByRole('button', { name: 'Revisar la búsqueda' })).toBeInTheDocument()
     const table = await within(panel).findByRole('table', { name: 'Calibración por encaje' })
     const summary = within(panel).getByText((_, el) => el?.tagName === 'P' && /enviadas · respuesta/.test(el.textContent ?? ''))
     expect(text(summary)).toBe('24 enviadas · respuesta 38 % · entrevista 17 %')
@@ -499,7 +499,7 @@ describe('¿Acierta el encaje?', () => {
     renderApp('/resultados')
     await openMore()
     const panel = await screen.findByRole('region', { name: '¿Acierta el encaje?' })
-    expect(await within(panel).findByText(/Aún no has enviado ninguna candidatura/)).toBeInTheDocument()
+    expect(await within(panel).findByText(/Aún no hay ninguna candidatura enviada/)).toBeInTheDocument()
     expect(within(panel).queryByRole('table')).not.toBeInTheDocument()
   })
 })

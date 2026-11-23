@@ -1945,7 +1945,7 @@ export interface paths {
         put?: never;
         /**
          * Save User Answers
-         * @description Edición del usuario: crea un documento nuevo «Editadas por ti»; el anterior se conserva.
+         * @description Edición del usuario: crea un documento nuevo «Editadas a mano»; el anterior se conserva.
          */
         post: operations["save_user_answers"];
         delete?: never;
@@ -1969,7 +1969,7 @@ export interface paths {
         put?: never;
         /**
          * Save User Cover Letter
-         * @description Edición a mano: documento nuevo «Editada por ti», sin verificación, y su render.
+         * @description Edición a mano: documento nuevo «Editada a mano», sin verificación, y su render.
          */
         post: operations["save_user_cover_letter"];
         delete?: never;
@@ -2173,7 +2173,7 @@ export interface paths {
         put?: never;
         /**
          * Focus Application
-         * @description «Lo termino yo»: trae la pestaña al frente y deja que envíes tú.
+         * @description «Terminar a mano»: trae la pestaña al frente y deja que envíes tú.
          */
         post: operations["focus_application"];
         delete?: never;
@@ -2689,7 +2689,7 @@ export interface paths {
         put?: never;
         /**
          * Create Agent Request
-         * @description «Dejar para mi próxima sesión»: el agente lo verá con `list_agent_requests`.
+         * @description «Dejar para la próxima sesión»: el agente lo verá con `list_agent_requests`.
          */
         post: operations["create_agent_request"];
         delete?: never;
@@ -3554,7 +3554,7 @@ export interface paths {
         put?: never;
         /**
          * Mark Draft Sent
-         * @description «Ya lo he enviado»: un seguimiento registra `followup_sent`.
+         * @description «Marcar como enviado»: un seguimiento registra `followup_sent`.
          */
         post: operations["mark_draft_sent"];
         delete?: never;

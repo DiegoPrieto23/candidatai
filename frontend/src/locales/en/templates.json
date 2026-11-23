@@ -6,7 +6,7 @@
     "askAgent": "Your agent turns it into a template once (after that it uses no quota). It opens in a terminal, where you see and approve what it does.",
     "convert": "Turn into a template",
     "orCopy": "Rather ask your agent yourself?",
-    "recreated": "From {{format}} the agent recreates the design: it'll look very similar, but not exact, and it only produces PDF. It needs an agent that can see images. If you have the Word file, upload it: it's kept as is.",
+    "recreated": "From {{format}} the agent recreates the design: it will look very similar, but not exact, and it only produces PDF. It needs an agent that can see images. If you have the Word file, upload it: it is kept as is.",
     "pending": "Pending import",
     "removeAria": "Remove {{name}}",
     "remove": "Remove",
@@ -15,7 +15,7 @@
     "file": "File with the template design",
     "uploading": "Uploading…",
     "upload": "Upload new template",
-    "none": "You haven't uploaded any sample CV yet",
+    "none": "You have not uploaded any sample CV yet",
     "noneHint": "Ideally in Word (.docx): the design is kept exactly. Maximum 10 MB.",
     "defaultName": "My CV",
     "nameStep": "Template name",
@@ -24,7 +24,7 @@
     "cancel": "Cancel",
     "dropHere": "Drop the file to upload it",
     "dropOr": "Drag your CV here or click to choose it.",
-    "wrongType": "That format isn't supported. Use a Word document, a PDF or an image.",
+    "wrongType": "That format is not supported. Use a Word document, a PDF or an image.",
     "converting": "Converting into a template…",
     "convertingHint": "Your agent is working in its window. This card updates when it finishes.",
     "stopWaiting": "Stop waiting"
@@ -55,7 +55,7 @@
   "all": "All templates",
   "loading": "Loading templates",
   "invalidLabel": "Templates with problems",
-  "invalidTitle": "Templates that can't be used",
+  "invalidTitle": "Templates that cannot be used",
   "pdfAndWord": "PDF and Word",
   "builtinText": {
     "ats-simple": {
@@ -91,8 +91,8 @@
     "confirmDefault": "This is your default template: from now on the app will choose one. This deletes the template and the CV you uploaded to create it. CVs already generated keep their PDF and Word files.",
     "confirmDelete": "Delete",
     "confirmTitleBuiltin": "Remove “{{name}}” from your list?",
-    "confirmBuiltin": "This is one of the app's templates: it leaves your list and the ones your agent picks, but it isn't deleted from the program and you can restore it in “Deleted templates”. CVs already generated keep their PDF and Word files.",
-    "confirmBuiltinDefault": "This is your default template: from now on the app will choose one. It leaves your list and the ones your agent picks, but it isn't deleted from the program and you can restore it in “Deleted templates”."
+    "confirmBuiltin": "This is one of the app's templates: it leaves your list and the ones your agent picks, but it is not deleted from the program and you can restore it in “Deleted templates”. CVs already generated keep their PDF and Word files.",
+    "confirmBuiltinDefault": "This is your default template: from now on the app will choose one. It leaves your list and the ones your agent picks, but it is not deleted from the program and you can restore it in “Deleted templates”."
   },
   "hidden": {
     "label": "Deleted templates",

@@ -68,7 +68,7 @@ describe('Señales de la oferta', () => {
     renderApp('/jobs/1')
     const notice = await screen.findByRole('region', { name: 'Puede que esté cerrada' })
     expect(within(notice).getByText(/La página responde HTTP 404/)).toBeInTheDocument()
-    expect(within(notice).getByText(/no la cierra: decide tú/)).toBeInTheDocument()
+    expect(within(notice).getByText(/no la cierra: la decisión es manual/)).toBeInTheDocument()
     expect(calls.some((c) => c.method === 'POST')).toBe(false)
 
     await userEvent.click(within(notice).getByRole('button', { name: 'Descartar' }))
@@ -165,7 +165,7 @@ describe('Señales de la oferta', () => {
       expect(within(note).getByText(/122 días/)).toBeInTheDocument()
       expect(within(note).getByText(/«hirevue»/)).toBeInTheDocument()
       expect(within(note).getByText(/el encaje y la oferta siguen igual/)).toBeInTheDocument()
-      expect(within(note).getByText(/pídeselo a tu agente/)).toBeInTheDocument()
+      expect(within(note).getByText(/se le pide al agente/)).toBeInTheDocument()
     })
 
     it('sin señales no hay nota', async () => {

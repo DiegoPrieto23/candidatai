@@ -81,7 +81,7 @@ class LaunchBody(RequestBody):
     agent: str | None = Field(default=None, max_length=32)
     model: str | None = Field(default=None, max_length=100)
     preset: str | None = Field(default=None, max_length=40)
-    # Fase 25.7b: «Mejorar con mi agente» en un logro (`exp-acme/a2`) o una historia (`st-x`).
+    # Fase 25.7b: «Mejorar con el agente» en un logro (`exp-acme/a2`) o una historia (`st-x`).
     profile_item: str | None = Field(default=None, max_length=130)
     # «Convertir en plantilla»: el nombre de un CV subido en Plantillas (`cv.docx`).
     upload: str | None = Field(default=None, max_length=100)
@@ -448,7 +448,7 @@ def list_agent_requests(
     dependencies=[Depends(require_ui)],
 )
 def create_agent_request(session: SessionDep, body: RequestBody) -> agent_requests.AgentRequestView:
-    """«Dejar para mi próxima sesión»: el agente lo verá con `list_agent_requests`."""
+    """«Dejar para la próxima sesión»: el agente lo verá con `list_agent_requests`."""
     if body.lang is not None:
         ui_language.save(session, body.lang)
     try:

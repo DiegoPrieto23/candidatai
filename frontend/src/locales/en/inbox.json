@@ -93,25 +93,25 @@
       "next": "pick a stage in the row below to see only its jobs and what to do with them."
     },
     "pending_detail": {
-      "what": "Jobs that reached you as a summary, usually from LinkedIn email alerts: their description is missing. For safety your agent doesn't go into LinkedIn, so you do this step yourself with the browser's “Send to CandidatAI” button.",
+      "what": "Jobs that reached you as a summary, usually from LinkedIn email alerts: their description is missing. For safety your agent does not go into LinkedIn, so you do this step yourself with the browser's “Send to CandidatAI” button.",
       "steps": {
         "open": "Click <strong>Open</strong> on a job: it opens on its job board (on LinkedIn, signed in).",
         "send": "In that tab, click the <strong>Send to CandidatAI</strong> button in the browser toolbar. It saves the description and the job moves to “To read”.",
-        "discard": "If the title already tells you it's not for you, discard it right here, without opening it."
+        "discard": "If the title already tells you it is not for you, discard it right here, without opening it."
       },
-      "extension": "Don't have the button yet? <extension>Install it in a few minutes</extension>. You can also go through them one by one, with keyboard shortcuts, in <alerts>To complete</alerts>."
+      "extension": "Do not have the button yet? <extension>Install it in a few minutes</extension>. You can also go through them one by one, with keyboard shortcuts, in <alerts>To complete</alerts>."
     },
     "pending_extraction": {
-      "what": "Jobs with their full description that your agent hasn't read yet.",
-      "next": "click “Assess new jobs”. Your agent pulls out each job's details, the app calculates its fit (0 to 100) against your profile and your agent explains why it fits or not. Those that don't pass your filters (work mode, location…) close by themselves; the rest move to “To review”."
+      "what": "Jobs with their full description that your agent has not read yet.",
+      "next": "click “Assess new jobs”. Your agent pulls out each job's details, the app calculates its fit (0 to 100) against your profile and your agent explains why it fits or not. Those that do not pass your filters (work mode, location…) close by themselves; the rest move to “To review”."
     },
     "pending_triage": {
       "what": "Jobs already read and with their fit calculated, waiting for your decision.",
-      "next": "go through them in <triage>Quick review</triage> and approve or discard them. If any doesn't have an assessment yet, “Assess new jobs” assesses it too. None changes stage without your decision."
+      "next": "go through them in <triage>Quick review</triage> and approve or discard them. If any does not have an assessment yet, “Assess new jobs” assesses it too. None changes stage without your decision."
     },
     "approved": {
       "what": "Jobs you approved. They still need their tailored CV.",
-      "next": "open each one and, in the “Application” tab, click “Generate CV”. Your agent writes it using only your profile and checks it; once it's there, the job moves to “CV ready”."
+      "next": "open each one and, in the “Application” tab, click “Generate CV”. Your agent writes it using only your profile and checks it; once it is there, the job moves to “CV ready”."
     },
     "cv_ready": {
       "what": "Jobs with their tailored CV ready, not sent yet.",
@@ -126,14 +126,14 @@
       "next": "follow them in <processes>Processes</processes>: note each interview, prepare it with your agent and record how it ends, with an offer or a closure."
     },
     "closed": {
-      "what": "The end of the road: jobs discarded, rejected, expired, duplicated or that didn't pass your filters.",
+      "what": "The end of the road: jobs discarded, rejected, expired, duplicated or that did not pass your filters.",
       "next": "this is the final stage. If you closed one by mistake, open it and click “Reopen”."
     },
     "openComplete": "Go through them one by one"
   },
   "noScoreWhy": {
     "profile": "Fit not calculated: your profile is missing. Create it in “My profile”.",
-    "unread": "Fit not calculated: your agent hasn't read the job yet.",
+    "unread": "Fit not calculated: your agent has not read the job yet.",
     "other": "Fit not calculated yet."
   },
   "closeReason": {

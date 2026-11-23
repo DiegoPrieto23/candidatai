@@ -66,7 +66,7 @@ describe('Procesos (kanban)', () => {
     expect(within(applied).getByText(/Seguimiento · 12 días/)).toBeInTheDocument()
     expect(screen.getByText('1 seguimiento pendiente')).toBeInTheDocument()
     // La intro va en una línea; cómo se usa el tablero, en su ayuda.
-    expect(screen.getByText('Tus candidaturas en curso, por etapa.')).toBeInTheDocument()
+    expect(screen.getByText('Las candidaturas en curso, por etapa.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Cómo se usa el tablero' })).toBeInTheDocument()
     expect(within(screen.getByRole('region', { name: 'Cerrada' })).getByText('Rechazada')).toBeInTheDocument()
     const upcoming = screen.getByRole('region', { name: 'Próximos 7 días' })
@@ -98,7 +98,7 @@ describe('Procesos (kanban)', () => {
     expect(within(screen.getByRole('region', { name: 'Enviada' })).getByText('Oferta 2')).toBeInTheDocument()
 
     await userEvent.click(within(column).getByRole('combobox', { name: 'Mostrar' }))
-    await userEvent.click(await screen.findByRole('option', { name: 'Descartadas por ti' }))
+    await userEvent.click(await screen.findByRole('option', { name: 'Descartadas a mano' }))
     expect(within(column).getByText('Oferta 7')).toBeInTheDocument()
     expect(within(column).queryByText('Oferta 5')).not.toBeInTheDocument()
   })
@@ -110,7 +110,7 @@ describe('Procesos (kanban)', () => {
     const dialog = await screen.findByRole('dialog')
     const register = within(dialog).getByRole('button', { name: 'Registrar' })
     expect(register).toBeDisabled()
-    await userEvent.click(within(dialog).getByRole('radio', { name: /Enviada por tu cuenta/ }))
+    await userEvent.click(within(dialog).getByRole('radio', { name: /Enviada a mano/ }))
     await userEvent.selectOptions(within(dialog).getByLabelText('Canal (opcional)'), 'email')
     await userEvent.click(register)
 

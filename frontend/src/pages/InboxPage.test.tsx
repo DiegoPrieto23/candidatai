@@ -89,15 +89,15 @@ describe('Bandeja', () => {
     const { unmount } = renderApp('/bandeja')
     let table = await screen.findByRole('table')
     const unread = within(table).getAllByRole('row')[2]
-    expect(within(unread).getByText('Sin encaje calculado: tu agente aún no ha leído la oferta.')).toBeInTheDocument()
+    expect(within(unread).getByText('Sin encaje calculado: el agente aún no ha leído la oferta.')).toBeInTheDocument()
     await userEvent.hover(within(unread).getByText('Sin encaje'))
-    expect(await screen.findByRole('tooltip')).toHaveTextContent('tu agente aún no ha leído la oferta')
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('el agente aún no ha leído la oferta')
     unmount()
 
     mockApi({ 'GET /status': status(1, 1), 'GET /jobs': rows, 'GET /profile/editable': noProfile })
     renderApp('/bandeja')
     table = await screen.findByRole('table')
-    expect(await within(table).findAllByText('Sin encaje calculado: falta tu perfil. Créalo en «Mi perfil».')).toHaveLength(2)
+    expect(await within(table).findAllByText('Sin encaje calculado: falta el perfil. Se crea en «Mi perfil».')).toHaveLength(2)
   })
 
   it('filtra por la etapa de la URL y busca con retardo', async () => {
@@ -151,7 +151,7 @@ describe('Bandeja', () => {
   it('muestra un estado vacío que invita a dar de alta', async () => {
     mockApi({ 'GET /status': status(), 'GET /jobs': page([]) })
     renderApp('/bandeja')
-    expect(await screen.findByText('Tu bandeja está vacía')).toBeInTheDocument()
+    expect(await screen.findByText('La bandeja está vacía')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /Añadir la primera/ })).toHaveAttribute('href', '/nueva')
   })
 
@@ -160,7 +160,7 @@ describe('Bandeja', () => {
     globalThis.fetch = () => Promise.reject(new TypeError('Failed to fetch'))
     renderApp('/bandeja')
     expect(await screen.findByText('CandidatAI no responde')).toBeInTheDocument()
-    expect(screen.getByText(/Ábrela desde su acceso directo/)).toBeInTheDocument()
+    expect(screen.getByText(/Hay que abrirla desde su acceso directo/)).toBeInTheDocument()
   })
 })
 
@@ -230,9 +230,9 @@ describe('Qué es cada etapa y cómo avanzar', () => {
     mockApi({ 'GET /status': status(0, 1), 'GET /jobs': page() })
     renderApp('/bandeja?stage=pending_detail')
     const box = await guide()
-    expect(box).toHaveTextContent('tu agente no entra en LinkedIn')
+    expect(box).toHaveTextContent('el agente no entra en LinkedIn')
     expect(within(box).getAllByRole('listitem')).toHaveLength(3)
-    expect(within(box).getByRole('link', { name: 'Instálalo en unos minutos' })).toHaveAttribute('href', '/fuentes/extension')
+    expect(within(box).getByRole('link', { name: 'Se instala en unos minutos' })).toHaveAttribute('href', '/fuentes/extension')
     expect(within(box).getByRole('link', { name: 'Por completar' })).toHaveAttribute('href', '/bandeja/por-completar')
   })
 
@@ -248,7 +248,7 @@ describe('Qué es cada etapa y cómo avanzar', () => {
     box = await guide()
     expect(within(box).getByRole('link', { name: 'Abrir la revisión rápida' })).toHaveAttribute('href', '/bandeja/revision')
     expect(within(box).queryByRole('button', { name: 'Valorar las que están por revisar' })).not.toBeInTheDocument()
-    expect(box).toHaveTextContent('Ninguna cambia de etapa sin tu decisión')
+    expect(box).toHaveTextContent('Ninguna cambia de etapa sin una decisión manual')
   })
 })
 
@@ -285,7 +285,7 @@ describe('Descartar desde la Bandeja (fase 27.6)', () => {
     expect(within(table).queryByText('Analytics Engineer')).not.toBeInTheDocument()
     expect(within(table).getByText('BI Developer')).toBeInTheDocument()
     const notice = await screen.findByText(/Descartada:/)
-    expect(notice).toHaveTextContent('Descartada: Analytics Engineer · No me interesa (título o empresa)')
+    expect(notice).toHaveTextContent('Descartada: Analytics Engineer · Sin interés (título o empresa)')
     expect(screen.getByRole('heading', { level: 1, name: 'Por completar' })).toBeInTheDocument() // sigue en la Bandeja
     const posts = calls.filter((c) => c.method === 'POST')
     expect(posts.map((c) => c.body)).toEqual([{ type: 'discarded', reason: 'not_interested' }])

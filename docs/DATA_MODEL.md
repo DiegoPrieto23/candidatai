@@ -264,7 +264,7 @@ Cola de trabajo del worker (sin Redis).
 | `apply_fill_page` `{attempt_id, previous}` | «Rellenar esta página» | Rellena la pestaña que tienes delante (el formulario de la empresa al que te llevó el portal) y para antes de enviar. Si es una página del portal o de LinkedIn, no toca nada y el intento vuelve a `previous` con el motivo |
 | `apply_rescan` `{attempt_id}` | «Volver a revisar» | Vuelve a leer los campos y a capturar, sin rellenar nada |
 | `apply_submit` `{attempt_id, token, consents}` | `confirm_submission` (solo la UI) | Consume el token, pulsa el envío, captura la confirmación y registra `applied` |
-| `apply_focus` `{attempt_id}` | «Lo termino yo» | Trae la pestaña al frente y retira el bloqueo del envío |
+| `apply_focus` `{attempt_id}` | «Terminar a mano» | Trae la pestaña al frente y retira el bloqueo del envío |
 | `check_open` `{job_id}` | `cai worker` cada día con la ingesta y al arrancar, para las ofertas en `approved` o `cv_ready` sin comprobación en `liveness.fresh_hours` (fase 16) | ¿Sigue abierta? (`services/liveness.check_job`). Un fallo de red da `unknown`, no se reintenta |
 | `run_linkedin_public` `{}` | `cai worker` cada día con la ingesta y al arrancar, solo si la búsqueda pública de LinkedIn está activada y le toca (fase 22) | `ingestion/linkedin_public.run`. Nunca se reintenta: un bloqueo de LinkedIn deja `blocked_at` y no se vuelve a intentar en `block_cooldown_days` |
 | `archive_application` `{job_id, event_id, cv_render_id, letter_document_id, letter_render_id, answers_document_id}` | `applied` o `applied_manually` (fase 13) | Copia lo enviado a `data/documentos/candidaturas/` (ver §Fase 13). Los ids se fijan al registrar el envío. Idempotente |
@@ -523,7 +523,7 @@ eventos; esta tabla guarda lo que necesita la pantalla de revisión.
 | platform | str | `greenhouse`, `lever`, `ashby`, `generic`, `linkedin`, `board` (portal de empleo), `unknown` (por la URL y, si no, mirando la página) |
 | mode | str | `fill` (rellenar y revisar) u `open` (LinkedIn o un portal: solo abrir; con «Rellenar esta página» pasa a `fill`) |
 | url | str | La del formulario (Lever `…/apply`, Ashby `…/application`) |
-| status | str | `queued` → `filling` → `ready` / `needs_user` / `failed`; `submitting` → `submitted` / `submit_unconfirmed` / `submit_failed` / `needs_user`; `manual` («Lo termino yo» o `open`), `manual_done` y `cancelled` (otro intento lo sustituye) |
+| status | str | `queued` → `filling` → `ready` / `needs_user` / `failed`; `submitting` → `submitted` / `submit_unconfirmed` / `submit_failed` / `needs_user`; `manual` («Terminar a mano» o `open`), `manual_done` y `cancelled` (otro intento lo sustituye) |
 | fields | JSON | `[FieldReport]`: `marker`, `label`, `control`, `kind`, `required`, `status` (`filled`, `empty`, `needs_user_input`, `sensitive`, `consent`, `skipped`, `error`), `source`, `value` (recortado) y `note` |
 | warnings | JSON | `[{code, message}]`: `invisible_captcha`, `submit_blocked`, `no_resume_field`, `unused_answers`, `no_answers`, `missing_required`, `submit_button` (qué botón se pulsará), `no_submit_button`, `form_opened` (se pulsó el botón que abre el formulario), `possible_duplicate` (un intento anterior ya pulsó «Enviar»), `captcha`, `antibot`, `login`, `no_form`, `form_error`, `no_evidence` |
 | screenshot_path / confirmation_path | str? | Relativos a `data/` (`applications/<job_id>/<intento>/review.png`, `confirmation.png` o `after-submit.png`) |
@@ -795,7 +795,7 @@ nunca el agente.
 ### `message_drafts` (fase 18, migración 0018)
 Mensajes a personas de la empresa: `linkedin` (≤ 300 caracteres, sin asunto ni adjuntos) y `email`
 (con asunto). Se guardan desde `approved` hasta `in_process` (los seguimientos y agradecimientos,
-solo en `applied`/`in_process`). «Ya lo he enviado» no registra evento. Como mucho uno vigente por
+solo en `applied`/`in_process`). «Marcar como enviado» no registra evento. Como mucho uno vigente por
 oferta, tipo y destinatario.
 
 | Columna | Tipo | Notas |

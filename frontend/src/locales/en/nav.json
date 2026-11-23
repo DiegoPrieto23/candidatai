@@ -4,14 +4,14 @@
   "pageError": {
     "reload": "Reload",
     "down": {
-      "title": "The app isn't responding",
-      "body": "It isn't answering: its window may have been closed or it may have stopped. Open it again with its shortcut and reload this page."
+      "title": "The app is not responding",
+      "body": "It is not answering: its window may have been closed or it may have stopped. Open it again with its shortcut and reload this page."
     },
     "broken": {
       "title": "This page has failed",
-      "body": "It's a bug in the app, not a problem with your data: the other pages still work.",
+      "body": "It is a bug in the app, not a problem with your data: the other pages still work.",
       "home": "Back to Home",
-      "report": "If it keeps happening, tell us on <issues>GitHub</issues> what you were doing. The error details are in the browser console: press <kbd>F12</kbd> and open “Console”."
+      "report": "If it keeps happening, report it on <issues>GitHub</issues> with what you were doing. The error details are in the browser console: press <kbd>F12</kbd> and open “Console”."
     }
   },
   "groups": {
@@ -89,14 +89,14 @@
     },
     "stale": {
       "title": "No news from your agent",
-      "body": "It hasn't added anything for a while. Check its window: it may be waiting for you, or it may have closed."
+      "body": "It has not added anything for a while. Check its window: it may be waiting for you, or it may have closed."
     },
     "done": {
       "title": "Search finished"
     },
     "no_browser": {
-      "title": "Your agent couldn't search",
-      "body": "It can't reach your browser. Connect it as “Before you start” explains and launch the search again."
+      "title": "Your agent could not search",
+      "body": "It cannot reach your browser. Connect it as “Before you start” explains and launch the search again."
     },
     "stopped": {
       "title": "Your agent stopped before the end",
@@ -129,10 +129,10 @@
     "close": "Close the notice",
     "stopped": {
       "title": "Your agent has stopped",
-      "body": "It hasn't finished everything. Check its window to see why."
+      "body": "It has not finished everything. Check its window to see why."
     },
     "failed": {
-      "title": "It didn't work",
+      "title": "It did not work",
       "body": "The run failed."
     },
     "needs_user": {
@@ -196,7 +196,7 @@
     "stop": "Stop",
     "stopConfirm": "Stop it? What your agent has already saved stays.",
     "stopYes": "Yes, stop",
-    "stopFailed": "It couldn't be stopped. Try again.",
+    "stopFailed": "It could not be stopped. Try again.",
     "stopNo": "Keep going",
     "stopping": "Stopping…",
     "stoppingBody": "Stopping your agent. It takes a few seconds.",

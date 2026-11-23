@@ -53,17 +53,17 @@
   "publicRisk": {
     "detailTitle": "Download the description too?",
     "enableTitle": "Turn on LinkedIn's public search?",
-    "detail": "Besides the results list, the app will request the public page of each new job that passes your filters (with a cap per run). That's <strong>more requests to LinkedIn</strong> and therefore a higher chance it blocks your IP. Without this, jobs come in as summaries and you complete them with the “Send to CandidatAI” button.",
-    "p1": "Once a day the app will query LinkedIn's public search (the one people see when not signed in) with this card's searches. <strong>It doesn't use your account or your cookies</strong>, goes slowly and identifies itself honestly.",
-    "p2": "Even so, <strong>LinkedIn's terms forbid automated access</strong>, and LinkedIn may block your IP for a while (for normal browsing too). If it does, the app stops immediately and doesn't try again for a few days.",
-    "p3": "It's for personal use. Email alerts and the “Send to CandidatAI” button bring in jobs without querying LinkedIn automatically. You always send applications yourself.",
+    "detail": "Besides the results list, the app will request the public page of each new job that passes your filters (with a cap per run). That is <strong>more requests to LinkedIn</strong> and therefore a higher chance it blocks your IP. Without this, jobs come in as summaries and you complete them with the “Send to CandidatAI” button.",
+    "p1": "Once a day the app will query LinkedIn's public search (the one people see when not signed in) with this card's searches. <strong>It does not use your account or your cookies</strong>, goes slowly and identifies itself honestly.",
+    "p2": "Even so, <strong>LinkedIn's terms forbid automated access</strong>, and LinkedIn may block your IP for a while (for normal browsing too). If it does, the app stops immediately and does not try again for a few days.",
+    "p3": "It is for personal use. Email alerts and the “Send to CandidatAI” button bring in jobs without querying LinkedIn automatically. You always send applications yourself.",
     "cancel": "Cancel",
     "activating": "Turning on…",
     "download": "Download it at my own risk",
     "activate": "Turn on at my own risk"
   },
   "public": {
-    "notRun": "It hasn't run yet.",
+    "notRun": "It has not run yet.",
     "label": "LinkedIn public search",
     "title": "Public search without signing in",
     "intro": "Different from “The agent browses it”: once a day the app queries LinkedIn's public search, without your account, with the searches above. New jobs that pass your filters come in as summaries in the Job inbox.",
@@ -74,16 +74,16 @@
     "detailHint": "Up to {{offers}} per run; the more requests, the likelier LinkedIn is to block your connection",
     "what": "What it will query",
     "noSearch": "No search can be used: add to this platform a LinkedIn Jobs search with keywords or a location (copy the address of the results page).",
-    "ignored_one": "One search isn't used: {{list}}",
-    "ignored_other": "{{count}} searches aren't used: {{list}}",
-    "blocked": "LinkedIn cut off the last search (request limit, sign-in or captcha). It won't try again until {{date}}.",
+    "ignored_one": "One search is not used: {{list}}",
+    "ignored_other": "{{count}} searches are not used: {{list}}",
+    "blocked": "LinkedIn cut off the last search (request limit, sign-in or captcha). It will not try again until {{date}}.",
     "searching": "Searching… (it goes slowly)",
     "searchNow": "Search now",
     "daily": "Once a day: the next one from {{date}}"
   },
   "row": {
-    "notRun": "The agent hasn't browsed it yet",
-    "invalid": "Its settings aren't valid. Ask your agent to set it up again (“set up my job search platforms”).",
+    "notRun": "The agent has not browsed it yet",
+    "invalid": "Its settings are not valid. Ask your agent to set it up again (“set up my job search platforms”).",
     "risk": "Risk to your account",
     "browsing": "The agent browses it",
     "disabled": "Off",
@@ -109,18 +109,18 @@
     "problemsTitle": "Problems.",
     "problemsHint": "What stopped part of the job board being read: a captcha, a login, a page that has changed.",
     "notesTitle": "Notes from your agent.",
-    "notesHint": "Nothing failed: this is what it wrote down, like the searches it didn't get to."
+    "notesHint": "Nothing failed: this is what it wrote down, like the searches it did not get to."
   },
-  "limits": "App limits: at most {{pages}} of results per search (it stops earlier when it reaches what the previous search saw), {{delay}} s pause between pages and {{offers}} new jobs per run on new platforms (the ones you already have don't count); change it on each one with “Jobs per run”.",
+  "limits": "App limits: at most {{pages}} of results per search (it stops earlier when it reaches what the previous search saw), {{delay}} s pause between pages and {{offers}} new jobs per run on new platforms (the ones you already have do not count); change it on each one with “Jobs per run”.",
   "empty": {
-    "title": "You're not searching any job board yet",
+    "title": "You are not searching any job board yet",
     "body": "Ask your agent to set it up: it asks where you search, recommends job boards and prepares their searches with the roles in your profile. Or add one yourself: on known job boards, the searches come from your profile."
   },
   "title": "Job boards",
   "broaden": "Broaden search",
   "intro": "Your agent goes through them in this order when you search.",
   "add": {
-    "linkedinTitle": "It's saved with searching turned off, and that's what we recommend.",
+    "linkedinTitle": "It is saved with searching turned off, which is the recommended setting.",
     "linkedinP1": "LinkedIn's terms forbid browsing its website with automated tools, and it may restrict or close your account if it detects it, even if the agent uses your browser and only reads. The safe way is to get its jobs through email alerts (“Where to search → Email alerts”) or with the “Send to CandidatAI” button.",
     "linkedinP2": "If you still want the agent to browse it, turn it on afterwards with its switch, at your own risk.",
     "title": "Add job board",
@@ -147,7 +147,7 @@
     "button": "Add job board",
     "fromProfile": "Fill in from my profile",
     "urlsHintGenerated": "They come from the roles and locations in your profile (you change them in “Search jobs”). You can remove or add lines: one address per search.",
-    "urlsHintNoRoles": "Add the roles you're looking for in “Search jobs” and they fill in by themselves. Or run the search on the job board and paste the results address here.",
+    "urlsHintNoRoles": "Add the roles you are looking for in “Search jobs” and they fill in by themselves. Or run the search on the job board and paste the results address here.",
     "willSearch": "It will search:"
   },
   "edit": {

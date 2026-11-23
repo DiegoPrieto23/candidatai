@@ -80,7 +80,7 @@ Enseña:
 Recuerda que en la ficha de la oferta (sección «Carta de presentación») puede, sin agente:
 - copiar el texto o descargar el TXT o el PDF;
 - cambiar el diseño, la foto o el color;
-- retocar el texto a mano, lo que crea una carta nueva «Editada por ti», sin verificar;
+- retocar el texto a mano, lo que crea una carta nueva «Editada a mano», sin verificar;
 - marcar el render que enviará.
 
 La carta también aparece en el «Paquete de candidatura». Si es él quien te pide otro diseño:

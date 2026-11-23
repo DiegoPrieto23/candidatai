@@ -11,7 +11,7 @@
   "more": "… and {{count}} more.",
   "forYou_one": "{{count}} job for you",
   "forYou_other": "{{count}} jobs for you",
-  "nonePass": "No job matches your search right now; it's checked every day.",
+  "nonePass": "No job matches your search right now; it is checked every day.",
   "onlyIn": "Only {{places}}",
   "runHint": "They go to “To read”: press “Assess new jobs”.",
   "see": "See them",
@@ -27,14 +27,14 @@
       "page": "linked from its site",
       "search": "by its name"
     },
-    "detail": "{{board}}, {{how}}. If that isn't its job site, fix it in “More options”.",
-    "none": "We don't recognize that site's job system. We'll add it to your job sites and your agent will browse it when searching."
+    "detail": "{{board}}, {{how}}. If that is not its job site, fix it in “More options”.",
+    "none": "The job system of that site is not recognized. It will be added to your job sites and your agent will browse it when searching."
   },
   "form": {
     "label": "Add source",
     "company": "Company",
     "url": "Address of its careers site",
-    "urlHint": "As you see it in the browser; if it filters by city, that's kept.",
+    "urlHint": "As you see it in the browser; if it filters by city, that is kept.",
     "more": "More options",
     "origin": "Job site it uses",
     "auto": "Detect it",
@@ -56,7 +56,7 @@
     "langEn": "English",
     "country": "Country",
     "remoteOnly": "Remote jobs only",
-    "added": "“{{name}}” added. It's checked every day; you can also search now.",
+    "added": "“{{name}}” added. It is checked every day; you can also search now.",
     "addedBrowse": "“{{name}}” added to your job sites: your agent will browse it when searching.",
     "testing": "Searching…",
     "test": "Test",
@@ -88,12 +88,12 @@
     "cancel": "Cancel"
   },
   "empty": {
-    "title": "You don't follow any company yet",
-    "body": "Paste the address of its careers site and test it: you'll see which jobs fit you.",
+    "title": "You do not follow any company yet",
+    "body": "Paste the address of its careers site and test it: you will see which jobs fit you.",
     "add": "Add company"
   },
   "title": "Company career sites",
-  "intro": "Companies with their own careers site: while it's open, the app checks it every day and brings in what fits you.",
+  "intro": "Companies with their own careers site: while it is open, the app checks it every day and brings in what fits you.",
   "addTitle": "Add company",
   "following": "Following",
   "closeAdd": "Close"

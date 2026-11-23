@@ -9,7 +9,7 @@ const emptyPage = { items: [], total: 0, limit: 50, offset: 0 }
 async function openApp() {
   mockApi({ 'GET /status': status(), 'GET /jobs': emptyPage })
   renderApp('/bandeja')
-  await screen.findByText('Tu bandeja está vacía')
+  await screen.findByText('La bandeja está vacía')
   return screen.getByRole('button', { name: 'Ayuda' })
 }
 
