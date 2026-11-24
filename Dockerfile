@@ -42,8 +42,11 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev --no-install-project
 
 # Chromium sin ventana, con sus librerías: imprime los PDF del motor html. Sin LibreOffice: el
-# motor html basta. La candidatura asistida (navegador visible) no funciona dentro.
-RUN playwright install --with-deps --only-shell chromium \
+# motor html basta. La candidatura asistida (navegador visible) no funciona dentro. `libatomic1`
+# va antes: sin ella no arranca el propio Node de Playwright que instala el resto.
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends libatomic1 \
+    && playwright install --with-deps --only-shell chromium \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
