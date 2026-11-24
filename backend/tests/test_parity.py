@@ -328,10 +328,13 @@ def seed_received_offer(private: bool = True) -> None:
         )
 
 
-TODAY = utcnow().astimezone(ZoneInfo("Europe/Madrid")).date().isoformat()
+# Mañana y no hoy: los casos se arman al cargar el módulo, y si el test corre después de la
+# medianoche de Madrid, «hoy» ya sería ayer y el bloque quedaría fuera de plazo. La entrevista de
+# `seed_upcoming` es dentro de dos días, así que mañana sigue dentro.
+TOMORROW = (utcnow().astimezone(ZoneInfo("Europe/Madrid")).date() + timedelta(days=1)).isoformat()
 PLAN: dict[str, Any] = {
     "dossier": "1-acme.md",
-    "blocks": [{"date": TODAY, "minutes": 45, "topic": "Historias STAR", "detail": "s1 y s2"}],
+    "blocks": [{"date": TOMORROW, "minutes": 45, "topic": "Historias STAR", "detail": "s1 y s2"}],
 }
 GUIDE: dict[str, Any] = {
     "language": "es",

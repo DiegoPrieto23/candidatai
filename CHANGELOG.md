@@ -9,6 +9,11 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 
 ## [Sin publicar]
 
+### Corregido
+
+- Lo que se acababa de guardar (una oferta nueva, un cambio de estado) a veces no aparecía si se
+  abría al instante: la app respondía antes de terminar de guardarlo.
+
 ## [1.0.0] - 2026-11-24
 
 Primera versión estable de CandidatAI: una app local para llevar la búsqueda de empleo de principio

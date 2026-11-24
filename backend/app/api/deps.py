@@ -36,7 +36,9 @@ def get_session() -> Iterator[Session]:
         yield session
 
 
-SessionDep = Annotated[Session, Depends(get_session)]
+# El commit, antes de responder: por defecto FastAPI cierra la dependencia después de enviar la
+# respuesta, y quien pidiera enseguida lo que acaba de crear podía no encontrarlo todavía.
+SessionDep = Annotated[Session, Depends(get_session, scope="function")]
 
 
 def require_ui(request: Request) -> None:
