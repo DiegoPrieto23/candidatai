@@ -348,3 +348,12 @@ def test_frontend_openapi_is_up_to_date() -> None:
     assert committed.read_text(encoding="utf-8") == openapi_json(create_app()), (
         "El esquema OpenAPI ha cambiado: ejecuta `pnpm gen:api` en frontend/."
     )
+
+
+def test_the_session_commits_before_the_response_is_sent() -> None:
+    # Si no, quien pide justo después lo que acaba de crear (la UI, un agente) recibe un 404.
+    from typing import get_args
+
+    from app.api.deps import SessionDep
+
+    assert get_args(SessionDep)[1].scope == "function"
