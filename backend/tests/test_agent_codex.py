@@ -257,6 +257,8 @@ def terminal(monkeypatch: pytest.MonkeyPatch) -> list[str]:
     monkeypatch.setattr(agent_launch, "_launchers", lambda: [launcher])
     monkeypatch.setattr(agent_launch.shutil, "which", lambda name: f"C:/bin/{name}.exe")
     monkeypatch.setattr(agent_launch, "_open_terminal", open_terminal)
+    # Hay dónde abrirla también en una CI de Linux sin entorno gráfico.
+    monkeypatch.setattr(agent_launch, "no_terminal", lambda: None)
     return opened
 
 

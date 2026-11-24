@@ -195,8 +195,9 @@ lines.
   message. The changelog is in Spanish: write it in English if you prefer and the maintainer will
   translate it. Its format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and a test
   checks its structure.
-- **Versions** follow [semantic versioning](https://semver.org/). While it is `0.x`, a new minor
-  (`0.2.0`) brings new features and may change behaviour; a patch (`0.2.1`) only fixes things.
+- **Versions** follow [semantic versioning](https://semver.org/). A patch (`1.0.1`) only fixes
+  things; a minor (`1.1.0`) brings new features and keeps your data, settings and agent setup
+  working; a major (`2.0.0`) is for a change that needs something from you when you update.
 - **Publishing a release** (maintainer only), from an up-to-date `main`:
   1. Rename `## [Sin publicar]` to `## [X.Y.Z] - YYYY-MM-DD`, add a new empty `## [Sin publicar]`
      above it and update the links at the end of the file.
@@ -206,6 +207,9 @@ lines.
      each `<!-- media:provisional -->` marker and fails while any remains).
   4. Commit, then `git tag vX.Y.Z && git push origin vX.Y.Z`. The `Release` workflow publishes
      `candidatai.zip` with that section of the changelog as its notes, and fails if it is missing.
+  5. If the release brings a new tour video, upload it and its subtitles (generated outside git, see
+     `scripts/readme_media/README.md`): `gh release upload vX.Y.Z candidatai-tour-en.mp4 …`. The
+     READMEs and the website link to the `v1.0.0` video until a newer one replaces those links.
   To try the notes without publishing, run the `Release` workflow by hand ("Run workflow") on the
   branch you want with a version: it uses that branch's changelog (the tag only picks the section
   and doesn't need to exist) and only writes the notes to the run summary.

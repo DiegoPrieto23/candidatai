@@ -38,17 +38,18 @@ Antigravity CLI…), que la app no incluye. Es un proyecto joven, con una sola p
 probado es Windows 11 con Claude Code: ver las [limitaciones conocidas](#limitaciones-conocidas).
 
 **Para empezar:** [instalación](#instalación) · [Primeros pasos](docs/EMPEZAR.md), sin necesidad de
-perfil técnico.
+perfil técnico · [la web del proyecto](https://diegoprieto23.github.io/candidatai/).
 
 ## Demo
 
 <p align="center">
-  <!-- media:provisional -->
-  <img src="docs/img/es/anim/tour.webp" alt="Un recorrido por la app: aprobar y descartar ofertas, un CV verificado con otro diseño, el formulario de la candidatura rellenado y esperando confirmación, los procesos y el embudo" width="100%">
+  <img src="docs/img/es/anim/tour.webp" alt="Un recorrido por la app: Inicio, aprobar y descartar ofertas en la revisión rápida, un CV verificado que cambia de plantilla y de color, el formulario de la candidatura rellenado y parado en la confirmación, una tarjeta arrastrada en el tablero de Procesos y los resultados" width="100%">
   <br><sub>Todo lo que se ve es la demo: una candidata, empresas y ofertas inventadas. El trabajo del
   agente (leer las ofertas, escribir el CV) ya viene hecho en ella; con un agente de verdad, cada
-  paso tarda de unos segundos a unos minutos.</sub>
+  paso tarda de unos segundos a unos minutos. Se reproduce a 1,5× la velocidad real.</sub>
 </p>
+
+<p align="center"><a href="https://github.com/DiegoPrieto23/candidatai/releases/download/v1.0.0/candidatai-tour-es.mp4">Ver el recorrido completo en vídeo</a> (1:26, con subtítulos)</p>
 
 ## Funcionalidades
 
@@ -86,34 +87,32 @@ perfil técnico.
 
 ## Capturas
 
-<!-- media:provisional -->
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/img/es/dark/home.webp">
-  <img src="docs/img/es/home.webp" alt="Inicio: lo pendiente de hoy, el recorrido de las ofertas y las de mejor encaje por revisar" width="100%">
+  <img src="docs/img/es/home.webp" alt="Inicio: lo pendiente de hoy para la persona y para el agente, los próximos siete días, el recorrido de las ofertas y cómo van las candidaturas" width="100%">
 </picture>
 <p align="center"><sub>Inicio muestra lo pendiente, para la persona y para el agente, y el siguiente paso.</sub></p>
 
 <table>
   <tr>
-    <td width="50%"><!-- media:provisional --><img src="docs/img/es/triage.webp" alt="Revisión rápida: la lista de ofertas por encaje y, al lado, la elegida con el desglose de su encaje y sus skills" width="100%"><br><sub>Ofertas por encaje, decididas con una tecla.</sub></td>
-    <td width="50%"><!-- media:provisional --><img src="docs/img/es/job-cv.webp" alt="El CV de una oferta: verificado, con sus plantillas, la foto y las secciones que ocultar" width="100%"><br><sub>Un CV verificado, con el diseño elegido.</sub></td>
+    <td width="50%"><img src="docs/img/es/triage.webp" alt="Revisión rápida: la lista de ofertas por encaje y, al lado, la elegida con el desglose de su encaje y sus skills" width="100%"><br><sub>Ofertas por encaje, decididas con una tecla.</sub></td>
+    <td width="50%"><img src="docs/img/es/job-cv.webp" alt="El CV de una oferta: verificado, junto a un panel para pedir cambios, editar el texto o cambiar el diseño" width="100%"><br><sub>Un CV verificado que se corrige pidiéndolo con palabras o se rediseña en segundos.</sub></td>
   </tr>
   <tr>
-    <td><!-- media:provisional --><img src="docs/img/es/processes.webp" alt="Tablero de procesos con una columna por etapa" width="100%"><br><sub>Todas las candidaturas en un tablero, movido por pasos registrados.</sub></td>
-    <td><!-- media:provisional --><img src="docs/img/es/funnel.webp" alt="Embudo con las candidaturas de cada etapa" width="100%"><br><sub>Dónde se paran las candidaturas.</sub></td>
+    <td><img src="docs/img/es/processes.webp" alt="Tablero de procesos: aprobadas, CV listo, enviadas, en proceso y cerradas, con fechas de entrevista y seguimientos pendientes" width="100%"><br><sub>Todas las candidaturas en un tablero, movido por pasos registrados.</sub></td>
+    <td><img src="docs/img/es/funnel.webp" alt="Resultados: cuánto tardan las empresas en responder y, por canal y por fuente, la tasa y el tiempo de respuesta" width="100%"><br><sub>Qué canales consiguen respuesta, y en cuánto tiempo.</sub></td>
   </tr>
   <tr>
-    <td><!-- media:provisional --><img src="docs/img/es/replies.webp" alt="Respuestas de las empresas leídas del buzón, cada una con un paso propuesto que aceptar" width="100%"><br><sub>Los correos de las empresas, ordenados para aceptarlos.</sub></td>
-    <td><!-- media:provisional --><img src="docs/img/es/calendar.webp" alt="Calendario con entrevistas, pruebas y seguimientos" width="100%"><br><sub>Entrevistas, plazos y seguimientos en un calendario.</sub></td>
+    <td><img src="docs/img/es/replies.webp" alt="Respuestas de las empresas leídas del buzón, cada una con un paso propuesto que aceptar" width="100%"><br><sub>Los correos de las empresas, ordenados para aceptarlos.</sub></td>
+    <td><img src="docs/img/es/calendar.webp" alt="Calendario del mes con entrevistas, pruebas técnicas y el plazo de una oferta" width="100%"><br><sub>Entrevistas, pruebas y plazos en un calendario.</sub></td>
   </tr>
   <tr>
-    <td><!-- media:provisional --><img src="docs/img/es/search.webp" alt="Buscar ofertas: los portales en los que buscar y lo que hay que preparar antes de empezar" width="100%"><br><sub>Dónde busca el agente y qué preparar antes.</sub></td>
-    <td><!-- media:provisional --><img src="docs/img/es/profile-experience.webp" alt="Mi perfil: experiencia y skills, editados por bloques" width="100%"><br><sub>El perfil, la única fuente de lo que va en un CV.</sub></td>
+    <td><img src="docs/img/es/search.webp" alt="Buscar ofertas: puestos, lugares, modalidad y nivel como etiquetas, y los portales que recorrerá el agente" width="100%"><br><sub>Qué se busca y en qué portales lo busca el agente.</sub></td>
+    <td><img src="docs/img/es/profile-experience.webp" alt="Mi perfil: la experiencia por empresa y las skills con su nivel privado, editadas por bloques" width="100%"><br><sub>El perfil, la única fuente de lo que va en un CV.</sub></td>
   </tr>
 </table>
 
-<sub>Todas las capturas usan los datos inventados de la demo y son provisionales: aún muestran
-textos de antes del cambio a tono impersonal. Las animaciones cortas de cada funcionalidad están en
+<sub>Todas las capturas usan los datos inventados de la demo. Las animaciones cortas de cada funcionalidad están en
 [`docs/FUNCIONALIDADES.md`](docs/FUNCIONALIDADES.md).</sub>
 
 ## Instalación
@@ -179,8 +178,7 @@ textos de antes del cambio a tono impersonal. Las animaciones cortas de cada fun
 ## Cómo funciona
 
 <p align="center">
-  <!-- media:provisional -->
-  <img src="docs/img/como-funciona-es.svg" alt="Cómo funciona: entran ofertas, el agente las extrae y valora, la persona aprueba o descarta, el agente escribe el CV, la app lo verifica y lo genera, la app rellena el formulario y la persona lo envía, la app sigue el proceso" width="100%">
+  <img src="docs/img/como-funciona-es.svg" alt="Cómo funciona en ocho pasos: entran ofertas, el agente las extrae y valora, la persona las revisa, el agente escribe el CV, la app lo verifica y lo genera, la app rellena el formulario y solo la persona lo envía, la app sigue el proceso y el agente prepara las entrevistas" width="100%">
 </p>
 
 Cada color es quién hace el paso: **la persona** decide, **el agente** razona y **la app** guarda,
@@ -243,17 +241,17 @@ La comparativa completa, función a función y con sus fuentes, está en
 
 ## Rendimiento
 
-Medido el 6 de noviembre de 2026 en un portátil con un AMD Ryzen 7 5700U, 16 GB de RAM y sin tarjeta
+Medido el 24 de noviembre de 2026 en un portátil con un AMD Ryzen 7 5700U, 16 GB de RAM y sin tarjeta
 gráfica dedicada, con Windows 11 y con la app ya abierta una vez antes (mediana de tres vueltas, salvo la memoria):
 
 | Qué | Tiempo o tamaño |
 |---|---|
-| Arrancar la app, hasta que responde / hasta que se ve Inicio | 4,0 s / 4,6 s |
-| Memoria de la app entera, en reposo / tras recorrer todas las páginas | ≈ 330 MB / ≈ 365 MB |
-| Un CV con otro diseño, a PDF: plantillas de Word (LibreOffice) / plantillas HTML | 11,7 s / 4,7 s |
-| Inicio, primera carga / recarga, con la demo (65 ofertas) | 0,28 s / 0,11 s |
+| Arrancar la app, hasta que responde / hasta que se ve Inicio | 4,0 s / 4,8 s |
+| Memoria de la app entera, en reposo / tras recorrer todas las páginas | ≈ 335 MB / ≈ 375 MB |
+| Un CV con otro diseño, a PDF: plantillas de Word (LibreOffice) / plantillas HTML | 12,7 s / 4,5 s |
+| Inicio, primera carga / recarga, con la demo (65 ofertas) | 0,25 s / 0,13 s |
 | Inicio, primera carga / recarga, con 10 veces más ofertas (650) | 0,28 s / 0,11 s |
-| Bandeja de ofertas, primera carga / recarga, con la demo | 0,49 s / 0,31 s |
+| Bandeja de ofertas, primera carga / recarga, con la demo | 0,52 s / 0,31 s |
 | Bandeja de ofertas, primera carga / recarga, con 650 ofertas | 0,53 s / 0,31 s |
 
 No incluye el trabajo del agente (leer una oferta, escribir un CV): depende del agente y de su

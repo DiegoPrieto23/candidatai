@@ -1,16 +1,20 @@
-"""Todos los medios de un idioma, de principio a fin (fase 28.3b).
+"""Todos los medios de un idioma, de principio a fin.
 
-Uso (desde backend/): uv run --with imageio-ffmpeg python ../scripts/readme_media/all.py IDIOMA [ESCENAS] [--sin-capturas]
-  IDIOMA: en o es. ESCENAS: las de recordings.py separadas por comas (por defecto, todas salvo
-  `start`, que necesita su propio `cai start`; ver README.md). `--sin-capturas`: solo las escenas.
+Uso (desde backend/):
+  uv run --with imageio-ffmpeg python ../scripts/readme_media/all.py IDIOMA [ESCENAS] [--sin-capturas]
+  IDIOMA: en o es. ESCENAS: las de recordings.py separadas por comas. Por defecto, todas salvo
+  `start` (necesita su propio `cai start`; ver README.md), `video` (el tour en vídeo, aparte:
+  `all.py es video --sin-capturas`) y `extension` si no hay `LINKEDIN_URL`. `--sin-capturas`: solo
+  las escenas.
 
 1. Siembra una demo solo para esto (`data-demo-shots` o `data-demo-en-shots`, con `--force`).
 2. Apunta la primera oferta con CV al formulario de `apply-form.html`, servido en 127.0.0.1:8030.
-3. Arranca la API (8010) y el worker de esa demo con `CAI_APPLIER_ALLOW_LOOPBACK=1` (solo así
-   abren un formulario local). La UI (5181) la arrancas tú antes, en otra terminal:
-   `cd frontend; $env:VITE_API_URL = "http://127.0.0.1:8010"; pnpm exec vite --port 5181 --strictPort`.
+3. Arranca la API (8010), que sirve también la UI compilada, y el worker de esa demo con
+   `CAI_APPLIER_ALLOW_LOOPBACK=1` (solo así abren un formulario local). Antes, `pnpm build` en
+   `frontend/`: la UI que se captura es la de `frontend/dist`.
 4. Capturas en claro y en oscuro (`screenshots.py`) en `docs/img/<idioma>/` y escenas
-   (`recordings.py`) en `docs/img/<idioma>/anim/`. `triage` va la última: aprueba una oferta.
+   (`recordings.py`) en `docs/img/<idioma>/anim/`; el vídeo, en `data/tmp/video/<idioma>/`.
+   `triage` va la última: aprueba una oferta.
 5. Lo para todo. Nunca toca `data/` ni la app que tengas en 8000/5173.
 """
 
@@ -19,8 +23,8 @@ import sqlite3
 import subprocess
 import sys
 import time
-from contextlib import closing
 import urllib.request
+from contextlib import closing
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -30,13 +34,13 @@ LANG = sys.argv[1]
 assert LANG in ("en", "es"), "IDIOMA: en o es"
 ARGS = [arg for arg in sys.argv[2:] if not arg.startswith("--")]
 SHOTS = "--sin-capturas" not in sys.argv
-SCENES = (
-    ARGS[0].split(",")
-    if ARGS
-    else ["tour", "profile", "discard", "mailbox", "cv", "apply", "extension", "triage"]
-)
+DEFAULT = ["tour", "profile", "discard", "mailbox", "cv", "apply", "extension", "triage"]
+if not os.environ.get("LINKEDIN_URL"):
+    DEFAULT.remove("extension")
+SCENES = ARGS[0].split(",") if ARGS else DEFAULT
 DEMO = "data-demo-en-shots" if LANG == "en" else "data-demo-shots"
 OUT = ROOT / "docs" / "img" / LANG
+VIDEO = ROOT / "data" / "tmp" / "video" / LANG
 FORM = "http://127.0.0.1:8030/apply-form.html"
 
 
@@ -69,8 +73,11 @@ def run(*args: str, env: dict[str, str] | None = None) -> None:
 
 def main() -> None:
     env = {**os.environ, "CAI_DATA_DIR": DEMO, "CAI_APPLIER_ALLOW_LOOPBACK": "1"}
-    if not up("http://127.0.0.1:5181"):
-        sys.exit("Arranca antes la UI en 5181 (ver arriba).")
+    dist = ROOT / "frontend" / "dist" / "index.html"
+    if not dist.is_file():
+        sys.exit("Falta la UI compilada: ejecuta antes `pnpm build` en frontend/.")
+    if up("http://127.0.0.1:8010/status"):
+        sys.exit("El puerto 8010 está ocupado: cierra lo que lo use (¿otra ejecución de all.py?).")
     seed = [*CAI, "demo", "seed", "--dir", DEMO, "--force", "--lang", LANG]
     subprocess.run(seed, cwd=BACKEND, check=True)
     with closing(sqlite3.connect(ROOT / DEMO / "candidatai.db")) as db, db:
@@ -89,7 +96,8 @@ def main() -> None:
             run(str(HERE / "screenshots.py"), str(OUT), LANG, "light")
             run(str(HERE / "screenshots.py"), str(OUT / "dark"), LANG, "dark")
         for scene in SCENES:
-            run(str(HERE / "recordings.py"), str(OUT / "anim"), scene, LANG)
+            target = VIDEO if scene == "video" else OUT / "anim"
+            run(str(HERE / "recordings.py"), str(target), scene, LANG)
     finally:
         for proc in procs:
             proc.terminate()

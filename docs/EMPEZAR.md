@@ -141,8 +141,7 @@ hace y se aprueba. Si no puede abrirlo, el botón muestra la orden entera, con *
 pegarla en el agente. Su flechita ofrece además **En segundo plano** (sin ventana; un aviso indica
 cuándo termina) y **Dejar para la próxima sesión**.
 
-<!-- media:provisional -->
-<img src="img/es/agent.webp" alt="Página Agente: agente por defecto, uno por acción y ejecuciones en segundo plano" width="88%">
+<img src="img/es/agent.webp" alt="Página Agente: el agente listo, «Configurar agentes», lo que queda para la próxima sesión y la comparación por significado" width="88%">
 
 ## 4. La primera vez: la demo
 
@@ -205,7 +204,6 @@ También se puede hacer desde el agente:
    arriba, y en «Más ajustes» el mínimo salarial, los años de experiencia y el contrato. Cada cambio
    se puede deshacer.
 
-<!-- media:provisional -->
 <img src="img/es/search-settings.webp" alt="«Buscar ofertas» con «Más ajustes» desplegado" width="88%">
 
 El mínimo salarial sirve para descartar ofertas que pagan menos y para comparar ofertas recibidas,

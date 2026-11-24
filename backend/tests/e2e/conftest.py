@@ -264,6 +264,10 @@ def page(
             context.tracing.stop(path=folder / "traza.zip")
         else:
             context.tracing.stop()
+        # Un `route` del test con una petición aún en vuelo (la página consulta la API cada pocos
+        # segundos) fallaría al cerrar el contexto con «Request context disposed».
+        tab.unroute_all(behavior="ignoreErrors")
+        context.unroute_all(behavior="ignoreErrors")
         context.close()
     # Si el test ya falló, sus problemas van en `consola.txt`.
     if problems and not failed:

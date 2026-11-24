@@ -1,8 +1,9 @@
-"""Genera los SVG del README (banner y «cómo funciona») en inglés y español, y la imagen social.
+"""Genera el diagrama «cómo funciona» (SVG) y la imagen social (PNG), en inglés y en español.
 
 Uso (desde backend/, que tiene Playwright): python illustrations.py OUT_DIR
-La imagen social (`social-en.png`, 1280×640) es la que GitHub enseña al compartir el enlace del
-repositorio: se sube a mano en Settings → Social preview.
+La imagen social (`social-en.png` y `social-es.png`, 1280×640) es la que se ve al compartir un
+enlace: la inglesa se sube a mano en GitHub (Settings → Social preview) y la web usa la de su
+idioma en Open Graph y Twitter.
 """
 
 import sys
@@ -30,10 +31,11 @@ TEXT = {
             ("4", 1, "Write the CV", "every line cites evidence\nfrom your profile"),
             ("5", 2, "Verify & render", "independent check, your\ntemplate, PDF in seconds"),
             ("6", 0, "Apply", "the app fills the form;\nonly you press Send"),
-            ("7", 2, "Track", "kanban, calendar,\nfollow-ups, funnel"),
+            ("7", 2, "Track", "board, calendar,\nfollow-ups, results"),
             ("8", 1, "Interviews", "prep plan, mock interview,\nnegotiation script"),
         ],
         "foot": "The app never calls an LLM · nothing leaves without your confirmation · your data stays in data/",
+        "social": "Open source · MIT · works with Claude Code, Codex, OpenCode, Qwen Code…",
     },
     "es": {
         "tagline": "Tu búsqueda de empleo, de principio a fin, en tu equipo.",
@@ -51,10 +53,11 @@ TEXT = {
             ("4", 1, "Redacta el CV", "cada línea cita su\nevidencia de tu perfil"),
             ("5", 2, "Verifica y renderiza", "comprobación independiente,\ntu plantilla, PDF en segundos"),
             ("6", 0, "Candidatura", "la app rellena el formulario;\nsolo tú pulsas Enviar"),
-            ("7", 2, "Seguimiento", "kanban, calendario,\nseguimientos, embudo"),
+            ("7", 2, "Seguimiento", "tablero, calendario,\nseguimientos, resultados"),
             ("8", 1, "Entrevistas", "plan, simulacro y\nguion de negociación"),
         ],
         "foot": "La app nunca llama a un LLM · nada sale sin tu confirmación · tus datos se quedan en data/",
+        "social": "Código abierto · MIT · funciona con Claude Code, Codex, OpenCode, Qwen Code…",
     },
 }
 
@@ -62,7 +65,8 @@ TEAL = "#0F766E"  # docs/brand
 TEAL_LIGHT = "#5EEAD4"
 
 
-def banner(lang: str) -> str:
+def header(lang: str) -> str:
+    """La cabecera de la imagen social: marca, frase y los pasos de la búsqueda (1280×400)."""
     t = TEXT[lang]
     w, h = 1280, 400
     chips = []
@@ -196,15 +200,15 @@ def how(lang: str) -> str:
     return "\n".join(parts)
 
 
-def social() -> str:
-    """El banner en inglés con el formato de la imagen social de GitHub (1280×640)."""
-    inner = banner("en").split(">", 1)[1].rsplit("</svg>", 1)[0]
+def social(lang: str) -> str:
+    """La imagen social (1280×640): la cabecera, centrada en alto, y una línea al pie."""
+    inner = header(lang).split(">", 1)[1].rsplit("</svg>", 1)[0]
     return (
         '<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640">'
         f'<rect width="1280" height="640" fill="{TEAL}"/>'
         f'<g transform="translate(0,90)">{inner}</g>'
-        f'<text x="96" y="570"font-family="{FONT}" font-size="22" fill="#D7F2EE">'
-        "Open source · MIT · works with Claude Code, Codex, OpenCode, Qwen Code…</text>"
+        f'<text x="96" y="570" font-family="{FONT}" font-size="22" fill="#D7F2EE">'
+        f"{escape(TEXT[lang]['social'])}</text>"
         "</svg>"
     )
 
@@ -222,8 +226,7 @@ def render_png(svg: str, target: Path) -> None:
 
 OUT.mkdir(parents=True, exist_ok=True)
 for lang in ("en", "es"):
-    (OUT / f"banner-{lang}.svg").write_text(banner(lang), encoding="utf-8")
     name = "how-it-works" if lang == "en" else "como-funciona"
     (OUT / f"{name}-{lang}.svg").write_text(how(lang), encoding="utf-8")
-render_png(social(), OUT / "social-en.png")
+    render_png(social(lang), OUT / f"social-{lang}.png")
 print("ok")

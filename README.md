@@ -38,17 +38,18 @@ Antigravity CLI…), which the app does not include. It is a young project with 
 tested on Windows 11 with Claude Code: see the [known limitations](#known-limitations).
 
 **Get started:** [install it](#run-it-on-your-computer) · [Start here](docs/START_HERE.md), if
-you are not technical.
+you are not technical · [the project website](https://diegoprieto23.github.io/candidatai/en/).
 
 ## Demo
 
 <p align="center">
-  <!-- media:provisional -->
-  <img src="docs/img/en/anim/tour.webp" alt="A tour of the app: approving and discarding jobs, a verified CV in another design, the application form filled in and waiting for confirmation, processes and the funnel" width="100%">
+  <img src="docs/img/en/anim/tour.webp" alt="A tour of the app: Home, approving and discarding jobs in the quick review, a verified CV switched to another template and colour, the application form filled in and stopped at the confirmation, a card dragged on the Processes board, and the results" width="100%">
   <br><sub>Everything you see is the demo: a fictional candidate, companies and jobs. The agent's work
   (reading jobs, writing the CV) is already done in it; with a real agent each step takes from
-  seconds to a few minutes.</sub>
+  seconds to a few minutes. Played at 1.5× speed.</sub>
 </p>
+
+<p align="center"><a href="https://github.com/DiegoPrieto23/candidatai/releases/download/v1.0.0/candidatai-tour-en.mp4">Watch the full tour on video</a> (1:26, with subtitles)</p>
 
 ## Features
 
@@ -85,33 +86,32 @@ you are not technical.
 
 ## Screenshots
 
-<!-- media:provisional -->
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/img/en/dark/home.webp">
-  <img src="docs/img/en/home.webp" alt="Home: what is waiting for you today, the journey of your jobs and the best fits to review" width="100%">
+  <img src="docs/img/en/home.webp" alt="Home: what is waiting for you and for your agent today, the next seven days, your jobs' journey and how your applications are going" width="100%">
 </picture>
 <p align="center"><sub>Home tells you what is waiting for you and for your agent, and the next step.</sub></p>
 
 <table>
   <tr>
-    <td width="50%"><!-- media:provisional --><img src="docs/img/en/triage.webp" alt="Quick review: a list of jobs by fit and, beside it, the selected job with its fit breakdown and skills" width="100%"><br><sub>Review jobs by fit and decide with one key.</sub></td>
-    <td width="50%"><!-- media:provisional --><img src="docs/img/en/job-cv.webp" alt="The CV of a job: verified, with its templates, photo and sections to hide" width="100%"><br><sub>A verified CV, in the design you choose.</sub></td>
+    <td width="50%"><img src="docs/img/en/triage.webp" alt="Quick review: a list of jobs by fit and, beside it, the selected job with its fit breakdown and skills" width="100%"><br><sub>Review jobs by fit and decide with one key.</sub></td>
+    <td width="50%"><img src="docs/img/en/job-cv.webp" alt="The CV of a job: verified, next to a panel to ask for changes, edit the text or change the design" width="100%"><br><sub>A verified CV you correct in plain words or restyle in seconds.</sub></td>
   </tr>
   <tr>
-    <td><!-- media:provisional --><img src="docs/img/en/processes.webp" alt="Processes board with one column per stage" width="100%"><br><sub>Every application on one board, moved by recorded steps.</sub></td>
-    <td><!-- media:provisional --><img src="docs/img/en/funnel.webp" alt="Funnel with the applications at each stage" width="100%"><br><sub>See where your applications stop.</sub></td>
+    <td><img src="docs/img/en/processes.webp" alt="Processes board: approved, CV ready, applied, in process and closed, with interview dates and follow-ups due" width="100%"><br><sub>Every application on one board, moved by recorded steps.</sub></td>
+    <td><img src="docs/img/en/funnel.webp" alt="Results: how long companies take to reply and, by channel and by source, reply rate and time" width="100%"><br><sub>See which channels get you replies, and how fast.</sub></td>
   </tr>
   <tr>
-    <td><!-- media:provisional --><img src="docs/img/en/replies.webp" alt="Company replies read from the mailbox, each with a proposed step to accept" width="100%"><br><sub>Company emails, sorted for you to accept.</sub></td>
-    <td><!-- media:provisional --><img src="docs/img/en/calendar.webp" alt="Calendar with interviews, tests and follow-ups" width="100%"><br><sub>Interviews, deadlines and follow-ups in one calendar.</sub></td>
+    <td><img src="docs/img/en/replies.webp" alt="Company replies read from the mailbox, each with a proposed step to accept" width="100%"><br><sub>Company emails, sorted for you to accept.</sub></td>
+    <td><img src="docs/img/en/calendar.webp" alt="Calendar of the month with interviews, technical tests and a posting deadline" width="100%"><br><sub>Interviews, tests and deadlines in one calendar.</sub></td>
   </tr>
   <tr>
-    <td><!-- media:provisional --><img src="docs/img/en/search.webp" alt="Search jobs: the job boards to search and what to prepare before starting" width="100%"><br><sub>Choose where your agent searches, and what to prepare first.</sub></td>
-    <td><!-- media:provisional --><img src="docs/img/en/profile-experience.webp" alt="My profile: experience and skills, edited by blocks" width="100%"><br><sub>Your profile, the only source of what goes in a CV.</sub></td>
+    <td><img src="docs/img/en/search.webp" alt="Search jobs: roles, places, work mode and level as tags, and the job boards your agent will go through" width="100%"><br><sub>Say what you are after and where your agent searches.</sub></td>
+    <td><img src="docs/img/en/profile-experience.webp" alt="My profile: experience by company and skills with their private level, edited by blocks" width="100%"><br><sub>Your profile, the only source of what goes in a CV.</sub></td>
   </tr>
 </table>
 
-<sub>All screenshots use the demo's fictional data and are provisional: some still show the texts from before the change to a formal tone. The short animations of each feature are in
+<sub>All screenshots use the demo's fictional data. The short animations of each feature are in
 [`docs/FEATURES.md`](docs/FEATURES.md).</sub>
 
 ## Run it on your computer
@@ -176,8 +176,7 @@ you are not technical.
 ## How it works
 
 <p align="center">
-  <!-- media:provisional -->
-  <img src="docs/img/how-it-works-en.svg" alt="How it works: jobs come in, the agent extracts and assesses, you approve or discard, the agent writes the CV, the app verifies and renders it, the app fills the form and you send it, the app tracks the process" width="100%">
+  <img src="docs/img/how-it-works-en.svg" alt="How it works in eight steps: jobs come in, the agent extracts and assesses, you review, the agent writes the CV, the app verifies and renders it, the app fills the form and only you send it, the app tracks the process, and the agent prepares your interviews" width="100%">
 </p>
 
 Each colour is who does the step: **you** decide, **your agent** reasons, **the app** stores,
@@ -237,17 +236,17 @@ The full comparison, feature by feature and with its sources, is in
 
 ## Performance
 
-Measured on 6 November 2026 on a laptop with an AMD Ryzen 7 5700U, 16 GB of RAM and no dedicated
+Measured on 24 November 2026 on a laptop with an AMD Ryzen 7 5700U, 16 GB of RAM and no dedicated
 graphics card, running Windows 11, with the app already opened once before (median of three runs, except memory):
 
 | What | Time or size |
 |---|---|
-| Starting the app, until it answers / until you see Home | 4.0 s / 4.6 s |
-| Memory of the whole app, idle / after going through every page | ≈ 330 MB / ≈ 365 MB |
-| A CV in another design, to PDF: Word templates (LibreOffice) / HTML templates | 11.7 s / 4.7 s |
-| Home, first load / reload, with the demo (65 jobs) | 0.28 s / 0.11 s |
+| Starting the app, until it answers / until you see Home | 4.0 s / 4.8 s |
+| Memory of the whole app, idle / after going through every page | ≈ 335 MB / ≈ 375 MB |
+| A CV in another design, to PDF: Word templates (LibreOffice) / HTML templates | 12.7 s / 4.5 s |
+| Home, first load / reload, with the demo (65 jobs) | 0.25 s / 0.13 s |
 | Home, first load / reload, with 10 times as many jobs (650) | 0.28 s / 0.11 s |
-| Job inbox, first load / reload, with the demo | 0.49 s / 0.31 s |
+| Job inbox, first load / reload, with the demo | 0.52 s / 0.31 s |
 | Job inbox, first load / reload, with 650 jobs | 0.53 s / 0.31 s |
 
 Your agent's work (reading a job, writing a CV) is not included: it depends on the agent and its
