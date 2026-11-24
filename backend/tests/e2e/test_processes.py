@@ -668,8 +668,11 @@ def test_replies_are_proposed_by_the_agent_and_decided_by_you(
     job_id = applied_job(server, COMPANY, COMPANY_URL)
     before = {r["reply_id"] for r in _replies(server)}
     sent_at = datetime.now(UTC) + timedelta(minutes=1)  # posterior al envío
-    for name in ("respuesta-entrevista.eml", "respuesta-otra.eml", "correo-ajeno.eml"):
+    for name in ("respuesta-otra.eml", "correo-ajeno.eml"):
         _drop_mail(server, name, sent_at)
+    # La entrevista llega después: es la que se ve, y la otra queda plegada bajo ella (con la
+    # misma fecha, el orden entre las dos no estaría definido).
+    _drop_mail(server, "respuesta-entrevista.eml", sent_at + timedelta(minutes=1))
 
     page.goto("/respuestas")
     page.get_by_role("button", name=t("replies.page.poll")).click()
@@ -715,6 +718,8 @@ def test_replies_are_proposed_by_the_agent_and_decided_by_you(
     # La UI enseña la propuesta; aceptarla registra la entrevista y la oferta pasa a «En proceso».
     page.reload()
     replies = page.get_by_role("list", name=t("replies.page.list"))
+    older = replies.get_by_role("button", name=t("replies.page.olderInGroup_one", count=1))
+    expect(older).to_have_attribute("aria-expanded", "false")
     replies.get_by_role("button").filter(has_text="primera entrevista").click()
     email = page.get_by_role("article", name=t("replies.page.email"))
     proposal = email.get_by_role("region", name=t("replies.page.proposal"))

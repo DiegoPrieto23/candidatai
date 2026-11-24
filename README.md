@@ -38,7 +38,7 @@ Antigravity CLI…), which the app does not include. It is a young project with 
 tested on Windows 11 with Claude Code: see the [known limitations](#known-limitations).
 
 **Get started:** [install it](#run-it-on-your-computer) · [Start here](docs/START_HERE.md), if
-you are not technical.
+you are not technical · [the project website](https://diegoprieto23.github.io/candidatai/en/).
 
 ## Demo
 
@@ -48,6 +48,8 @@ you are not technical.
   (reading jobs, writing the CV) is already done in it; with a real agent each step takes from
   seconds to a few minutes. Played at 1.5× speed.</sub>
 </p>
+
+<p align="center"><a href="https://github.com/DiegoPrieto23/candidatai/releases/download/v1.0.0/candidatai-tour-en.mp4">Watch the full tour on video</a> (1:26, with subtitles)</p>
 
 ## Features
 

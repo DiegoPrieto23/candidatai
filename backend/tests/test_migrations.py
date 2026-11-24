@@ -78,8 +78,8 @@ def test_url_with_percent_is_escaped(isolated_env: Path) -> None:
     assert migrations.alembic_config(url).get_main_option("sqlalchemy.url") == url
 
 
-def test_0005_moves_document_files_to_a_render_and_back(db_url: str) -> None:
-    migrations.upgrade(db_url, "0004")
+def _seed_0004(db_url: str) -> None:
+    """Una oferta con dos CVs y su candidatura, en el esquema de la 0004."""
     engine = create_engine(db_url)
     now = "2026-09-01 09:00:00"
     try:
@@ -110,8 +110,33 @@ def test_0005_moves_document_files_to_a_render_and_back(db_url: str) -> None:
                 "INSERT INTO applications (job_id, stage, document_id, last_event_at) "
                 f"VALUES (1, 'applied', 1, '{now}')"
             )
+    finally:
         engine.dispose()
 
+
+def test_upgrade_with_data_keeps_every_row_and_reference(db_url: str) -> None:
+    """Una base con datos de una versión vieja llega a la última sin perder nada. Las migraciones
+    que rehacen una tabla referenciada (`documents` en la 0034) solo funcionan con las claves
+    foráneas desactivadas mientras migran: con la base vacía no se notaría."""
+    migrations.upgrade(db_url, "0004")
+    _seed_0004(db_url)
+    migrations.upgrade(db_url)
+    engine = create_engine(db_url)
+    try:
+        with engine.connect() as conn:
+            assert conn.exec_driver_sql("SELECT count(*) FROM jobs").scalar() == 1
+            assert conn.exec_driver_sql("SELECT count(*) FROM documents").scalar() == 2
+            assert conn.exec_driver_sql("SELECT job_id FROM applications").scalar() == 1
+            assert conn.exec_driver_sql("PRAGMA foreign_key_check").all() == []
+    finally:
+        engine.dispose()
+
+
+def test_0005_moves_document_files_to_a_render_and_back(db_url: str) -> None:
+    migrations.upgrade(db_url, "0004")
+    _seed_0004(db_url)
+    engine = create_engine(db_url)
+    try:
         migrations.upgrade(db_url, "0005")
         with engine.connect() as conn:
             renders = conn.exec_driver_sql(

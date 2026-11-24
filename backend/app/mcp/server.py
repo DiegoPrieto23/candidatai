@@ -16,6 +16,7 @@ import mcp_types as types
 from mcp.server import Server, ServerRequestContext
 from mcp.server.stdio import stdio_server
 
+from app import VERSION
 from app.agent_interface.errors import ToolError
 from app.agent_interface.output import dump_json
 from app.agent_interface.registry import CallContext, ToolSpec
@@ -84,7 +85,7 @@ async def _call_tool(
 def build_server() -> Server[Any]:
     return Server(
         SERVER_NAME,
-        version="0.3.0",
+        version=VERSION,
         instructions=INSTRUCTIONS,
         on_list_tools=_list_tools,
         on_call_tool=_call_tool,

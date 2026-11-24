@@ -26,6 +26,7 @@ from typing import Any
 import httpx
 
 from app.core.config import REPO_ROOT, installed_data_dir
+from app.services import agent_registry
 
 BACKEND = REPO_ROOT / "backend"
 UI_DIST = REPO_ROOT / "frontend" / "dist"
@@ -46,7 +47,7 @@ def _inside(path: Path, parent: Path) -> bool:
 
 
 def _resolve(path: Path) -> Path:
-    # `resolve` expande también los nombres cortos de Windows (`DIEGOP~1`) de lo que ya existe.
+    # `resolve` expande también los nombres cortos de Windows (`USUARI~1`) de lo que ya existe.
     return Path(os.path.normcase(path.expanduser().resolve()))
 
 
@@ -123,7 +124,22 @@ def app_env(data_dir: Path, base: Mapping[str, str] | None = None) -> dict[str, 
             "PYTHONUTF8": "1",
         }
     )
+    path_key = next((k for k in env if k.upper() == "PATH"), "PATH")
+    env[path_key] = _path_without_agents(env.get(path_key, ""))
     return env
+
+
+def _path_without_agents(path: str) -> str:
+    """El `PATH` sin las carpetas donde hay un agente instalado (Claude Code, Codex…): en el equipo
+    de quien pasa las E2E la app los encontraría y abriría uno de verdad, y en la CI no hay
+    ninguno. Las pruebas que necesitan uno lo simulan."""
+    agents = [spec.info.detect[0] for spec in agent_registry.load().values()]
+    keep = [
+        folder
+        for folder in path.split(os.pathsep)
+        if folder and not any(shutil.which(name, path=folder) for name in agents)
+    ]
+    return os.pathsep.join(keep)
 
 
 def _cai(*args: str, python: str = sys.executable) -> list[str]:

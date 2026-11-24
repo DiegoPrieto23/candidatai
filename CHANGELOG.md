@@ -9,6 +9,36 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 
 ## [Sin publicar]
 
+## [1.0.0] - 2026-11-24
+
+Primera versión estable de CandidatAI: una app local para llevar la búsqueda de empleo de principio
+a fin (ofertas, revisión con score, CV a medida, candidatura asistida, seguimiento y resultados) con
+el agente de IA que ya usas. La app no llama a ningún modelo: el razonamiento lo pone tu agente, y
+las reglas (qué se envía, qué no se inventa, qué ve tu agente) las aplica el código.
+
+**Lo más importante desde la 0.3.0:**
+- **Un portal nuevo:** aspecto renovado, barra lateral ordenada por grupos, ayuda en cada página, un
+  Asistente en la esquina para pedirle cosas a tu agente y avisos de lo que está haciendo, que se
+  puede detener. Los textos, en tono profesional.
+- **Buscar ofertas en un solo sitio:** portales y empresas en «Buscar ofertas», «Buscar ahora» que
+  trae solo ofertas nuevas, resumen de cada búsqueda y ofertas repetidas o republicadas detectadas.
+- **El CV, bajo tu control:** corregirlo pidiéndolo en palabras, editar tú el texto, versiones,
+  foto encuadrada y plantillas que se suben, renombran y restauran.
+- **Seguimiento más claro:** Tablero con columnas a tu gusto, «Respuestas» agrupadas por
+  candidatura, motivo de cierre de cada oferta y «Resultados» con el tiempo y la tasa de respuesta
+  de cada canal.
+- **Más seguro:** contraseñas de los buzones en el llavero del sistema, ninguna web puede cambiar
+  nada en la app y las ofertas con texto dirigido a una IA no salen como encaje fuerte.
+
+**Madurez:** es una herramienta para una persona en su propio ordenador (no para el móvil), y hace
+falta un agente de IA, que la app no incluye. Windows 11 y Claude Code son lo más probado; el
+detalle de sistemas y agentes, en «Limitaciones conocidas» del README y en `docs/AGENTS_COMPAT.md`.
+
+**Cómo actualizar desde la 0.3.0:** con CandidatAI y tu agente cerrados, vuelve a ejecutar el
+instalador (o, desde el repositorio, `git pull`, `uv sync` y `pnpm build`; con Docker, `git pull` y
+`docker compose up -d --build`). Tus datos no se tocan y las migraciones se aplican solas al
+arrancar. El detalle de cada cambio sigue aquí debajo.
+
 ### Añadido
 - **Detener a tu agente desde el aviso:** lo que va en segundo plano («Generando el CV…», «Leyendo
   ofertas…») tiene un botón «Detener» en el aviso de arriba, con una confirmación corta. El aviso
@@ -914,7 +944,8 @@ y las reglas (qué se envía, qué se inventa, qué ve tu agente) las aplica el 
   solo se guardan en `.env`), y no tiene herramientas para escribir tu perfil.
 - Los instaladores no instalan una release cuya suma SHA-256 no coincide con la publicada.
 
-[Sin publicar]: https://github.com/DiegoPrieto23/candidatai/compare/v0.3.0...HEAD
+[Sin publicar]: https://github.com/DiegoPrieto23/candidatai/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/DiegoPrieto23/candidatai/compare/v0.3.0...v1.0.0
 [0.3.0]: https://github.com/DiegoPrieto23/candidatai/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/DiegoPrieto23/candidatai/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/DiegoPrieto23/candidatai/releases/tag/v0.1.0

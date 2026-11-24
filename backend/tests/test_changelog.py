@@ -110,3 +110,12 @@ def test_cli_writes_the_notes_and_fails_without_section(
     assert notes.main(["v0.3.0", "--changelog", str(path)]) == 1
     assert "no hay sección" in capsys.readouterr().err
     assert notes.main(["--check", "--changelog", str(path)]) == 0
+
+
+def test_the_api_and_the_mcp_server_show_the_version_in_pyproject() -> None:
+    """La API y el servidor MCP la leen de los metadatos del paquete: si `pyproject.toml` cambia
+    sin `uv sync`, enseñarían la vieja."""
+    from app import VERSION
+
+    pyproject = tomllib.loads((REPO_ROOT / "backend" / "pyproject.toml").read_text("utf-8"))
+    assert pyproject["project"]["version"] == VERSION

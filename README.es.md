@@ -38,7 +38,7 @@ Antigravity CLI…), que la app no incluye. Es un proyecto joven, con una sola p
 probado es Windows 11 con Claude Code: ver las [limitaciones conocidas](#limitaciones-conocidas).
 
 **Para empezar:** [instalación](#instalación) · [Primeros pasos](docs/EMPEZAR.md), sin necesidad de
-perfil técnico.
+perfil técnico · [la web del proyecto](https://diegoprieto23.github.io/candidatai/).
 
 ## Demo
 
@@ -48,6 +48,8 @@ perfil técnico.
   agente (leer las ofertas, escribir el CV) ya viene hecho en ella; con un agente de verdad, cada
   paso tarda de unos segundos a unos minutos. Se reproduce a 1,5× la velocidad real.</sub>
 </p>
+
+<p align="center"><a href="https://github.com/DiegoPrieto23/candidatai/releases/download/v1.0.0/candidatai-tour-es.mp4">Ver el recorrido completo en vídeo</a> (1:26, con subtítulos)</p>
 
 ## Funcionalidades
 
