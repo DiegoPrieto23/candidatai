@@ -234,28 +234,6 @@ The full comparison, feature by feature and with its sources, is in
   those jobs come in through email alerts, the browser button or your agent searching with your
   browser.
 
-## Performance
-
-Measured on 24 November 2026 on a laptop with an AMD Ryzen 7 5700U, 16 GB of RAM and no dedicated
-graphics card, running Windows 11, with the app already opened once before (median of three runs, except memory):
-
-| What | Time or size |
-|---|---|
-| Starting the app, until it answers / until you see Home | 4.0 s / 4.8 s |
-| Memory of the whole app, idle / after going through every page | ≈ 335 MB / ≈ 375 MB |
-| A CV in another design, to PDF: Word templates (LibreOffice) / HTML templates | 12.7 s / 4.5 s |
-| Home, first load / reload, with the demo (65 jobs) | 0.25 s / 0.13 s |
-| Home, first load / reload, with 10 times as many jobs (650) | 0.28 s / 0.11 s |
-| Job inbox, first load / reload, with the demo | 0.52 s / 0.31 s |
-| Job inbox, first load / reload, with 650 jobs | 0.53 s / 0.31 s |
-
-Your agent's work (reading a job, writing a CV) is not included: it depends on the agent and its
-model. As a reference, Claude Code took 8.5 minutes to read, assess and write a verified CV for five
-jobs in the [agent matrix](evals/compat/REPORT.md).
-
-The matching eval (80 fictional cases, no embeddings): precision **0.88**, recall **0.95**,
-F1 **0.92** at the default score threshold ([`evals/REPORT.md`](evals/REPORT.md)).
-
 ## Security
 
 Nothing leaves your computer without your confirmation, and posting or email text is never followed
