@@ -239,28 +239,6 @@ La comparativa completa, función a función y con sus fuentes, está en
   esas ofertas entran por las alertas de correo, el botón del navegador o el agente buscando con el
   navegador.
 
-## Rendimiento
-
-Medido el 24 de noviembre de 2026 en un portátil con un AMD Ryzen 7 5700U, 16 GB de RAM y sin tarjeta
-gráfica dedicada, con Windows 11 y con la app ya abierta una vez antes (mediana de tres vueltas, salvo la memoria):
-
-| Qué | Tiempo o tamaño |
-|---|---|
-| Arrancar la app, hasta que responde / hasta que se ve Inicio | 4,0 s / 4,8 s |
-| Memoria de la app entera, en reposo / tras recorrer todas las páginas | ≈ 335 MB / ≈ 375 MB |
-| Un CV con otro diseño, a PDF: plantillas de Word (LibreOffice) / plantillas HTML | 12,7 s / 4,5 s |
-| Inicio, primera carga / recarga, con la demo (65 ofertas) | 0,25 s / 0,13 s |
-| Inicio, primera carga / recarga, con 10 veces más ofertas (650) | 0,28 s / 0,11 s |
-| Bandeja de ofertas, primera carga / recarga, con la demo | 0,52 s / 0,31 s |
-| Bandeja de ofertas, primera carga / recarga, con 650 ofertas | 0,53 s / 0,31 s |
-
-No incluye el trabajo del agente (leer una oferta, escribir un CV): depende del agente y de su
-modelo. Como referencia, Claude Code tardó 8,5 minutos en leer, valorar y escribir un CV verificado
-para cinco ofertas en la [matriz de agentes](evals/compat/REPORT.md).
-
-El eval de matching (80 casos inventados, sin embeddings): precision **0,88**, recall **0,95**,
-F1 **0,92** con el umbral de score por defecto ([`evals/REPORT.md`](evals/REPORT.md)).
-
 ## Seguridad
 
 Nada sale del equipo sin confirmación, y el texto de las ofertas o de los correos nunca se sigue
