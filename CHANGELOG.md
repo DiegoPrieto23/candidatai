@@ -243,7 +243,8 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   cuatro nuevas: el Asistente, la ayuda, el historial de «Mi perfil» y las alertas por correo. La
   animación de la demo es más corta (unos 25 s) y pesa menos de la mitad, y las animaciones cortas de las
   funcionalidades enseñan las pantallas nuevas. El diagrama «Cómo funciona» y la imagen para redes, al
-  día y también en español.
+  día y también en español. Los README, las guías y la lista de funcionalidades las enseñan con
+  descripciones que dicen lo que se ve, y las cifras de rendimiento del README están medidas de nuevo.
 - **Editar el CV tú, con más margen:** en «Editar texto», las skills se ven por grupos: el nombre del
   grupo arriba y cada skill como una etiqueta con «×» para quitarla y un campo para añadir otra con
   Intro. Hay «Añadir grupo» y botones para subir, bajar o quitar cada grupo (con confirmación si tiene

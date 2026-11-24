@@ -500,7 +500,7 @@ The worker runs the automatic sources every day at `connectors.daily_at`
   belong to that interview and stay saved until you change them.
 - **Fixing an interview:** the pencil edits it while it is scheduled; the X cancels it (it stays
   on the job page). If you added it by mistake, the bin **deletes** it completely, also from
-  the history and the funnel, and the job's stage is recalculated. It works for any milestone.
+  the history and Results, and the job's stage is recalculated. It works for any milestone.
 - `prepare-interview 42`: reads everything about the job, your profile, what you already sent and
   the web, asks you what is missing and leaves a **PDF guide** on the job page (the role, the
   responsibilities broken down, your fit, what you already answered, the company and the sector,
@@ -541,7 +541,7 @@ Many pages have buttons that open your agent with the instruction already writte
   that can. Requires `cai worker`.
   - **Cost:** the **Cost** section of the **Agent** page adds up tokens, time and, if the agent
     reports it, money, by action, agent and model (7 and 30 days), with how much each skill
-    weighs; the job page shows what was spent on that job and the funnel, per sent application and
+    weighs; the job page shows what was spent on that job and **Results**, per sent application and
     per interview. What you do in a terminal does not count: there the agent does not report usage.
   - **Threshold before spending:** in the background, "Assess new jobs" and `assess-fit` only
     assess jobs with a minimum fit (by default, the “To review” minimum minus 10; change it under **Cost**). **To review**

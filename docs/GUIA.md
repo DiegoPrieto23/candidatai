@@ -501,7 +501,7 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
   guardadas hasta que se cambien.
 - **Corregir una entrevista:** el lápiz la edita mientras está programada; la X la cancela (se
   queda en la ficha). Si se anotó por error, la papelera la **borra** del todo, también del
-  historial y del embudo, y la etapa de la oferta se recalcula. Vale para cualquier hito.
+  historial y de «Resultados», y la etapa de la oferta se recalcula. Vale para cualquier hito.
 - `prepare-interview 42`: lee todo lo que hay de la oferta, el perfil, lo ya enviado y la web,
   pregunta lo que falte y deja en la ficha una **guía en PDF** (el rol, las responsabilidades
   desglosadas, el encaje, lo ya respondido, la empresa y el sector, conceptos a repasar, preguntas
@@ -540,7 +540,7 @@ Muchas pantallas tienen botones que abren el agente con la orden ya escrita:
   uno que sí. Necesita `cai worker` en marcha.
   - **Coste:** la sección «Coste» de la página «Agente» suma tokens, tiempo y, si el agente lo da,
     dinero, por acción, agente y modelo (7 y 30 días), con lo que pesa cada skill; la ficha indica lo
-    gastado en esa oferta y el embudo, por candidatura enviada y por entrevista. Lo que se hace en una
+    gastado en esa oferta y «Resultados», por candidatura enviada y por entrevista. Lo que se hace en una
     terminal no cuenta: ahí el agente no devuelve su uso.
   - **Umbral antes de gastar:** en segundo plano, «Valorar las ofertas nuevas» y `assess-fit` solo
     valoran las ofertas con un encaje mínimo (por defecto, el mínimo de «Por revisar» menos 10; se

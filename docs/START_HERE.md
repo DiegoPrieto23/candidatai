@@ -140,8 +140,7 @@ you watch what it does and approve it. If it cannot be opened, the button shows 
 instruction, with **Copy**, so you can paste it into your agent. Their small arrow also offers **In the background**
 (no window; a notice tells you when it is done) and **Leave for my next session**.
 
-<!-- media:provisional -->
-<img src="img/en/agent.webp" alt="Agent page: default agent, one per action and background runs" width="88%">
+<img src="img/en/agent.webp" alt="Agent page: the agent ready, “Configure agents”, what is left for the next session and the meaning-based comparison" width="88%">
 
 ## 4. First run: the demo
 
@@ -205,7 +204,6 @@ If you would rather do it from your agent:
    have them), skills and languages; and in **Search jobs**, what you are looking for: roles, locations and work mode at the
    top, and under **More settings** your salary minimum, years of experience and contract. Each change can be undone.
 
-<!-- media:provisional -->
 <img src="img/en/search-settings.webp" alt="“Search jobs” with “More settings” open" width="88%">
 
 Your salary minimum is used to discard jobs below it and to compare offers, but **your agent never

@@ -637,16 +637,6 @@ b, strong { font-weight: 500; }
 }
 .logo-icon { display: grid; place-items: center; background: var(--brand-wash); box-shadow: none; color: var(--brand); }
 .logo-icon .icon { width: 16px; height: 16px; }
-.media--pending {
-  display: grid;
-  place-content: center;
-  justify-items: center;
-  gap: 10px;
-  color: var(--faint);
-  font-size: 0.9rem;
-  background: repeating-linear-gradient(135deg, var(--sunken) 0 12px, transparent 12px 24px);
-}
-.media--pending .icon { width: 36px; height: 36px; color: var(--brand); }
 .tile--brand { background: var(--brand-wash); border-color: var(--brand-line); }
 
 .more { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 36px 48px; margin-top: 72px; }
