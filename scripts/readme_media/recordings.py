@@ -1,19 +1,28 @@
-"""Animaciones cortas de la demo para el README (fase 28.3b): WebP animado con leyenda.
+"""Animaciones de la demo para el README y la web (WebP animado) y el tour en vídeo (MP4).
 
 Uso (desde backend/, con ffmpeg): uv run --with imageio-ffmpeg python recordings.py OUT_DIR ESCENA IDIOMA
-  ESCENA: tour, triage, discard, mailbox, cv, profile, apply, start o extension.
+  ESCENA: tour, triage, discard, mailbox, cv, profile, apply, start, extension o video.
   IDIOMA: en o es.
-UI en 5181 y API en 8010; la app real sigue en 5173/8000 sin tocarse.
+La API de la demo en 8010, que sirve también la UI compilada (`pnpm build`), en el mismo origen:
+sin saltarse CORS ni reescribir cabeceras. La app real sigue en 8000/5173 sin tocarse.
 
-Cada escena dura menos de 20 s, salvo `tour` (el recorrido de la portada, unos 50 s y más nítido:
-`SHARP`), y lleva una leyenda abajo (`CAPTIONS`): sirve de subtítulo para
-quien lo ve sin sonido. Graba un `.webm` con Playwright y lo convierte a `OUT_DIR/<escena>.webp`
-con ffmpeg (`FFMPEG`, el de `imageio-ffmpeg` o el del PATH). Los textos con los que se busca un
-botón salen de `frontend/src/locales/<idioma>/`.
+- `tour`: la animación de la sección «Demo» del README y de la web. 25-30 s, 1280×800, en bucle,
+  de hasta 1,5 MB y **sin leyendas**: se entiende por lo que dice la app.
+- Las cortas (`triage`, `discard`, `mailbox`, `cv`, `profile`, `apply`, `extension`): menos de 20 s,
+  con una leyenda abajo (`CAPTIONS`), porque van sueltas en las listas de funcionalidades.
+- `video`: el tour en vídeo, fuera de git. 60-90 s, 1920×1080, con subtítulos incrustados
+  (`VIDEO_CAPTIONS`) y también en `.srt` y `.vtt`, su transcripción y un clip cuadrado de 15-20 s
+  para redes. Todo en `OUT_DIR` (por defecto, `data/tmp/video/<idioma>/`), para subirlo como activo
+  de la release.
+
+Graba un `.webm` con Playwright y lo convierte con ffmpeg (`FFMPEG`, el de `imageio-ffmpeg` o el del
+PATH). Los textos con los que se busca un botón salen de `frontend/src/locales/<idioma>/`. La
+franja «Modo demo» se oculta solo en la grabación: lo dice la nota bajo la animación.
 
 Escenas que cambian la demo: `triage` aprueba una oferta, `discard` descarta una (y la devuelve),
-`mailbox` añade un buzón, `cv` renderiza otro CV y `tour` aprueba una, descarta otra, renderiza
-otro CV y deja preparada la candidatura de `CV_JOB` (sin enviarla). Usa una demo solo para esto.
+`mailbox` añade un buzón, `cv` renderiza otro CV, y `tour` y `video` aprueban una, descartan otra,
+renderizan otro CV, dejan preparada la candidatura de `CV_JOB` (sin enviarla) y mueven una tarjeta
+del Tablero. Usa una demo solo para esto.
 
 `apply` necesita un formulario que el worker pueda rellenar sin salir a internet: el de prueba de
 Greenhouse de los tests, servido en 127.0.0.1:8030, con la oferta `CV_JOB` apuntando a él y el
@@ -40,13 +49,14 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 import urllib.request
 from pathlib import Path
 
 from playwright.sync_api import Browser, BrowserContext, Locator, Page, Route, sync_playwright
+from playwright.sync_api import TimeoutError as PlaywrightTimeout
 
-UI = "http://127.0.0.1:5181"
-API = "http://127.0.0.1:8010"
+UI = API = "http://127.0.0.1:8010"
 START_URL = os.environ.get("START_URL", "http://127.0.0.1:8020")
 START_LOG = os.environ.get("START_LOG", "")
 OUT = Path(sys.argv[1])
@@ -56,13 +66,24 @@ ROOT = Path(__file__).resolve().parents[2]
 LOCALES = ROOT / "frontend" / "src" / "locales" / LANG
 EXTENSION = ROOT / "extension"
 LINKEDIN_URL = os.environ.get("LINKEDIN_URL", "")
-CV_JOB = 1
-SIZE = {"width": 1600, "height": 1000}
+CV_JOB, INTERVIEW_JOB = 1, 55
+# Ventana de grabación, la misma que la de las capturas (16:10). El vídeo, a 1080p.
+SIZE = {"width": 1440, "height": 900}
+VIDEO_SIZE = {"width": 1920, "height": 1080}
 # Ancho, fotogramas por segundo y calidad del WebP: unos 300 KB por escena.
 WIDTH, FPS, QUALITY = 900, 6, 50
-# El recorrido de la portada, más nítido: unos 3 MB. La del botón del navegador va dentro de la
-# UI, en un aviso estrecho: más pequeña y por debajo de 1 MB.
-SHARP = {"tour": (1280, 10, 70), "extension": (900, 8, 55)}
+# La animación de la portada, más nítida pero de hasta 1,5 MB (`TOUR_MAX`). La del botón del
+# navegador va dentro de la UI, en un aviso estrecho: más pequeña y por debajo de 1 MB.
+SHARP = {"tour": (1280, 5, 50), "extension": (900, 8, 55)}
+TOUR_MAX = 1.5 * 1024 * 1024
+# Cuántas veces más rápido va el WebP que la grabación. El tour se graba a velocidad real (unos
+# 40 s, porque el CV tarda en renderizarse) y se acelera para quedar en 25-30 s; lo dice la nota
+# bajo la demo en los README y la web.
+SPEED = {"tour": 1.5}
+# Lo que se recorta al principio de cada grabación: el fotograma en blanco antes de cargar.
+TRIM = 1.2
+# El clip para redes: cuadrado, de esta duración, desde la revisión de ofertas del vídeo.
+CLIP_SIDE, CLIP_SECONDS = 1080, 18
 OUT.mkdir(parents=True, exist_ok=True)
 assert LANG in ("en", "es"), "IDIOMA: en o es"
 
@@ -74,7 +95,7 @@ CAPTIONS = {
             "A aprueba · D descarta con motivo",
         ],
         "discard": [
-            "Bandeja · Por completar: resúmenes de alertas",
+            "Por completar: resúmenes de alertas",
             "Descartar, sin abrir la oferta",
             "¿Te equivocaste? Deshacer",
         ],
@@ -105,18 +126,6 @@ CAPTIONS = {
             "La oferta se envía a tu CandidatAI",
             "Ya está en tu Bandeja, lista para leer",
         ],
-        "tour": [
-            "Inicio: lo que te espera hoy",
-            "Por revisar: cada oferta con su score explicado",
-            "A aprueba la oferta",
-            "D la descarta, con su motivo",
-            "Aprobada: tu agente redacta el CV y la app comprueba cada línea",
-            "Otra plantilla y otro color, en segundos",
-            "La app rellena el formulario y te enseña de dónde sale cada respuesta",
-            "Solo se envía cuando confirmas tú",
-            "Procesos: cada candidatura, de enviada a oferta",
-            "Embudo: qué fuentes, puestos y plantillas funcionan",
-        ],
     },
     "en": {
         "triage": [
@@ -125,7 +134,7 @@ CAPTIONS = {
             "A approves · D discards with a reason",
         ],
         "discard": [
-            "Inbox · To complete: summaries from alerts",
+            "To complete: summaries from alerts",
             "Discard without opening the job",
             "Changed your mind? Undo",
         ],
@@ -156,33 +165,91 @@ CAPTIONS = {
             "The job is sent to your CandidatAI",
             "It's in your Inbox, ready to read",
         ],
-        "tour": [
-            "Home: what's waiting for you today",
-            "To review: every job with its explained score",
-            "A approves the job",
-            "D discards it, with a reason",
-            "Approved: your agent writes the CV and the app checks every line",
-            "Another template and colour, in seconds",
-            "The app fills the form and shows where each answer comes from",
-            "Nothing is sent until you confirm",
-            "Processes: every application, from sent to offer",
-            "Funnel: which sources, roles and templates work",
-        ],
     },
 }
 
-CAPTION_JS = """text => {
+# Los subtítulos del vídeo, por pasos (`say`). Se entienden sin sonido y sin conocer la app.
+VIDEO_CAPTIONS = {
+    "es": {
+        "home": "CandidatAI: tu búsqueda de empleo, en tu equipo",
+        "new": "Las ofertas entran por URL, por texto, por correo o con la extensión",
+        "inbox": "Tu agente de IA las lee y valora el encaje con tu perfil",
+        "review": "Revisas cada oferta con su encaje explicado",
+        "approve": "A la aprueba",
+        "discard": "D la descarta, con su motivo",
+        "cv": "Tu agente redacta el CV y la app comprueba cada línea con tu perfil",
+        "design": "Otra plantilla y otro color, en segundos y sin gastar tu agente",
+        "letter": "También la carta de presentación, con tus indicaciones",
+        "apply": "La app rellena el formulario y enseña de dónde sale cada respuesta",
+        "send": "Nada se envía hasta que confirmas, escribiendo el nombre de la empresa",
+        "board": "El Tablero: cada candidatura, de enviada a oferta",
+        "move": "Mueves una tarjeta y queda registrado el paso",
+        "replies": "Los correos de las empresas, clasificados para que los aceptes",
+        "calendar": "Entrevistas, pruebas y seguimientos en un calendario",
+        "interview": "Para cada entrevista, una guía de preparación",
+        "results": "Resultados: qué fuentes, puestos y plantillas funcionan",
+        "end": "Código abierto y local. Funciona con el agente de IA que ya usas",
+    },
+    "en": {
+        "home": "CandidatAI: your job search, on your own machine",
+        "new": "Jobs come in by URL, as text, by email or with the browser extension",
+        "inbox": "Your AI agent reads them and assesses the fit with your profile",
+        "review": "You review each job with its fit explained",
+        "approve": "A approves it",
+        "discard": "D discards it, with a reason",
+        "cv": "Your agent writes the CV and the app checks every line against your profile",
+        "design": "Another template and colour, in seconds and without agent time",
+        "letter": "The cover letter too, following your instructions",
+        "apply": "The app fills the form and shows where each answer comes from",
+        "send": "Nothing is sent until you confirm by typing the company name",
+        "board": "The Board: every application, from sent to offer",
+        "move": "Move a card and the step is recorded",
+        "replies": "Company emails, classified for you to accept",
+        "calendar": "Interviews, tests and follow-ups in one calendar",
+        "interview": "A preparation guide for every interview",
+        "results": "Results: which sources, roles and templates work",
+        "end": "Open source and local. Works with the AI agent you already use",
+    },
+}
+
+CAPTION_JS = """([text, size]) => {
   let bar = document.getElementById('cai-caption');
   if (!bar) {
     bar = document.createElement('div');
     bar.id = 'cai-caption';
     bar.style.cssText = 'position:fixed;left:50%;bottom:28px;transform:translateX(-50%);'
       + 'z-index:2147483647;background:rgba(12,20,22,.88);color:#fff;padding:12px 26px;'
-      + 'border-radius:999px;font:600 26px system-ui,sans-serif;box-shadow:0 8px 30px #0005;'
-      + 'pointer-events:none;white-space:nowrap';
+      + 'border-radius:999px;font:600 ' + size + 'px system-ui,sans-serif;'
+      + 'box-shadow:0 8px 30px #0005;pointer-events:none;white-space:nowrap';
     document.body.appendChild(bar);
   }
   bar.textContent = text;
+}"""
+
+# La franja «Modo demo», fuera de la grabación (nunca de la app).
+HIDE_DEMO_JS = """label => document.addEventListener('DOMContentLoaded', () => {
+  const s = document.createElement('style');
+  s.textContent = `[role=note][aria-label="${label}"]{display:none!important}`;
+  document.head.appendChild(s);
+})"""
+
+# Un cursor dibujado: el vídeo de Playwright no graba el del sistema, y sin él no se ve quién
+# arrastra la tarjeta.
+CURSOR_JS = """([x, y, down]) => {
+  let c = document.getElementById('cai-cursor');
+  if (!c) {
+    c = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    c.id = 'cai-cursor';
+    c.setAttribute('viewBox', '0 0 24 24');
+    c.style.cssText = 'position:fixed;width:26px;z-index:2147483647;pointer-events:none;'
+      + 'transition:transform .12s';
+    c.innerHTML = '<path d="M3 2l7 19 2.6-7.4L20 11z" fill="#111" stroke="#fff" '
+      + 'stroke-width="1.5" stroke-linejoin="round"/>';
+    document.body.appendChild(c);
+  }
+  c.style.left = x + 'px';
+  c.style.top = y + 'px';
+  c.style.transform = down ? 'scale(.85)' : '';
 }"""
 
 
@@ -199,7 +266,19 @@ def text(ref: str, **values: object) -> str:
 
 
 def caption(page: Page, n: int) -> None:
-    page.evaluate(CAPTION_JS, CAPTIONS[LANG][SCENE][n])
+    page.evaluate(CAPTION_JS, [CAPTIONS[LANG][SCENE][n], 26])
+
+
+# Los subtítulos del vídeo: (segundo en que aparece, texto), contados desde que empieza a grabar.
+CUES: list[tuple[float, str]] = []
+CLOCK: dict[str, float] = {}
+
+
+def say(page: Page, key: str) -> None:
+    """Un subtítulo del vídeo: en la página (incrustado) y en `CUES` (para el `.srt` y el `.vtt`)."""
+    line = VIDEO_CAPTIONS[LANG][key]
+    page.evaluate(CAPTION_JS, [line, 30])
+    CUES.append((time.monotonic() - CLOCK["start"], line))
 
 
 def pause(page: Page, ms: int) -> None:
@@ -220,14 +299,80 @@ def top_of(page: Page, selector: str, offset: int = 120) -> int:
     )
 
 
+def idle(page: Page) -> None:
+    """La red en reposo, un rato como mucho: la app consulta cosas cada pocos segundos, así que no
+    se espera a que quede quieta del todo (lo que se espere queda grabado)."""
+    try:
+        page.wait_for_load_state("networkidle", timeout=3000)
+    except PlaywrightTimeout:
+        pass
+
+
 def goto(page: Page, path: str, wait: int = 1500, base: str = UI) -> None:
-    page.goto(base + path)
-    page.wait_for_load_state("networkidle")
+    print("…", path, flush=True)
+    page.goto(base + path, timeout=90_000)
+    idle(page)
+    loaded(page)
     pause(page, wait)
+
+
+def loaded(page: Page) -> None:
+    """Tras cambiar de página dentro de la app: hasta que no quede nada cargando."""
+    page.wait_for_function("() => !document.querySelector('[data-slot=skeleton]')", timeout=30_000)
+    pause(page, 600)
+
+
+def nav(page: Page, entry: str) -> None:
+    """Va a otra página con el menú lateral: sin recargar, y sin un fotograma en blanco."""
+    menu = page.get_by_role("navigation")
+    menu.get_by_role("link", name=text(f"nav:entries.{entry}")).first.click()
+    loaded(page)
+
+
+def route(page: Page, path: str) -> None:
+    """Va a una ruta sin recargar (el router de la UI escucha `popstate`): sin fotograma en blanco."""
+    page.evaluate(
+        "path => { history.pushState({}, '', path); dispatchEvent(new PopStateEvent('popstate')) }",
+        path,
+    )
+    loaded(page)
+
+
+def application_tab(job_id: int) -> str:
+    """La pestaña «Candidatura» de una ficha: el CV, la carta, el paquete y el formulario."""
+    return f"/jobs/{job_id}?tab=application"
+
+
+def change_design(page: Page) -> int:
+    """En el CV: la pestaña «Diseño», otra plantilla y otro color, y espera a que esté. Da el `top`."""
+    top = top_of(page, "#cv")
+    smooth_scroll(page, top)
+    page.locator("#cv").get_by_role("tab", name=text("cv:panel.design"), exact=True).click()
+    pause(page, 700)
+    form = page.locator("#cv form:has(input[name=template])")
+    form.locator("label:has(input[value='moderna-2col'])").click()
+    pause(page, 700)
+    form.locator("input[name=accent]").nth(1).check(force=True)
+    pause(page, 700)
+    form.locator("button[type=submit]").click()
+    # El del formulario de diseño: en `#cv` hay otros (pedir correcciones) con su propio botón.
+    page.wait_for_function(
+        "() => !document.querySelector("
+        "'#cv form:has(input[name=template]) button[type=submit]').disabled",
+        timeout=120_000,
+    )
+    return top
+
+
+def triage_ready(page: Page) -> None:
+    """La revisión, con una oferta seleccionada: antes, las teclas A, D, J y K no hacen nada."""
+    page.locator("[role=option][aria-selected=true]").first.wait_for(timeout=60_000)
+    pause(page, 400)
 
 
 def scene_triage(page: Page) -> None:
     goto(page, "/bandeja/revision")
+    triage_ready(page)
     caption(page, 0)
     pause(page, 1800)
     caption(page, 1)
@@ -241,15 +386,22 @@ def scene_triage(page: Page) -> None:
 
 
 def scene_discard(page: Page) -> None:
-    goto(page, "/bandeja?stage=pending_detail")
+    goto(page, "/bandeja/por-completar")
     caption(page, 0)
     pause(page, 2000)
     caption(page, 1)
-    page.get_by_role("button", name=text("inbox:quick.discard")).first.click()
-    pause(page, 2000)
+    page.get_by_role("button", name=text("alerts:discard"), exact=True).first.click()
+    # El motivo, en su diálogo: 2 y Enter, como en la revisión.
+    page.get_by_role("dialog").wait_for()
+    pause(page, 800)
+    page.keyboard.press("2")
+    pause(page, 500)
+    page.keyboard.press("Enter")
+    page.get_by_role("button", name=text("alerts:undo"), exact=True).first.wait_for()
+    pause(page, 1500)
     caption(page, 2)
     pause(page, 800)
-    page.get_by_role("button", name=text("inbox:quick.undo")).first.click()
+    page.get_by_role("button", name=text("alerts:undo"), exact=True).first.click()
     pause(page, 2200)
 
 
@@ -281,21 +433,12 @@ def scene_mailbox(page: Page) -> None:
 
 
 def scene_cv(page: Page) -> None:
-    goto(page, f"/jobs/{CV_JOB}", 1200)
-    top = top_of(page, "#cv")
-    smooth_scroll(page, top)
+    goto(page, application_tab(CV_JOB), 1200)
+    smooth_scroll(page, top_of(page, "#cv"))
     caption(page, 0)
     pause(page, 1600)
     caption(page, 1)
-    form = page.locator("#cv form:has(input[name=template])")
-    form.locator("label:has(input[value='moderna-2col'])").click()
-    pause(page, 900)
-    form.locator("input[name=accent]").nth(1).check(force=True)
-    pause(page, 900)
-    form.locator("button[type=submit]").click()
-    page.wait_for_function(
-        "() => !document.querySelector('#cv form button[type=submit]').disabled", timeout=120_000
-    )
+    top = change_design(page)
     caption(page, 2)
     pause(page, 800)
     smooth_scroll(page, top + 650)
@@ -312,7 +455,7 @@ def scene_profile(page: Page) -> None:
     caption(page, 1)
     pause(page, 1800)
     caption(page, 2)
-    page.locator("[role=tabpanel] button[aria-expanded=false]").first.click()
+    page.locator("[role=tabpanel] button[aria-expanded=false]:visible").first.click()
     pause(page, 1200)
     smooth_scroll(page, page.evaluate("window.scrollY") + 450)
     pause(page, 2400)
@@ -326,7 +469,7 @@ def type_company(dialog: Locator) -> None:
 
 
 def scene_apply(page: Page) -> None:
-    goto(page, f"/jobs/{CV_JOB}", 1200)
+    goto(page, application_tab(CV_JOB), 1200)
     smooth_scroll(page, top_of(page, "#candidatura"))
     caption(page, 0)
     pause(page, 1200)
@@ -350,8 +493,8 @@ def scene_apply(page: Page) -> None:
 
 
 def prepare_application(page: Page) -> None:
-    """Rellena antes de grabar el formulario de `CV_JOB`: así el vídeo no espera al worker."""
-    goto(page, f"/jobs/{CV_JOB}", 800)
+    """Rellena antes de grabar el formulario de `CV_JOB`: así la grabación no espera al worker."""
+    goto(page, application_tab(CV_JOB), 800)
     section = page.locator("#candidatura")
     send = section.get_by_role("button", name=text("apply:review.send"), exact=True)
     if send.count():
@@ -362,89 +505,197 @@ def prepare_application(page: Page) -> None:
     send.wait_for(timeout=180_000)
 
 
-def nav(page: Page, entry: str) -> None:
-    """Va a otra página con el menú lateral: sin recargar, y sin un fotograma en blanco."""
-    menu = page.get_by_role("navigation")
-    menu.get_by_role("link", name=text(f"nav:entries.{entry}")).first.click()
-    loaded(page)
-
-
-def loaded(page: Page) -> None:
-    page.wait_for_load_state("networkidle")
-    page.wait_for_function("() => !document.querySelector('[data-slot=skeleton]')", timeout=30_000)
-    pause(page, 600)
-
-
-def scene_tour(page: Page) -> None:
-    """El recorrido de la portada: de la oferta nueva a la candidatura y el seguimiento."""
-    goto(page, "/", 800)
-    loaded(page)
-    caption(page, 0)
-    pause(page, 2600)
-
-    nav(page, "triage")
-    caption(page, 1)
-    pause(page, 1800)
-    for key in ("j", "j"):
-        page.keyboard.press(key)
-        pause(page, 800)
-    caption(page, 2)
-    pause(page, 700)
-    page.keyboard.press("a")
-    pause(page, 1800)
-    caption(page, 3)
-    page.keyboard.press("d")
-    dialog = page.get_by_role("dialog")
-    dialog.wait_for()
-    pause(page, 900)
-    page.keyboard.press("2")
-    pause(page, 900)
-    page.keyboard.press("Enter")
-    pause(page, 1800)
-
-    # La ficha de una oferta con CV, sin recargar: el router de la UI escucha `popstate`.
-    page.evaluate(f"history.pushState({{}}, '', '/jobs/{CV_JOB}');"
-                  " dispatchEvent(new PopStateEvent('popstate'))")
-    loaded(page)
-    top = top_of(page, "#cv")
-    smooth_scroll(page, top)
-    caption(page, 4)
-    pause(page, 2800)
-    caption(page, 5)
-    form = page.locator("#cv form:has(input[name=template])")
-    form.locator("label:has(input[value='moderna-2col'])").click()
-    pause(page, 700)
-    form.locator("input[name=accent]").nth(1).check(force=True)
-    pause(page, 700)
-    form.locator("button[type=submit]").click()
-    page.wait_for_function(
-        "() => !document.querySelector('#cv form button[type=submit]').disabled", timeout=120_000
-    )
-    smooth_scroll(page, top + 650)
-    pause(page, 2000)
-
+def stop_at_confirmation(page: Page, top_ms: int, dialog_ms: int, on_send=None) -> None:  # type: ignore[no-untyped-def]
+    """La candidatura ya rellenada: se ve y se pulsa Enviar, y se para en la confirmación."""
     section = page.locator("#candidatura")
     smooth_scroll(page, top_of(page, "#candidatura") + 380)
-    caption(page, 6)
-    pause(page, 3000)
-    caption(page, 7)
+    pause(page, top_ms)
+    if on_send:
+        on_send()
     send = section.get_by_role("button", name=text("apply:review.send"), exact=True)
     send.scroll_into_view_if_needed()
     send.click()
-    pause(page, 900)
+    pause(page, 800)
     type_company(page.get_by_role("dialog"))
-    pause(page, 2000)
-
+    pause(page, dialog_ms)
     page.keyboard.press("Escape")
     pause(page, 400)
+
+
+def move_card(page: Page) -> None:
+    """Arrastra una tarjeta de «Enviada» a «En proceso» y registra el paso.
+
+    Las columnas por defecto son Aprobada, CV listo, Enviada, En proceso y Cerradas; de Aprobada a
+    CV listo no se pasa a mano (lo da tener un CV), así que se usa la tercera. Con el cursor
+    dibujado; si el diálogo no deja registrar (falta un dato), se cierra sin más."""
+    columns = page.locator("div.grid > section[aria-label]")
+    card = columns.nth(2).locator("li[aria-roledescription]").first
+    target = columns.nth(3)
+    start, end = card.bounding_box(), target.bounding_box()
+    assert start and end, "El Tablero no tiene una tarjeta con una columna a su derecha"
+    # Por la esquina de abajo a la derecha: el título es un enlace y desde él no se arrastra.
+    x0, y0 = start["x"] + start["width"] - 25, start["y"] + start["height"] - 12
+    x1, y1 = end["x"] + end["width"] / 2, end["y"] + 120
+    page.evaluate(CURSOR_JS, [x0 - 60, y0 + 80, False])
+    for i in range(1, 11):
+        page.evaluate(CURSOR_JS, [x0 - 60 + 6 * i, y0 + 80 - 8 * i, False])
+        pause(page, 30)
+    page.mouse.move(x0, y0)
+    page.evaluate(CURSOR_JS, [x0, y0, True])
+    page.mouse.down()
+    pause(page, 200)
+    steps = 30
+    for i in range(1, steps + 1):
+        x, y = x0 + (x1 - x0) * i / steps, y0 + (y1 - y0) * i / steps
+        page.mouse.move(x, y)
+        page.evaluate(CURSOR_JS, [x, y, True])
+        pause(page, 25)
+    pause(page, 300)
+    page.mouse.up()
+    page.evaluate(CURSOR_JS, [x1, y1, False])
+    dialog = page.get_by_role("dialog")
+    dialog.wait_for(timeout=10_000)
+    page.evaluate("() => document.getElementById('cai-cursor')?.remove()")
+    pause(page, 1100)
+    dialog.get_by_role("radio").first.click()
+    pause(page, 700)
+    register = dialog.get_by_role("button", name=text("move:register"))
+    if register.is_enabled():
+        register.click()
+    else:
+        page.keyboard.press("Escape")
+    loaded(page)
+
+
+def mark(label: str) -> None:
+    """Cuánto lleva la grabación al acabar un paso: para ajustar la duración."""
+    print(f"  {time.monotonic() - CLOCK['start']:5.1f} s · {label}", flush=True)
+
+
+def scene_tour(page: Page) -> None:
+    """La animación de la portada, sin leyendas: Inicio → aprobar → CV en otro diseño →
+    candidatura parada en la confirmación → mover una tarjeta en el Tablero → Resultados."""
+    goto(page, "/", 800)
+    pause(page, 1500)
+
+    mark("inicio")
+    route(page, "/bandeja/revision")
+    triage_ready(page)
+    pause(page, 1000)
+    for key in ("j", "j"):
+        page.keyboard.press(key)
+        pause(page, 600)
+    page.keyboard.press("a")
+    pause(page, 1300)
+    triage_ready(page)
+    page.keyboard.press("d")
+    page.get_by_role("dialog").wait_for()
+    pause(page, 700)
+    page.keyboard.press("2")
+    pause(page, 600)
+    page.keyboard.press("Enter")
+    pause(page, 1200)
+
+    mark("revision")
+    route(page, application_tab(CV_JOB))
+    top = change_design(page)
+    smooth_scroll(page, top + 500)
+    pause(page, 1300)
+
+    mark("cv")
+    stop_at_confirmation(page, 1500, 1500)
+
+    mark("candidatura")
     nav(page, "processes")
-    caption(page, 8)
-    pause(page, 3000)
+    pause(page, 800)
+    move_card(page)
+    pause(page, 1000)
+    mark("tablero")
     nav(page, "funnel")
-    page.get_by_text(text("funnel:steps.triaged")).first.wait_for(timeout=30_000)
-    pause(page, 500)
-    caption(page, 9)
-    pause(page, 3200)
+    page.get_by_role("heading", level=1).first.wait_for(timeout=30_000)
+    pause(page, 2500)
+    mark("resultados")
+
+
+def scene_video(page: Page) -> None:
+    """El tour en vídeo: de la oferta nueva a la entrevista y los resultados, con subtítulos."""
+    goto(page, "/", 800)
+    loaded(page)
+    say(page, "home")
+    pause(page, 3500)
+
+    route(page, "/nueva")
+    say(page, "new")
+    pause(page, 3500)
+    route(page, "/bandeja")
+    say(page, "inbox")
+    pause(page, 3500)
+
+    route(page, "/bandeja/revision")
+    triage_ready(page)
+    CLOCK["clip"] = time.monotonic() - CLOCK["start"]
+    say(page, "review")
+    pause(page, 1600)
+    for key in ("j", "j"):
+        page.keyboard.press(key)
+        pause(page, 900)
+    say(page, "approve")
+    page.keyboard.press("a")
+    pause(page, 2000)
+    triage_ready(page)
+    say(page, "discard")
+    page.keyboard.press("d")
+    page.get_by_role("dialog").wait_for()
+    pause(page, 900)
+    page.keyboard.press("2")
+    pause(page, 800)
+    page.keyboard.press("Enter")
+    pause(page, 1500)
+
+    route(page, application_tab(CV_JOB))
+    smooth_scroll(page, top_of(page, "#cv"))
+    say(page, "cv")
+    pause(page, 3500)
+    say(page, "design")
+    top = change_design(page)
+    smooth_scroll(page, top + 500)
+    pause(page, 2500)
+    smooth_scroll(page, top_of(page, "#carta"))
+    say(page, "letter")
+    pause(page, 3000)
+
+    smooth_scroll(page, top_of(page, "#candidatura"))
+    say(page, "apply")
+    stop_at_confirmation(page, 3000, 2500, on_send=lambda: say(page, "send"))
+
+    nav(page, "processes")
+    say(page, "board")
+    pause(page, 3000)
+    say(page, "move")
+    move_card(page)
+    pause(page, 1500)
+
+    nav(page, "replies")
+    say(page, "replies")
+    pause(page, 3500)
+    nav(page, "calendar")
+    say(page, "calendar")
+    pause(page, 3500)
+
+    route(page, f"/jobs/{INTERVIEW_JOB}?tab=process")
+    say(page, "interview")
+    guide = page.get_by_role("heading", name=text("process:title"), exact=True).first
+    smooth_scroll(page, int(guide.evaluate("e => e.getBoundingClientRect().top + window.scrollY - 110")))
+    pause(page, 3500)
+
+    nav(page, "funnel")
+    page.get_by_role("heading", level=1).first.wait_for(timeout=30_000)
+    say(page, "results")
+    pause(page, 3500)
+    nav(page, "home")
+    say(page, "end")
+    pause(page, 3500)
+    CUES.append((time.monotonic() - CLOCK["start"], ""))
 
 
 TERMINAL = """<!doctype html><meta charset="utf-8"><style>
@@ -548,7 +799,7 @@ def api_post(path: str, body: dict[str, object]) -> dict[str, object]:
     request = urllib.request.Request(
         API + path,
         data=json.dumps(body).encode(),
-        headers={"content-type": "application/json", "origin": "http://127.0.0.1:5173"},
+        headers={"content-type": "application/json"},
     )
     with urllib.request.urlopen(request, timeout=30) as response:
         return json.loads(response.read())
@@ -717,19 +968,96 @@ def ffmpeg() -> str:
 
 
 def to_webp(webm: Path, target: Path, width: int, fps: int, quality: int) -> None:
-    """El `.webm` a WebP animado: sin el primer fotograma en blanco, en bucle.
+    """El `.webm` a WebP animado: sin el primer fotograma en blanco, en bucle y, si la escena está
+    en `SPEED`, acelerado.
 
     `mpdecimate` quita los fotogramas repetidos (las pausas), que es lo que más pesa.
     """
+    speed = SPEED.get(SCENE, 1)
+    faster = f"setpts=PTS/{speed}," if speed != 1 else ""
     subprocess.run(
         [
-            ffmpeg(), "-y", "-loglevel", "error", "-ss", "1.2", "-i", str(webm),
-            "-vf", f"fps={fps},scale={width}:-1:flags=lanczos,mpdecimate", "-fps_mode", "vfr",
+            ffmpeg(), "-y", "-loglevel", "error", "-ss", str(TRIM), "-i", str(webm),
+            "-vf", f"{faster}fps={fps},scale={width}:-1:flags=lanczos,mpdecimate", "-fps_mode", "vfr",
             "-c:v", "libwebp_anim", "-lossless", "0", "-q:v", str(quality),
             "-compression_level", "6", "-loop", "0", str(target),
         ],
         check=True,
     )
+
+
+def stamp(seconds: float, sep: str) -> str:
+    """Un instante de subtítulo: `00:01:02,500` (SRT) o `00:01:02.500` (VTT)."""
+    ms = max(0, round(seconds * 1000))
+    hours, ms = divmod(ms, 3_600_000)
+    minutes, ms = divmod(ms, 60_000)
+    secs, ms = divmod(ms, 1000)
+    return f"{hours:02d}:{minutes:02d}:{secs:02d}{sep}{ms:03d}"
+
+
+def subtitles(cues: list[tuple[float, str]], vtt: bool) -> str:
+    """Los subtítulos con el tiempo del vídeo ya recortado: cada uno, hasta que sale el siguiente."""
+    sep = "." if vtt else ","
+    blocks = ["WEBVTT\n"] if vtt else []
+    shown = [(start - TRIM, line) for start, line in cues]
+    for n, ((start, line), (end, _next)) in enumerate(zip(shown, shown[1:]), 1):
+        if not line:
+            continue
+        timing = f"{stamp(start, sep)} --> {stamp(end, sep)}"
+        blocks.append(f"{timing}\n{line}\n" if vtt else f"{n}\n{timing}\n{line}\n")
+    return "\n".join(blocks)
+
+
+TRANSCRIPT_TITLE = {
+    "es": "CandidatAI · Recorrido en vídeo (transcripción)",
+    "en": "CandidatAI · Video tour (transcript)",
+}
+TRANSCRIPT_NOTE = {
+    "es": "Datos de la demo, inventados. El trabajo del agente de IA ya viene hecho en ella; con un"
+    " agente real tarda de segundos a minutos. El vídeo no tiene sonido: todo está en los"
+    " subtítulos.",
+    "en": "Demo data, made up. The AI agent's work is already done in it; with a real agent it"
+    " takes from seconds to minutes. The video has no sound: everything is in the subtitles.",
+}
+
+
+def to_video(webm: Path) -> None:
+    """El `.webm` a MP4 (H.264, 1080p), sus subtítulos, la transcripción y el clip cuadrado."""
+    name = f"candidatai-tour-{LANG}"
+    mp4 = OUT / f"{name}.mp4"
+    subprocess.run(
+        [
+            ffmpeg(), "-y", "-loglevel", "error", "-ss", str(TRIM), "-i", str(webm),
+            "-c:v", "libx264", "-preset", "slow", "-crf", "20", "-pix_fmt", "yuv420p",
+            "-movflags", "+faststart", "-an", str(mp4),
+        ],
+        check=True,
+    )
+    (OUT / f"{name}.srt").write_text(subtitles(CUES, vtt=False), encoding="utf-8")
+    (OUT / f"{name}.vtt").write_text(subtitles(CUES, vtt=True), encoding="utf-8")
+    lines = [line for _start, line in CUES if line]
+    notes = [TRANSCRIPT_TITLE[LANG], "", TRANSCRIPT_NOTE[LANG], ""]
+    transcript = [*notes, *(f"- {line}" for line in lines)]
+    (OUT / f"{name}.txt").write_text("\n".join(transcript) + "\n", encoding="utf-8")
+    # El clip para redes: la revisión de ofertas y el CV, en cuadrado sobre el color de la marca.
+    clip = OUT / f"candidatai-clip-{LANG}.mp4"
+    subprocess.run(
+        [
+            ffmpeg(), "-y", "-loglevel", "error", "-ss", f"{CLOCK['clip'] - TRIM:.2f}",
+            "-t", str(CLIP_SECONDS), "-i", str(mp4),
+            "-vf", f"scale={CLIP_SIDE}:-2:flags=lanczos,"
+            f"pad={CLIP_SIDE}:{CLIP_SIDE}:0:(oh-ih)/2:color=0x0F766E",
+            "-c:v", "libx264", "-preset", "slow", "-crf", "20", "-pix_fmt", "yuv420p",
+            "-movflags", "+faststart", "-an", str(clip),
+        ],
+        check=True,
+    )
+    duration = CUES[-1][0] - TRIM
+    for path in (mp4, clip):
+        print("ok", path, f"{path.stat().st_size // 1024} KB")
+    print(f"duración del vídeo: {duration:.0f} s (60-90 s)")
+    if not 60 <= duration <= 90:
+        print("AVISO: el vídeo no dura entre 60 y 90 s; ajusta las pausas de `scene_video`.")
 
 
 SCENES = {
@@ -742,41 +1070,57 @@ SCENES = {
     "start": scene_start,
     "tour": scene_tour,
     "extension": scene_extension,
+    "video": scene_video,
 }
 # Lo que se prepara antes de grabar, sin vídeo.
-SETUP = {"tour": prepare_application, "extension": prepare_extension}
+def warm_up(page: Page) -> None:
+    """Antes de grabar el tour o el vídeo: la candidatura rellenada y la revisión ya abierta una vez
+    (la primera vez carga el modelo de similitud y tarda casi un minuto)."""
+    prepare_application(page)
+    warm_triage(page)
+
+
+def warm_triage(page: Page) -> None:
+    """La revisión abierta una vez sin grabar: la primera carga el modelo de similitud."""
+    page.goto(UI + "/bandeja/revision", timeout=90_000)
+    page.locator("[role=option][aria-selected=true]").first.wait_for(timeout=180_000)
+
+
+SETUP = {
+    "tour": warm_up,
+    "video": warm_up,
+    "triage": warm_triage,
+    "extension": prepare_extension,
+}
 
 
 def new_context(browser: Browser, video_dir: Path | None) -> BrowserContext:
+    size = VIDEO_SIZE if SCENE == "video" else SIZE
     ctx = browser.new_context(
-        viewport=SIZE,
+        viewport=size,
         locale="en-GB" if LANG == "en" else "es-ES",
         record_video_dir=str(video_dir) if video_dir else None,
-        record_video_size=SIZE if video_dir else None,
+        record_video_size=size if video_dir else None,
     )
     ctx.add_init_script(
         f"try {{ localStorage.setItem('cai-language', '{LANG}');"
         " localStorage.setItem('cai-theme', 'light') } catch {}"
     )
-    ctx.route(
-        f"{API}/**",
-        lambda route: route.continue_(
-            headers={**route.request.headers, "origin": "http://127.0.0.1:5173"}
-        ),
-    )
+    ctx.add_init_script(f"({HIDE_DEMO_JS})({json.dumps(text('nav:demo.label'))})")
     return ctx
 
 
 def main() -> None:
     raw = Path(tempfile.mkdtemp(prefix="cai-rec-"))
     with sync_playwright() as p:
-        browser = p.chromium.launch(args=["--disable-web-security"])
+        browser = p.chromium.launch()
         if SCENE in SETUP:
             ctx = new_context(browser, None)
             SETUP[SCENE](ctx.new_page())
             ctx.close()
         ctx = new_context(browser, raw)
         page = ctx.new_page()
+        CLOCK["start"] = time.monotonic()
         SCENES[SCENE](page)
         video = page.video
         ctx.close()
@@ -784,9 +1128,14 @@ def main() -> None:
         webm = raw / f"{SCENE}.webm"
         shutil.move(video.path(), webm)
         browser.close()
+    if SCENE == "video":
+        to_video(webm)
+        return
     target = OUT / f"{SCENE}.webp"
     to_webp(webm, target, *SHARP.get(SCENE, (WIDTH, FPS, QUALITY)))
     print("ok", target, f"{target.stat().st_size // 1024} KB", "· webm:", webm)
+    if SCENE == "tour" and target.stat().st_size > TOUR_MAX:
+        print("AVISO: tour.webp pasa de 1,5 MB; baja la calidad o los fotogramas en `SHARP`.")
     still = OUT / f"{SCENE}-still.png"
     if still.exists():
         width = SHARP.get(SCENE, (WIDTH, FPS, QUALITY))[0]

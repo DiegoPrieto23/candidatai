@@ -238,6 +238,12 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   muestra la app y lo que imprime `cai start`, y lo que el agente deja en la app (valoraciones, respuestas
   del Asistente, preguntas). También las guías (Primeros pasos, antes «Empieza aquí», la guía de uso,
   las funcionalidades y el README); en inglés, sin contracciones. Las capturas de las guías son provisionales.
+- **Capturas y animaciones con el portal actual:** todas las capturas de la documentación, en español e
+  inglés, rehechas con la interfaz de ahora, más nítidas (las principales, al doble de resolución) y con
+  cuatro nuevas: el Asistente, la ayuda, el historial de «Mi perfil» y las alertas por correo. La
+  animación de la demo es más corta (unos 25 s) y pesa menos de la mitad, y las animaciones cortas de las
+  funcionalidades enseñan las pantallas nuevas. El diagrama «Cómo funciona» y la imagen para redes, al
+  día y también en español.
 - **Editar el CV tú, con más margen:** en «Editar texto», las skills se ven por grupos: el nombre del
   grupo arriba y cada skill como una etiqueta con «×» para quitarla y un campo para añadir otra con
   Intro. Hay «Añadir grupo» y botones para subir, bajar o quitar cada grupo (con confirmación si tiene
