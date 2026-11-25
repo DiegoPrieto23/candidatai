@@ -73,5 +73,32 @@
     },
     "whatItDoes": "CandidatAI keeps your job search in order: it stores the jobs you are interested in, tells you which ones fit you and prepares a CV for each one.",
     "whatIsTheAgent": "The part that needs AI (reading the jobs, assessing them, writing your CVs) is done by your agent: the AI program you have installed on your computer, like Claude Code or Codex. The app alone does not read jobs or write CVs. <agent>What it is and how to install it, in “Agent”</agent>."
+  },
+  "update": {
+    "label": "New version",
+    "title": "A new version of CandidatAI is out: {{latest}}",
+    "body": "You are using {{current}}. Updating does not touch your data: your jobs, CVs and profile stay as they are.",
+    "notes": "See what is new",
+    "apply": "Update now",
+    "later": "Not now",
+    "howWindows": "To update, with CandidatAI closed, press Windows+R, paste this line and press Enter (pasting it in PowerShell works too):",
+    "howUnix": "To update, with CandidatAI closed, paste this command in a terminal:",
+    "howDocker": "To update, run this command in the repository folder:",
+    "howRepository": "To update from the repository, follow the steps in the guide: <guide>Updating</guide>.",
+    "command": "Command to update",
+    "confirm": {
+      "title": "Update to {{latest}}?",
+      "body": "CandidatAI will close and a window will open that downloads the new version, checks it arrived intact and installs it. Then the app opens again by itself and this page reloads.",
+      "data": "Your data is not touched: your jobs, CVs, profile and settings stay as they are.",
+      "agent": "If your AI agent is open, close it: while it is open it uses the app, and the update waits.",
+      "cancel": "Cancel",
+      "confirm": "Update",
+      "confirming": "Closing…"
+    },
+    "updating": {
+      "title": "Updating to {{latest}}…",
+      "body": "Follow the progress in the updater window. This page reloads by itself when CandidatAI opens again.",
+      "slow": "This is taking longer than usual. If the updater window shows an error, open CandidatAI again from its shortcut."
+    }
   }
 }

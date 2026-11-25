@@ -11,7 +11,7 @@
 FROM node:24-slim AS ui
 WORKDIR /src/frontend
 RUN npm install --global pnpm@12.6.0
-COPY frontend/package.json frontend/pnpm-lock.yaml ./
+COPY frontend/package.json frontend/pnpm-lock.yaml frontend/.pnpmfile.cjs ./
 RUN pnpm install --frozen-lockfile
 COPY frontend/ ./
 # Algunos tests del frontend leen `../extension`; `tsc -b` los compila.

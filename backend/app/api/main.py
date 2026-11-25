@@ -40,6 +40,7 @@ from app.api.routes import (
     stats,
     status,
     triage,
+    updates,
 )
 from app.api.ui import install_ui
 from app.core.config import get_settings
@@ -101,6 +102,7 @@ def create_app() -> FastAPI:
     app.include_router(companies.router)
     app.include_router(received_offers.router)
     app.include_router(secrets.router)
+    app.include_router(updates.router)
     # Las respuestas de más de 1 kB van comprimidas si el navegador lo admite: el JavaScript de la
     # UI y los JSON grandes (la bandeja con miles de ofertas). En el momento y no precomprimiendo
     # `dist/`, porque así también se comprime la API. Nada de lo que ya va comprimido: PDF, DOCX,

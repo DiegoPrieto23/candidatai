@@ -124,5 +124,6 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 | **Daily summary**: pending jobs (flagging any with text aimed at an AI), overdue follow-ups, next milestones and company replies to review | `daily-summary` | |
 | **Sidebar** grouped and collapsible with what is waiting, light and dark theme, English and Spanish (the chosen language is also the one of the orders to your agent, its window and its answers; the CV and the letter, in the job's) | `/` | [Sidebar](img/en/sidebar-collapsed.webp) |
 | **Demo mode** with a fictitious search where every page has something | `cai demo seed` | |
-| **Install** with one line on Windows, macOS and Linux, or with Docker; `cai doctor` checks everything | [Guide](GUIDE.md) | |
+| **Install** with one line on Windows (pasted in Windows+R, without opening a terminal), macOS and Linux, or with Docker; `cai doctor` checks everything | [Guide](GUIDE.md) | |
+| **New version notice** on Home, with what is new; with the Windows installer, "Update now" installs it and opens the app again without touching your data; elsewhere, the command to copy. Turned off with `CAI_UPDATE_CHECK=off` | `/` | |
 | **Five agents**: Claude Code, Codex, Antigravity CLI, OpenCode and Qwen Code, over MCP or with `cai … --json`; free and local models | [`AGENTS_COMPAT.md`](AGENTS_COMPAT.md) | |

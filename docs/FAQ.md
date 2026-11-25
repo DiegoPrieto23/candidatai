@@ -48,6 +48,12 @@ Where: “Agent”.
 
 With the globe and theme buttons at the bottom of the sidebar. The app remembers your choice in this browser. Your data and what your agent writes follow the language of each job.
 
+### How do I update CandidatAI? Will I lose my data?
+
+When a new version is out, Home tells you. With the Windows installer, "Update now" downloads it, installs it and opens the app again; if your AI agent is open, close it. Elsewhere, the notice gives you the command to copy. Your data (jobs, CVs, profile) is not touched: it lives in another folder.
+
+Where: “Home”.
+
 ## Your agent
 
 ### What is “your agent” and which one do I need?

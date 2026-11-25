@@ -122,11 +122,11 @@ you are not technical · [the project website](https://diegoprieto23.github.io/c
    also with a free Google account, or a local model. **The app never calls an AI itself.** Which
    one to pick and what each costs: [Start here](docs/START_HERE.md).
 2. **Install it.**
-   - <a id="windows"></a>**Windows** (Windows 11), in PowerShell:
+   - <a id="windows"></a>**Windows** (Windows 11): press Windows+R, paste this line and press
+     Enter (it also works pasted in PowerShell):
 
      ```powershell
-     iwr -useb https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.ps1 -OutFile $env:TEMP\cai-install.ps1
-     powershell -ExecutionPolicy Bypass -File $env:TEMP\cai-install.ps1
+     powershell -ExecutionPolicy Bypass -NoExit -Command "cd ([IO.Path]::GetTempPath()); iwr -useb https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.ps1 -OutFile cai-install.ps1; .\cai-install.ps1"
      ```
 
    - <a id="macos-and-linux"></a>**macOS and Linux**, in a terminal (no `sudo`):
@@ -141,8 +141,9 @@ you are not technical · [the project website](https://diegoprieto23.github.io/c
 
    The installers download the [latest release](https://github.com/DiegoPrieto23/candidatai/releases/latest),
    **check its SHA-256 checksum** and create a "CandidatAI" shortcut. To update, run them again:
-   your data is not touched. To see first what they would do, add `-WhatIf` to the second Windows line
-   or use `| bash -s -- --dry-run`.
+   your data is not touched. When a new version is out, Home says so and, on Windows, its "Update
+   now" button does it for you. To see first what they would do, add `-WhatIf` after
+   `.\cai-install.ps1` in the Windows line or use `| bash -s -- --dry-run`.
 3. **Open it.** Use the "CandidatAI" shortcut: on the desktop and in the Start menu on Windows, in
    `~/Applications` on macOS (Spotlight finds it) and in the applications menu on Linux. A terminal
    window starts the app and your browser opens at `http://127.0.0.1:8000`, which is your own

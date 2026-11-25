@@ -123,11 +123,11 @@ perfil técnico · [la web del proyecto](https://diegoprieto23.github.io/candida
    Antigravity CLI también con una cuenta gratuita de Google, o un modelo local. **La app nunca
    llama a una IA por su cuenta.** Cuál elegir y cuánto cuesta cada uno: [Primeros pasos](docs/EMPEZAR.md).
 2. **Instalarla.**
-   - <a id="windows"></a>**Windows** (Windows 11), en PowerShell:
+   - <a id="windows"></a>**Windows** (Windows 11): se pulsa Windows+R, se pega esta línea y se
+     pulsa Intro (también sirve pegarla en PowerShell):
 
      ```powershell
-     iwr -useb https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.ps1 -OutFile $env:TEMP\cai-install.ps1
-     powershell -ExecutionPolicy Bypass -File $env:TEMP\cai-install.ps1
+     powershell -ExecutionPolicy Bypass -NoExit -Command "cd ([IO.Path]::GetTempPath()); iwr -useb https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.ps1 -OutFile cai-install.ps1; .\cai-install.ps1"
      ```
 
    - <a id="macos-y-linux"></a>**macOS y Linux**, en una terminal (sin `sudo`):
@@ -142,8 +142,9 @@ perfil técnico · [la web del proyecto](https://diegoprieto23.github.io/candida
 
    Los instaladores descargan la [última versión](https://github.com/DiegoPrieto23/candidatai/releases/latest),
    **comprueban su suma SHA-256** y crean un acceso directo «CandidatAI». Para actualizar, se vuelven
-   a ejecutar: los datos no se tocan. Para ver antes qué harían, se añade `-WhatIf` a la segunda
-   línea de Windows o se usa `| bash -s -- --dry-run`.
+   a ejecutar: los datos no se tocan. Cuando sale una versión nueva, Inicio lo avisa y, en Windows,
+   su botón «Actualizar ahora» lo hace todo. Para ver antes qué harían, se añade `-WhatIf` después
+   de `.\cai-install.ps1` en la línea de Windows o se usa `| bash -s -- --dry-run`.
 3. **Abrirla.** Con el acceso directo «CandidatAI»: en el escritorio y en el menú Inicio en Windows,
    en `~/Applications` en macOS (Spotlight también lo encuentra) y en el menú de aplicaciones en
    Linux. Una ventana de terminal arranca la app y el navegador se abre en `http://127.0.0.1:8000`,

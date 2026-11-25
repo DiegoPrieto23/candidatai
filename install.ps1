@@ -15,8 +15,9 @@
   No pide permisos de administrador. Con -WhatIf solo explica lo que haría, sin cambiar nada.
 
 .EXAMPLE
-  # Instalar la última versión (descarga este script y lo ejecuta):
-  iwr -useb https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.ps1 -OutFile $env:TEMP\cai-install.ps1; powershell -ExecutionPolicy Bypass -File $env:TEMP\cai-install.ps1
+  # Instalar o actualizar a la última versión (descarga este script y lo ejecuta). Una sola línea,
+  # que se pega en Windows+R, en PowerShell o en cmd: sin $, que PowerShell sustituiría al pegarla.
+  powershell -ExecutionPolicy Bypass -NoExit -Command "cd ([IO.Path]::GetTempPath()); iwr -useb https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.ps1 -OutFile cai-install.ps1; .\cai-install.ps1"
 
 .EXAMPLE
   .\install.ps1 -WhatIf
@@ -313,5 +314,5 @@ if ($NoShortcuts) {
 Write-Host ""
 Write-Host "Listo. Abre «CandidatAI» desde el escritorio o el menú Inicio." -ForegroundColor Green
 Say "Se abrirá una ventana (déjala abierta mientras la uses) y el navegador en http://127.0.0.1:8000."
-Say "Para actualizar, vuelve a ejecutar este instalador: tus datos no se tocan."
+Say "Para actualizar: el aviso de Inicio de la app (botón «Actualizar ahora») o vuelve a ejecutar este instalador; tus datos no se tocan."
 Say "Para conectar tu agente de IA, mira la guía: https://github.com/DiegoPrieto23/candidatai/blob/main/docs/GUIA.md"

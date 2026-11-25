@@ -65,6 +65,8 @@ def isolated_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Pa
     secrets.reset()
     # Sin modelo de embeddings en los tests: nada de descargas; los que lo necesitan usan uno falso.
     monkeypatch.setenv("CAI_EMBEDDINGS", "off")
+    # Sin preguntar a GitHub por versiones nuevas: los tests que lo prueban lo activan con respx.
+    monkeypatch.setenv("CAI_UPDATE_CHECK", "off")
     # Mensajes de `cai start` en español, sea cual sea el idioma del equipo que pasa los tests.
     monkeypatch.setenv("CAI_LANG", "es")
     # Sin el Ollama de quien ejecuta los tests (fase 24.6): un puerto donde no escucha nada.

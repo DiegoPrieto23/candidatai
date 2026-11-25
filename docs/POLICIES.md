@@ -225,6 +225,11 @@ Una oferta puede encajar en el papel y aun así no merecer la pena. El código m
   día siguiente). Es una lectura pública, como «¿Sigue abierta?» (`check_job_open`): sin cookies ni
   nada tuyo, y nunca a la red local ni a LinkedIn (§8), que se queda con la inicial. Así, abrir la
   página no avisa a cada empresa que sigues de una visita desde tu navegador.
+- **Versiones nuevas**: para el aviso de Inicio, la app pregunta a la API pública de GitHub cuál es
+  la última release, como mucho cada 12 horas. La petición solo lleva la versión de la app (como
+  `User-Agent`), nada tuyo. No pregunta en la demo ni con `CAI_UPDATE_CHECK=off`. «Actualizar
+  ahora» solo se lanza con tu clic y tu confirmación, y descarga la release con su suma SHA-256,
+  igual que el instalador.
 
 ## 5. Candidaturas
 

@@ -55,11 +55,11 @@ Open a new terminal after installing so the `PATH` is refreshed.
 
 ### To use it: the installer
 
-In PowerShell (no administrator rights needed):
+Press Windows+R, paste this line and press Enter; pasting it in PowerShell or `cmd` works too (no
+administrator rights needed):
 
 ```powershell
-iwr -useb https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.ps1 -OutFile $env:TEMP\cai-install.ps1
-powershell -ExecutionPolicy Bypass -File $env:TEMP\cai-install.ps1
+powershell -ExecutionPolicy Bypass -NoExit -Command "cd ([IO.Path]::GetTempPath()); iwr -useb https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.ps1 -OutFile cai-install.ps1; .\cai-install.ps1"
 ```
 
 The installer:
@@ -76,11 +76,12 @@ Opening the shortcut opens your browser straight away with "Starting CandidatAI�
 the app answers it moves on to `http://127.0.0.1:8000` by itself. Keep the window that appears open
 while you use it; to close CandidatAI, close that window.
 
-- **Before installing**, `-WhatIf` (at the end of the second line) explains what it would do
+- **Before installing**, `-WhatIf` (right after `.\cai-install.ps1`) explains what it would do
   without changing anything. In the examples below, if PowerShell refuses to run scripts, use
   `powershell -ExecutionPolicy Bypass -File .\install.ps1 …` instead of `.\install.ps1 …`.
-- **Updating:** run the installer again (with CandidatAI closed). Your data is not touched, and
-  the app's `.env` (`…\CandidatAI\app\.env`) is kept.
+- **Updating:** with the **"Update now"** button of the notice on Home, when a new version is out,
+  or by running the installer again (with CandidatAI closed). Your data is not touched, and the
+  app's `.env` (`…\CandidatAI\app\.env`) is kept. See [Updating](#13-updating).
 - **Uninstalling:** `.\install.ps1 -Uninstall` removes the app and the shortcuts, not your data
   (with `-RemoveData`, your data too, after confirming).
 - **From your copy of the repository:** `.\install.ps1 -Source <repository folder>`, after
@@ -574,7 +575,8 @@ one” puts your preferences back as they were.
 - **`.env`** (at the root, outside git): `CAI_DATA_DIR`, `SOFFICE_PATH`, InfoJobs and Adzuna keys,
   IMAP (`CAI_IMAP_HOST`, `CAI_IMAP_PORT`, `CAI_IMAP_USER`, `CAI_IMAP_PASSWORD`, `CAI_IMAP_FOLDER`),
   `CAI_BROWSER_CHANNEL` (`chrome` or `msedge` for assisted
-  applications), `CAI_EMBEDDINGS=off`, `UV_PATH` (uv outside the PATH), `CAI_LANG` (`es` or
+  applications), `CAI_EMBEDDINGS=off`, `CAI_UPDATE_CHECK=off` (does not ask GitHub whether a new
+  version is out), `UV_PATH` (uv outside the PATH), `CAI_LANG` (`es` or
   `en`: language of the `cai start` messages in the terminal and of the orders to your agent until
   you choose a language in the portal; without it, your system's). Nothing
   is required. Passwords and keys (`CAI_IMAP_PASSWORD`, `CAI_ADZUNA_APP_KEY`,
@@ -600,8 +602,21 @@ writes without a code to translate (some warnings and run results), which stay i
 
 ## 13. Updating
 
-**With the installer:** run it again; your data (`%LOCALAPPDATA%\CandidatAI\data`) is not touched and
-migrations apply by themselves.
+**The notice on Home.** When a new version is published, Home says so, with a link to what is new.
+To know, the app asks GitHub which is the latest published version, at most every 12 hours; the
+request carries none of your data (only the app's version). It does not ask in the demo or with
+`CAI_UPDATE_CHECK=off` in `.env`. "Not now" hides the notice until the next version.
+
+- **With the Windows installer**, **"Update now"** does it all: after you confirm, the app closes
+  and a window opens that downloads the new version, checks its SHA-256 checksum, installs it and
+  opens CandidatAI again; your browser tab reloads by itself. If your AI agent is open, its MCP
+  server uses the app: the window says so and waits for you to close it. It works when the app was
+  opened with its shortcut (`cai start`).
+- **On macOS and Linux, with Docker or from the repository**, the notice gives you the command to
+  copy or the link to this section.
+
+**With the installer, by hand:** run the same installation line again; your data
+(`%LOCALAPPDATA%\CandidatAI\data`) is not touched and migrations apply by themselves.
 
 **From the repository**, with your agent **closed** (its MCP server locks the Python environment):
 

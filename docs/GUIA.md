@@ -53,11 +53,11 @@ Después de instalar, hay que abrir una terminal nueva para que el `PATH` se act
 
 ### Para usarla: el instalador
 
-En PowerShell (no hace falta ser administrador):
+Se pulsa Windows+R, se pega esta línea y se pulsa Intro; también sirve pegarla en PowerShell o en
+`cmd` (no hace falta ser administrador):
 
 ```powershell
-iwr -useb https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.ps1 -OutFile $env:TEMP\cai-install.ps1
-powershell -ExecutionPolicy Bypass -File $env:TEMP\cai-install.ps1
+powershell -ExecutionPolicy Bypass -NoExit -Command "cd ([IO.Path]::GetTempPath()); iwr -useb https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.ps1 -OutFile cai-install.ps1; .\cai-install.ps1"
 ```
 
 El instalador:
@@ -73,11 +73,12 @@ Al abrir el acceso directo se abre enseguida el navegador con «Arrancando Candi
 la app responde pasa sola a `http://127.0.0.1:8000`. La ventana que aparece debe quedarse abierta
 mientras se usa la app; al cerrarla, se cierra CandidatAI.
 
-- **Antes de instalar**, `-WhatIf` (al final de la segunda línea) explica lo que haría sin cambiar
-  nada. En los ejemplos de abajo, si PowerShell no deja ejecutar scripts, se usa
+- **Antes de instalar**, `-WhatIf` (justo después de `.\cai-install.ps1`) explica lo que haría sin
+  cambiar nada. En los ejemplos de abajo, si PowerShell no deja ejecutar scripts, se usa
   `powershell -ExecutionPolicy Bypass -File .\install.ps1 …` en vez de `.\install.ps1 …`.
-- **Actualizar:** se vuelve a ejecutar el instalador (con CandidatAI cerrada). Los datos no se
-  tocan, y el `.env` de la app (`…\CandidatAI\app\.env`) se conserva.
+- **Actualizar:** con el botón **«Actualizar ahora»** del aviso de Inicio, cuando sale una versión
+  nueva, o volviendo a ejecutar el instalador (con CandidatAI cerrada). Los datos no se tocan, y el
+  `.env` de la app (`…\CandidatAI\app\.env`) se conserva. Ver [Actualizar](#13-actualizar).
 - **Desinstalar:** `.\install.ps1 -Uninstall` quita la app y los accesos directos, no los datos
   (con `-RemoveData`, también los datos, previa confirmación).
 - **Desde una copia del repositorio:** `.\install.ps1 -Source <carpeta del repositorio>`, después
@@ -572,7 +573,8 @@ clic. «Deshacer el último» deja las preferencias como estaban.
 - **`.env`** (en la raíz, fuera de git): `CAI_DATA_DIR`, `SOFFICE_PATH`, claves de InfoJobs y
   Adzuna, IMAP (`CAI_IMAP_HOST`, `CAI_IMAP_PORT`, `CAI_IMAP_USER`, `CAI_IMAP_PASSWORD`,
   `CAI_IMAP_FOLDER`, `CAI_IMAP_REPLIES_FOLDER`), `CAI_BROWSER_CHANNEL` (`chrome` o `msedge` para la
-  candidatura asistida), `CAI_EMBEDDINGS=off`, `UV_PATH` (uv fuera del PATH), `CAI_LANG` (`es` o
+  candidatura asistida), `CAI_EMBEDDINGS=off`, `CAI_UPDATE_CHECK=off` (no pregunta a GitHub si hay
+  una versión nueva), `UV_PATH` (uv fuera del PATH), `CAI_LANG` (`es` o
   `en`: idioma de los mensajes de `cai start` en la terminal y de las órdenes al agente mientras no
   se elija idioma en el portal; sin ella, el del sistema). Nada es obligatorio. Las contraseñas y
   claves (`CAI_IMAP_PASSWORD`, `CAI_ADZUNA_APP_KEY`, `CAI_INFOJOBS_CLIENT_SECRET`) mejor en el
@@ -599,8 +601,22 @@ español.
 
 ## 13. Actualizar
 
-**Con el instalador:** se vuelve a ejecutar; los datos (`%LOCALAPPDATA%\CandidatAI\data`) no se
-tocan y las migraciones se aplican solas.
+**El aviso de Inicio.** Cuando se publica una versión nueva, Inicio lo indica, con un enlace a sus
+novedades. Para saberlo, la app pregunta a GitHub cuál es la última versión publicada, como mucho
+cada 12 horas; la petición no lleva ningún dato del usuario (solo la versión de la app). No pregunta
+en la demo ni con `CAI_UPDATE_CHECK=off` en `.env`. «Ahora no» oculta el aviso hasta la versión
+siguiente.
+
+- **Con el instalador de Windows**, **«Actualizar ahora»** lo hace todo: tras confirmarlo, la app
+  se cierra y se abre una ventana que descarga la versión nueva, comprueba su suma SHA-256, la
+  instala y vuelve a abrir CandidatAI; la pestaña del navegador se recarga sola. Si el agente de IA
+  está abierto, su servidor MCP usa la app: la ventana lo indica y espera a que se cierre. Funciona
+  cuando la app se ha abierto con su acceso directo (`cai start`).
+- **En macOS y Linux, con Docker o desde el repositorio**, el aviso da la orden para copiarla o el
+  enlace a esta sección.
+
+**Con el instalador, a mano:** se vuelve a ejecutar la misma línea de la instalación; los datos
+(`%LOCALAPPDATA%\CandidatAI\data`) no se tocan y las migraciones se aplican solas.
 
 **Desde el repositorio**, con el agente **cerrado** (su servidor MCP bloquea el entorno de Python):
 

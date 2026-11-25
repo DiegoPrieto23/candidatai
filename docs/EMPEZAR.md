@@ -52,29 +52,33 @@ No hacen falta permisos de administrador, ni Python, ni nada instalado antes.
 
 ### En Windows
 
-1. Abrir **PowerShell**: tecla de Windows, escribir `PowerShell` y pulsar Intro.
-2. Copiar estas dos líneas, pegarlas en la ventana de PowerShell (clic derecho) y pulsar Intro:
+1. Pulsar **Windows+R** (la tecla de Windows y la R a la vez): se abre la ventana «Ejecutar».
+2. Copiar esta línea, pegarla en esa ventana (Ctrl+V) y pulsar Intro. Es una sola línea, aunque
+   aquí se vea partida. También funciona pegada en una ventana de PowerShell:
 
    ```powershell
-   iwr -useb https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.ps1 -OutFile $env:TEMP\cai-install.ps1
-   powershell -ExecutionPolicy Bypass -File $env:TEMP\cai-install.ps1
+   powershell -ExecutionPolicy Bypass -NoExit -Command "cd ([IO.Path]::GetTempPath()); iwr -useb https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.ps1 -OutFile cai-install.ps1; .\cai-install.ps1"
    ```
 
 3. Esperar. Instala [uv](https://docs.astral.sh/uv/) (que trae Python), descarga la última release
    de CandidatAI, la comprueba y prepara el navegador con el que hace los PDF. La primera vez tarda
-   unos minutos. Al terminar, hay un acceso directo **«CandidatAI»** en el escritorio y en el menú
-   Inicio.
+   unos minutos. Se ve en una ventana de PowerShell; al terminar, se puede cerrar. Queda un acceso
+   directo **«CandidatAI»** en el escritorio y en el menú Inicio.
 
-**Sobre los avisos de Windows.** Con estas dos líneas no aparece la ventana azul de **SmartScreen**
+**Para actualizar más adelante**, no hace falta nada de esto: cuando sale una versión nueva, Inicio
+lo avisa y **«Actualizar ahora»** la instala, sin tocar los datos. También vale repetir la misma
+línea.
+
+**Sobre los avisos de Windows.** Con esta línea no aparece la ventana azul de **SmartScreen**
 («Windows protegió su PC»): solo sale con programas descargados con el navegador, y aquí no se
 descarga nada así. `-ExecutionPolicy Bypass` deja a PowerShell ejecutar ese script, solo esa vez y
 sin cambiar la configuración. Si `install.ps1` se descargó con el navegador: clic derecho →
-**Propiedades** → marcar **Desbloquear** → Aceptar, y ejecutarlo con la segunda línea de arriba
-(cambiando la ruta). Si el antivirus pregunta, el script es el de este repositorio y se puede leer
-antes de ejecutarlo.
+**Propiedades** → marcar **Desbloquear** → Aceptar, y ejecutarlo en PowerShell con
+`powershell -ExecutionPolicy Bypass -File <carpeta>\install.ps1`. Si el antivirus pregunta, el
+script es el de este repositorio y se puede leer antes de ejecutarlo.
 
-**Para ver antes qué haría**, se añade ` -WhatIf` al final de la segunda línea: explica cada paso y
-no cambia nada.
+**Para ver antes qué haría**, se añade ` -WhatIf` justo después de `.\cai-install.ps1`, antes de las
+comillas del final: explica cada paso y no cambia nada.
 
 ### En macOS o Linux
 

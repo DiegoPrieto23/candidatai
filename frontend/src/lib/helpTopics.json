@@ -30,6 +30,7 @@
     { "id": "profileHistory", "group": "start", "screen": "profile" },
     { "id": "withoutAgent", "group": "start", "screen": "agent" },
     { "id": "language", "group": "start", "screen": null },
+    { "id": "update", "group": "start", "screen": "home" },
 
     { "id": "whatAgent", "group": "agent", "screen": "agent" },
     { "id": "cost", "group": "agent", "screen": "agent" },
