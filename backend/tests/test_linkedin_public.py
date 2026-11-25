@@ -264,6 +264,9 @@ def test_a_run_at_the_same_time_is_refused(
         assert stale.last_run_at is None
         respx.get(lp.SEARCH_URL).mock(side_effect=_pages)
         run()
+        # Sin el commit final de quien llama (lo hace `session_scope`): lo que quede tiene que ser
+        # la reserva, confirmada antes de salir a la red. Y suelta la escritura que tiene reservada.
+        session.rollback()
         assert lp._claim(other, stale, utcnow()) is False
 
 

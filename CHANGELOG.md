@@ -13,6 +13,9 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 
 - Lo que se acababa de guardar (una oferta nueva, un cambio de estado) a veces no aparecía si se
   abría al instante: la app respondía antes de terminar de guardarlo.
+- Aprobar, descartar o reabrir una oferta (o registrar un hito del proceso) podía fallar con «Error
+  interno (OperationalError)» si coincidía con una tarea en segundo plano guardando algo. Ahora
+  espera a que termine.
 
 ## [1.0.0] - 2026-11-24
 
