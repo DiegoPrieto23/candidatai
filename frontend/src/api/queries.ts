@@ -27,6 +27,7 @@ export const keys = {
   // Fase 27.4: buzones de las alertas. Leer el correo cambia su estado (último error).
   mailSources: ['mailSources'] as const,
   plaintextSecrets: ['plaintextSecrets'] as const,
+  updates: ['updates'] as const,
   board: ['board'] as const,
   followups: ['followups'] as const,
   upcoming: (days: number) => ['upcoming', days] as const,
@@ -2180,6 +2181,27 @@ export function useMoveSecretsToKeyring() {
   return useMutation({
     mutationFn: (names: string[]) => unwrap(api.POST('/secrets/move-to-keyring', { body: { names } })),
     onSuccess: () => invalidateMailboxes(client),
+  })
+}
+
+/**
+ * La versión en uso y la última publicada. La app pregunta a GitHub como mucho cada pocas horas;
+ * aquí, una vez por visita: no corre prisa.
+ */
+export function useUpdateStatus(enabled = true) {
+  return useQuery({
+    queryKey: keys.updates,
+    queryFn: () => unwrap(api.GET('/updates')),
+    enabled,
+    staleTime: 60 * 60_000,
+    refetchOnWindowFocus: false,
+  })
+}
+
+/** «Actualizar ahora», con la versión confirmada: la app se cierra y se actualiza en otra ventana. */
+export function useApplyUpdate() {
+  return useMutation({
+    mutationFn: (version: string) => unwrap(api.POST('/updates/apply', { body: { version } })),
   })
 }
 

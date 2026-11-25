@@ -48,6 +48,12 @@ Dónde: «Agente».
 
 Con los botones del globo y del tema, al pie de la barra lateral. La app recuerda la elección en este navegador. Los datos y lo que redacta el agente siguen el idioma de cada oferta.
 
+### ¿Cómo se actualiza CandidatAI? ¿Se pierden los datos?
+
+Cuando sale una versión nueva, Inicio lo avisa. Con el instalador de Windows, «Actualizar ahora» la descarga, la instala y vuelve a abrir la app; si el agente de IA está abierto, hay que cerrarlo. En el resto, el aviso da la orden para copiarla. Los datos (ofertas, CVs, perfil) no se tocan: van en otra carpeta.
+
+Dónde: «Inicio».
+
 ## El agente
 
 ### ¿Qué es «el agente» y cuál hace falta?

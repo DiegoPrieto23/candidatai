@@ -111,6 +111,7 @@ def app_env(data_dir: Path, base: Mapping[str, str] | None = None) -> dict[str, 
             "CAI_ENV_FILE": str(data_dir.parent / ".env"),
             "CAI_SECRET_STORE": "file",  # nunca el llavero real del equipo
             "CAI_EMBEDDINGS": "off",
+            "CAI_UPDATE_CHECK": "off",  # sin preguntar a GitHub por versiones nuevas
             "CAI_LANG": "es",
             "CAI_OLLAMA_URL": "http://127.0.0.1:9",
             "CAI_IMAP_HOST": "",

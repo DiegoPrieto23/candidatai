@@ -2,11 +2,13 @@
 arranca y para sus procesos."""
 
 import gzip
+import os
 import re
 import subprocess
 import sys
 from collections.abc import AsyncIterator, Iterator
 from pathlib import Path
+from typing import Any
 
 import pytest
 from fastapi.responses import StreamingResponse
@@ -490,6 +492,50 @@ def test_the_windows_shortcut_opens_the_starting_page_before_python_loads() -> N
     line = next(x for x in windows.splitlines() if "$shortcut.Arguments" in x)
     assert line.index('start `"`" `"$starting`"') < line.index("cai start --no-browser")
     assert r'Join-Path $AppDir "frontend\dist\starting.html"' in windows
+
+
+def test_children_know_their_supervisor(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """La API sabe que la vigila `cai start` (y cuál): el actualizador espera a que se cierre."""
+    seen: dict[str, Any] = {}
+
+    def popen(command: list[str], **kwargs: Any) -> object:
+        seen.update(kwargs)
+        return object()
+
+    monkeypatch.setattr(launcher.subprocess, "Popen", popen)
+    child = launcher.Child("api", ["python"], tmp_path)
+    launcher._spawn(child, tmp_path / "logs")
+    assert child.log is not None
+    child.log.close()
+    assert seen["env"][launcher.SUPERVISOR_PID_ENV] == str(os.getpid())
+    assert seen["env"]["PATH"] == os.environ["PATH"]  # el resto, como siempre
+
+
+def test_start_closes_quietly_when_the_api_leaves_to_update(
+    ui_dir: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """La API sale con `EXIT_FOR_UPDATE`: «Cerrando para actualizar», no «se ha cerrado»."""
+
+    class Ended:
+        def __init__(self, code: int) -> None:
+            self.code = code
+
+        def poll(self) -> int:
+            return self.code
+
+    for code, expected in ((launcher.EXIT_FOR_UPDATE, "actualizarla"), (1, "se ha cerrado")):
+
+        def spawn(child: launcher.Child, _logs: Path, code: int = code) -> None:
+            child.process = Ended(code)  # type: ignore[assignment]
+
+        said: list[str] = []
+        monkeypatch.setattr(launcher, "probe", lambda _port: "free")
+        monkeypatch.setattr(launcher, "_spawn", spawn)
+        monkeypatch.setattr(launcher, "wait_ready", lambda _url, _launch: None)
+        monkeypatch.setattr(launcher, "supervise", lambda _launch: "api")
+        monkeypatch.setattr(launcher, "stop", lambda _launch: None)
+        launcher.start(get_settings(), 8000, open_browser=False, say=said.append)
+        assert expected in said[-1]
 
 
 def test_start_refuses_a_port_used_by_something_else(

@@ -50,6 +50,12 @@ READY_TIMEOUT = 60.0  # la primera vez la API puede tardar (importa mucho)
 
 PortState = Literal["free", "candidatai", "other"]
 
+# La API y el worker saben así que los vigila `cai start` (y cuál es: el actualizador espera a que
+# se cierre). La API sale con `EXIT_FOR_UPDATE` al pulsar «Actualizar ahora» (`services/updates`):
+# entonces se cierra el resto y `cai start` termina sin error, para que su ventana se cierre.
+SUPERVISOR_PID_ENV = "CAI_SUPERVISOR_PID"
+EXIT_FOR_UPDATE = 75
+
 
 # Lo que se ve en la terminal, en español o en inglés (`console_language`).
 Lang = Literal["es", "en"]
@@ -75,6 +81,10 @@ MESSAGES: dict[str, dict[Lang, str]] = {
         "en": "“{name}” has stopped: stopping the rest. Details in data/logs/start-{name}.log.",
     },
     "closing": {"es": "Cerrando CandidatAI…", "en": "Closing CandidatAI…"},
+    "updating": {
+        "es": "Cerrando CandidatAI para actualizarla: sigue en la ventana del actualizador.",
+        "en": "Closing CandidatAI to update it: follow the updater window.",
+    },
     "no_browser": {
         "es": "No se ha podido abrir el navegador: hay que abrir {url} a mano.",
         "en": "Could not open the browser: open {url} in yours.",
@@ -275,6 +285,7 @@ def _spawn(child: Child, logs_dir: Path) -> None:
     child.process = subprocess.Popen(  # noqa: S603
         child.command,
         cwd=child.cwd,
+        env={**os.environ, SUPERVISOR_PID_ENV: str(os.getpid())},
         stdout=child.log,
         stderr=subprocess.STDOUT,
         stdin=subprocess.DEVNULL,
@@ -375,6 +386,11 @@ def supervise(launch: Launch, sleep: Callable[[float], None] = time.sleep) -> st
         sleep(1.0)
 
 
+def _exit_code(launch: Launch, name: str) -> int | None:
+    child = next((c for c in launch.children if c.name == name), None)
+    return child.process.poll() if child is not None and child.process is not None else None
+
+
 def start(
     settings: Settings,
     port: int,
@@ -413,7 +429,10 @@ def start(
             if open_browser and waiting_page is None:
                 _open(browser, launch.url, say, launch.url)
             ended = supervise(launch)
-            say(message("child_ended", name=ended))
+            if _exit_code(launch, ended) == EXIT_FOR_UPDATE and ended == "api":
+                say(message("updating"))
+            else:
+                say(message("child_ended", name=ended))
         except KeyboardInterrupt:
             say(message("closing"))
         finally:

@@ -141,6 +141,11 @@
       "a": "With the globe and theme buttons at the bottom of the sidebar. The app remembers your choice in this browser. Your data and what your agent writes follow the language of each job.",
       "keywords": "english spanish español dark mode light theme appearance"
     },
+    "update": {
+      "q": "How do I update CandidatAI? Will I lose my data?",
+      "a": "When a new version is out, Home tells you. With the Windows installer, \"Update now\" downloads it, installs it and opens the app again; if your AI agent is open, close it. Elsewhere, the notice gives you the command to copy. Your data (jobs, CVs, profile) is not touched: it lives in another folder.",
+      "keywords": "update upgrade new version install download latest lose data"
+    },
     "whatAgent": {
       "q": "What is “your agent” and which one do I need?",
       "a": "An AI agent is a program you install on your computer, such as Claude Code or Codex, and it uses your subscription. The Claude or ChatGPT chat app is something else: the agent is the separate program that comes with that same subscription. The “Agent” page says whether you have one ready and how to install it.",

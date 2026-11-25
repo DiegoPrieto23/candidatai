@@ -3807,6 +3807,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/updates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Update Status
+         * @description La versión en uso, la última publicada y cómo se actualiza esta instalación.
+         */
+        get: operations["get_update_status"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/updates/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Apply Update
+         * @description Cierra la app y la actualiza en una ventana aparte (instalación de Windows).
+         */
+        post: operations["apply_update"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -4445,6 +4485,14 @@ export interface components {
         ApplicationAnswers: {
             /** Answers */
             answers: components["schemas"]["ScreeningAnswer"][];
+        };
+        /** ApplyUpdateBody */
+        ApplyUpdateBody: {
+            /**
+             * Version
+             * @description La versión que se ha confirmado en el aviso.
+             */
+            version: string;
         };
         /** AssessThreshold */
         AssessThreshold: {
@@ -10117,6 +10165,53 @@ export interface components {
             days: number;
             /** Items */
             items: components["schemas"]["UpcomingItem"][];
+        };
+        /** UpdateStarted */
+        UpdateStarted: {
+            /**
+             * Version
+             * @description La versión que se va a instalar.
+             */
+            version: string;
+        };
+        /** UpdateStatus */
+        UpdateStatus: {
+            /**
+             * Current
+             * @description La versión en uso.
+             */
+            current: string;
+            /**
+             * Latest
+             * @description La última publicada; vacía si no se ha comprobado o no se ha podido.
+             */
+            latest: string | null;
+            /**
+             * Available
+             * @description Hay una versión más nueva que la que se usa.
+             */
+            available: boolean;
+            /**
+             * Release Url
+             * @description Las novedades de la última versión.
+             */
+            release_url: string | null;
+            /**
+             * Install
+             * @description Cómo está instalada: `installer`, `docker`, `repository` u `other`.
+             * @enum {string}
+             */
+            install: "installer" | "docker" | "repository" | "other";
+            /**
+             * Can Apply
+             * @description Se puede actualizar desde la app («Actualizar ahora»).
+             */
+            can_apply: boolean;
+            /**
+             * Command
+             * @description La orden para actualizar a mano, si la hay (en el repositorio, la guía).
+             */
+            command: string | null;
         };
         /** UploadInfo */
         UploadInfo: {
@@ -29706,6 +29801,194 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MoveSecretsResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_update_status: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UpdateStatus"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    apply_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApplyUpdateBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UpdateStarted"];
                 };
             };
             /** @description Unauthorized */

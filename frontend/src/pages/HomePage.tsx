@@ -10,6 +10,7 @@ import { FunnelFlow } from '@/components/FunnelFlow'
 import { GetAnAgent } from '@/components/GetAnAgent'
 import { Hint } from '@/components/Hint'
 import { KeyringNotice } from '@/components/KeyringNotice'
+import { UpdateNotice } from '@/components/UpdateNotice'
 import { ScoreBadge } from '@/components/MatchDetails'
 import { ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
@@ -376,6 +377,8 @@ export function HomePage() {
       <FirstSteps />
       {/* Contraseñas en un fichero sin cifrar: se ofrece llevarlas al llavero, sin prisa. */}
       <KeyringNotice />
+      {/* Una versión nueva publicada: con el instalador de Windows, se instala desde aquí. */}
+      <UpdateNotice />
       {/* Lo más inmediato, arriba: lo pendiente a la izquierda y la agenda a la derecha. */}
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <Today />

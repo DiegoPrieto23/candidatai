@@ -51,29 +51,32 @@ You do not need administrator rights, Python or anything else beforehand.
 
 ### On Windows
 
-1. Open **PowerShell**: press the Windows key, type `PowerShell` and press Enter.
-2. Copy these two lines, paste them into the PowerShell window (right click) and press Enter:
+1. Press **Windows+R** (the Windows key and R at the same time): the "Run" window opens.
+2. Copy this line, paste it into that window (Ctrl+V) and press Enter. It is a single line, even if
+   it wraps here. It also works pasted into a PowerShell window:
 
    ```powershell
-   iwr -useb https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.ps1 -OutFile $env:TEMP\cai-install.ps1
-   powershell -ExecutionPolicy Bypass -File $env:TEMP\cai-install.ps1
+   powershell -ExecutionPolicy Bypass -NoExit -Command "cd ([IO.Path]::GetTempPath()); iwr -useb https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.ps1 -OutFile cai-install.ps1; .\cai-install.ps1"
    ```
 
 3. Wait. It installs [uv](https://docs.astral.sh/uv/) (which brings Python), downloads the latest
    CandidatAI release, checks it, and prepares the browser it uses to make PDFs. It takes a few
-   minutes the first time. When it says it has finished, a **"CandidatAI"** shortcut appears on your
-   desktop and in the Start menu.
+   minutes the first time. You follow it in a PowerShell window; when it says it has finished, you
+   can close it. A **"CandidatAI"** shortcut appears on your desktop and in the Start menu.
 
-**About Windows warnings.** With these two lines you will not see the blue **SmartScreen** window
+**To update later** you do not need any of this: when a new version is out, Home tells you and
+**"Update now"** installs it without touching your data. Running the same line again also works.
+
+**About Windows warnings.** With this line you will not see the blue **SmartScreen** window
 ("Windows protected your PC"): it only appears for programs downloaded with a browser, and here
 nothing is downloaded that way. `-ExecutionPolicy Bypass` lets PowerShell run that one script
 without changing your settings. If you downloaded `install.ps1` from the browser instead, right
-click it → **Properties** → tick **Unblock** → OK, and run it with the second line above
-(changing the path). If your antivirus asks, the script is the one in this repository: you can read
-it before running it.
+click it → **Properties** → tick **Unblock** → OK, and run it in PowerShell with
+`powershell -ExecutionPolicy Bypass -File <folder>\install.ps1`. If your antivirus asks, the script
+is the one in this repository: you can read it before running it.
 
-**Want to see first what it would do?** Add ` -WhatIf` at the end of the second line: it explains
-each step and changes nothing.
+**Want to see first what it would do?** Add ` -WhatIf` right after `.\cai-install.ps1`, before the
+closing quotes: it explains each step and changes nothing.
 
 ### On macOS or Linux
 

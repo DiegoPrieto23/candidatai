@@ -69,12 +69,17 @@ def installed_data_dir(platform: str | None = None) -> Path:
     return install_dir(platform) / "data"
 
 
+def installed_app(repo_root: Path = REPO_ROOT) -> bool:
+    """La app es la de un instalador: está en `<instalación>/app`, junto a su marca."""
+    return repo_root.name == "app" and (repo_root.parent / INSTALL_MARKER).is_file()
+
+
 def data_root(repo_root: Path = REPO_ROOT) -> Path:
     """Desde dónde se resuelve una carpeta de datos relativa (`CAI_DATA_DIR=data-demo`,
     `cai demo seed --dir`). En el repositorio, su raíz. En una app instalada, la carpeta de
     instalación, junto a `data/`: `app/` se sustituye entera al actualizar y una demo dentro se
     perdería (fase 28.1)."""
-    if repo_root.name == "app" and (repo_root.parent / INSTALL_MARKER).is_file():
+    if installed_app(repo_root):
         return repo_root.parent
     return repo_root
 
@@ -109,6 +114,10 @@ class Settings(BaseSettings):
     ollama_url: str = Field(default="http://127.0.0.1:11434", validation_alias=_env("OLLAMA_URL"))
     # `off` desactiva la similitud semántica aunque esté instalado el extra `matching` (tests, CI).
     embeddings: Literal["auto", "off"] = Field(default="auto", validation_alias=_env("EMBEDDINGS"))
+    # `off` no pregunta a GitHub si hay una versión nueva (el aviso de Inicio no sale).
+    update_check: Literal["auto", "off"] = Field(
+        default="auto", validation_alias=_env("UPDATE_CHECK")
+    )
     # Idioma de los mensajes de `cai start` en la terminal; sin él, el del sistema.
     lang: Literal["es", "en"] | None = Field(default=None, validation_alias=_env("LANG"))
     # Conectores opcionales de portales (fase 09). Sin claves, esas fuentes se omiten con un aviso.

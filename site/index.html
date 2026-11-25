@@ -399,7 +399,7 @@
             <li><p><b>Ábrela</b><span>Una ventana arranca la app y tu navegador se abre en <code>127.0.0.1:8000</code>, tu propio equipo.</span></p></li>
             <li><p><b>Prueba la demo y hazla tuya</b><span>Crea tu perfil a partir de tu CV y conecta tu agente. <a class="link" href="https://github.com/DiegoPrieto23/candidatai/blob/main/docs/EMPEZAR.md">Primeros pasos</a> te guía paso a paso, con lo que cuesta cada agente.</span></p></li>
           </ol>
-          <p class="release">Última versión: <a class="link" href="https://github.com/DiegoPrieto23/candidatai/releases/latest">v{{version}}</a>. Para actualizar, vuelve a ejecutar el instalador: tus datos no se tocan.</p>
+          <p class="release">Última versión: <a class="link" href="https://github.com/DiegoPrieto23/candidatai/releases/latest">v{{version}}</a>. Para actualizar, la app te avisa en Inicio (en Windows, con un botón que lo hace todo) o vuelve a ejecutar el instalador: tus datos no se tocan.</p>
         </div>
         <div class="terminal reveal" data-tabs>
           <div class="tablist" role="tablist" aria-label="Sistema">
@@ -408,11 +408,10 @@
             <button class="tab" role="tab" id="tab-docker" aria-controls="panel-docker" aria-selected="false" type="button"><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#package"/></svg>Docker</button>
           </div>
           <div class="panel" role="tabpanel" id="panel-windows" aria-labelledby="tab-windows">
-            <h3>Windows 11, en PowerShell</h3>
-            <p>Pega estas dos líneas. Para ver antes qué haría, añade <code>-WhatIf</code> a la segunda.</p>
-            <div class="code"><pre>iwr -useb https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.ps1 -OutFile $env:TEMP\cai-install.ps1
-powershell -ExecutionPolicy Bypass -File $env:TEMP\cai-install.ps1</pre><button class="copy" type="button" data-copied="Copiado" data-failed="Cópialo a mano"><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#copy"/></svg><span>Copiar</span></button></div>
-            <p>Después, abre «CandidatAI» desde el escritorio o el menú Inicio.</p>
+            <h3>Windows 11, sin abrir ninguna terminal</h3>
+            <p>Pulsa Windows+R, pega esta línea y pulsa Intro (también vale en PowerShell). Para ver antes qué haría, añade <code>-WhatIf</code> después de <code>.\cai-install.ps1</code>.</p>
+            <div class="code"><pre>powershell -ExecutionPolicy Bypass -NoExit -Command "cd ([IO.Path]::GetTempPath()); iwr -useb https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.ps1 -OutFile cai-install.ps1; .\cai-install.ps1"</pre><button class="copy" type="button" data-copied="Copiado" data-failed="Cópialo a mano"><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#copy"/></svg><span>Copiar</span></button></div>
+            <p>Después, abre «CandidatAI» desde el escritorio o el menú Inicio. Cuando salga una versión nueva, la app te lo dirá en Inicio y la instalará con un botón.</p>
           </div>
           <div class="panel" role="tabpanel" id="panel-unix" aria-labelledby="tab-unix">
             <h3>macOS y Linux, en una terminal</h3>

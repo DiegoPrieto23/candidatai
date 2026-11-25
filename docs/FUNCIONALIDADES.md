@@ -124,5 +124,6 @@ FEATURES.md dejan de coincidir fila a fila. -->
 | **Resumen del día**: ofertas pendientes (con aviso si alguna lleva texto dirigido a una IA), seguimientos vencidos, próximos hitos y respuestas de empresas por revisar | `daily-summary` | |
 | **Barra lateral** agrupada y plegable con lo pendiente, tema claro y oscuro, español e inglés (el idioma elegido es también el de las órdenes al agente, su ventana y sus respuestas; el CV y la carta, en el de la oferta) | `/` | [Barra lateral](img/es/sidebar-collapsed.webp) |
 | **Modo demo** con una búsqueda ficticia en la que cada página tiene algo | `cai demo seed` | |
-| **Instalación** con una línea en Windows, macOS y Linux, o con Docker; `cai doctor` lo revisa todo | [Guía](GUIA.md) | |
+| **Instalación** con una línea en Windows (se pega en Windows+R, sin abrir una terminal), macOS y Linux, o con Docker; `cai doctor` lo revisa todo | [Guía](GUIA.md) | |
+| **Aviso de versión nueva** en Inicio, con sus novedades; con el instalador de Windows, «Actualizar ahora» la instala y vuelve a abrir la app sin tocar los datos; en el resto, la orden para copiarla. Se desactiva con `CAI_UPDATE_CHECK=off` | `/` | |
 | **Cinco agentes**: Claude Code, Codex, Antigravity CLI, OpenCode y Qwen Code, por MCP o con `cai … --json`; modelos gratuitos y locales | [`AGENTS_COMPAT.md`](AGENTS_COMPAT.md) | |

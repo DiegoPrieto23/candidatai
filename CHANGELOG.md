@@ -9,6 +9,21 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 
 ## [Sin publicar]
 
+### Añadido
+
+- **Aviso de versión nueva en Inicio**, con un enlace a sus novedades. Con el instalador de
+  Windows, **«Actualizar ahora»** cierra la app, instala la versión nueva en una ventana aparte
+  (comprobando su suma SHA-256) y la vuelve a abrir; la pestaña se recarga sola. Si el agente de IA
+  está abierto, la ventana pide cerrarlo y espera. En macOS, Linux y Docker, el aviso da la orden
+  para copiarla. Los datos no se tocan. Para saberlo, la app pregunta a GitHub cuál es la última
+  versión como mucho cada 12 horas, sin enviar nada del usuario; `CAI_UPDATE_CHECK=off` lo desactiva.
+- Pregunta frecuente «¿Cómo se actualiza CandidatAI?» en la ayuda.
+
+### Cambiado
+
+- **Instalar en Windows es una sola línea** que se pega en Windows+R, sin abrir una terminal
+  (también sirve en PowerShell o en `cmd`). La de antes, de dos líneas, sigue funcionando.
+
 ## [1.0.1] - 2026-11-25
 
 ### Corregido

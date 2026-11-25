@@ -73,5 +73,32 @@
     },
     "whatItDoes": "CandidatAI ordena la búsqueda de empleo: guarda las ofertas que interesan, indica cuáles encajan con el perfil y prepara un CV para cada una.",
     "whatIsTheAgent": "La parte que necesita IA (leer las ofertas, valorarlas, escribir los CVs) la hace el agente: el programa de IA instalado en el equipo, como Claude Code o Codex. La app sola no lee ofertas ni escribe CVs. <agent>Qué es y cómo se instala, en «Agente»</agent>."
+  },
+  "update": {
+    "label": "Versión nueva",
+    "title": "Hay una versión nueva de CandidatAI: la {{latest}}",
+    "body": "La versión en uso es la {{current}}. Al actualizar no se tocan los datos: ofertas, CVs y perfil siguen igual.",
+    "notes": "Ver novedades",
+    "apply": "Actualizar ahora",
+    "later": "Ahora no",
+    "howWindows": "Para actualizar, con CandidatAI cerrada, se pulsa Windows+R, se pega esta línea y se pulsa Intro (también sirve pegarla en PowerShell):",
+    "howUnix": "Para actualizar, con CandidatAI cerrada, se pega esta orden en una terminal:",
+    "howDocker": "Para actualizar, se ejecuta esta orden en la carpeta del repositorio:",
+    "howRepository": "Para actualizar desde el repositorio hay que seguir los pasos de la guía: <guide>Actualizar</guide>.",
+    "command": "Orden para actualizar",
+    "confirm": {
+      "title": "¿Actualizar a la {{latest}}?",
+      "body": "CandidatAI se cerrará y se abrirá una ventana que descarga la versión nueva, comprueba que llega íntegra y la instala. Después la app se vuelve a abrir sola y esta página se recarga.",
+      "data": "Los datos no se tocan: ofertas, CVs, perfil y ajustes siguen igual.",
+      "agent": "Si el agente de IA está abierto, hay que cerrarlo: mientras siga abierto usa la app, y la actualización espera.",
+      "cancel": "Cancelar",
+      "confirm": "Actualizar",
+      "confirming": "Cerrando…"
+    },
+    "updating": {
+      "title": "Actualizando a la {{latest}}…",
+      "body": "El progreso se ve en la ventana del actualizador. Esta página se recargará sola cuando CandidatAI vuelva a abrirse.",
+      "slow": "Está tardando más de lo normal. Si la ventana del actualizador muestra un error, se puede volver a abrir CandidatAI desde su acceso directo."
+    }
   }
 }

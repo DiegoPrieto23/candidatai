@@ -23702,6 +23702,220 @@
           }
         }
       }
+    },
+    "/updates": {
+      "get": {
+        "tags": [
+          "updates"
+        ],
+        "summary": "Get Update Status",
+        "description": "La versión en uso, la última publicada y cómo se actualiza esta instalación.",
+        "operationId": "get_update_status",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateStatus"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/updates/apply": {
+      "post": {
+        "tags": [
+          "updates"
+        ],
+        "summary": "Apply Update",
+        "description": "Cierra la app y la actualiza en una ventana aparte (instalación de Windows).",
+        "operationId": "apply_update",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplyUpdateBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateStarted"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -25631,6 +25845,21 @@
         ],
         "title": "ApplicationAnswers",
         "description": "Respuestas de screening (skill `prepare-application`). Sin carta: es un documento propio.\n\nLas reglas que dependen del perfil (evidencias, respuestas vacías) las comprueba\n`services/answers.py`, para dar todos los problemas juntos."
+      },
+      "ApplyUpdateBody": {
+        "properties": {
+          "version": {
+            "type": "string",
+            "title": "Version",
+            "description": "La versión que se ha confirmado en el aviso."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "version"
+        ],
+        "title": "ApplyUpdateBody"
       },
       "AssessThreshold": {
         "properties": {
@@ -42479,6 +42708,97 @@
           "items"
         ],
         "title": "UpcomingList"
+      },
+      "UpdateStarted": {
+        "properties": {
+          "version": {
+            "type": "string",
+            "title": "Version",
+            "description": "La versión que se va a instalar."
+          }
+        },
+        "type": "object",
+        "required": [
+          "version"
+        ],
+        "title": "UpdateStarted"
+      },
+      "UpdateStatus": {
+        "properties": {
+          "current": {
+            "type": "string",
+            "title": "Current",
+            "description": "La versión en uso."
+          },
+          "latest": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest",
+            "description": "La última publicada; vacía si no se ha comprobado o no se ha podido."
+          },
+          "available": {
+            "type": "boolean",
+            "title": "Available",
+            "description": "Hay una versión más nueva que la que se usa."
+          },
+          "release_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Release Url",
+            "description": "Las novedades de la última versión."
+          },
+          "install": {
+            "type": "string",
+            "enum": [
+              "installer",
+              "docker",
+              "repository",
+              "other"
+            ],
+            "title": "Install",
+            "description": "Cómo está instalada: `installer`, `docker`, `repository` u `other`."
+          },
+          "can_apply": {
+            "type": "boolean",
+            "title": "Can Apply",
+            "description": "Se puede actualizar desde la app («Actualizar ahora»)."
+          },
+          "command": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Command",
+            "description": "La orden para actualizar a mano, si la hay (en el repositorio, la guía)."
+          }
+        },
+        "type": "object",
+        "required": [
+          "current",
+          "latest",
+          "available",
+          "release_url",
+          "install",
+          "can_apply",
+          "command"
+        ],
+        "title": "UpdateStatus"
       },
       "UploadInfo": {
         "properties": {
