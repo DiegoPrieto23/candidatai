@@ -9,6 +9,8 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 
 ## [Sin publicar]
 
+## [1.0.1] - 2026-11-25
+
 ### Corregido
 
 - Lo que se acababa de guardar (una oferta nueva, un cambio de estado) a veces no aparecía si se
@@ -952,7 +954,8 @@ y las reglas (qué se envía, qué se inventa, qué ve tu agente) las aplica el 
   solo se guardan en `.env`), y no tiene herramientas para escribir tu perfil.
 - Los instaladores no instalan una release cuya suma SHA-256 no coincide con la publicada.
 
-[Sin publicar]: https://github.com/DiegoPrieto23/candidatai/compare/v1.0.0...HEAD
+[Sin publicar]: https://github.com/DiegoPrieto23/candidatai/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/DiegoPrieto23/candidatai/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/DiegoPrieto23/candidatai/compare/v0.3.0...v1.0.0
 [0.3.0]: https://github.com/DiegoPrieto23/candidatai/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/DiegoPrieto23/candidatai/compare/v0.1.0...v0.2.0
