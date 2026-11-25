@@ -79,3 +79,34 @@ def test_utc_datetime_rejects_naive(session: Session) -> None:
     session.add(Source(kind="lever", name="L", last_run_at=datetime(2026, 9, 1)))
     with pytest.raises(StatementError, match="zona horaria"):
         session.flush()
+
+
+def test_a_savepoint_waits_for_another_writer_instead_of_failing(tmp_path: Path) -> None:
+    # Una transacción con SAVEPOINT (descartar una oferta) que lee y después escribe, mientras el
+    # worker escribe desde otra conexión: antes fallaba al instante con «database is locked».
+    import threading
+
+    from app.core.db import make_engine
+
+    url = f"sqlite:///{tmp_path / 't.db'}"
+    api, worker = make_engine(url), make_engine(url)
+    with api.begin() as conn:
+        conn.execute(text("CREATE TABLE t (x INTEGER)"))
+    has_read, worker_done = threading.Event(), threading.Event()
+
+    def worker_writes() -> None:
+        has_read.wait(5)
+        with worker.begin() as conn:
+            conn.execute(text("INSERT INTO t VALUES (1)"))
+        worker_done.set()
+
+    thread = threading.Thread(target=worker_writes)
+    thread.start()
+    with session_scope(api) as session, session.begin_nested():
+        session.execute(text("SELECT count(*) FROM t")).all()
+        has_read.set()
+        worker_done.wait(0.5)  # sin el arreglo, el worker escribe aquí y el INSERT ya no puede
+        session.execute(text("INSERT INTO t VALUES (2)"))
+    thread.join(10)
+    with api.connect() as conn:
+        assert sorted(conn.execute(text("SELECT x FROM t")).scalars()) == [1, 2]

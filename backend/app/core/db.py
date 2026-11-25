@@ -26,6 +26,17 @@ def _set_sqlite_pragmas(dbapi_connection: Any, _connection_record: Any) -> None:
     cursor.close()
 
 
+def _reserve_before_savepoint(conn: Any, _name: Any) -> None:
+    """Un `SAVEPOINT` fuera de transacción la abre de solo lectura (el driver solo pone `BEGIN`
+    delante de un INSERT, UPDATE o DELETE). Si otra conexión escribe antes de la primera escritura
+    de dentro, SQLite no puede pasarla a escritura y falla al instante («database is locked»), sin
+    esperar el `timeout`. Con `BEGIN IMMEDIATE` delante, espera su turno como cualquier escritura.
+    """
+    dbapi_connection = conn.connection.dbapi_connection
+    if not dbapi_connection.in_transaction:
+        dbapi_connection.execute("BEGIN IMMEDIATE")
+
+
 # Lo que espera una escritura si otra tiene la base: generar un PDF con LibreOffice tarda más que
 # los 5 s de SQLite por defecto, y el worker no puede quedarse sin escribir (ni caerse) mientras.
 # Por encima del tope de la conversión (`cv.pdf_timeout_seconds`, 60 s en la política).
@@ -38,6 +49,7 @@ def make_engine(url: str) -> Engine:
     engine = create_engine(url, connect_args={"timeout": SQLITE_BUSY_TIMEOUT} if sqlite else {})
     if engine.dialect.name == "sqlite":
         event.listen(engine, "connect", _set_sqlite_pragmas)
+        event.listen(engine, "savepoint", _reserve_before_savepoint)
     return engine
 
 
