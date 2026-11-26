@@ -9,8 +9,26 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 
 ## [Sin publicar]
 
+### Añadido
+
+- **Aviso de ofertas caducadas en la Bandeja**: reúne las que pueden estar cerradas, con
+  «Descartar las N» (como «Ya no está publicada»), «Comprobar ahora» y «Revisar ofertas
+  caducadas», que pide al agente abrir en el navegador las aprobadas y con CV que la app no puede
+  comprobar sola (como las de Glassdoor). Nada se cierra sin confirmación.
+- **Caducidad por antigüedad**: las ofertas abiertas antes de enviar publicadas hace más de 30 días
+  se marcan «Puede que esté cerrada» (`liveness.stale_after_days` en `config/policies.yaml`; 0 lo
+  desactiva), salvo que una comprobación reciente las vea abiertas.
+
 ### Cambiado
 
+- **Los botones del agente ya no tapan el navegador**: la ventana del agente se abre detrás. En
+  Windows queda minimizada en la barra de tareas, con el nombre de la acción; ahí se aprueban los
+  permisos que pida. Para volver a Windows Terminal a la vista, `CAI_TERMINAL=wt` en el `.env`.
+- **«¿Sigue abierta?» funciona con Indeed**: si el portal bloquea la comprobación, la app abre la
+  oferta en Chrome con la ventana fuera de la pantalla, sin cookies ni sesión, y detecta «Este
+  empleo ha caducado en Indeed». Si sale un captcha, no lo intenta pasar.
+- **La comprobación diaria incluye las ofertas por leer y por valorar**, no solo las aprobadas y
+  con CV; y la ficha dice cuándo no se ha podido comprobar, con un enlace al anuncio.
 - **«Valorar las ofertas nuevas» lee y valora todas las pendientes de una vez**, sin parar en 20
   (ni valorar como mucho 30): con 60 ofertas por leer, las lee y valora las 60.
 - **En la Bandeja, en «Por leer», junto a «Valorar las ofertas nuevas»** se ve si la comparación

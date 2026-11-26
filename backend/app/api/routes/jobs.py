@@ -134,6 +134,24 @@ def list_republished_jobs(session: SessionDep) -> reopenings.RepublishedList:
     return reopenings.list_republished(session)
 
 
+@router.get(
+    "/closure-suspects",
+    operation_id="list_closure_suspects",
+    dependencies=[Depends(require_ui_read)],
+)
+def list_closure_suspects(session: SessionDep) -> liveness.ClosureSuspects:
+    """Ofertas abiertas antes de enviar que pueden estar cerradas o caducadas: el aviso de la
+    Bandeja. Nunca se cierran solas."""
+    return liveness.closure_suspects(session)
+
+
+@router.post("/check-open", operation_id="check_open_jobs", dependencies=[Depends(require_ui)])
+def check_open_jobs(session: SessionDep, body: EmptyBody) -> liveness.RefreshResult:
+    """«Comprobar ahora»: marca las antiguas y deja en la cola del worker una comprobación de cada
+    oferta abierta antes de enviar sin comprobación reciente."""
+    return liveness.refresh(session)
+
+
 @router.get("/duplicates", operation_id="list_duplicates")
 def list_duplicates(session: SessionDep) -> duplicates.DuplicateList:
     """Ofertas guardadas como duplicadas de otra, con su original y si se pueden borrar."""

@@ -61,7 +61,7 @@ detectar. `cai doctor` resume lo mismo en su sección «Agentes».
 
 La app no cambia según el sistema para los agentes: MCP, la CLI, los botones «en tu agente» y «En
 segundo plano» funcionan igual en Windows, macOS y Linux. Lo único propio de cada sistema es la
-terminal que abren los botones (Windows Terminal o PowerShell; Terminal.app o iTerm2; la del
+terminal que abren los botones (PowerShell minimizada o, con `CAI_TERMINAL=wt`, Windows Terminal; Terminal.app o iTerm2; la del
 escritorio en Linux, o `CAI_TERMINAL`). Que el agente exista en tu sistema lo dice su
 documentación; lo comprobado aquí:
 
@@ -392,7 +392,7 @@ y «Plan de formación», y desde la fase 15 «Revisar respuestas» (Inicio y «
 («Dónde buscar»), desde la 17 los de las entrevistas y desde la 18 «Redactar mensaje» e «Investigar
 empresa» (ficha), desde la 25.2 «Mejorar el contenido del perfil» y «Crear el perfil desde un CV» (y, con perfil, «Importar información desde un CV», que usa `update-profile`)
 («Mi perfil», sin perfil todavía), abren tu
-agente en una terminal (Windows Terminal o PowerShell) con la orden del skill ya escrita; tú
+agente en una terminal, detrás del navegador, con la orden del skill ya escrita; tú
 ves, contestas y apruebas lo que haga. Qué programa se abre lo dice `launch` de cada agente en el
 manifiesto: `command` (con `{prompt}` donde va la orden) y `unset_env` (variables que se quitan
 antes, como la clave de la API, para que use tu suscripción). Con varios agentes, se elige en la
@@ -402,8 +402,9 @@ página «Agente» (fase 24.4): agente por defecto, agente y modelo por acción 
 capacidad que el agente no tiene (navegador, web) no se lanza con él; las que leen contenido no
 confiable (`process-jobs`, `review-replies`, `search-jobs`) con un agente de nivel C se abren en
 terminal con un aviso y nunca en segundo plano. El agente lanzado lleva `CAI_CLIENT_NAME` con su
-nombre, para que lo que haga por la CLI quede a su nombre. En Windows se abre Windows Terminal o
-PowerShell; en macOS, Terminal.app (o iTerm2), y en Linux, la terminal del escritorio (fase 26.1;
+nombre, para que lo que haga por la CLI quede a su nombre. En Windows se abre PowerShell
+minimizada en la barra de tareas, sin quitarle el foco al navegador (Windows Terminal siempre se
+pone delante: solo con `CAI_TERMINAL=wt`); en macOS, sin traerla al frente, Terminal.app (o iTerm2), y en Linux, la terminal del escritorio (fase 26.1;
 `CAI_TERMINAL` elige otra). Sin terminal, o sin el agente en el `PATH`, el botón copia
 la orden para que la pegues tú. Probado con Claude Code; Codex, sin probar.
 

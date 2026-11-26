@@ -566,6 +566,9 @@ OpenCode with a local model to process postings and Claude Code for the CV). Eac
 If an agent is not suited to an action (it has no browser to search for postings, say), the button
 says so and does not launch it. With nothing chosen, `CAI_AGENT` from `.env` or the first installed
 agent is used.
+Your agent's window opens behind your browser, which stays in view: on Windows, a PowerShell window
+minimized on the taskbar, named after the action (approve the permissions it asks for there; with
+`CAI_TERMINAL=wt` in `.env`, Windows Terminal is used instead, and it does come to the front).
 On macOS and Linux, the buttons open Terminal.app or your desktop's terminal; to use another one
 (iTerm2, kitty…), set `CAI_TERMINAL=iterm` (or its name or path) in `.env`.
 

@@ -293,6 +293,27 @@ export function useRepublishedJobs() {
   })
 }
 
+/**
+ * Ofertas abiertas antes de enviar que pueden estar cerradas o caducadas: el aviso de la Bandeja.
+ * Con `watch`, se recarga cada pocos segundos (el worker está comprobando las de la cola).
+ */
+export function useClosureSuspects(watch = false) {
+  return useQuery({
+    queryKey: [...keys.allJobs, 'closure-suspects'] as const,
+    queryFn: () => unwrap(api.GET('/jobs/closure-suspects')),
+    refetchInterval: watch ? 5000 : false,
+  })
+}
+
+/** «Comprobar ahora»: marca las antiguas y deja en la cola del worker las comprobaciones. */
+export function useCheckOpenJobs() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: () => unwrap(api.POST('/jobs/check-open', { body: {} })),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.allJobs }),
+  })
+}
+
 /** Ofertas guardadas como duplicadas de otra (ya no se crean): el aviso de la Bandeja. */
 export function useDuplicateJobs() {
   return useQuery({
@@ -1499,7 +1520,7 @@ export function useAssistantConversation(id: number | null) {
   })
 }
 
-/** Envía lo que has escrito: ahora en segundo plano, ahora en una terminal a la vista (tu agente no
+/** Envía lo que has escrito: ahora en segundo plano, ahora en una terminal aparte (tu agente no
  * trabaja en segundo plano) o como encargo para tu próxima sesión. Sin
  * `conversation_id`, empieza una conversación nueva. */
 export function useAskAssistant() {

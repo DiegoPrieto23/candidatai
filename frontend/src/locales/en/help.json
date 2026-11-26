@@ -49,7 +49,7 @@
     "status": {
       "queued": "Queued",
       "running": "Your agent is working",
-      "terminal": "Your agent is working in the terminal that just opened: the answer will show up here",
+      "terminal": "Your agent is working in its window, behind your browser: the answer will show up here",
       "asking": "Your agent is waiting for your answer in the notice",
       "waiting": "Pending for your agent's next session",
       "done": "Done",
@@ -158,7 +158,7 @@
     },
     "agentButtons": {
       "q": "What happens when I press an agent button?",
-      "a": "Your agent opens with the instruction already written. The arrow on the button lets you choose: in a separate window, where you see and approve what it does; in the background, with no window; or leave it for your next session.",
+      "a": "Your agent opens with the instruction already written. The arrow on the button lets you choose: in a separate window, which opens behind your browser (on the taskbar) and where you see and approve what it does; in the background, with no window; or leave it for your next session.",
       "keywords": "button window terminal background instruction launch dropdown arrow"
     },
     "agentProgress": {
@@ -183,7 +183,7 @@
     },
     "askAgent": {
       "q": "Can I ask my agent for something from the portal?",
-      "a": "Yes. Click “Assistant”, at the bottom right, write what you need and press Enter or the arrow. If your agent runs in the background from the app, the answer appears in the same panel, with links to whatever changed; if not, your agent opens in a visible terminal and the answer still reaches the panel; and if there is no terminal to open, it is saved as a request for your next session. Each time you open it you start a new conversation; earlier ones stay in “Previous conversations”, and within a conversation your agent remembers what you already asked.",
+      "a": "Yes. Click “Assistant”, at the bottom right, write what you need and press Enter or the arrow. If your agent runs in the background from the app, the answer appears in the same panel, with links to whatever changed; if not, your agent opens in a separate terminal, behind your browser, and the answer still reaches the panel; and if there is no terminal to open, it is saved as a request for your next session. Each time you open it you start a new conversation; earlier ones stay in “Previous conversations”, and within a conversation your agent remembers what you already asked.",
       "keywords": "assistant chat ask request agent text box portal conversation history"
     },
     "askAgentLimits": {

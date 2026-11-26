@@ -563,7 +563,10 @@ acción», otro agente o modelo para una acción concreta (p. ej. OpenCode con u
 procesar ofertas y Claude Code para el CV). El desplegable de cada botón (la flecha ▾) indica con qué
 agente se abre y permite usar otro solo esa vez. Si un agente no sirve para una acción (le falta el
 navegador para buscar ofertas, p. ej.), el botón lo indica y no lo lanza. Sin nada elegido, se usa
-`CAI_AGENT` del `.env` o el primero instalado. En macOS y Linux, los botones abren Terminal.app o la
+`CAI_AGENT` del `.env` o el primero instalado. La ventana del agente se abre detrás del navegador,
+que sigue a la vista: en Windows, una ventana de PowerShell minimizada en la barra de tareas, con el
+nombre de la acción (ahí se aprueban los permisos que pida; con `CAI_TERMINAL=wt` en el `.env`, se
+usa Windows Terminal, que sí se pone delante). En macOS y Linux, los botones abren Terminal.app o la
 terminal del escritorio; para usar otra (iTerm2, kitty…), se pone `CAI_TERMINAL=iterm` (o su nombre
 o ruta) en el `.env`.
 

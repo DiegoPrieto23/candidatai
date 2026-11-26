@@ -1,5 +1,5 @@
 {
-  "opened": "Abierto en {{agent}}: se continúa en la ventana recién abierta.",
+  "opened": "Abierto en {{agent}}, en una ventana aparte detrás del navegador: si pide un permiso o una respuesta, está en la barra de tareas.",
   "openFailed": "No se pudo abrir el agente.",
   "alreadyRunning": "Ya se está ejecutando en segundo plano.",
   "queued": "En cola en segundo plano.",
@@ -10,7 +10,7 @@
   "titleCopy": "El agente no se puede abrir desde aquí: se muestra la orden para pegarla en él.",
   "more": "Más formas de lanzarlo",
   "terminal": "En una ventana aparte",
-  "terminalHint": "A la vista, con respuestas y aprobaciones en esa ventana.",
+  "terminalHint": "Se abre detrás del navegador; las respuestas y aprobaciones, en esa ventana.",
   "background": "En segundo plano",
   "backgroundHint": "Sin ventana y solo con las herramientas de la app. Se sigue en «Agente».",
   "backgroundWith": "En segundo plano con {{agent}}",

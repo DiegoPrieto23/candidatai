@@ -26,8 +26,17 @@ from app.models import Job
 logger = logging.getLogger(__name__)
 
 LivenessStatus = Literal["open", "possibly_closed", "unknown", "skipped"]
+# `stale`: lleva más de `liveness.stale_after_days` publicada; `agent_browser`: el agente la abrió
+# en el navegador del usuario y vio que ya no se aceptan candidaturas.
 ClosedReason = Literal[
-    "http_404", "http_410", "redirected", "closed_text", "expired_date", "ats_missing"
+    "http_404",
+    "http_410",
+    "redirected",
+    "closed_text",
+    "expired_date",
+    "ats_missing",
+    "stale",
+    "agent_browser",
 ]
 
 

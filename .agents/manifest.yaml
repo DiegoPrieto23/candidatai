@@ -40,6 +40,7 @@ policy:
     - mcp:list_jobs
     - mcp:get_job
     - mcp:check_job_open
+    - mcp:save_open_check
     - mcp:check_known
     - mcp:list_duplicates
     - mcp:get_search_titles
@@ -234,6 +235,10 @@ targets:
       broaden-search:
         argument-hint: "[nada para los últimos 90 días, o un número de días]"
         allowed-tools: ["read", "cai_profile_cli", "mcp:get_search_titles", "mcp:get_profile", "mcp:list_sources"]
+      # Bandeja: abre en el navegador del usuario las ofertas que la app no puede comprobar.
+      review-expired:
+        argument-hint: "[nada para las aprobadas y con CV, o ids de oferta]"
+        allowed-tools: ["mcp:list_jobs", "mcp:check_job_open", "mcp:save_open_check", "mcp:list_sources"]
       # Fase 20: retrospectiva. Solo lee: los pesos y filtros los cambia el usuario.
       review-search:
         argument-hint: "[nada para la última semana, o un número de días]"

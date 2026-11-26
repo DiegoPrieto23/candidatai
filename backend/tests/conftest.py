@@ -99,6 +99,18 @@ def no_dns(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 @pytest.fixture(autouse=True)
+def no_liveness_browser(monkeypatch: pytest.MonkeyPatch) -> None:
+    """«¿Sigue abierta?» abre Chrome si la página bloquea la petición: aquí nunca hay navegador.
+    Los tests que prueban ese segundo intento lo simulan."""
+    from app.services import liveness_browser
+
+    def unavailable(*_args: object, **_kwargs: object) -> None:
+        raise liveness_browser.BrowserUnavailableError("sin navegador en los tests")
+
+    monkeypatch.setattr(liveness_browser, "fetch_rendered", unavailable)
+
+
+@pytest.fixture(autouse=True)
 def no_layout(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch) -> None:
     """La maquetación del PDF (fase 25.5) mira posiciones reales: con el conversor falso (una línea
     por párrafo) daría avisos sin sentido. Los tests que la prueban llevan `@pytest.mark.layout`."""

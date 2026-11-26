@@ -42,6 +42,7 @@ Mode = Literal["terminal", "background"]
 # Lo que necesita cada acción del agente. `import-cv-template` lee el PDF o la imagen del CV.
 REQUIRES: dict[str, tuple[Capability, ...]] = {
     "search-jobs": ("browser",),
+    "review-expired": ("browser",),
     "research-company": ("web",),
     "training-plan": ("web",),
     "import-cv-template": ("vision",),
@@ -52,7 +53,14 @@ REQUIRES: dict[str, tuple[Capability, ...]] = {
 # ya validada por su esquema. `expand` (fase 25.2) sí: lee READMEs de terceros y edita el perfil.
 # No pide `web`: revisar el perfil no la necesita; solo leer los enlaces, y sin ella se salta.
 UNTRUSTED: frozenset[str] = frozenset(
-    {"process-jobs", "review-replies", "search-jobs", "configure-platforms", "expand"}
+    {
+        "process-jobs",
+        "review-replies",
+        "search-jobs",
+        "configure-platforms",
+        "expand",
+        "review-expired",
+    }
 )
 
 CAPABILITY_NAMES: dict[Capability, str] = {

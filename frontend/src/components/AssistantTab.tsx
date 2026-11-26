@@ -142,7 +142,7 @@ function Turn({ request, asking, onGo }: { request: AssistantView; asking: boole
 
 /**
  * «Asistente», como un chat: lo que escribes se guarda en la app y se lo pasa a tu agente, en
- * segundo plano si puede trabajar así desde la app; si no, en una terminal a la vista; y si tampoco,
+ * segundo plano si puede trabajar así desde la app; si no, en una terminal aparte; y si tampoco,
  * como encargo para tu próxima sesión.
  * La app no llama a ningún modelo. Arriba, los mensajes de la conversación abierta, por días; abajo,
  * la caja. `conversationId` en `null`: una conversación nueva, que se crea al enviar.

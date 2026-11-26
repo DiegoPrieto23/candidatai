@@ -204,6 +204,13 @@ class LivenessPolicy(BaseModel):
     closed_phrases: dict[str, list[str]] = Field(default_factory=dict)
     # Frases de los controles anti-bot que algunos portales sirven con HTTP 200: dan `unknown`.
     blocked_phrases: list[str] = Field(default_factory=list)
+    # Segundo intento con un navegador de verdad (ventana fuera de la pantalla) si la página bloquea
+    # la petición. Nunca pasa un captcha ni un control anti-bot: si sale, `unknown`.
+    browser_fallback: bool = True
+    browser_wait_seconds: float = Field(default=3, ge=0, le=30)
+    browser_skip_platforms: list[str] = Field(default_factory=list)
+    # Caducidad por antigüedad: días desde la publicación (o desde que se vio). 0: desactivada.
+    stale_after_days: int = Field(default=30, ge=0)
 
 
 class RepostsPolicy(BaseModel):

@@ -12,9 +12,11 @@ con tu suscripción, y tú ves, contestas y apruebas lo que haga.
   habilitado e instalado.
 - Antes de lanzar se quitan del entorno las variables de `launch.unset_env` (p. ej. la clave de la
   API): así el agente usa tu suscripción y no factura por API.
-- En Windows, Windows Terminal o, si no está, una ventana de PowerShell. En macOS y Linux (fase
-  26.1), la terminal que elige `terminals` (`CAI_TERMINAL` para cambiarla). Sin terminal, o sin
-  agente instalado, la UI copia la orden para que la pegues tú.
+- La ventana se abre en segundo plano: el navegador sigue delante. En Windows, una ventana de
+  PowerShell minimizada en la barra de tareas (Windows Terminal siempre se pone delante; con
+  `CAI_TERMINAL=wt` se usa igualmente, a la vista). En macOS y Linux (fase 26.1), la terminal que
+  elige `terminals` (`CAI_TERMINAL` para cambiarla). Sin terminal, o sin agente instalado, la UI
+  copia la orden para que la pegues tú.
 - «En segundo plano» (fase 19): las acciones con `background` también se pueden lanzar
   sin ventana desde el worker (`services/agent_runs.py`), con `launch.headless` del manifiesto y
   solo las herramientas MCP que declara la acción: en la orden (`ceiling: args`) o, desde la fase
@@ -455,7 +457,7 @@ def pick(
 
 def no_terminal() -> str | None:
     """Por qué no se puede abrir una terminal aquí, o `None` si se puede. En Windows, siempre se
-    puede (Windows Terminal o PowerShell). En Docker, nunca: tu agente está fuera del contenedor."""
+    puede (PowerShell). En Docker, nunca: tu agente está fuera del contenedor."""
     if container.in_docker():
         return container.TERMINAL
     if sys.platform == "win32":
@@ -514,7 +516,8 @@ DATA_DIR_ENV = "CAI_DATA_DIR"  # la carpeta de una demo, para que el agente no u
 def launch_env(launcher: _Launcher) -> dict[str, str]:
     """Las variables que pone la ventana: el agente y, en una demo, su carpeta de datos. Una
     pestaña nueva de Windows Terminal (`wt -w 0`) no hereda el entorno de `cai start`: sin
-    `CAI_DATA_DIR`, el agente escribiría en tus datos reales y no en la demo."""
+    `CAI_DATA_DIR`, el agente escribiría en tus datos reales y no en la demo. Se ponen siempre,
+    se abra la ventana que se abra."""
     env = {CLIENT_ENV: launcher.agent}
     settings = get_settings()
     if settings.demo_mode:
@@ -562,6 +565,31 @@ def shell_args(command: str) -> list[str]:
     return ["powershell", "-NoLogo", "-NoExit", "-EncodedCommand", encoded]
 
 
+WINDOWS_TERMINAL = ("wt", "windows-terminal", "windowsterminal")
+SW_SHOWMINNOACTIVE = 7  # minimizada en la barra de tareas, sin quitarle el foco a nadie
+
+
+def _wants_windows_terminal() -> bool:
+    """`CAI_TERMINAL=wt`: Windows Terminal, a la vista. Siempre se pone delante (ni minimizada ni
+    en segundo plano), así que solo si se pide."""
+    chosen = (get_settings().terminal or "").strip().lower()
+    return chosen in WINDOWS_TERMINAL and shutil.which("wt") is not None
+
+
+def background_console(title: str, command: str) -> tuple[list[str], dict[str, object]]:
+    """Windows: PowerShell en una consola nueva, minimizada y sin activar, para que el navegador
+    siga delante tras pulsar el botón. El título la distingue en la barra de tareas."""
+    titled = f"$Host.UI.RawUI.WindowTitle = {_quote(title)}; {command}"
+    kwargs: dict[str, object] = {"creationflags": getattr(subprocess, "CREATE_NEW_CONSOLE", 0)}
+    startup_info = getattr(subprocess, "STARTUPINFO", None)
+    if startup_info is not None:
+        info = startup_info()
+        info.dwFlags |= subprocess.STARTF_USESHOWWINDOW  # type: ignore[attr-defined]
+        info.wShowWindow = SW_SHOWMINNOACTIVE
+        kwargs["startupinfo"] = info
+    return shell_args(titled), kwargs
+
+
 def _open_terminal(title: str, command: str) -> None:
     if sys.platform != "win32":
         found = terminals.find()
@@ -569,14 +597,14 @@ def _open_terminal(title: str, command: str) -> None:
             raise OSError(found)
         terminals.open_terminal(found, title, REPO_ROOT, command)
         return
-    shell = shell_args(command)
-    wt = shutil.which("wt")
-    if wt:
+    if _wants_windows_terminal():
+        wt = shutil.which("wt") or "wt"
+        shell = shell_args(command)
         args = [wt, "-w", "0", "new-tab", "--title", title, "-d", str(REPO_ROOT), *shell]
         subprocess.Popen(args, cwd=REPO_ROOT)  # noqa: S603 - argumentos fijos, sin shell
         return
-    flags = getattr(subprocess, "CREATE_NEW_CONSOLE", 0)
-    subprocess.Popen(shell, cwd=REPO_ROOT, creationflags=flags)  # noqa: S603
+    argv, kwargs = background_console(title, command)
+    subprocess.Popen(argv, cwd=REPO_ROOT, **kwargs)  # type: ignore[call-overload]  # noqa: S603
 
 
 def _check_milestone(

@@ -279,7 +279,7 @@ describe('Asistente', () => {
     await waitFor(() => expect(calls.some((call) => call.method === 'POST')).toBe(true))
     expect(calls.find((call) => call.method === 'POST')?.body).toEqual({ text: 'Resume mis procesos', mode: 'terminal', conversation_id: null, lang: 'es' })
     expect(
-      await within(panel).findByText('El agente está trabajando en la terminal que se ha abierto: la respuesta aparecerá aquí'),
+      await within(panel).findByText('El agente está trabajando en su ventana, detrás del navegador: la respuesta aparecerá aquí'),
     ).toBeInTheDocument()
     expect(within(panel).getByRole('button', { name: 'Cancelar' })).toBeInTheDocument()
   })

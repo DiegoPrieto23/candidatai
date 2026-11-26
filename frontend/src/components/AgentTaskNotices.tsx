@@ -119,7 +119,7 @@ function TaskNotice({ task }: { task: AgentTaskView }) {
   else if (good) body = counted ? t('doneCount', { count: task.done }) : t('doneBody')
   else body = t(`${ending}.body` as never)
 
-  // En segundo plano se puede detener; en una terminal a la vista, se para cerrando esa ventana.
+  // En segundo plano se puede detener; en una terminal, se para cerrando esa ventana.
   const stoppable = running && task.run_id != null && !task.stopping
   const inTerminal = running && task.run_id == null
   const keepGoing = () => {

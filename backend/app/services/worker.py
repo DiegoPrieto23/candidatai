@@ -335,11 +335,9 @@ def enqueue_replies_poll(session: Session) -> bool:
 
 
 def enqueue_liveness_checks(session: Session) -> int:
-    """Encola `check_open` para las aprobadas y con CV listo sin comprobación reciente."""
-    due = liveness.due_for_check(session)
-    for job_id in due:
-        tasks.enqueue(session, "check_open", {"job_id": job_id})
-    return len(due)
+    """Marca las ofertas antiguas y encola `check_open` para las abiertas antes de enviar sin
+    comprobación reciente (`liveness.refresh`). Devuelve las comprobaciones en cola."""
+    return liveness.refresh(session).queued
 
 
 def describe(outcome: TaskOutcome) -> str:
@@ -463,7 +461,7 @@ def run_scheduler(
         if linkedin:
             on_message("Búsqueda pública de LinkedIn en cola (la activaste en «Dónde buscar»).")
         if checks:
-            on_message(f"¿Siguen abiertas?: {checks} ofertas aprobadas o con CV en cola.")
+            on_message(f"¿Siguen abiertas?: {checks} ofertas en cola.")
         process()
 
     # Un solo hilo: la cola y la ingesta nunca escriben a la vez en SQLite. Las ejecuciones del

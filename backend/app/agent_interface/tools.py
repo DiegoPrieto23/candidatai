@@ -119,6 +119,26 @@ class CheckJobOpenInput(_Input):
     )
 
 
+class SaveOpenCheckInput(_Input):
+    job_id: int = Field(ge=1, description="Id de la oferta.")
+    status: liveness.AgentCheckStatus = Field(
+        description=(
+            "Lo que se ve al abrir la oferta en el navegador: `open` (sigue publicada y admite "
+            "candidaturas), `possibly_closed` (dice que ha caducado, que ya no acepta "
+            "candidaturas, o la página ya no existe) o `unknown` (captcha, control anti-bot, "
+            "pide iniciar sesión o no se ve claro)."
+        )
+    )
+    detail: str = Field(
+        default="",
+        max_length=300,
+        description=(
+            "Qué se ve, en una frase y en español: la frase de la página que lo dice, sin "
+            "copiar más texto de la oferta."
+        ),
+    )
+
+
 class CheckKnownInput(_Input):
     items: list[known.KnownItem] = Field(
         min_length=1,
@@ -719,6 +739,12 @@ def _check_job_open(
     return liveness.check_job(session, args.job_id, force=args.force)
 
 
+def _save_open_check(
+    session: Session, args: SaveOpenCheckInput, _ctx: CallContext
+) -> liveness.LivenessView:
+    return liveness.save_agent_check(session, args.job_id, args.status, args.detail)
+
+
 def _check_known(session: Session, args: CheckKnownInput, _ctx: CallContext) -> known.KnownList:
     return known.check_known(session, args.items)
 
@@ -1113,7 +1139,8 @@ TOOLS: tuple[ToolSpec, ...] = (
         name="check_job_open",
         description=(
             "Comprueba si la oferta sigue publicada (petición ligera a su URL o a la API de su "
-            "ATS; LinkedIn no se comprueba). Resultado: `open`, `possibly_closed`, `unknown` o "
+            "ATS y, si la página la bloquea, una vez en un navegador fuera de la pantalla; "
+            "LinkedIn no se comprueba). Resultado: `open`, `possibly_closed`, `unknown` o "
             "`skipped`, con el motivo. Si hay una comprobación reciente la devuelve sin repetir "
             "(`force` para repetir). NUNCA cierra la oferta: si puede estar cerrada, avisa al "
             "usuario y que decida él."
@@ -1122,6 +1149,21 @@ TOOLS: tuple[ToolSpec, ...] = (
         output_model=liveness.LivenessView,
         handler=_check_job_open,
         cli=CliSpec(path=("jobs", "check-open"), arguments=("job_id",)),
+    ),
+    ToolSpec(
+        name="save_open_check",
+        description=(
+            "Guarda lo que se ve al abrir una oferta en el navegador del usuario (skill "
+            "`review-expired`), para las que `check_job_open` no puede comprobar (la página "
+            "bloquea la petición). Igual que esa comprobación: `open` quita el aviso de posible "
+            "cierre, `possibly_closed` avisa al usuario y `unknown` no cambia nada. NUNCA cierra "
+            "la oferta: descartarla lo decide el usuario. Solo en ofertas abiertas antes de "
+            "enviar la candidatura (si no, `not_allowed`)."
+        ),
+        input_model=SaveOpenCheckInput,
+        output_model=liveness.LivenessView,
+        handler=_save_open_check,
+        cli=CliSpec(path=("jobs", "save-open-check"), arguments=("job_id",)),
     ),
     ToolSpec(
         name="check_known",

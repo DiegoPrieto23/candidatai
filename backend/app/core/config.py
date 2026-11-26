@@ -108,7 +108,8 @@ class Settings(BaseSettings):
     # contenedor y no intenta abrir terminales, el segundo plano ni un navegador visible.
     in_docker: bool = Field(default=False, validation_alias=_env("IN_DOCKER"))
     # Qué terminal abren esos botones en macOS y Linux (fase 26.1): `iterm`, `kitty`, una ruta…
-    # Sin valor, la del sistema (`services/terminals.py`). En Windows no se usa.
+    # Sin valor, la del sistema (`services/terminals.py`). En Windows, `wt` abre Windows Terminal
+    # a la vista; sin valor, PowerShell minimizada.
     terminal: str | None = Field(default=None, validation_alias=_env("TERMINAL"))
     # Ollama en este equipo (fase 24.6): solo se leen sus metadatos, nunca se le pide inferencia.
     ollama_url: str = Field(default="http://127.0.0.1:11434", validation_alias=_env("OLLAMA_URL"))

@@ -2629,6 +2629,7 @@ register_tools(
         "list_duplicates": _render_duplicates,
         "get_job": _render_job,
         "check_job_open": _render_message,
+        "save_open_check": _render_message,
         "get_search_titles": _render_search_titles,
         "save_extraction": _render_saved_extraction,
         "add_event": _render_event,

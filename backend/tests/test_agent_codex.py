@@ -1,5 +1,5 @@
 """Fase 46: el asistente con Codex en segundo plano (techo en un perfil propio de cada ejecución,
-escrito en la carpeta de Codex) y en una terminal a la vista para los agentes sin segundo plano.
+escrito en la carpeta de Codex) y en una terminal aparte para los agentes sin segundo plano.
 Sin red ni LLM: una salida grabada de codex-cli 0.163.0 sobre la demo y terminales simuladas."""
 # ruff: noqa: F811 - los fixtures importados se usan como parámetros
 
