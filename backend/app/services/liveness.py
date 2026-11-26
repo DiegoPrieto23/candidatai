@@ -20,7 +20,7 @@ import re
 import socket
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, Literal
 from urllib.parse import parse_qs, urlsplit
 
 import httpx
@@ -31,10 +31,10 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.policies import get_policies
-from app.models import Application, Job, Source
+from app.models import Application, Company, Job, Source
 from app.models.base import utcnow
 from app.schemas.sources import KIND_LABELS
-from app.services import ingest, platforms
+from app.services import ingest, liveness_browser, platforms
 from app.services.events import JobNotFoundError, record
 from app.services.ingestion.base import make_client
 from app.services.normalize import fold, normalize_title
@@ -50,8 +50,19 @@ from app.services.signals import (
 
 # ATS con comprobación por API; el resto de ATS (fase 25.1) se comprueban por su página.
 _API_KINDS = frozenset({"greenhouse", "lever", "ashby"})
-# Etapas que el worker revisa cada día (las que van camino de un CV o de enviarse).
-DAILY_STAGES = (Stage.APPROVED, Stage.CV_READY)
+# Etapas que el worker revisa cada día: las abiertas antes de enviar que ya tienen la oferta entera
+# (las `pending_detail` son resúmenes de alertas, casi siempre de LinkedIn, que no se comprueba).
+DAILY_STAGES = (Stage.PENDING_EXTRACTION, Stage.PENDING_TRIAGE, Stage.APPROVED, Stage.CV_READY)
+# Las que importan más: van camino de un CV o de enviarse. Las revisa el agente en su navegador.
+IMPORTANT_STAGES = (Stage.APPROVED, Stage.CV_READY)
+# Antes de enviar: donde tiene sentido avisar de un cierre y proponer descartar.
+BEFORE_SENDING = (
+    Stage.PENDING_DETAIL,
+    Stage.PENDING_EXTRACTION,
+    Stage.PENDING_TRIAGE,
+    Stage.APPROVED,
+    Stage.CV_READY,
+)
 
 _SLUG = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,99}$")
 _UUID = r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
@@ -76,6 +87,8 @@ class LivenessResult(BaseModel):
     reason: str | None = None  # en `possibly_closed`, un `ClosedReason`
     detail: str = ""
     http_status: int | None = None
+    # La página bloqueó la petición (401/403 o un control anti-bot): vale la pena el navegador.
+    blocked: bool = False
 
 
 class LivenessView(BaseModel):
@@ -102,6 +115,10 @@ def _closed(reason: str, detail: str, status: int | None = None) -> LivenessResu
 
 def _unknown(detail: str, status: int | None = None) -> LivenessResult:
     return LivenessResult(status="unknown", detail=detail, http_status=status)
+
+
+def _blocked(detail: str, status: int | None = None) -> LivenessResult:
+    return LivenessResult(status="unknown", detail=detail, http_status=status, blocked=True)
 
 
 # --- ATS ---------------------------------------------------------------------------------------
@@ -271,8 +288,7 @@ def check_resolved(request: httpx.Request) -> None:
 
 
 def check_page(url: str, now: datetime | None = None, title: str | None = None) -> LivenessResult:
-    """Con `title`, «abierta» exige ver la oferta: su título en la página o un JSON-LD
-    `JobPosting`. Si no, puede ser un control anti-bot o una página genérica: `unknown`."""
+    """La petición ligera: un GET sin cookies ni JavaScript. La lectura, en `analyze_page`."""
     now = now or utcnow()
     policy = get_policies().liveness
     headers = {
@@ -304,19 +320,36 @@ def check_page(url: str, now: datetime | None = None, title: str | None = None) 
         return _unknown("la URL no es válida")
     except httpx.HTTPError as exc:
         return _unknown(f"no se pudo abrir la página ({type(exc).__name__})")
+    html = content.decode(encoding, errors="replace")
+    return analyze_page(url, status, str(final_url), redirected, html, now, title)
 
+
+def analyze_page(
+    url: str,
+    status: int | None,
+    final_url: str,
+    redirected: bool,
+    html: str,
+    now: datetime,
+    title: str | None = None,
+) -> LivenessResult:
+    """Lee la respuesta de la página de una oferta, venga de la petición ligera o del navegador.
+
+    Con `title`, «abierta» exige ver la oferta: su título en la página o un JSON-LD `JobPosting`.
+    Si no, puede ser un control anti-bot o una página genérica: `unknown`."""
+    policy = get_policies().liveness
     if status in (404, 410):
         return _closed(f"http_{status}", f"la página responde HTTP {status}", status)
     if status in (401, 403):
-        return _unknown(f"la página bloquea el acceso (HTTP {status})", status)
-    if status >= 400:
+        return _blocked(f"la página bloquea el acceso (HTTP {status})", status)
+    if status is not None and status >= 400:
         return _unknown(f"la página respondió HTTP {status}", status)
-    if redirected and _lost_identity(url, str(final_url)):
+    host = urlsplit(final_url).hostname or ""
+    if redirected and _lost_identity(url, final_url):
         # Solo el dominio: la URL final la elige el servidor (no confiable) y este texto llega al
         # agente y al historial.
-        return _closed("redirected", f"la URL redirige a otra página de {final_url.host}", status)
-    html = content.decode(encoding, errors="replace")
-    if ingest.looks_like_login(final_url, html):
+        return _closed("redirected", f"la URL redirige a otra página de {host}", status)
+    if ingest.looks_like_login(httpx.URL(final_url), html):
         return _unknown("la página pide iniciar sesión", status)
     try:
         doc = lxml.html.document_fromstring(html)
@@ -327,8 +360,8 @@ def check_page(url: str, now: datetime | None = None, title: str | None = None) 
     expired = _expired(doc, now)
     text = _visible_text(doc)
     if (block := _phrase_in(text, policy.blocked_phrases)) is not None:
-        return _unknown(f"la página muestra un control anti-bot («{block}»)", status)
-    platform = platforms.platform_of_host(final_url.host)
+        return _blocked(f"la página muestra un control anti-bot («{block}»)", status)
+    platform = platforms.platform_of_host(host)
     if (phrase := closed_phrase(text, platform)) is not None:
         return _closed("closed_text", f"la página dice «{phrase}»", status)
     if expired is not None:
@@ -338,6 +371,37 @@ def check_page(url: str, now: datetime | None = None, title: str | None = None) 
             "la página no muestra la oferta (¿control anti-bot o página genérica?)", status
         )
     return _open("la página sigue publicada", status)
+
+
+def _allowed_in_browser(url: str) -> bool:
+    """El navegador solo navega a lo que aceptaría la petición ligera."""
+    try:
+        request = httpx.Request("GET", url)
+        ingest.check_request(request)
+        check_resolved(request)
+    except (ingest.IngestError, httpx.InvalidURL, UnicodeError):
+        return False
+    return True
+
+
+def check_in_browser(url: str, now: datetime, title: str | None = None) -> LivenessResult | None:
+    """Segundo intento con el navegador fuera de la pantalla (`services/liveness_browser.py`).
+    `None` si no hay navegador: quien llama se queda con el resultado de la petición ligera."""
+    policy = get_policies().liveness
+    try:
+        page = liveness_browser.fetch_rendered(
+            url, policy.timeout_seconds, policy.browser_wait_seconds, _allowed_in_browser
+        )
+    except liveness_browser.BrowserUnavailableError:
+        return None
+    except Exception as exc:  # red, tiempo agotado o navegación cortada por `_allowed_in_browser`
+        return _unknown(f"tampoco se pudo abrir en el navegador ({type(exc).__name__})")
+    result = analyze_page(url, page.status, page.final_url, page.redirected, page.html, now, title)
+    if result.status == "unknown":
+        result.detail = f"tampoco en el navegador: {result.detail}"
+    else:
+        result.detail = f"{result.detail} (comprobado en el navegador)"
+    return result
 
 
 # --- Oferta ------------------------------------------------------------------------------------
@@ -363,7 +427,24 @@ def check_target(job: Job, source: Source | None, now: datetime | None = None) -
         return LivenessResult(status="skipped", detail=str(exc))
     except (httpx.InvalidURL, UnicodeError):
         return LivenessResult(status="skipped", detail="la URL de la oferta no es válida")
-    return check_page(url, now, job.title)
+    result = check_page(url, now, job.title)
+    if result.blocked and _browser_fallback(host, job.platform):
+        second = check_in_browser(url, now or utcnow(), job.title)
+        if second is not None:
+            return second
+    return result
+
+
+def _browser_fallback(host: str, platform: str | None) -> bool:
+    policy = get_policies().liveness
+    if not policy.browser_fallback:
+        return False
+    # Por la plataforma o por el dominio: muchas ofertas no la tienen (`glassdoor` salta con
+    # `www.glassdoor.es` y `glassdoor.com`).
+    labels = set(host.lower().split("."))
+    skip = set(policy.browser_skip_platforms)
+    named = {platform, platforms.platform_of_host(host)}
+    return not (skip & labels) and not (skip & named)
 
 
 def _stage(session: Session, job_id: int) -> Stage | None:
@@ -517,7 +598,8 @@ def confirm_open(session: Session, job_id: int, now: datetime | None = None) -> 
 
 
 def due_for_check(session: Session, now: datetime | None = None) -> list[int]:
-    """Ofertas aprobadas o con CV listo, con URL comprobable y sin comprobación reciente."""
+    """Ofertas abiertas antes de enviar (`DAILY_STAGES`), con URL comprobable y sin comprobación
+    reciente."""
     now = now or utcnow()
     fresh = timedelta(hours=get_policies().liveness.fresh_hours)
     rows = session.scalars(
@@ -535,3 +617,193 @@ def due_for_check(session: Session, now: datetime | None = None) -> list[int]:
         if last is None or last.checked_at <= now - fresh:
             due.append(job.id)
     return due
+
+
+# --- Caducidad por antigüedad ------------------------------------------------------------------
+
+
+def _born(job: Job) -> datetime:
+    """Desde cuándo existe: su publicación o, si no se sabe o es posterior, cuando se vio."""
+    return min(job.posted_at, job.first_seen_at) if job.posted_at else job.first_seen_at
+
+
+def _flag(session: Session, job: Job, reason: str, detail: str, now: datetime) -> None:
+    current = read(job).possibly_closed
+    set_signal(
+        job,
+        "possibly_closed",
+        ClosedSignal(
+            since=current.since if current else now,
+            checked_at=now,
+            reason=reason,  # type: ignore[arg-type]
+            detail=detail,
+        ),
+    )
+    if current is None:
+        record(
+            session,
+            job.id,
+            EventType.CLOSURE_SUSPECTED,
+            Actor.SYSTEM,
+            {"reason": reason, "detail": detail},
+            occurred_at=now,
+        )
+
+
+def flag_stale(session: Session, now: datetime | None = None) -> list[int]:
+    """Marca «Puede que esté cerrada» las ofertas abiertas antes de enviar que llevan más de
+    `liveness.stale_after_days` publicadas. Se salta las que ya tienen aviso, las que una
+    comprobación de esos días vio abiertas y las que el usuario dijo que siguen abiertas por este
+    mismo motivo. Nunca cierra ninguna. Devuelve las que marca ahora."""
+    now = now or utcnow()
+    days = get_policies().liveness.stale_after_days
+    if not days:
+        return []
+    limit = now - timedelta(days=days)
+    rows = session.scalars(
+        select(Job)
+        .join(Application, Application.job_id == Job.id)
+        .where(Application.stage.in_([s.value for s in BEFORE_SENDING]))
+        .order_by(Job.id)
+    )
+    flagged = []
+    for job in rows:
+        born = _born(job)
+        if born > limit:
+            continue
+        signals = read(job)
+        if signals.possibly_closed is not None:
+            continue
+        last = signals.liveness
+        if last is not None and last.status == "open" and last.checked_at > limit:
+            continue
+        if signals.open_confirmed is not None and signals.open_confirmed.reason == "stale":
+            continue
+        what = "publicada" if job.posted_at and job.posted_at <= job.first_seen_at else "vista"
+        detail = f"{what} hace {(now - born).days} días (más de {days})"
+        _flag(session, job, "stale", detail, now)
+        flagged.append(job.id)
+    session.flush()
+    return flagged
+
+
+# --- Comprobación del agente en el navegador del usuario ----------------------------------------
+
+
+AgentCheckStatus = Literal["open", "possibly_closed", "unknown"]
+
+
+class StageNotAllowedError(ValueError):
+    """La oferta no está abierta antes de enviar."""
+
+
+def save_agent_check(
+    session: Session,
+    job_id: int,
+    status: AgentCheckStatus,
+    detail: str,
+    now: datetime | None = None,
+) -> LivenessView:
+    """Guarda lo que vio el agente al abrir la oferta en el navegador del usuario (skill
+    `review-expired`). Igual que la comprobación del código: `open` quita el aviso,
+    `possibly_closed` avisa (motivo `agent_browser`) y `unknown` no cambia el aviso. Nunca
+    cierra la oferta."""
+    now = now or utcnow()
+    job = session.get(Job, job_id)
+    if job is None:
+        raise JobNotFoundError(f"No existe la oferta {job_id}.")
+    stage = _stage(session, job_id)
+    if stage is None or stage not in BEFORE_SENDING:
+        where = stage.value if stage else "sin etapa"
+        raise StageNotAllowedError(
+            f"Solo se guarda en ofertas abiertas antes de enviar la candidatura (esta: {where})."
+        )
+    text = " ".join(detail.split())[:300] or "comprobada en el navegador"
+    result = LivenessResult(
+        status=status,
+        reason="agent_browser" if status == "possibly_closed" else None,
+        detail=f"{text} (lo vio el agente en el navegador)",
+    )
+    apply_result(session, job, result, now)
+    return _view(job, cached=False)
+
+
+# --- Lista para la Bandeja ---------------------------------------------------------------------
+
+
+class ClosureSuspect(BaseModel):
+    job_id: int
+    title: str
+    company: str
+    url: str | None
+    stage: Stage
+    reason: str
+    detail: str
+    since: datetime
+
+
+class ClosureSuspects(BaseModel):
+    items: list[ClosureSuspect]
+    # Aprobadas o con CV listo sin una comprobación que diga algo (bloqueo, LinkedIn, sin
+    # comprobar): las que vale la pena que el agente abra en el navegador del usuario.
+    unverified_important: int
+
+
+def closure_suspects(session: Session) -> ClosureSuspects:
+    """Ofertas abiertas antes de enviar con el aviso «Puede que esté cerrada», de la más antigua a
+    la más reciente."""
+    rows = session.execute(
+        select(Job, Application.stage, Company.name)
+        .join(Application, Application.job_id == Job.id)
+        .join(Company, Company.id == Job.company_id)
+        .where(Application.stage.in_([s.value for s in BEFORE_SENDING]))
+        .order_by(Job.id)
+    )
+    items: list[ClosureSuspect] = []
+    unverified = 0
+    for job, stage_value, company in rows:
+        stage = Stage(stage_value)
+        signals = read(job)
+        closed = signals.possibly_closed
+        if closed is not None:
+            items.append(
+                ClosureSuspect(
+                    job_id=job.id,
+                    title=job.title,
+                    company=company,
+                    url=job.url or None,
+                    stage=stage,
+                    reason=closed.reason,
+                    detail=closed.detail,
+                    since=closed.since,
+                )
+            )
+        elif stage in IMPORTANT_STAGES and (
+            signals.liveness is None or signals.liveness.status in ("unknown", "skipped")
+        ):
+            unverified += 1
+    items.sort(key=lambda item: item.since)
+    return ClosureSuspects(items=items, unverified_important=unverified)
+
+
+class RefreshResult(BaseModel):
+    stale: int  # marcadas ahora por antigüedad
+    queued: int  # comprobaciones que quedan en la cola del worker
+    message: str
+
+
+def refresh(session: Session, now: datetime | None = None) -> RefreshResult:
+    """Lo que hace el worker cada día y la Bandeja con «Comprobar ahora»: marca las antiguas y deja
+    en la cola una comprobación de cada oferta abierta antes de enviar sin comprobación reciente.
+    Las comprobaciones las hace `cai worker`, de una en una."""
+    from app.services import tasks  # aquí: `tasks` no depende de nada, pero el worker sí de esto
+
+    stale = flag_stale(session, now)
+    due = due_for_check(session, now)
+    for job_id in due:
+        tasks.enqueue(session, "check_open", {"job_id": job_id})
+    parts = []
+    if stale:
+        parts.append(f"{len(stale)} marcadas por antigüedad")
+    parts.append(f"{len(due)} comprobaciones en cola" if due else "nada pendiente de comprobar")
+    return RefreshResult(stale=len(stale), queued=len(due), message="; ".join(parts) + ".")

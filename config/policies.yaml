@@ -132,9 +132,20 @@ linkedin_public:                # fase 22: búsqueda pública de LinkedIn sin se
   default_time_posted: r86400     # si la búsqueda no dice `f_TPR`: publicadas en las últimas 24 h
 
 liveness:                       # fase 16: ¿sigue abierta? Nunca cierra la oferta: avisa y propone descartarla
-  fresh_hours: 20                 # no se vuelve a comprobar antes (salvo «Comprobar otra vez»); el worker revisa cada día las aprobadas y con CV
+  fresh_hours: 20                 # no se vuelve a comprobar antes (salvo «Comprobar otra vez»); el worker revisa cada día las ofertas abiertas antes de enviar
   timeout_seconds: 15
   max_bytes: 2000000              # lo que se lee de la página, como mucho
+  # Si la página bloquea la petición (HTTP 401/403 o un control anti-bot), se abre una vez en Chrome
+  # (o en el navegador de BROWSER_CHANNEL) con la ventana fuera de la pantalla y un perfil limpio, sin
+  # cookies ni sesión. Si allí también sale un control anti-bot o un captcha, queda en «no se sabe»:
+  # nunca se intenta pasar. Sin Chrome instalado, igual. `false` lo desactiva.
+  browser_fallback: true
+  browser_wait_seconds: 3         # lo que se espera a que la página termine de pintarse
+  browser_skip_platforms: [glassdoor]   # portales que bloquean también al navegador: ni se intenta
+  # Caducidad por antigüedad: una oferta abierta (antes de enviarla) publicada o vista por primera vez
+  # hace más de estos días se marca «Puede que esté cerrada» y la Bandeja propone descartarla, salvo
+  # que una comprobación de esos días diga que sigue abierta. Nunca se cierra sola. 0 lo desactiva.
+  stale_after_days: 30
   # Frases de «oferta cerrada» por portal (se comparan sin tildes ni mayúsculas con el texto visible).
   # Son heurísticas: si ves una oferta cerrada que no se detecta, añade aquí la frase que muestra.
   closed_phrases:
@@ -158,6 +169,7 @@ liveness:                       # fase 16: ¿sigue abierta? Nunca cierra la ofer
       - esta oferta ya no admite inscripciones
       - oferta caducada
     indeed:
+      - este empleo ha caducado en indeed
       - esta oferta de empleo ha caducado
       - this job has expired on indeed
       - esta oferta ha caducado en indeed

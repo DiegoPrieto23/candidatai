@@ -1,5 +1,5 @@
 {
-  "opened": "Opened in {{agent}}: carry on in the window that just opened.",
+  "opened": "Opened in {{agent}} in a separate window behind your browser: if it asks for permission or an answer, find it on the taskbar.",
   "openFailed": "Could not open your agent.",
   "alreadyRunning": "Already running in the background.",
   "queued": "Queued in the background.",
@@ -10,7 +10,7 @@
   "titleCopy": "Your agent cannot be opened from here: the command is shown so you can paste it into it.",
   "more": "More ways to launch it",
   "terminal": "In a separate window",
-  "terminalHint": "You see it, answer and approve.",
+  "terminalHint": "Opens behind your browser; you answer and approve in that window.",
   "background": "In the background",
   "backgroundHint": "No window and only with the app's tools. Follow it in “Agent”.",
   "backgroundWith": "In the background with {{agent}}",

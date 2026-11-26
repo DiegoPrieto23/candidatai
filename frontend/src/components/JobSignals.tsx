@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import {
+  ArrowSquareOutIcon,
   ArrowsClockwiseIcon,
   ArrowsHorizontalIcon,
   CalendarXIcon,
@@ -34,7 +35,11 @@ const BEFORE_SENDING: ReadonlySet<Stage> = new Set([
   'approved',
   'cv_ready',
 ])
-/** Las que comprueba el worker cada día; la ficha también, al abrirla, si la comprobación caducó. */
+/**
+ * Las que la ficha comprueba al abrirla, si la comprobación caducó. El worker revisa además cada
+ * día las pendientes de extraer y de valorar; aquí no, porque al triar se abren muchas seguidas y
+ * cada comprobación puede abrir el navegador unos segundos.
+ */
 const CHECKED_STAGES: ReadonlySet<Stage> = new Set(['approved', 'cv_ready'])
 
 const CHANNEL_LABEL: Record<string, string> = {
@@ -218,7 +223,8 @@ export function ClosedNotice({ job }: { job: JobView }) {
   const confirm = useConfirmJobOpen()
   const event = useJobEvent()
   const [discarding, setDiscarding] = useState(false)
-  if (!closed || job.stage === null || !BEFORE_SENDING.has(job.stage)) return null
+  if (job.stage === null || !BEFORE_SENDING.has(job.stage)) return null
+  if (!closed) return <UncheckedNote job={job} />
   const error = check.error ?? confirm.error
   return (
     <section
@@ -284,6 +290,51 @@ export function ClosedNotice({ job }: { job: JobView }) {
           )
         }
       />
+    </section>
+  )
+}
+
+/**
+ * La última comprobación no pudo decir nada (la página bloquea, pide iniciar sesión…): una nota
+ * discreta con el enlace al anuncio, para que no parezca que sigue abierta.
+ */
+function UncheckedNote({ job }: { job: JobView }) {
+  const { t } = useTranslation('signals', { keyPrefix: 'uncheckedNote' })
+  const check = useCheckJobOpen()
+  const last = job.signals?.liveness
+  if (!last || last.status !== 'unknown') return null
+  return (
+    <section aria-label={t('title')} className="rounded-xl border bg-card px-4 py-3 text-sm">
+      <h2 className="flex items-center gap-2 font-medium">
+        <LinkBreakIcon className="size-[18px] shrink-0 text-muted-foreground" weight="duotone" aria-hidden />
+        {t('title')}
+      </h2>
+      <p className="mt-1 text-muted-foreground">
+        {t('body', {
+          detail: last.detail.charAt(0).toUpperCase() + last.detail.slice(1),
+          checkedAt: formatDateTime(last.checked_at),
+        })}
+      </p>
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        {job.url && (
+          <Button size="xs" variant="outline" asChild>
+            <a href={job.url} target="_blank" rel="noreferrer">
+              <ArrowSquareOutIcon />
+              {t('view')}
+            </a>
+          </Button>
+        )}
+        <Button
+          size="xs"
+          variant="ghost"
+          disabled={check.isPending}
+          onClick={() => check.mutate({ jobId: job.id, force: true })}
+        >
+          <ArrowsClockwiseIcon className={cn(check.isPending && 'animate-spin')} />
+          <BusyLabel busy={check.isPending} busyText={t('checking')} text={t('checkAgain')} />
+        </Button>
+      </div>
+      {check.error && <p role="alert" className="mt-2 text-destructive">{errorMessage(check.error)}</p>}
     </section>
   )
 }

@@ -37,7 +37,7 @@ describe('Botones «en tu agente»', () => {
     })
     renderApp('/')
     await userEvent.click(await screen.findByRole('button', { name: 'Buscar ofertas' }))
-    expect(await screen.findByText('Abierto en claude: se continúa en la ventana recién abierta.')).toBeInTheDocument()
+    expect(await screen.findByText('Abierto en claude, en una ventana aparte detrás del navegador: si pide un permiso o una respuesta, está en la barra de tareas.')).toBeInTheDocument()
     expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ lang: 'es', action: 'search-jobs' })
   })
 
@@ -206,7 +206,7 @@ describe('Botones «en tu agente»', () => {
       expect(screen.getByRole('menuitem', { name: /Abrir con Qwen Code/ })).toHaveAttribute('aria-disabled', 'true')
       expect(screen.getByText('Qwen Code no está instalado.')).toBeInTheDocument()
       await userEvent.click(screen.getByRole('menuitem', { name: /Abrir con Codex/ }))
-      expect(await screen.findByText('Abierto en codex: se continúa en la ventana recién abierta.')).toBeInTheDocument()
+      expect(await screen.findByText('Abierto en codex, en una ventana aparte detrás del navegador: si pide un permiso o una respuesta, está en la barra de tareas.')).toBeInTheDocument()
       expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ lang: 'es', action: 'search-jobs', agent: 'codex' })
     })
 
@@ -280,7 +280,7 @@ describe('Botones «en tu agente»', () => {
       expect(await screen.findByRole('menuitem', { name: new RegExp(warning) })).toBeInTheDocument()
       await userEvent.keyboard('{Escape}')
       await userEvent.click(main)
-      expect(await screen.findByText(`Abierto en qwen: se continúa en la ventana recién abierta. Atención: ${warning}`)).toBeInTheDocument()
+      expect(await screen.findByText(`Abierto en qwen, en una ventana aparte detrás del navegador: si pide un permiso o una respuesta, está en la barra de tareas. Atención: ${warning}`)).toBeInTheDocument()
     })
   })
 })

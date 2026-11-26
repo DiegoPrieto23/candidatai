@@ -66,5 +66,37 @@
     "reopen": "Reopen",
     "dismiss": "Ignore",
     "view": "See the posting"
+  },
+  "closureBanner": {
+    "label": "Jobs that may be closed",
+    "title_one": "One job may be closed or expired",
+    "title_other": "{{count}} jobs may be closed or expired",
+    "titleNone": "Still open?",
+    "intro": "The app checks open jobs every day before they are sent and flags those older than a month. It never closes any of them.",
+    "unverified_one": "One approved job or job with a CV cannot be checked by the app: the agent can open it in the browser.",
+    "unverified_other": "{{count}} approved jobs or jobs with a CV cannot be checked by the app: the agent can open them in the browser.",
+    "checkNow": "Check now",
+    "checking": "Checking…",
+    "review": "Review expired jobs",
+    "queued": "Flagged by age: {{stale}}. Checks queued: {{queued}}. The list updates itself in a few minutes.",
+    "show_one": "Show the job",
+    "show_other": "Show all {{count}}",
+    "hide": "Hide",
+    "discardAll_one": "Discard",
+    "discardAll_other": "Discard all {{count}}",
+    "confirm_one": "Discard this job as closed?",
+    "confirm_other": "Discard all {{count}} as closed?",
+    "confirmYes": "Yes, discard",
+    "discarding": "Discarding…",
+    "cancel": "Cancel",
+    "line": "{{detail}}. Flagged since {{since}}.",
+    "view": "View the posting"
+  },
+  "uncheckedNote": {
+    "title": "Could not check whether it is still open",
+    "body": "{{detail}}. Checked on {{checkedAt}}. Opening the posting is advisable.",
+    "view": "View the posting",
+    "checkAgain": "Check again",
+    "checking": "Checking…"
   }
 }

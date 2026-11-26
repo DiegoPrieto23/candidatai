@@ -1,8 +1,9 @@
 """Terminales de macOS y Linux para los botones «en tu agente» (fase 26.1).
 
-En Windows los abre `agent_launch` como siempre (Windows Terminal o PowerShell). Aquí:
+En Windows los abre `agent_launch` (PowerShell minimizada). Aquí:
 
-- **macOS:** Terminal.app con `osascript`; iTerm2 si `CAI_TERMINAL=iterm` y está instalado.
+- **macOS:** Terminal.app con `osascript`; iTerm2 si `CAI_TERMINAL=iterm` y está instalado. Sin
+  `activate`: la ventana se abre detrás y el navegador sigue delante.
 - **Linux:** `CAI_TERMINAL`, `$TERMINAL` o la primera que haya de `CANDIDATES`, cada una con su
   forma de pasar la orden. Sin entorno gráfico (`DISPLAY`, `WAYLAND_DISPLAY`) no hay ninguna.
 - La orden va en bash o zsh (`$SHELL` si es uno de los dos; si no, bash), con cada parte en
@@ -108,8 +109,6 @@ def _terminal_app(osascript: str, title: str, command: str) -> list[str]:
         f'tell application "Terminal" to set t to do script {_applescript(command)}',
         "-e",
         f'tell application "Terminal" to set custom title of t to {_applescript(title)}',
-        "-e",
-        'tell application "Terminal" to activate',
     ]
 
 
@@ -118,8 +117,6 @@ def _iterm(osascript: str, command: str) -> list[str]:
         osascript,
         "-e",
         'tell application "iTerm"',
-        "-e",
-        "activate",
         "-e",
         "set w to (create window with default profile)",
         "-e",

@@ -411,7 +411,7 @@ def test_connector_job_uses_the_ats_api(session: Session) -> None:
     assert (view.status, view.reason) == ("possibly_closed", "ats_missing")
 
 
-def test_due_for_check_only_approved_and_cv_ready_without_recent_check(session: Session) -> None:
+def test_due_for_check_open_before_sending_without_recent_check(session: Session) -> None:
     approved = _job(session, GENERIC)
     _approve(session, approved.id)
     pending = _job(session, "https://careers.example.com/jobs/otra", title="BI Engineer")
@@ -419,12 +419,14 @@ def test_due_for_check_only_approved_and_cv_ready_without_recent_check(session: 
     _approve(session, linkedin.id)
     fresh = _job(session, "https://careers.example.com/jobs/fresca", title="Data Analyst")
     _approve(session, fresh.id)
+    closed = _job(session, "https://careers.example.com/jobs/cerrada", title="Data Scientist")
+    events.record(session, closed.id, "discarded", "user", {"reason": "skills"})
     liveness.apply_result(
         session, fresh, liveness.LivenessResult(status="open", detail="ok"), now=NOW
     )
     due = liveness.due_for_check(session, now=NOW + timedelta(hours=1))
-    assert due == [approved.id]
-    assert pending.id not in due
+    # Las pendientes de extraer o de valorar también: muchas caducan antes de revisarlas.
+    assert due == [approved.id, pending.id]
     assert fresh.id in liveness.due_for_check(session, now=NOW + timedelta(hours=21))
 
 

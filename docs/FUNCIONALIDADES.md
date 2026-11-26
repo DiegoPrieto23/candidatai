@@ -32,7 +32,8 @@ FEATURES.md dejan de coincidir fila a fila. -->
 | **Búsqueda pública de LinkedIn** (apagada por defecto, bajo la responsabilidad de quien la activa): una vez al día, sin cuenta ni cookies; el agente no puede activarla | `/fuentes/plataformas` | |
 | **Encontrar el tablero de empleo de las empresas** a partir de una lista de nombres | `cai sources discover` | |
 | **Leer y valorar las ofertas nuevas en un solo paso** («Valorar las ofertas nuevas»): extrae cada una a datos estructurados con un subagente aislado que solo ve esa oferta y después la valora frente al perfil; el texto dirigido a una IA se marca y nunca se obedece | `process-jobs` | |
-| **¿Sigue abierta? y republicadas**: la app comprueba si una oferta sigue publicada (nunca la cierra sola) y marca «Republicada ×N» | `/jobs/:id` | |
+| **¿Sigue abierta? y republicadas**: la app comprueba cada día si las ofertas abiertas antes de enviar siguen publicadas (si el portal bloquea la petición, como Indeed, las abre en Chrome con la ventana fuera de la pantalla) y marca «Republicada ×N»; nunca cierra ninguna | `/jobs/:id` | |
+| **Ofertas caducadas**: el aviso de la Bandeja reúne las que pueden estar cerradas (por la comprobación, por llevar más de un mes publicadas o porque lo vio el agente), con «Descartar las N», «Comprobar ahora» y «Revisar ofertas caducadas», que abre en el navegador las aprobadas y con CV que la app no puede comprobar sola (Glassdoor) | `/bandeja` · `review-expired` | |
 | **Puntos a revisar en cada oferta**: rango salarial muy amplio, empresa oculta o agencia, contrato temporal, publicada hace meses y cribado con IA, cada una explicada; no cambian el encaje | `/bandeja` | |
 
 ## 2. Revisar

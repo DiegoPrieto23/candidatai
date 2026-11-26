@@ -265,7 +265,7 @@ Cola de trabajo del worker (sin Redis).
 | `apply_rescan` `{attempt_id}` | «Volver a revisar» | Vuelve a leer los campos y a capturar, sin rellenar nada |
 | `apply_submit` `{attempt_id, token, consents}` | `confirm_submission` (solo la UI) | Consume el token, pulsa el envío, captura la confirmación y registra `applied` |
 | `apply_focus` `{attempt_id}` | «Terminar a mano» | Trae la pestaña al frente y retira el bloqueo del envío |
-| `check_open` `{job_id}` | `cai worker` cada día con la ingesta y al arrancar, para las ofertas en `approved` o `cv_ready` sin comprobación en `liveness.fresh_hours` (fase 16) | ¿Sigue abierta? (`services/liveness.check_job`). Un fallo de red da `unknown`, no se reintenta |
+| `check_open` `{job_id}` | `cai worker` cada día con la ingesta y al arrancar, y «Comprobar ahora» en la Bandeja, para las ofertas en `pending_extraction`, `pending_triage`, `approved` o `cv_ready` sin comprobación en `liveness.fresh_hours` (fase 16) | ¿Sigue abierta? (`services/liveness.check_job`). Un fallo de red da `unknown`, no se reintenta |
 | `run_linkedin_public` `{}` | `cai worker` cada día con la ingesta y al arrancar, solo si la búsqueda pública de LinkedIn está activada y le toca (fase 22) | `ingestion/linkedin_public.run`. Nunca se reintenta: un bloqueo de LinkedIn deja `blocked_at` y no se vuelve a intentar en `block_cooldown_days` |
 | `archive_application` `{job_id, event_id, cv_render_id, letter_document_id, letter_render_id, answers_document_id}` | `applied` o `applied_manually` (fase 13) | Copia lo enviado a `data/documentos/candidaturas/` (ver §Fase 13). Los ids se fijan al registrar el envío. Idempotente |
 
@@ -727,7 +727,7 @@ Observaciones del código sobre la oferta que **no** son riesgo de inyección (m
 
 | Clave | Contenido | Quién |
 |---|---|---|
-| `possibly_closed` | `since`, `checked_at`, `reason` (`http_404`, `http_410`, `redirected`, `closed_text`, `expired_date`, `ats_missing`), `detail`, `http_status?` | La comprobación «¿sigue abierta?» (`services/liveness.py`). Se borra si una comprobación posterior dice `open`; `unknown` la deja como estaba |
+| `possibly_closed` | `since`, `checked_at`, `reason` (`http_404`, `http_410`, `redirected`, `closed_text`, `expired_date`, `ats_missing`, `stale`: más de `liveness.stale_after_days` publicada; `agent_browser`: lo vio el agente con `save_open_check`), `detail`, `http_status?` | La comprobación «¿sigue abierta?» (`services/liveness.py`). Se borra si una comprobación posterior dice `open`; `unknown` la deja como estaba |
 | `liveness` | `checked_at`, `status` (`open`, `possibly_closed`, `unknown`, `skipped`), `reason?`, `detail`, `http_status?` | Última comprobación, sea cual sea |
 | `open_confirmed` | `at`, `reason?` | «Sigue abierta» en la UI: ese mismo motivo ya no vuelve a avisar, hasta que una comprobación dé `open` (entonces se borra) |
 | `reposted` | `count` (días distintos con publicación nueva), `dates[]`, `channel`, `window_days` | `services/reposts.py`, en todas las ofertas del grupo (misma empresa, título normalizado y ubicación). Se recalcula al ver una publicación nueva; no caduca sola |

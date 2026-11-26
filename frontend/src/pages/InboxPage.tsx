@@ -20,6 +20,7 @@ import { type JobSort, PAGE_SIZE, type SortDirection, useEditableProfile, useJob
 import { DiscardDialog, type DiscardChoice } from '@/components/DiscardDialog'
 import { Hint } from '@/components/Hint'
 import { SignalBadges } from '@/components/JobSignals'
+import { ClosureBanner } from '@/components/ClosureBanner'
 import { DuplicatesBanner } from '@/components/Duplicates'
 import { ReopenedBadge, RepublishedBanner } from '@/components/Reopenings'
 import { KnownBadge } from '@/components/KnownBadge'
@@ -951,6 +952,7 @@ export function InboxPage() {
       />
 
       <div className="mb-4 space-y-3 empty:hidden">
+        <ClosureBanner />
         <RepublishedBanner />
         <DuplicatesBanner />
         {done.length > 0 && (

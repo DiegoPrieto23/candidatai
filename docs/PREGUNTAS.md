@@ -70,7 +70,7 @@ Dónde: «Agente».
 
 ### ¿Qué pasa al pulsar un botón del agente?
 
-Se abre el agente con la orden ya escrita. La flecha del botón ofrece elegir: en una ventana aparte, donde se ve y se aprueba lo que hace; en segundo plano, sin ventana; o dejarlo para la próxima sesión.
+Se abre el agente con la orden ya escrita. La flecha del botón ofrece elegir: en una ventana aparte, que se abre detrás del navegador (en la barra de tareas) y donde se ve y se aprueba lo que hace; en segundo plano, sin ventana; o dejarlo para la próxima sesión.
 
 Dónde: «Agente».
 
@@ -98,7 +98,7 @@ Dónde: «Agente».
 
 ### ¿Se le pueden hacer peticiones al agente desde el portal?
 
-Sí. En «Asistente», abajo a la derecha, se escribe la petición y se pulsa Intro o la flecha. Si el agente trabaja en segundo plano desde la app, la respuesta aparece en el mismo panel, con enlaces a lo que haya cambiado; si no, el agente se abre en una terminal a la vista y la respuesta llega igual al panel; y si no hay terminal que abrir, se guarda como encargo para la próxima sesión. Cada vez que se abre empieza una conversación nueva; las anteriores siguen en «Conversaciones anteriores», y en una misma conversación el agente recuerda lo que ya se le preguntó.
+Sí. En «Asistente», abajo a la derecha, se escribe la petición y se pulsa Intro o la flecha. Si el agente trabaja en segundo plano desde la app, la respuesta aparece en el mismo panel, con enlaces a lo que haya cambiado; si no, el agente se abre en una terminal aparte, detrás del navegador, y la respuesta llega igual al panel; y si no hay terminal que abrir, se guarda como encargo para la próxima sesión. Cada vez que se abre empieza una conversación nueva; las anteriores siguen en «Conversaciones anteriores», y en una misma conversación el agente recuerda lo que ya se le preguntó.
 
 ### ¿Qué puede hacer el agente cuando se le pide algo desde el portal?
 

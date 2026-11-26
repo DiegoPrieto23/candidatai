@@ -225,7 +225,7 @@ describe('Mi perfil', () => {
     const button = await screen.findByRole('button', { name: 'Mejorar el contenido del perfil' })
     await waitFor(() => expect(button).toBeEnabled())
     await userEvent.click(button)
-    expect(await screen.findByText('Abierto en claude: se continúa en la ventana recién abierta.')).toBeInTheDocument()
+    expect(await screen.findByText('Abierto en claude, en una ventana aparte detrás del navegador: si pide un permiso o una respuesta, está en la barra de tareas.')).toBeInTheDocument()
     expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ lang: 'es', action: 'expand' })
     view.unmount()
 
@@ -286,7 +286,7 @@ describe('Mi perfil', () => {
     const launch = await within(dialog).findByRole('button', { name: 'Importar información desde un CV' })
     await waitFor(() => expect(launch).toBeEnabled())
     await userEvent.click(launch)
-    await screen.findByText('Abierto en claude: se continúa en la ventana recién abierta.')
+    await screen.findByText('Abierto en claude, en una ventana aparte detrás del navegador: si pide un permiso o una respuesta, está en la barra de tareas.')
     expect(calls.find((c) => c.path === '/agent/launch')?.body).toEqual({ lang: 'es', action: 'import-profile-from-cv' })
   })
 

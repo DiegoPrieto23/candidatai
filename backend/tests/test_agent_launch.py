@@ -199,6 +199,7 @@ def test_get_lists_agent_and_actions(client: TestClient, opened: list[tuple[str,
     actions = {a["id"]: a for a in body["actions"]}
     assert set(actions) == {
         "search-jobs",
+        "review-expired",
         "process-jobs",
         "assess-fit-job",
         "generate-cv",
@@ -651,3 +652,41 @@ def test_a_request_keeps_its_scope_and_different_scopes_do_not_merge(client: Tes
     assert "Data Engineer" in str(one["prompt"])
     assert again["id"] == one["id"]
     assert other["id"] != one["id"]
+
+
+def test_windows_opens_a_minimised_console_without_focus(
+    isolated_env: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """El navegador sigue delante: PowerShell en una consola nueva, minimizada y sin activar, con
+    el título de la acción. Windows Terminal (`CAI_TERMINAL=wt`), solo si se pide: sale delante."""
+    import base64
+    import subprocess
+
+    from app.core.config import get_settings
+
+    launched: list[tuple[list[str], dict[str, object]]] = []
+    monkeypatch.setattr(agent_launch.sys, "platform", "win32")
+    monkeypatch.setattr(agent_launch.shutil, "which", lambda name: f"C:/bin/{name}.exe")
+    monkeypatch.setattr(
+        agent_launch.subprocess, "Popen", lambda argv, **kw: launched.append((argv, kw))
+    )
+    monkeypatch.delenv("CAI_TERMINAL", raising=False)
+    get_settings.cache_clear()
+    agent_launch._open_terminal("CandidatAI · Valorar", "& 'claude' 'hola'")
+    argv, kwargs = launched[-1]
+    assert argv[:4] == ["powershell", "-NoLogo", "-NoExit", "-EncodedCommand"]
+    script = base64.b64decode(argv[4]).decode("utf-16-le")
+    assert script == "$Host.UI.RawUI.WindowTitle = 'CandidatAI · Valorar'; & 'claude' 'hola'"
+    assert kwargs["creationflags"] == getattr(subprocess, "CREATE_NEW_CONSOLE", 0)
+    if hasattr(subprocess, "STARTUPINFO"):
+        info = kwargs["startupinfo"]
+        assert info.wShowWindow == agent_launch.SW_SHOWMINNOACTIVE  # type: ignore[attr-defined]
+        assert info.dwFlags & subprocess.STARTF_USESHOWWINDOW  # type: ignore[attr-defined]
+
+    monkeypatch.setenv("CAI_TERMINAL", "wt")
+    get_settings.cache_clear()
+    agent_launch._open_terminal("CandidatAI · Valorar", "& 'claude' 'hola'")
+    argv, kwargs = launched[-1]
+    assert argv[:4] == ["C:/bin/wt.exe", "-w", "0", "new-tab"]
+    assert "startupinfo" not in kwargs
+    get_settings.cache_clear()

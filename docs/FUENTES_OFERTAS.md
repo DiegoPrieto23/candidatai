@@ -469,15 +469,26 @@ son **observaciones, no veredictos**: la app nunca cierra una oferta por ellas.
   HTTP 200 (`liveness.blocked_phrases`): `unknown`, sin aviso.
 - **«Abierta» exige ver la oferta**: su título en la página o un JSON-LD `JobPosting`. Una página
   genérica sin ninguno de los dos da `unknown`.
-- En la práctica (comprobado en octubre de 2026): los ATS y Tecnoempleo responden bien; InfoJobs
-  sirve un control anti-bot e Indeed responde 401 a peticiones sin navegador, así que sus ofertas
-  suelen quedar en `unknown`. No se intenta esquivar: el aviso solo sale cuando hay evidencia.
+- **Segundo intento con un navegador** (`services/liveness_browser.py`), si la petición da 401,
+  403 o un control anti-bot y `liveness.browser_fallback` está activado: la página se abre una vez
+  en Chrome (o en el de `BROWSER_CHANNEL`; si no hay, el Chromium de Playwright) con la ventana
+  fuera de la pantalla y un perfil temporal, sin cookies ni sesión, y se lee igual que la
+  petición. Solo navega a lo que aceptaría la petición (nada local, de red privada ni de
+  LinkedIn). El modo sin ventana no sirve: los mismos portales lo bloquean. No se hace clic en
+  nada: si sale un captcha o un control anti-bot, `unknown`. Los portales de
+  `liveness.browser_skip_platforms` (Glassdoor, que bloquea también al navegador) no se intentan.
+  Tarda unos segundos por oferta.
+- En la práctica (comprobado en noviembre de 2026): los ATS y Tecnoempleo responden a la
+  petición; Indeed la bloquea, pero el navegador la lee; Glassdoor bloquea los dos (Cloudflare) y
+  queda en `unknown`: para él está el skill `review-expired`. No se intenta esquivar ningún
+  control: el aviso solo sale cuando hay evidencia.
 - **LinkedIn nunca** (la búsqueda pública de la fase 22 no cambia esto): `skipped`.
 
 Cuándo se comprueba:
 
-- cada día, con la ingesta, y al arrancar `cai worker`: las ofertas en `approved` y `cv_ready` sin
-  comprobación en las últimas `liveness.fresh_hours` (tarea `check_open`, una por oferta);
+- cada día, con la ingesta, y al arrancar `cai worker`: las ofertas en `pending_extraction`,
+  `pending_triage`, `approved` y `cv_ready` sin comprobación en las últimas `liveness.fresh_hours`
+  (tarea `check_open`, una por oferta); lo mismo con «Comprobar ahora» en la Bandeja;
 - al abrir la ficha de una oferta aprobada o con CV listo (si la última es reciente, no repite);
 - antes de redactar un CV: el skill `generate-cv` llama a `check_job_open` y, si puede estar
   cerrada, pregunta antes de gastar cuota; el botón «Generar CV» también lo avisa;
@@ -486,7 +497,28 @@ Cuándo se comprueba:
 Si puede estar cerrada, la ficha lo dice con el motivo y la fecha y ofrece **«Descartar»** (con el
 motivo nuevo «Ya no está publicada», `closed`), **«Sigue abierta»** (quita el aviso y ese mismo
 motivo ya no vuelve a avisar, hasta que una comprobación la vea abierta) y «Comprobar otra vez». La bandeja y «Por revisar» la marcan «¿Cerrada?».
-La primera vez se registra el evento `closure_suspected`, que no cambia la etapa.
+La primera vez se registra el evento `closure_suspected`, que no cambia la etapa. Si la
+comprobación no puede decir nada (`unknown`), la ficha lo dice con un enlace al anuncio.
+
+### Caducidad por antigüedad
+
+Cada día, antes de las comprobaciones (y con «Comprobar ahora»), `liveness.flag_stale` marca
+«Puede que esté cerrada» (motivo `stale`) las ofertas abiertas antes de enviar publicadas, o vistas
+por primera vez si no se sabe la fecha, hace más de `liveness.stale_after_days` días (30; 0 lo
+desactiva). Se salta las que ya tienen aviso, las que una comprobación de esos días vio abiertas y
+las que el usuario confirmó con «Sigue abierta». Una comprobación posterior que la vea abierta
+quita el aviso. Nunca cierra ninguna.
+
+### Aviso de la Bandeja y skill `review-expired`
+
+La Bandeja reúne las ofertas abiertas antes de enviar con aviso (`GET /jobs/closure-suspects`),
+sea cual sea el motivo, y ofrece «Descartar las N» (descarte con el motivo `closed`, de una en una
+y con confirmación), «Comprobar ahora» (`POST /jobs/check-open`: encola las comprobaciones para el
+worker) y «Revisar ofertas caducadas», que lanza el skill `review-expired` con el agente del
+usuario. El skill toma las aprobadas y con CV listo, deja las que `check_job_open` ya resuelve, abre
+las demás en el navegador del usuario (LinkedIn solo si tiene activada la búsqueda con el agente
+en LinkedIn) y guarda lo que ve con `save_open_check` (motivo `agent_browser`). Nunca resuelve un
+captcha ni cierra una oferta.
 
 ### Republicadas
 

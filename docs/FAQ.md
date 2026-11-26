@@ -70,7 +70,7 @@ Where: “Agent”.
 
 ### What happens when I press an agent button?
 
-Your agent opens with the instruction already written. The arrow on the button lets you choose: in a separate window, where you see and approve what it does; in the background, with no window; or leave it for your next session.
+Your agent opens with the instruction already written. The arrow on the button lets you choose: in a separate window, which opens behind your browser (on the taskbar) and where you see and approve what it does; in the background, with no window; or leave it for your next session.
 
 Where: “Agent”.
 
@@ -98,7 +98,7 @@ Where: “Agent”.
 
 ### Can I ask my agent for something from the portal?
 
-Yes. Click “Assistant”, at the bottom right, write what you need and press Enter or the arrow. If your agent runs in the background from the app, the answer appears in the same panel, with links to whatever changed; if not, your agent opens in a visible terminal and the answer still reaches the panel; and if there is no terminal to open, it is saved as a request for your next session. Each time you open it you start a new conversation; earlier ones stay in “Previous conversations”, and within a conversation your agent remembers what you already asked.
+Yes. Click “Assistant”, at the bottom right, write what you need and press Enter or the arrow. If your agent runs in the background from the app, the answer appears in the same panel, with links to whatever changed; if not, your agent opens in a separate terminal, behind your browser, and the answer still reaches the panel; and if there is no terminal to open, it is saved as a request for your next session. Each time you open it you start a new conversation; earlier ones stay in “Previous conversations”, and within a conversation your agent remembers what you already asked.
 
 ### What can my agent do when I ask from the portal?
 

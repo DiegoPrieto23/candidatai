@@ -132,7 +132,14 @@ def test_applescript_is_escaped() -> None:
     assert argv[2] == f'tell application "Terminal" to set t to do script "{escaped}"'
     assert argv[4].endswith('to "Tí\\"tulo"')
     iterm = terminals.Terminal("iterm", "/usr/bin/osascript").argv("T", CWD, "x", "/bin/zsh")
-    assert 'write text "/bin/zsh -c x"' in iterm[8]
+    assert 'write text "/bin/zsh -c x"' in iterm[6]
+
+
+def test_macos_terminals_open_behind_the_browser() -> None:
+    """Sin `activate`: la ventana se abre detrás y el navegador sigue delante."""
+    for name in ("terminal", "iterm"):
+        argv = terminals.Terminal(name, "/usr/bin/osascript").argv("T", CWD, "x", "/bin/zsh")
+        assert not any("activate" in part for part in argv)
 
 
 def test_posix_script_quotes_everything() -> None:

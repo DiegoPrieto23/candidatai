@@ -658,6 +658,220 @@
         }
       }
     },
+    "/jobs/closure-suspects": {
+      "get": {
+        "tags": [
+          "jobs"
+        ],
+        "summary": "List Closure Suspects",
+        "description": "Ofertas abiertas antes de enviar que pueden estar cerradas o caducadas: el aviso de la\nBandeja. Nunca se cierran solas.",
+        "operationId": "list_closure_suspects",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClosureSuspects"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/check-open": {
+      "post": {
+        "tags": [
+          "jobs"
+        ],
+        "summary": "Check Open Jobs",
+        "description": "«Comprobar ahora»: marca las antiguas y deja en la cola del worker una comprobación de cada\noferta abierta antes de enviar sin comprobación reciente.",
+        "operationId": "check_open_jobs",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmptyBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefreshResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/jobs/duplicates": {
       "get": {
         "tags": [
@@ -23976,6 +24190,7 @@
               "research-company",
               "handle-requests",
               "review-search",
+              "review-expired",
               "expand",
               "create-profile",
               "import-profile-from-cv",
@@ -24890,6 +25105,7 @@
               "research-company",
               "handle-requests",
               "review-search",
+              "review-expired",
               "expand",
               "create-profile",
               "import-profile-from-cv",
@@ -25051,6 +25267,7 @@
               "research-company",
               "handle-requests",
               "review-search",
+              "review-expired",
               "expand",
               "create-profile",
               "import-profile-from-cv",
@@ -25349,6 +25566,7 @@
               "research-company",
               "handle-requests",
               "review-search",
+              "review-expired",
               "expand",
               "create-profile",
               "import-profile-from-cv",
@@ -27399,7 +27617,9 @@
               "redirected",
               "closed_text",
               "expired_date",
-              "ats_missing"
+              "ats_missing",
+              "stale",
+              "agent_browser"
             ],
             "title": "Reason"
           },
@@ -27427,6 +27647,82 @@
           "detail"
         ],
         "title": "ClosedSignal"
+      },
+      "ClosureSuspect": {
+        "properties": {
+          "job_id": {
+            "type": "integer",
+            "title": "Job Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "stage": {
+            "$ref": "#/components/schemas/Stage"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          },
+          "since": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Since"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "title",
+          "company",
+          "url",
+          "stage",
+          "reason",
+          "detail",
+          "since"
+        ],
+        "title": "ClosureSuspect"
+      },
+      "ClosureSuspects": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ClosureSuspect"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "unverified_important": {
+            "type": "integer",
+            "title": "Unverified Important"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "unverified_important"
+        ],
+        "title": "ClosureSuspects"
       },
       "CompanyResearchContent": {
         "properties": {
@@ -29967,6 +30263,7 @@
               "research-company",
               "handle-requests",
               "review-search",
+              "review-expired",
               "expand",
               "create-profile",
               "import-profile-from-cv",
@@ -33103,6 +33400,7 @@
               "research-company",
               "handle-requests",
               "review-search",
+              "review-expired",
               "expand",
               "create-profile",
               "import-profile-from-cv",
@@ -36892,6 +37190,7 @@
                 "research-company",
                 "handle-requests",
                 "review-search",
+                "review-expired",
                 "expand",
                 "create-profile",
                 "import-profile-from-cv",
@@ -37984,6 +38283,29 @@
         ],
         "title": "ReferralFunnel"
       },
+      "RefreshResult": {
+        "properties": {
+          "stale": {
+            "type": "integer",
+            "title": "Stale"
+          },
+          "queued": {
+            "type": "integer",
+            "title": "Queued"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "stale",
+          "queued",
+          "message"
+        ],
+        "title": "RefreshResult"
+      },
       "RenameTemplateInput": {
         "properties": {
           "name": {
@@ -39062,6 +39384,7 @@
               "research-company",
               "handle-requests",
               "review-search",
+              "review-expired",
               "expand",
               "create-profile",
               "import-profile-from-cv",
@@ -42235,6 +42558,7 @@
                 "research-company",
                 "handle-requests",
                 "review-search",
+                "review-expired",
                 "expand",
                 "create-profile",
                 "import-profile-from-cv",
@@ -42303,6 +42627,7 @@
                 "research-company",
                 "handle-requests",
                 "review-search",
+                "review-expired",
                 "expand",
                 "create-profile",
                 "import-profile-from-cv",
@@ -42379,6 +42704,7 @@
                 "research-company",
                 "handle-requests",
                 "review-search",
+                "review-expired",
                 "expand",
                 "create-profile",
                 "import-profile-from-cv",
