@@ -62,8 +62,10 @@ No hacen falta permisos de administrador, ni Python, ni nada instalado antes.
 
 3. Esperar. Instala [uv](https://docs.astral.sh/uv/) (que trae Python), descarga la última release
    de CandidatAI, la comprueba y prepara el navegador con el que hace los PDF. La primera vez tarda
-   unos minutos. Se ve en una ventana de PowerShell; al terminar, se puede cerrar. Queda un acceso
-   directo **«CandidatAI»** en el escritorio y en el menú Inicio.
+   unos minutos. Se ve en una ventana de PowerShell, en el idioma de Windows (para elegirlo, se
+   añade ` -Lang es` o ` -Lang en` después de `.\cai-install.ps1`). Al terminar, CandidatAI se abre
+   sola en el navegador y esa ventana de PowerShell ya se puede cerrar. Queda un acceso directo
+   **«CandidatAI»** en el escritorio y en el menú Inicio para abrirla las próximas veces.
 
 **Para actualizar más adelante**, no hace falta nada de esto: cuando sale una versión nueva, Inicio
 lo avisa y **«Actualizar ahora»** la instala, sin tocar los datos. También vale repetir la misma

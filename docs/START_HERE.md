@@ -61,8 +61,10 @@ You do not need administrator rights, Python or anything else beforehand.
 
 3. Wait. It installs [uv](https://docs.astral.sh/uv/) (which brings Python), downloads the latest
    CandidatAI release, checks it, and prepares the browser it uses to make PDFs. It takes a few
-   minutes the first time. You follow it in a PowerShell window; when it says it has finished, you
-   can close it. A **"CandidatAI"** shortcut appears on your desktop and in the Start menu.
+   minutes the first time. You follow it in a PowerShell window, in your Windows language (add
+   ` -Lang en` or ` -Lang es` after `.\cai-install.ps1` to choose). When it finishes, CandidatAI
+   opens in your browser by itself and you can close that PowerShell window. A **"CandidatAI"**
+   shortcut appears on your desktop and in the Start menu to open it next time.
 
 **To update later** you do not need any of this: when a new version is out, Home tells you and
 **"Update now"** installs it without touching your data. Running the same line again also works.

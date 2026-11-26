@@ -70,9 +70,13 @@ The installer:
    is installed;
 3. puts it in `%LOCALAPPDATA%\CandidatAI\app`, and your data in `%LOCALAPPDATA%\CandidatAI\data`;
 4. prepares the environment, the PDF Chromium and the database;
-5. creates a **"CandidatAI"** shortcut on the desktop and in the Start menu.
+5. creates a **"CandidatAI"** shortcut on the desktop and in the Start menu;
+6. opens the app with that shortcut.
 
-Opening the shortcut opens your browser straight away with "Starting CandidatAI…", and as soon as
+It speaks your Windows language; ` -Lang en` or ` -Lang es`, after `.\cai-install.ps1`, chooses
+it (the project website adds its own).
+
+Opening the shortcut (also when the installation finishes) opens your browser straight away with "Starting CandidatAI…", and as soon as
 the app answers it moves on to `http://127.0.0.1:8000` by itself. Keep the window that appears open
 while you use it; to close CandidatAI, close that window.
 

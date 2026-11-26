@@ -663,7 +663,7 @@ def _installer(*args: str) -> subprocess.CompletedProcess[str]:
         pytest.skip("sin PowerShell")
     return subprocess.run(  # noqa: S603
         [powershell, "-NoProfile", "-ExecutionPolicy", "Bypass",
-         "-File", str(REPO_ROOT / "install.ps1"), *args],
+         "-File", str(REPO_ROOT / "install.ps1"), "-Lang", "es", *args],
         capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120,
     )  # fmt: skip
 
@@ -785,6 +785,56 @@ def test_installer_downloads_its_sha256_unless_skipped() -> None:
     assert "suma SHA-256" in result.stdout
     result = _installer("-WhatIf", "-SkipChecksum")
     assert result.returncode == 0 and "-SkipChecksum" in result.stdout
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="install.ps1 es para Windows")
+def test_installer_speaks_the_language_of_the_site() -> None:
+    """La web en inglés pasa `-Lang en`: todo el instalador sale en inglés, también los errores."""
+    import shutil
+    import subprocess
+
+    powershell = shutil.which("powershell")
+    if powershell is None:
+        pytest.skip("sin PowerShell")
+
+    def run(*args: str) -> str:
+        result = subprocess.run(  # noqa: S603
+            [powershell, "-NoProfile", "-ExecutionPolicy", "Bypass",
+             "-File", str(REPO_ROOT / "install.ps1"), "-Lang", "en", *args],
+            capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120,
+        )  # fmt: skip
+        return result.stdout + result.stderr
+
+    output = run("-WhatIf")
+    # PowerShell escribe en la página de códigos de la consola: sin tildes ni «·» en lo buscado.
+    assert "installing in" in output and "uv (Python manager)" in output
+    assert "Open CandidatAI" in output  # -WhatIf lo anuncia, sin abrir nada
+    assert "instalaci" not in output and "gestor" not in output
+    assert "cannot be" in run("-WhatIf", "-InstallDir", str(Path.home()))
+
+
+def test_installer_texts_exist_in_both_languages() -> None:
+    windows = (REPO_ROOT / "install.ps1").read_text(encoding="utf-8-sig")
+    blocks = re.findall(r"\n  (es|en) = @\{\n(.*?)\n  \}", windows, re.S)
+    keys = {lang: set(re.findall(r"^\s+(\w+) = ", body, re.M)) for lang, body in blocks}
+    assert set(keys) == {"es", "en"} and keys["es"] == keys["en"]
+    used = set(re.findall(r"\$t\.(\w+)", windows))
+    assert used == keys["es"]
+
+
+def test_installer_opens_the_app_when_it_finishes() -> None:
+    """Al terminar abre la app con su acceso directo, salvo con -NoLaunch (el actualizador, que la
+    abre él) o -NoShortcuts (los tests)."""
+    windows = (REPO_ROOT / "install.ps1").read_text(encoding="utf-8-sig")
+    launch = windows.index("Start-Process -FilePath $Shortcuts[0]")
+    assert windows.index("$shortcut.Save()") < launch
+    guard = windows.rindex("if (", 0, launch)
+    assert "-not $NoLaunch -and -not $NoShortcuts" in windows[guard:launch]
+    assert "$PSCmdlet.ShouldProcess($Shortcuts[0]" in windows[guard:launch]
+    updater = (REPO_ROOT / "backend" / "app" / "services" / "update_windows.ps1").read_text(
+        encoding="utf-8-sig"
+    )
+    assert "& $Installer -InstallDir $InstallDir -Lang $Lang -NoLaunch" in updater
 
 
 def test_installers_prepare_your_database_even_with_the_demo_open() -> None:

@@ -87,7 +87,7 @@ try {
   Start-Sleep -Seconds 2
   Write-Host ""
   Write-Host $t.installing -ForegroundColor Cyan
-  & $Installer -InstallDir $InstallDir
+  & $Installer -InstallDir $InstallDir -Lang $Lang -NoLaunch
   $ok = $true
 } catch {
   Write-Host ""

@@ -218,9 +218,15 @@ def test_the_windows_command_fits_the_run_dialog_and_survives_powershell() -> No
     assert "$" not in command and "iex" not in command
     assert f"{updates.RAW_URL}/install.ps1" in command and ".\\cai-install.ps1" in command
     for doc in ("README.md", "README.es.md", "docs/GUIA.md", "docs/GUIDE.md", "docs/EMPEZAR.md",
-                "docs/START_HERE.md", "site/index.html", "site/en/index.html"):  # fmt: skip
+                "docs/START_HERE.md"):  # fmt: skip
         text = (Path(__file__).resolve().parents[2] / doc).read_text(encoding="utf-8")
         assert command in text, doc
+    # La web pone su idioma, para que el instalador hable en el mismo.
+    for doc, lang in (("site/index.html", "es"), ("site/en/index.html", "en")):
+        site_command = command.removesuffix('"') + f' -Lang {lang}"'
+        assert len(site_command) <= 259
+        text = (Path(__file__).resolve().parents[2] / doc).read_text(encoding="utf-8")
+        assert site_command in text, doc
 
 
 # --- Actualizar desde la app ----------------------------------------------------------------------
@@ -341,8 +347,8 @@ def test_updater_waits_for_programs_using_the_app_and_then_installs(tmp_path: Pa
     marker = tmp_path / "instalado.txt"
     installer = tmp_path / "install.ps1"
     installer.write_text(
-        "param([string]$InstallDir)\n"
-        f"Set-Content -LiteralPath '{marker}' -Value \"$InstallDir|ok\"\n",
+        "param([string]$InstallDir, [string]$Lang, [switch]$NoLaunch)\n"
+        f"Set-Content -LiteralPath '{marker}' -Value \"$InstallDir|$Lang|$NoLaunch\"\n",
         encoding="utf-8",
     )
     busy = subprocess.Popen(  # noqa: S603 - unos segundos ocupando la carpeta
@@ -357,7 +363,8 @@ def test_updater_waits_for_programs_using_the_app_and_then_installs(tmp_path: Pa
         assert result.returncode == 0, result.stdout + result.stderr
         assert busy.poll() is not None  # no instaló hasta que se cerró
         assert "ocupado" in result.stdout
-        assert marker.read_text(encoding="utf-8").split("|")[0] == str(install_dir)
+        # En el idioma de la app y sin abrirla: la abre el actualizador al terminar.
+        assert marker.read_text(encoding="utf-8").strip() == f"{install_dir}|es|True"
     finally:
         busy.kill()
 
