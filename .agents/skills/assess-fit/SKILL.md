@@ -8,7 +8,8 @@ Sigue `docs/POLICIES.md` §1, §2 y §6.
 1. `get_profile()` y `get_context(sections=["criterios"])` una sola vez al principio. Los
    criterios son lo que el candidato busca y no acepta, en texto libre (guardias, viajes, sector…);
    complementan los filtros duros, que ya aplicó el código.
-2. `list_jobs(stage="pending_triage", limit=15)`, o los `job_id` indicados en los argumentos.
+2. `list_jobs(stage="pending_triage", limit=200)` (todas, sin tope; 200 es el máximo de la
+   herramienta), o los `job_id` indicados en los argumentos.
 3. Para cada oferta, `get_match` y `get_extraction`. Trabajas solo con datos estructurados; no
    llames a `get_job`. Si `get_match` ya trae `assessment` y `assessment_stale` es `false`, está
    valorada: sáltala salvo que te pidan revalorarla.

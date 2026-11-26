@@ -33,6 +33,7 @@
     "retry": "Ver el error y reintentar",
     "title": "Comparación por significado",
     "intro": "Ahora el encaje compara las skills del perfil con las de la oferta solo por su nombre. Con esta opción, además, compara el sentido del perfil (titular, resumen y logros) con el de la oferta (puesto, responsabilidades, skills y sector), aunque usen palabras distintas.",
+    "introActive": "El encaje compara las skills del perfil con las de la oferta por su nombre y, además, el sentido del perfil (titular, resumen y logros) con el de la oferta (puesto, responsabilidades, skills y sector), aunque usen palabras distintas.",
     "benefits": {
       "synonyms": "Ve el encaje aunque cambien las palabras: «pipelines de datos» y «ETL», «cuadros de mando» y «Power BI».",
       "languages": "Funciona entre idiomas: compara una oferta en inglés con un perfil en español.",
@@ -44,6 +45,7 @@
     "size": "Descarga unos cientos de MB (bastante más en Linux) y ocupa 1-2 GB en disco. Tarda unos minutos; la app se puede seguir usando mientras.",
     "docker": "En Docker no está disponible: la imagen no la trae. El encaje se calcula igual sin ella.",
     "notNow": "Ahora no",
+    "close": "Cerrar",
     "install": "Instalar",
     "starting": "Empezando…",
     "state": {
@@ -82,6 +84,15 @@
         "title": "Encaje sin comparación por significado",
         "body": "La instalación falló, así que el encaje solo cuenta las skills por su nombre. Volver a intentarlo (con el error a la vista) da un encaje más fino."
       }
+    },
+    "chip": {
+      "off": "Comparación por significado: sin activar",
+      "installing": "Comparación por significado: instalándose…",
+      "failed": "Comparación por significado: falló al instalar",
+      "installed": "Comparación por significado: activada",
+      "disabled": "Comparación por significado: desactivada",
+      "docker": "Comparación por significado: no disponible",
+      "what": "¿para qué sirve?"
     }
   },
   "assessAgain": "Volver a valorar",

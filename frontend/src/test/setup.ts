@@ -2,6 +2,7 @@ import '@testing-library/jest-dom/vitest'
 import { cleanup, configure } from '@testing-library/react'
 import { afterEach, beforeEach, vi } from 'vitest'
 import { i18n, loadLanguage } from '@/lib/i18n'
+import { forgetInboxView } from '@/lib/inboxReturn'
 import { LANGUAGES } from '@/locales'
 
 // Los textos de todos los idiomas, ya cargados: los tests cambian de idioma sin esperar a la red.
@@ -18,6 +19,7 @@ beforeEach(async () => {
 afterEach(() => {
   cleanup()
   vi.unstubAllGlobals()
+  forgetInboxView()
   document.documentElement.classList.remove('dark')
   try {
     localStorage.clear()

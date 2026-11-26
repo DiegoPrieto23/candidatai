@@ -16,6 +16,7 @@ import {
 } from '@phosphor-icons/react'
 import { Trans, useTranslation } from 'react-i18next'
 import { SafeTrans } from '@/components/SafeTrans'
+import { inboxReturnUrl } from '@/lib/inboxReturn'
 import type { BoardCard } from '@/api/client'
 import type { AddJobResult, EventOut, JobView, Schemas } from '@/api/client'
 import { useAddNote, useAssessThreshold, useJob, useJobEvent, useJobMatch, type UserEventBody } from '@/api/queries'
@@ -747,7 +748,7 @@ export function JobPage() {
   return (
     <div className="max-w-5xl animate-in fade-in duration-300">
       <Link
-        to="/bandeja"
+        to={inboxReturnUrl()}
         className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeftIcon className="size-4" />

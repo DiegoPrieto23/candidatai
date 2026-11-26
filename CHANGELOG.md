@@ -11,6 +11,15 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 
 ### Cambiado
 
+- **«Valorar las ofertas nuevas» lee y valora todas las pendientes de una vez**, sin parar en 20
+  (ni valorar como mucho 30): con 60 ofertas por leer, las lee y valora las 60.
+- **En la Bandeja, en «Por leer», junto a «Valorar las ofertas nuevas»** se ve si la comparación
+  por significado está activada; al pulsarlo, explica para qué sirve y permite instalarla.
+- **«Bandeja de ofertas», en la ficha de una oferta, vuelve a la vista de la Bandeja de la que se
+  venía**, con su etapa, filtros, orden y página (p. ej. «Aprobada»), como el «atrás» del navegador.
+- **La terminal de CandidatAI («Arrancando CandidatAI…», «CandidatAI en marcha…») sale en inglés**
+  si el portal está en inglés, aunque nunca se haya cambiado el idioma a mano, y desde el primer
+  arranque si se instaló en inglés.
 - **El instalador de Windows habla en el idioma de la web** desde la que se copia la línea (español
   o inglés); sin indicarlo, en el de Windows. Con ` -Lang es` o ` -Lang en` se elige.
 - **Al terminar de instalar, CandidatAI se abre sola** en el navegador. Las próximas veces, con su
