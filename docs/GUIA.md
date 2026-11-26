@@ -67,9 +67,13 @@ El instalador:
    comprueba su suma SHA-256 antes de abrirla: si no coincide con la publicada, no instala nada;
 3. la deja en `%LOCALAPPDATA%\CandidatAI\app`, y los datos en `%LOCALAPPDATA%\CandidatAI\data`;
 4. prepara el entorno, el Chromium de los PDF y la base de datos;
-5. crea un acceso directo **«CandidatAI»** en el escritorio y en el menú Inicio.
+5. crea un acceso directo **«CandidatAI»** en el escritorio y en el menú Inicio;
+6. abre la app con ese acceso directo.
 
-Al abrir el acceso directo se abre enseguida el navegador con «Arrancando CandidatAI…», y en cuanto
+Habla en el idioma de Windows; ` -Lang es` o ` -Lang en`, después de `.\cai-install.ps1`, lo
+elige (la web del proyecto pone el suyo).
+
+Al abrir el acceso directo (también al terminar de instalar) se abre enseguida el navegador con «Arrancando CandidatAI…», y en cuanto
 la app responde pasa sola a `http://127.0.0.1:8000`. La ventana que aparece debe quedarse abierta
 mientras se usa la app; al cerrarla, se cierra CandidatAI.
 

@@ -140,7 +140,8 @@ you are not technical · [the project website](https://diegoprieto23.github.io/c
      [With Docker](docs/GUIDE.md#with-docker-optional).
 
    The installers download the [latest release](https://github.com/DiegoPrieto23/candidatai/releases/latest),
-   **check its SHA-256 checksum** and create a "CandidatAI" shortcut. To update, run them again:
+   **check its SHA-256 checksum** and create a "CandidatAI" shortcut; on Windows, the app opens
+   by itself when it finishes. To update, run them again:
    your data is not touched. When a new version is out, Home says so and, on Windows, its "Update
    now" button does it for you. To see first what they would do, add `-WhatIf` after
    `.\cai-install.ps1` in the Windows line or use `| bash -s -- --dry-run`.

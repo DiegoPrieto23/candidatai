@@ -9,6 +9,13 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 
 ## [Sin publicar]
 
+### Cambiado
+
+- **El instalador de Windows habla en el idioma de la web** desde la que se copia la línea (español
+  o inglés); sin indicarlo, en el de Windows. Con ` -Lang es` o ` -Lang en` se elige.
+- **Al terminar de instalar, CandidatAI se abre sola** en el navegador. Las próximas veces, con su
+  acceso directo, como siempre.
+
 ## [1.1.0] - 2026-11-25
 
 ### Añadido

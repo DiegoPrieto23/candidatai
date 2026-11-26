@@ -141,7 +141,8 @@ perfil técnico · [la web del proyecto](https://diegoprieto23.github.io/candida
      [Con Docker](docs/GUIA.md#con-docker-opcional).
 
    Los instaladores descargan la [última versión](https://github.com/DiegoPrieto23/candidatai/releases/latest),
-   **comprueban su suma SHA-256** y crean un acceso directo «CandidatAI». Para actualizar, se vuelven
+   **comprueban su suma SHA-256** y crean un acceso directo «CandidatAI»; en Windows, la app se
+   abre sola al terminar. Para actualizar, se vuelven
    a ejecutar: los datos no se tocan. Cuando sale una versión nueva, Inicio lo avisa y, en Windows,
    su botón «Actualizar ahora» lo hace todo. Para ver antes qué harían, se añade `-WhatIf` después
    de `.\cai-install.ps1` en la línea de Windows o se usa `| bash -s -- --dry-run`.

@@ -395,7 +395,7 @@
           <p class="eyebrow">Instalar</p>
           <h2 class="display" id="install-title">Úsala en <em>tu ordenador</em></h2>
           <ol class="steps">
-            <li><p><b>Ejecuta el instalador</b><span>Sin Python, Node ni permisos de administrador. Descarga la última versión, comprueba su suma SHA-256 y crea un acceso directo «CandidatAI».</span></p></li>
+            <li><p><b>Ejecuta el instalador</b><span>Sin Python, Node ni permisos de administrador. Descarga la última versión, comprueba su suma SHA-256, crea un acceso directo «CandidatAI» y, al terminar, la abre.</span></p></li>
             <li><p><b>Ábrela</b><span>Una ventana arranca la app y tu navegador se abre en <code>127.0.0.1:8000</code>, tu propio equipo.</span></p></li>
             <li><p><b>Prueba la demo y hazla tuya</b><span>Crea tu perfil a partir de tu CV y conecta tu agente. <a class="link" href="https://github.com/DiegoPrieto23/candidatai/blob/main/docs/EMPEZAR.md">Primeros pasos</a> te guía paso a paso, con lo que cuesta cada agente.</span></p></li>
           </ol>
@@ -408,10 +408,10 @@
             <button class="tab" role="tab" id="tab-docker" aria-controls="panel-docker" aria-selected="false" type="button"><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#package"/></svg>Docker</button>
           </div>
           <div class="panel" role="tabpanel" id="panel-windows" aria-labelledby="tab-windows">
-            <h3>Windows 11, sin abrir ninguna terminal</h3>
+            <h3>Windows 11</h3>
             <p>Pulsa Windows+R, pega esta línea y pulsa Intro (también vale en PowerShell). Para ver antes qué haría, añade <code>-WhatIf</code> después de <code>.\cai-install.ps1</code>.</p>
-            <div class="code"><pre>powershell -ExecutionPolicy Bypass -NoExit -Command "cd ([IO.Path]::GetTempPath()); iwr -useb https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.ps1 -OutFile cai-install.ps1; .\cai-install.ps1"</pre><button class="copy" type="button" data-copied="Copiado" data-failed="Cópialo a mano"><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#copy"/></svg><span>Copiar</span></button></div>
-            <p>Después, abre «CandidatAI» desde el escritorio o el menú Inicio. Cuando salga una versión nueva, la app te lo dirá en Inicio y la instalará con un botón.</p>
+            <div class="code"><pre>powershell -ExecutionPolicy Bypass -NoExit -Command "cd ([IO.Path]::GetTempPath()); iwr -useb https://raw.githubusercontent.com/DiegoPrieto23/candidatai/main/install.ps1 -OutFile cai-install.ps1; .\cai-install.ps1 -Lang es"</pre><button class="copy" type="button" data-copied="Copiado" data-failed="Cópialo a mano"><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#copy"/></svg><span>Copiar</span></button></div>
+            <p>Al terminar, CandidatAI se abre sola en tu navegador. Las próximas veces, ábrela desde el acceso directo «CandidatAI» del escritorio o del menú Inicio. Cuando salga una versión nueva, la app te lo dirá en Inicio y la instalará con un botón.</p>
           </div>
           <div class="panel" role="tabpanel" id="panel-unix" aria-labelledby="tab-unix">
             <h3>macOS y Linux, en una terminal</h3>
