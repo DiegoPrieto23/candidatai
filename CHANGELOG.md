@@ -9,6 +9,8 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 
 ## [Sin publicar]
 
+## [1.2.0] - 2026-11-27
+
 ### Añadido
 
 - **Aviso de ofertas caducadas en la Bandeja**: reúne las que pueden estar cerradas, con
@@ -1005,7 +1007,8 @@ y las reglas (qué se envía, qué se inventa, qué ve tu agente) las aplica el 
   solo se guardan en `.env`), y no tiene herramientas para escribir tu perfil.
 - Los instaladores no instalan una release cuya suma SHA-256 no coincide con la publicada.
 
-[Sin publicar]: https://github.com/DiegoPrieto23/candidatai/compare/v1.1.0...HEAD
+[Sin publicar]: https://github.com/DiegoPrieto23/candidatai/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/DiegoPrieto23/candidatai/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/DiegoPrieto23/candidatai/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/DiegoPrieto23/candidatai/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/DiegoPrieto23/candidatai/compare/v0.3.0...v1.0.0
