@@ -4,6 +4,7 @@ import { ArrowRightIcon, SignpostIcon } from '@phosphor-icons/react'
 import { Trans, useTranslation } from 'react-i18next'
 import type { Stage } from '@/api/client'
 import { AgentButton } from '@/components/AgentButton'
+import { SemanticMatchingChip } from '@/components/SemanticMatching'
 import { Button } from '@/components/ui/button'
 
 const link = 'font-medium text-foreground underline underline-offset-2 hover:text-primary'
@@ -60,9 +61,12 @@ export function StageGuide({ stage }: { stage: Stage | undefined }) {
     )
   } else if (stage === 'pending_extraction') {
     actions = (
-      <AgentButton action="process-jobs" primary>
-        {t('processJobs')}
-      </AgentButton>
+      <>
+        <AgentButton action="process-jobs" primary>
+          {t('processJobs')}
+        </AgentButton>
+        <SemanticMatchingChip />
+      </>
     )
   } else if (stage === 'pending_triage') {
     actions = (

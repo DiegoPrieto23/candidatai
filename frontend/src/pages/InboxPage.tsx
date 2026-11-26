@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router'
+import { rememberInboxView } from '@/lib/inboxReturn'
 import {
   ArrowDownIcon,
   ArrowSquareOutIcon,
@@ -774,6 +775,9 @@ function TableSkeleton() {
 export function InboxPage() {
   const { t } = useTranslation('inbox')
   const [params, setParams] = useSearchParams()
+  const location = useLocation()
+  // «Bandeja de ofertas» en la ficha de una oferta vuelve a esta misma vista.
+  useEffect(() => rememberInboxView(location.pathname, location.search), [location.pathname, location.search])
   const stageParam = params.get('stage')
   const stage = isStage(stageParam) ? stageParam : undefined
   const page = Math.max(1, Number(params.get('page')) || 1)

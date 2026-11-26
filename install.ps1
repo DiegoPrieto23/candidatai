@@ -7,7 +7,8 @@
   2. Descarga la última release de CandidatAI (la UI ya va compilada: no hace falta Node) y
      comprueba su suma SHA-256 (candidatai.zip.sha256, publicada con ella) antes de abrirla.
   3. La deja en <InstallDir>\app. Tus datos van en <InstallDir>\data y nunca se tocan al actualizar;
-     tu .env de la app tampoco (solo se fija CAI_DATA_DIR).
+     tu .env de la app tampoco (solo se fija CAI_DATA_DIR y, si no lo tiene, CAI_LANG con el
+     idioma de -Lang, para que la terminal de la app hable en ese idioma desde el primer arranque).
   4. Prepara el entorno (uv sync), el Chromium de Playwright (PDF de los CVs) y la base de datos.
   5. Crea el acceso directo «CandidatAI» en el escritorio y en el menú Inicio. Al abrirlo se
      arranca todo (`cai start`) y se abre el navegador; para cerrarla, cierra esa ventana.
@@ -366,6 +367,8 @@ if (($zip -or $folder) -and $PSCmdlet.ShouldProcess($AppDir, ($t.doInstall -f $D
       $envLines = @(Get-Content $oldEnv | Where-Object { $_ -notmatch '^\s*(CAI|JH)_DATA_DIR\s*=' })
     }
     $envLines += "CAI_DATA_DIR=$DataDir"
+    # El idioma de la instalación, para la terminal de la app hasta que el portal guarde el suyo.
+    if (-not ($envLines | Where-Object { $_ -match '^\s*(CAI|JH)_LANG\s*=' })) { $envLines += "CAI_LANG=$Lang" }
     # Sin BOM: `Set-Content -Encoding utf8` lo añade en PowerShell 5.1 y rompería la primera variable.
     $utf8 = New-Object Text.UTF8Encoding $false
     [IO.File]::WriteAllText((Join-Path $staging ".env"), (($envLines -join "`n") + "`n"), $utf8)

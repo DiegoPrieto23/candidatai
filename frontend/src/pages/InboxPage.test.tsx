@@ -1,7 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
-import { jobRow, mockApi, renderApp, status } from '@/test/utils'
+import { jobRow, jobView, mockApi, renderApp, status } from '@/test/utils'
 
 const page = (items = [jobRow()]) => ({ items, total: items.length, limit: 50, offset: 0 })
 
@@ -249,6 +249,57 @@ describe('Qué es cada etapa y cómo avanzar', () => {
     expect(within(box).getByRole('link', { name: 'Abrir la revisión rápida' })).toHaveAttribute('href', '/bandeja/revision')
     expect(within(box).queryByRole('button', { name: 'Valorar las que están por revisar' })).not.toBeInTheDocument()
     expect(box).toHaveTextContent('Ninguna cambia de etapa sin una decisión manual')
+  })
+
+  it('en «Por leer», junto a «Valorar las ofertas nuevas», dice si está la comparación por significado y para qué sirve', async () => {
+    const extra = { installed: true, wanted: true, disabled: false, in_docker: false, installing: false, error: null }
+    mockApi({ 'GET /status': status(0, 1), 'GET /jobs': page(), 'GET /matching/semantic': extra })
+    renderApp('/bandeja?stage=pending_extraction')
+    const box = await guide()
+    await userEvent.click(await within(box).findByRole('button', { name: /Comparación por significado: activada/ }))
+    const dialog = await screen.findByRole('dialog')
+    expect(dialog).toHaveTextContent('aunque usen palabras distintas')
+    expect(within(dialog).getByText(/Funciona entre idiomas/)).toBeInTheDocument()
+    expect(within(dialog).getByRole('status')).toHaveTextContent('Comparación por significado: activada')
+    expect(within(dialog).queryByRole('button', { name: 'Instalar' })).not.toBeInTheDocument()
+  })
+
+  it('sin la comparación por significado, el mismo botón lleva a instalarla', async () => {
+    const extra = { installed: false, wanted: false, disabled: false, in_docker: false, installing: false, error: null }
+    const calls = mockApi({
+      'GET /status': status(0, 1),
+      'GET /jobs': page(),
+      'GET /matching/semantic': extra,
+      'POST /matching/semantic/install': { ...extra, wanted: true, installing: true },
+    })
+    renderApp('/bandeja?stage=pending_extraction')
+    const box = await guide()
+    await userEvent.click(await within(box).findByRole('button', { name: /Comparación por significado: sin activar/ }))
+    await userEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Instalar' }))
+    expect(calls.some((c) => c.method === 'POST' && c.path === '/matching/semantic/install')).toBe(true)
+  })
+})
+
+describe('Volver a la Bandeja desde una oferta', () => {
+  it('«Bandeja de ofertas» vuelve a la misma etapa y filtros desde los que se abrió', async () => {
+    mockApi({
+      'GET /status': status(),
+      'GET /jobs': page([jobRow({ id: 1, title: 'Data Engineer', stage: 'approved' })]),
+      'GET /jobs/1': jobView(),
+    })
+    renderApp('/bandeja?stage=approved&remote=remote')
+    await userEvent.click(await screen.findByRole('link', { name: 'Data Engineer' }))
+    const back = await within(screen.getByRole('main')).findByRole('link', { name: 'Bandeja de ofertas' })
+    expect(back).toHaveAttribute('href', '/bandeja?stage=approved&remote=remote')
+  })
+
+  it('sin pasar antes por la Bandeja, vuelve a la Bandeja entera', async () => {
+    mockApi({ 'GET /status': status(), 'GET /jobs/1': jobView() })
+    renderApp('/jobs/1')
+    expect(await within(screen.getByRole('main')).findByRole('link', { name: 'Bandeja de ofertas' })).toHaveAttribute(
+      'href',
+      '/bandeja',
+    )
   })
 })
 

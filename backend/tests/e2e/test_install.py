@@ -92,7 +92,7 @@ def test_install_first_start_and_uninstall(browser: Browser, install_dir: Path) 
     timings: dict[str, float] = {}
 
     started = time.monotonic()
-    result = _installer(install_dir, "-Source", str(REPO_ROOT), "-NoShortcuts")
+    result = _installer(install_dir, "-Source", str(REPO_ROOT), "-NoShortcuts", "-Lang", "en")
     timings["instalar"] = time.monotonic() - started
     assert result.returncode == 0, result.stdout + result.stderr
     backend = install_dir / "app" / "backend"
@@ -100,7 +100,10 @@ def test_install_first_start_and_uninstall(browser: Browser, install_dir: Path) 
     python = backend / ".venv" / "Scripts" / "python.exe"
     assert python.is_file()
     # El `.env` de la app instalada apunta a sus datos, no a los tuyos.
-    assert f"CAI_DATA_DIR={data_dir}" in (install_dir / "app" / ".env").read_text(encoding="utf-8")
+    env = (install_dir / "app" / ".env").read_text(encoding="utf-8")
+    assert f"CAI_DATA_DIR={data_dir}" in env
+    # Y el idioma de la instalación, para la terminal de la app desde el primer arranque.
+    assert "CAI_LANG=en" in env
 
     started = time.monotonic()
     server = harness.start_app(data_dir, python=str(python), cwd=backend)

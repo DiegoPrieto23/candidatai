@@ -159,10 +159,12 @@ export const api = createClient<paths>({
 })
 
 // Fase 47.3: al cambiar el idioma del portal, la app lo guarda para lo que se lanza sin la UI
-// (worker, tareas programadas). Si no contesta, da igual: cada lanzamiento lleva el idioma.
-i18n.on('languageChanged', () => {
+// (worker, tareas programadas y los mensajes de la terminal al arrancar). Si no contesta, da igual:
+// cada lanzamiento lleva el idioma.
+export function savePortalLanguage(): void {
   void api.PUT('/agent/language', { body: { lang: portalLang() } }).catch(() => undefined)
-})
+}
+i18n.on('languageChanged', savePortalLanguage)
 
 /** Error de la API con el formato común `{ok: false, error: {type, message, details}}`. */
 export class ApiError extends Error {
