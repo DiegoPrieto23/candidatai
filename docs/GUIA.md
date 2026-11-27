@@ -583,10 +583,17 @@ agente se abre y permite usar otro solo esa vez. Si un agente no sirve para una 
 navegador para buscar ofertas, p. ej.), el botón lo indica y no lo lanza. Sin nada elegido, se usa
 `CAI_AGENT` del `.env` o el primero instalado. La ventana del agente se abre detrás del navegador,
 que sigue a la vista: en Windows, una ventana de PowerShell minimizada en la barra de tareas, con el
-nombre de la acción (ahí se aprueban los permisos que pida; con `CAI_TERMINAL=wt` en el `.env`, se
-usa Windows Terminal, que sí se pone delante). En macOS y Linux, los botones abren Terminal.app o la
-terminal del escritorio; para usar otra (iTerm2, kitty…), se pone `CAI_TERMINAL=iterm` (o su nombre
-o ruta) en el `.env`.
+nombre de la acción (ahí se aprueban los permisos que pida). En la página «Agente», **Cómo se abre la
+ventana** permite elegir otra forma: **a la vista, detrás del navegador**, o **en Windows Terminal**,
+que sí se pone delante (lo mismo que `CAI_TERMINAL=wt` en el `.env`, mientras no se elija otra
+cosa). El aviso de abajo a la derecha dice en qué ventana está y, en Windows, **Mostrar la ventana**
+la restaura y la pone delante (si Windows no lo permite, la deja parpadeando en la barra de tareas;
+una pestaña de Windows Terminal no se puede traer así). Si la ventana se cierra antes de terminar, el
+aviso pasa a **La ventana se cerró**; si en 3 minutos el agente no ha hecho nada con la app (suele
+ser que espera una respuesta en su ventana), pasa a **El agente no ha empezado**, con **Mostrar la
+ventana**, **Lanzar de nuevo** y **Marcar como terminada**. En macOS y Linux, los botones abren
+Terminal.app o la terminal del escritorio; para usar otra (iTerm2, kitty…), se pone
+`CAI_TERMINAL=iterm` (o su nombre o ruta) en el `.env`.
 
 **Niveles de gasto.** En la misma página, «Económico», «Equilibrado» y «Máximo» guardan el agente y
 el modelo de las acciones principales. «Económico» usa un modelo local para procesar, valorar y

@@ -39,7 +39,7 @@ def opened(monkeypatch: pytest.MonkeyPatch) -> list[str]:
     monkeypatch.setattr(agent_launch, "no_terminal", lambda: None)
     monkeypatch.setattr(agent_launch, "terminal_command", agent_launch.powershell_command)
     monkeypatch.setattr(agent_launch.shutil, "which", lambda name: f"C:/bin/{name}.exe")
-    monkeypatch.setattr(agent_launch, "_open_terminal", lambda t, c: commands.append(c))
+    monkeypatch.setattr(agent_launch, "_open_terminal", lambda t, c, *_: commands.append(c))
     return commands
 
 

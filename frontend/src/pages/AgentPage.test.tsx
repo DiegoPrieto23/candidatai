@@ -135,6 +135,40 @@ describe('Lo primero de «Agente» (fase 31)', () => {
     await userEvent.click(toggle)
     expect(calls.find((c) => c.method === 'PUT' && c.path === '/agent/window-preference')?.body).toEqual({ open_in_window: true })
   })
+
+  it('en Windows se elige cómo se abre la ventana (fase 48.1d)', async () => {
+    const calls = mockApi({
+      ...quiet,
+      'GET /agent': {
+        ...launcher,
+        no_agent_installed: false,
+        open_in_window: false,
+        window_style: 'minimized',
+        window_styles: ['minimized', 'behind'],
+      },
+      'GET /agent/agents': { agents: [entry('claude', 'Claude Code', true)], launchable: ['claude'], preferences: {}, effective: [] },
+      'PUT /agent/window-preference': { open_in_window: false, window_style: 'behind' },
+    })
+    renderApp('/agente')
+    expect(await screen.findByRole('radio', { name: /Minimizada en la barra de tareas/ })).toBeChecked()
+    expect(screen.queryByRole('radio', { name: /Windows Terminal/ })).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('radio', { name: /detrás del navegador/ }))
+    expect(calls.find((c) => c.method === 'PUT' && c.path === '/agent/window-preference')?.body).toEqual({
+      open_in_window: false,
+      window_style: 'behind',
+    })
+  })
+
+  it('fuera de Windows no hay nada que elegir', async () => {
+    mockApi({
+      ...quiet,
+      'GET /agent': { ...launcher, no_agent_installed: false, open_in_window: false, window_styles: [] },
+      'GET /agent/agents': { agents: [entry('claude', 'Claude Code', true)], launchable: ['claude'], preferences: {}, effective: [] },
+    })
+    renderApp('/agente')
+    await screen.findByRole('switch', { name: 'Abrir en una ventana' })
+    expect(screen.queryByText('Cómo se abre la ventana')).not.toBeInTheDocument()
+  })
 })
 
 describe('Página «Agente» (fase 19)', () => {

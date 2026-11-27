@@ -320,6 +320,25 @@
         "always": "Permitido siempre en este proyecto (se quita en la página «Agente»).",
         "deny": "Denegado."
       }
-    }
+    },
+    "window": {
+      "minimized": "En la ventana «{{title}}» (minimizada en la barra de tareas). Si pide permiso, se contesta allí.",
+      "behind": "En la ventana «{{title}}», detrás del navegador. Si pide permiso, se contesta allí.",
+      "wt": "En una pestaña de Windows Terminal («{{title}}»). Si pide permiso, se contesta allí.",
+      "terminal": "En la ventana «{{title}}» de la terminal. Si pide permiso, se contesta allí."
+    },
+    "silent": {
+      "title": "El agente no ha empezado",
+      "body": "En 3 minutos no ha hecho nada con la app. Puede estar esperando una respuesta en su ventana.",
+      "background": "En 3 minutos no ha dado ninguna señal."
+    },
+    "closed": {
+      "title": "La ventana se cerró",
+      "body": "La ventana del agente se cerró antes de terminar. Lo que ya había guardado se queda."
+    },
+    "showWindow": "Mostrar la ventana",
+    "windowFlashing": "Windows no deja ponerla delante: está restaurada y parpadea en la barra de tareas.",
+    "windowNotFound": "No se ha encontrado la ventana: puede que ya se haya cerrado.",
+    "relaunch": "Lanzar de nuevo"
   }
 }

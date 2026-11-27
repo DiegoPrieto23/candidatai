@@ -422,7 +422,7 @@ def test_open_in_terminal_resumes_the_session(
     db: None, fake: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     opened: list[tuple[str, str]] = []
-    monkeypatch.setattr(agent_launch, "_open_terminal", lambda t, c: opened.append((t, c)))
+    monkeypatch.setattr(agent_launch, "_open_terminal", lambda t, c, *_: opened.append((t, c)))
     monkeypatch.setenv("FAKE_AGENT_MODE", "question")
     run_id = start()
     with session_scope() as session, pytest.raises(LaunchError, match="esperar"):

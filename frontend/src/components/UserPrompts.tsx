@@ -164,7 +164,7 @@ export function UserPrompts() {
   const answer = useAnswerPrompt()
   // Fase 48.1b: lo que pregunta una ejecución con su aviso a la vista se contesta en su panel.
   const followed = new Set(
-    tasks.filter((task) => task.status === 'running').map((task) => task.run_id).filter((id) => id != null),
+    tasks.filter((task) => task.status === 'running' || task.status === 'silent').map((task) => task.run_id).filter((id) => id != null),
   )
   const prompt = data?.prompts.find((p) => p.run_id == null || !followed.has(p.run_id))
   const left = useCountdown(prompt)

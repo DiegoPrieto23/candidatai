@@ -12,11 +12,14 @@ con tu suscripción, y tú ves, contestas y apruebas lo que haga.
   habilitado e instalado.
 - Antes de lanzar se quitan del entorno las variables de `launch.unset_env` (p. ej. la clave de la
   API): así el agente usa tu suscripción y no factura por API.
-- La ventana se abre en segundo plano: el navegador sigue delante. En Windows, una ventana de
-  PowerShell minimizada en la barra de tareas (Windows Terminal siempre se pone delante; con
-  `CAI_TERMINAL=wt` se usa igualmente, a la vista). En macOS y Linux (fase 26.1), la terminal que
-  elige `terminals` (`CAI_TERMINAL` para cambiarla). Sin terminal, o sin agente instalado, la UI
+- La ventana se abre en segundo plano: el navegador sigue delante. En Windows, según la preferencia
+  (`launch_window.style`, fase 48.1d): PowerShell minimizado en la barra de tareas (por defecto), a
+  la vista detrás del navegador (con `conhost.exe`: si no, Windows 11 se la pasa a Windows
+  Terminal, que se pone delante) o en Windows Terminal. En macOS y Linux (fase 26.1), la terminal
+  que elige `terminals` (`CAI_TERMINAL` para cambiarla). Sin terminal, o sin agente instalado, la UI
   copia la orden para que la pegues tú.
+- Fase 48.1d: la ventana de una acción que se sigue deja el PID de su shell en un fichero
+  (`console_window`), para saber si sigue abierta y traerla con «Mostrar la ventana».
 - «En segundo plano» (fase 19): las acciones con `background` también se pueden lanzar
   sin ventana desde el worker (`services/agent_runs.py`), con `launch.headless` del manifiesto y
   solo las herramientas MCP que declara la acción: en la orden (`ceiling: args`) o, desde la fase
@@ -25,12 +28,15 @@ con tu suscripción, y tú ves, contestas y apruebas lo que haga.
 
 import base64
 import logging
+import os
 import re
+import secrets
 import shutil
 import subprocess
 import sys
 from collections.abc import Sequence
 from dataclasses import dataclass, field, replace
+from pathlib import Path
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -45,9 +51,11 @@ from app.services import (
     agent_registry,
     agent_run_config,
     agent_tasks,
+    console_window,
     container,
     events,
     interviews,
+    launch_window,
     process,
     search_runs,
     terminals,
@@ -507,9 +515,15 @@ def selection(session: Session | None = None) -> AgentInfo:
     return AgentInfo(available=True, agent=picked.agent)
 
 
+_PS_SINGLE_QUOTES = ("'", "\u2018", "\u2019", "\u201a", "\u201b")
+
+
 def _quote(value: str) -> str:
-    """Literal de PowerShell entre comillas simples."""
-    return "'" + value.replace("'", "''") + "'"
+    """Literal de PowerShell entre comillas simples. PowerShell también cierra con las comillas
+    tipográficas (‘ ’ ‚ ‛): se doblan todas, como la recta."""
+    for quote in _PS_SINGLE_QUOTES:
+        value = value.replace(quote, quote * 2)
+    return "'" + value + "'"
 
 
 # Fase 24.4: el agente lanzado se identifica con esta variable, para que los eventos que haga por
@@ -531,19 +545,35 @@ def launch_env(launcher: _Launcher) -> dict[str, str]:
 
 
 def powershell_command(
-    launcher: _Launcher, value: str, command: Sequence[str] | None = None
+    launcher: _Launcher,
+    value: str,
+    command: Sequence[str] | None = None,
+    pid_file: Path | None = None,
 ) -> str:
     """Lo que ejecuta la ventana: quitar las variables de `unset_env`, poner `CAI_CLIENT_NAME` y
     abrir el agente. `value` va donde esté `{prompt}` (o `{session_id}`, si `command` es
-    `launch.resume`)."""
+    `launch.resume`). Con `pid_file`, lo primero es dejar ahí el PID de la ventana (fase 48.1d)."""
     markers = (PROMPT_PLACEHOLDER, SESSION_PLACEHOLDER)
     parts = [value if p in markers else p for p in command or launcher.command]
+    pid = (
+        [
+            f"Set-Content -LiteralPath {_quote(str(pid_file))} -Value $PID -Encoding ascii "
+            "-ErrorAction SilentlyContinue"
+        ]
+        if pid_file is not None
+        else []
+    )
     unset = [f"Remove-Item Env:{name} -ErrorAction SilentlyContinue" for name in launcher.unset_env]
     env = [f"$env:{name} = {_quote(value)}" for name, value in launch_env(launcher).items()]
-    return "; ".join([*unset, *env, "& " + " ".join(_quote(p) for p in parts)])
+    return "; ".join([*pid, *unset, *env, "& " + " ".join(_quote(p) for p in parts)])
 
 
-def posix_command(launcher: _Launcher, value: str, command: Sequence[str] | None = None) -> str:
+def posix_command(
+    launcher: _Launcher,
+    value: str,
+    command: Sequence[str] | None = None,
+    pid_file: Path | None = None,
+) -> str:
     """Como `powershell_command`, para bash o zsh en macOS y Linux (fase 26.1)."""
     markers = (PROMPT_PLACEHOLDER, SESSION_PLACEHOLDER)
     parts = [value if p in markers else p for p in command or launcher.command]
@@ -553,14 +583,20 @@ def posix_command(launcher: _Launcher, value: str, command: Sequence[str] | None
         env=launch_env(launcher),
         cwd=REPO_ROOT,
         shell_path=terminals.shell(),
+        pid_file=pid_file,
     )
 
 
-def terminal_command(launcher: _Launcher, value: str, command: Sequence[str] | None = None) -> str:
+def terminal_command(
+    launcher: _Launcher,
+    value: str,
+    command: Sequence[str] | None = None,
+    pid_file: Path | None = None,
+) -> str:
     """Lo que ejecuta la ventana en este sistema."""
     if sys.platform == "win32":
-        return powershell_command(launcher, value, command)
-    return posix_command(launcher, value, command)
+        return powershell_command(launcher, value, command, pid_file)
+    return posix_command(launcher, value, command, pid_file)
 
 
 def shell_args(command: str) -> list[str]:
@@ -570,45 +606,54 @@ def shell_args(command: str) -> list[str]:
     return ["powershell", "-NoLogo", "-NoExit", "-EncodedCommand", encoded]
 
 
-WINDOWS_TERMINAL = ("wt", "windows-terminal", "windowsterminal")
 SW_SHOWMINNOACTIVE = 7  # minimizada en la barra de tareas, sin quitarle el foco a nadie
+SW_SHOWNOACTIVATE = 4  # a la vista, sin quitarle el foco al navegador
 
 
-def _wants_windows_terminal() -> bool:
-    """`CAI_TERMINAL=wt`: Windows Terminal, a la vista. Siempre se pone delante (ni minimizada ni
-    en segundo plano), así que solo si se pide."""
-    chosen = (get_settings().terminal or "").strip().lower()
-    return chosen in WINDOWS_TERMINAL and shutil.which("wt") is not None
+def _conhost() -> str:
+    """La consola clásica de Windows. Con cualquier modo que no sea «minimizada», Windows 11 le pasa
+    la consola nueva a la terminal predeterminada (Windows Terminal), que sale delante; abriéndola
+    con `conhost.exe` se queda detrás del navegador."""
+    system_root = Path(os.environ.get("SYSTEMROOT") or "C:/Windows")
+    found = system_root / "System32" / "conhost.exe"
+    return str(found) if found.is_file() else "conhost.exe"
 
 
-def background_console(title: str, command: str) -> tuple[list[str], dict[str, object]]:
-    """Windows: PowerShell en una consola nueva, minimizada y sin activar, para que el navegador
-    siga delante tras pulsar el botón. El título la distingue en la barra de tareas."""
+def background_console(
+    title: str, command: str, style: launch_window.OpenedStyle = "minimized"
+) -> tuple[list[str], dict[str, object]]:
+    """Windows: PowerShell en una consola clásica nueva (`conhost.exe`), sin activar, para que el
+    navegador siga delante tras pulsar el botón: minimizada en la barra de tareas o, con `behind`,
+    a la vista detrás. El título la distingue en la barra de tareas."""
     titled = f"$Host.UI.RawUI.WindowTitle = {_quote(title)}; {command}"
     kwargs: dict[str, object] = {"creationflags": getattr(subprocess, "CREATE_NEW_CONSOLE", 0)}
     startup_info = getattr(subprocess, "STARTUPINFO", None)
     if startup_info is not None:
         info = startup_info()
         info.dwFlags |= subprocess.STARTF_USESHOWWINDOW  # type: ignore[attr-defined]
-        info.wShowWindow = SW_SHOWMINNOACTIVE
+        info.wShowWindow = SW_SHOWNOACTIVATE if style == "behind" else SW_SHOWMINNOACTIVE
         kwargs["startupinfo"] = info
-    return shell_args(titled), kwargs
+    # Siempre con `conhost.exe`: así es la consola clásica, que se encuentra por su PID, sea cual
+    # sea la terminal predeterminada.
+    return [_conhost(), *shell_args(titled)], kwargs
 
 
-def _open_terminal(title: str, command: str) -> None:
+def _open_terminal(
+    title: str, command: str, style: launch_window.OpenedStyle = "minimized"
+) -> None:
     if sys.platform != "win32":
         found = terminals.find()
         if isinstance(found, str):
             raise OSError(found)
         terminals.open_terminal(found, title, REPO_ROOT, command)
         return
-    if _wants_windows_terminal():
+    if style == "wt":
         wt = shutil.which("wt") or "wt"
         shell = shell_args(command)
         args = [wt, "-w", "0", "new-tab", "--title", title, "-d", str(REPO_ROOT), *shell]
         subprocess.Popen(args, cwd=REPO_ROOT)  # noqa: S603 - argumentos fijos, sin shell
         return
-    argv, kwargs = background_console(title, command)
+    argv, kwargs = background_console(title, command, style)
     subprocess.Popen(argv, cwd=REPO_ROOT, **kwargs)  # type: ignore[call-overload]  # noqa: S603
 
 
@@ -716,12 +761,25 @@ def launch(
     )
     picked = pick(session, action, prompt, agent=agent, model=model, preset=preset)
     title = label(action, ui_language.current(session))
-    result = _open(title, prompt, picked, picked.command, prompt)
+    style = launch_window.style(session)
+    # Fase 48.1d: la ventana de lo que se sigue deja su PID, para saber si sigue abierta.
+    token = secrets.token_hex(8) if action in agent_tasks.TRACKED else None
+    pid_file = None
+    if token is not None:
+        pid_file = console_window.pid_file(token)
+        pid_file.parent.mkdir(parents=True, exist_ok=True)
+        console_window.clean_old()
+    result = _open(title, prompt, picked, picked.command, prompt, style, pid_file)
     result.job_id = job_id
     # Con `search_run_id`, la búsqueda ya la abrió «Buscar ahora» (`check_target` la comprueba).
     if action == "search-jobs" and (search is None or search.search_run_id is None):
         search_runs.start(session, search.platform_ids if search else [])
-    agent_tasks.start(session, action, job_id, milestone_id)
+    window = (
+        agent_tasks.Window(token=token, style=style, title=window_title(title))
+        if token is not None
+        else None
+    )
+    agent_tasks.start(session, action, job_id, milestone_id, window=window)
     return result
 
 
@@ -739,7 +797,8 @@ def launch_assistant(
     lang = ui_language.current(session)
     prompt = prompt_for("assistant", assistant_id=assistant_id, lang=lang)
     picked = pick(session, "assistant", prompt, agent=agent, model=model, preset=preset)
-    return _open(label("assistant", lang), prompt, picked, picked.command, prompt)
+    style = launch_window.style(session)
+    return _open(label("assistant", lang), prompt, picked, picked.command, prompt, style)
 
 
 def model_label(model: str | None, preset: str | None) -> str | None:
@@ -747,12 +806,24 @@ def model_label(model: str | None, preset: str | None) -> str | None:
     return f"preset {preset}" if preset else model
 
 
+def window_title(label: str) -> str:
+    return f"CandidatAI · {label}"
+
+
 def _open(
-    label: str, prompt: str, picked: _Launcher, command: list[str], value: str
+    label: str,
+    prompt: str,
+    picked: _Launcher,
+    command: list[str],
+    value: str,
+    style: launch_window.OpenedStyle,
+    pid_file: Path | None = None,
 ) -> LaunchResult:
     """Abre la terminal con `command` de `picked`, sustituyendo el marcador por `value`."""
     try:
-        _open_terminal(f"CandidatAI · {label}", terminal_command(picked, value, command))
+        _open_terminal(
+            window_title(label), terminal_command(picked, value, command, pid_file), style
+        )
     except OSError as exc:
         raise LaunchError("unavailable", f"No se pudo abrir la terminal: {exc}", prompt) from exc
     model = model_label(picked.model, picked.preset)
@@ -793,16 +864,17 @@ def resume_in_terminal(
     title = label(action, ui_language.current(session))
     if (problem := no_terminal()) is not None:
         raise LaunchError("unavailable", problem, prompt)
+    style = launch_window.style(session)
     same, _ = choose(session, action, agent=run_agent, model=model, preset=preset)
     if same is not None and session_id and same.resume and SESSION_ID_RE.fullmatch(session_id):
-        result = _open(title, prompt, same, same.resume, session_id)
+        result = _open(title, prompt, same, same.resume, session_id, style)
         result.message = f"Se ha abierto {same.agent} en una terminal con la misma sesión."
         return result
     if same is not None:
-        return _open(title, prompt, same, same.command, prompt)
+        return _open(title, prompt, same, same.command, prompt, style)
     # El agente que la ejecutó ya no se puede usar: se abre el que toque hoy, y se dice.
     picked = pick(session, action, prompt)
-    result = _open(title, prompt, picked, picked.command, prompt)
+    result = _open(title, prompt, picked, picked.command, prompt, style)
     changed = (
         f"No se puede abrir {run_agent}, que la ejecutó: se ha abierto {picked.agent} desde cero."
     )

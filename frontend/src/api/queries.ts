@@ -1555,9 +1555,17 @@ export function useSendAgentMessage(runId: number) {
 export function useSaveWindowPreference() {
   const client = useQueryClient()
   return useMutation({
-    mutationFn: (openInWindow: boolean) =>
-      unwrap(api.PUT('/agent/window-preference', { body: { open_in_window: openInWindow } })),
+    // Fase 48.1d: sin `window_style`, el servidor deja el que hubiera.
+    mutationFn: (body: Schemas['WindowPreference']) => unwrap(api.PUT('/agent/window-preference', { body })),
     onSuccess: () => client.invalidateQueries({ queryKey: keys.agent, exact: true }),
+  })
+}
+
+/** «Mostrar la ventana» (fase 48.1d): restaura la ventana del agente y, si Windows deja, la pone delante. */
+export function useShowAgentTaskWindow() {
+  return useMutation({
+    mutationFn: (taskId: number) =>
+      unwrap(api.POST('/agent/tasks/{task_id}/show-window', { params: { path: { task_id: taskId } }, body: {} })),
   })
 }
 

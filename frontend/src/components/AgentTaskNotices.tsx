@@ -2,7 +2,7 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { ChatsCircleIcon, CheckCircleIcon, CircleNotchIcon, MinusIcon, WarningIcon, XIcon } from '@phosphor-icons/react'
+import { AppWindowIcon, ChatsCircleIcon, CheckCircleIcon, CircleNotchIcon, MinusIcon, WarningIcon, XIcon } from '@phosphor-icons/react'
 import type { AgentTaskView, PromptView } from '@/api/client'
 import {
   keys,
@@ -10,7 +10,9 @@ import {
   usePendingPrompts,
   useCancelAgentRun,
   useDismissAgentTask,
+  useLaunchAgent,
   useOpenAgentRun,
+  useShowAgentTaskWindow,
   type AgentAction,
 } from '@/api/queries'
 import { AgentRunPanel } from '@/components/AgentRunPanel'
@@ -37,7 +39,7 @@ function StopControl({ task, className }: { task: AgentTaskView; className?: str
   const [confirming, setConfirming] = useState(false)
   const confirmId = useId()
   const stopButton = useRef<HTMLButtonElement>(null)
-  if (task.status !== 'running' || task.run_id == null || task.stopping) return null
+  if ((task.status !== 'running' && task.status !== 'silent') || task.run_id == null || task.stopping) return null
   const runId = task.run_id
   if (!confirming) {
     return (
@@ -107,6 +109,61 @@ function OpenInWindow({ runId }: { runId: number }) {
   )
 }
 
+/** «Mostrar la ventana» (fase 48.1d, Windows): la restaura y, si Windows deja, la pone delante. */
+function ShowWindow({ taskId }: { taskId: number }) {
+  const { t } = useTranslation('nav', { keyPrefix: 'tasks' })
+  const show = useShowAgentTaskWindow()
+  const note = show.isError
+    ? errorMessage(show.error)
+    : show.data && !show.data.shown
+      ? t('windowNotFound')
+      : show.data && !show.data.foreground
+        ? t('windowFlashing')
+        : null
+  return (
+    <>
+      <Button size="sm" variant="outline" disabled={show.isPending} onClick={() => show.mutate(taskId)}>
+        <AppWindowIcon />
+        {t('showWindow')}
+      </Button>
+      {note && (
+        <p role={show.isError ? 'alert' : 'status'} className="basis-full text-xs text-muted-foreground">
+          {note}
+        </p>
+      )}
+    </>
+  )
+}
+
+/** «Lanzar de nuevo» (fase 48.1d): la misma acción, en otra ventana. La anterior no se cierra. */
+function Relaunch({ task }: { task: AgentTaskView }) {
+  const { t } = useTranslation('nav', { keyPrefix: 'tasks' })
+  const launch = useLaunchAgent()
+  return (
+    <>
+      <Button
+        size="sm"
+        variant="outline"
+        disabled={launch.isPending}
+        onClick={() =>
+          launch.mutate({
+            action: task.action as AgentAction,
+            job_id: task.job_id ?? undefined,
+            milestone_id: task.milestone_id ?? undefined,
+          })
+        }
+      >
+        {t('relaunch')}
+      </Button>
+      {launch.isError && (
+        <p role="alert" className="basis-full text-xs text-destructive">
+          {errorMessage(launch.error)}
+        </p>
+      )}
+    </>
+  )
+}
+
 function TaskNotice({
   task,
   panelOpen,
@@ -125,6 +182,8 @@ function TaskNotice({
   const [minimized, setMinimized] = useState<string | null>(null)
 
   const running = task.status === 'running'
+  const silent = task.status === 'silent'
+  const closed = task.status === 'closed'
   const good = task.status === 'finished' && task.outcome === 'done'
   // Fase 47.4: la detuvo el usuario; no es que el agente haya parado por su cuenta.
   const ending = task.status === 'finished' && task.stopped_by_user ? 'cancelled' : (task.outcome ?? 'stopped')
@@ -134,7 +193,11 @@ function TaskNotice({
       ? t('stopping')
       : running || task.status === 'stale'
         ? name('running')
-        : good
+        : silent
+          ? t('silent.title')
+          : closed
+            ? t('closed.title')
+            : good
           ? name('done')
           : t(`${ending}.title` as never, { action: name('running') })
   const state = `${task.status}:${task.outcome}`
@@ -207,12 +270,17 @@ function TaskNotice({
   if (asking) body = waiting.kind === 'permission' ? t('waitingPermission') : t('waitingQuestion')
   else if (running && task.stopping) body = t('stoppingBody')
   else if (running && task.background) body = (stepped ? step : now) ?? t('runningBackground')
-  else if (running) body = t('runningTerminal')
+  else if (running) body = task.window ? t(`window.${task.window.style}`, { title: task.window.title }) : t('runningTerminal')
+  else if (silent) body = task.background ? t('silent.background') : t('silent.body')
+  else if (closed) body = t('closed.body')
   else if (task.status === 'stale') body = t('stale')
   else if (good) body = counted ? t('doneCount', { count: task.done }) : t('doneBody')
   else body = t(`${ending}.body` as never)
 
-  const inTerminal = running && task.run_id == null
+  const inTerminal = (running || silent) && task.run_id == null
+  // Fase 48.1d: la ventana se trae con un clic; si no empieza o se cerró, se puede lanzar otra.
+  const canShow = task.window?.can_show === true && (running || silent || task.status === 'stale')
+  const relaunch = task.run_id == null && (silent || closed)
   const conversation = task.run_id != null
   const failedRun = task.run_id != null && task.status === 'finished' && (task.outcome === 'failed' || task.outcome === 'needs_user')
   const to = good ? resultLink(task) : null
@@ -244,6 +312,12 @@ function TaskNotice({
           <p className="mt-1.5 text-xs text-muted-foreground">
             <Elapsed from={task.started_at} until={task.finished_at} />
           </p>
+        )}
+        {(canShow || relaunch) && (
+          <div className="mt-2.5 flex flex-wrap gap-2">
+            {canShow && <ShowWindow taskId={task.id} />}
+            {relaunch && <Relaunch task={task} />}
+          </div>
         )}
         {(to || conversation || failedRun) && (
           <div className="mt-2.5 flex flex-wrap gap-2">

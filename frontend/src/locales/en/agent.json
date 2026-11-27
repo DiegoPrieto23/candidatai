@@ -90,7 +90,23 @@
   "window": {
     "title": "Open in a window",
     "off": "Off: what the agent can do without a window (generating the CV, assessing a job…) is followed in the notice at the bottom right, with its conversation. Everything else opens in its window.",
-    "on": "On: the main button always opens the agent in its window. The button menu can still start it without a window, just that once."
+    "on": "On: the main button always opens the agent in its window. The button menu can still start it without a window, just that once.",
+    "style": {
+      "title": "How the window opens",
+      "hint": "For what opens in a window. The notice at the bottom right says where it is and brings it back with “Show the window”.",
+      "minimized": {
+        "label": "Minimized in the taskbar",
+        "hint": "The browser stays in front. Recommended."
+      },
+      "behind": {
+        "label": "Visible, behind the browser",
+        "hint": "It shows when the browser is moved or minimized."
+      },
+      "wt": {
+        "label": "In Windows Terminal",
+        "hint": "A new tab, which comes in front of the browser."
+      }
+    }
   },
   "summary": {
     "ready": "Your agent: {{agent}}, ready",

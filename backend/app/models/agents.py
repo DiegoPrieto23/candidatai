@@ -94,6 +94,10 @@ class AgentTask(Base):
 
     `total`: lo pendiente al pulsar, en las acciones por lotes. `run_id`: la ejecución, si va en
     segundo plano. `outcome`: lo que dijo el agente con `finish_task`. `dismissed_at`: ya cerrado.
+
+    Fase 48.1d, si se abrió en una ventana: `window_token` nombra el fichero donde la ventana deja
+    su PID al arrancar (`window_pid`), `window_style` cómo se abrió, `window_title` su título y
+    `window_closed_at` cuándo se vio cerrada sin haber terminado.
     """
 
     __tablename__ = "agent_tasks"
@@ -108,6 +112,11 @@ class AgentTask(Base):
     started_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
     finished_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
     dismissed_at: Mapped[datetime | None] = mapped_column(UTCDateTime, index=True)
+    window_token: Mapped[str | None] = mapped_column(String(32))
+    window_style: Mapped[str | None] = mapped_column(String(16))
+    window_title: Mapped[str | None] = mapped_column(String(120))
+    window_pid: Mapped[int | None]
+    window_closed_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
 
 
 class AgentRequest(Base):

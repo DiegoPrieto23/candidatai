@@ -36,6 +36,7 @@
     { "id": "cost", "group": "agent", "screen": "agent" },
     { "id": "agentButtons", "group": "agent", "screen": "agent" },
     { "id": "agentProgress", "group": "agent", "screen": "agent" },
+    { "id": "agentWindow", "group": "agent", "screen": "agent" },
     { "id": "agentLater", "group": "agent", "screen": "agent" },
     { "id": "agentAsks", "group": "agent", "screen": null },
     { "id": "agentChoose", "group": "agent", "screen": "agent" },

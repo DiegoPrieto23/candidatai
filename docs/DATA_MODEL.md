@@ -60,6 +60,10 @@ llamó bien a una de sus herramientas o a la de un paso posterior.
 | outcome | str? | `done` o `stopped`, lo que dijo el agente con `finish_task` |
 | started_at / finished_at | datetime | |
 | dismissed_at | datetime? | Aviso cerrado por el usuario, o sustituido por uno nuevo de lo mismo |
+| window_token | str? | Fase 48.1d: nombre del fichero (`data/tmp/windows/<token>.pid`) donde la ventana deja el PID de su shell al abrirse |
+| window_style / window_title | str? | Cómo se abrió (`minimized`, `behind`, `wt` o `terminal`) y su título |
+| window_pid | int? | El PID de esa ventana, leído del fichero (que se borra) |
+| window_closed_at | datetime? | Cuándo se vio cerrada sin haber terminado: el aviso pasa a «La ventana se cerró» |
 
 ### `search_runs` (fase 39d)
 Una búsqueda abierta desde «Buscar ahora» en la terminal del agente: de ella sale el aviso «Buscando…».

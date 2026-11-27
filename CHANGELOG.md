@@ -26,6 +26,15 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   mismo como en una consola, y las conversaciones de cada oferta, en su «Historial».
 - **«Abrir en una ventana»**, en la página «Agente», para quien prefiera que el botón principal abra
   siempre la ventana del agente.
+- **La ventana del agente, siempre a mano**: el aviso de lo que se abre en una ventana (con Qwen
+  Code, Antigravity CLI o «Abrir en una ventana») dice cuál es («En la ventana «CandidatAI · Generar
+  CV» (minimizada en la barra de tareas)») y, en Windows, **Mostrar la ventana** la trae delante. Si
+  se cierra antes de terminar, el aviso dice **La ventana se cerró**; si en 3 minutos el agente no
+  ha hecho nada (suele estar esperando una respuesta en su ventana), **El agente no ha empezado**,
+  con **Lanzar de nuevo** y **Marcar como terminada**. Sin ventana, lo mismo si el agente no da
+  ninguna señal.
+- **Cómo se abre la ventana** (Windows), en la página «Agente»: minimizada en la barra de tareas,
+  a la vista detrás del navegador o en Windows Terminal.
 
 ### Cambiado
 

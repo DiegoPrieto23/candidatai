@@ -415,6 +415,17 @@ pone delante: solo con `CAI_TERMINAL=wt`); en macOS, sin traerla al frente, Term
 `CAI_TERMINAL` elige otra). Sin terminal, o sin el agente en el `PATH`, el botón copia
 la orden para que la pegues tú. Probado con Claude Code; Codex, sin probar.
 
+**La ventana, siempre a mano (fase 48.1d).** Vale para cualquier agente abierto en una ventana (Qwen
+Code y Antigravity CLI siempre; los demás con «Abrir en una ventana»). La ventana deja el PID de su
+shell al abrirse y el aviso sabe si sigue abierta. En Windows 11, con la terminal predeterminada en
+«Dejar que Windows decida», una consola nueva minimizada se queda en la consola clásica, pero
+cualquier otro modo se le pasa a Windows Terminal, que se pone delante; por eso «a la vista, detrás
+del navegador» se abre con `conhost.exe`. La consola clásica se encuentra por el PID de PowerShell
+(no por el título, que el agente puede cambiar) y «Mostrar la ventana» la restaura y la pone delante
+(comprobado en Windows 11 con Windows Terminal 1.25 el 2026-11-28); una pestaña de Windows
+Terminal es del proceso de Windows Terminal y no se trae así. Lo que se ve de estos agentes en el
+portal sigue siendo lo que hacen con la app (las herramientas que llaman).
+
 ### En segundo plano y cola de encargos (fase 19; varios agentes en la 24.5)
 El desplegable de cada botón ofrece **«En segundo plano»** en `process-jobs`, `assess-fit`,
 `generate-cv`, `correct-cv`, `verify-cv`, `generate-cover-letter` y `translate-summary` (en Codex,

@@ -2378,7 +2378,7 @@ export interface paths {
         /**
          * Save Window Preference
          * @description «Abrir en una ventana»: el botón principal abre el agente en una ventana en vez de seguirlo
-         *     en el portal.
+         *     en el portal. `window_style` (fase 48.1d): cómo se abre esa ventana en Windows.
          */
         put: operations["save_window_preference"];
         post?: never;
@@ -2652,6 +2652,27 @@ export interface paths {
          * @description Cierra un aviso. No para al agente: si sigue en su ventana, sigue.
          */
         post: operations["dismiss_agent_task"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/agent/tasks/{task_id}/show-window": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Show Agent Task Window
+         * @description «Mostrar la ventana» (fase 48.1d, Windows): restaura la consola del agente y, si Windows lo
+         *     deja, la pone delante. No escribe nada en ella.
+         */
+        post: operations["show_agent_task_window"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4509,6 +4530,13 @@ export interface components {
              * @default false
              */
             open_in_window: boolean;
+            /** Window Style */
+            window_style?: ("minimized" | "behind" | "wt") | null;
+            /**
+             * Window Styles
+             * @default []
+             */
+            window_styles: ("minimized" | "behind" | "wt")[];
         };
         /** AgentTaskList */
         AgentTaskList: {
@@ -4548,7 +4576,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "running" | "stale" | "finished";
+            status: "running" | "silent" | "stale" | "closed" | "finished";
             /** Outcome */
             outcome: ("done" | "stopped" | "failed" | "needs_user") | null;
             /** Done */
@@ -4569,6 +4597,7 @@ export interface components {
              * @default false
              */
             asks_permissions: boolean;
+            window?: components["schemas"]["WindowView"] | null;
             /**
              * Started At
              * Format: date-time
@@ -9776,6 +9805,13 @@ export interface components {
             /** Website */
             website: string | null;
         };
+        /** ShowWindowResult */
+        ShowWindowResult: {
+            /** Shown */
+            shown: boolean;
+            /** Foreground */
+            foreground: boolean;
+        };
         /**
          * SignOff
          * @description Despedida de la carta por idioma («Un saludo,», «Kind regards,»).
@@ -10646,6 +10682,20 @@ export interface components {
         WindowPreference: {
             /** Open In Window */
             open_in_window: boolean;
+            /** Window Style */
+            window_style?: ("minimized" | "behind" | "wt") | null;
+        };
+        /** WindowView */
+        WindowView: {
+            /**
+             * Style
+             * @enum {string}
+             */
+            style: "minimized" | "behind" | "wt" | "terminal";
+            /** Title */
+            title: string;
+            /** Can Show */
+            can_show: boolean;
         };
     };
     responses: never;
@@ -23719,6 +23769,104 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AgentTaskList"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    show_agent_task_window: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmptyBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShowWindowResult"];
                 };
             };
             /** @description Unauthorized */

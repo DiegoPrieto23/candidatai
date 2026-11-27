@@ -80,6 +80,12 @@ In the notice at the bottom right, which appears on every page with what it has 
 
 Where: “Agent”.
 
+### Where is my agent's window?
+
+What opens in a window goes behind your browser: on Windows, minimized on the taskbar, named after the action (“CandidatAI · Generate CV”). The notice at the bottom right says which one it is and “Show the window” brings it to the front. If it is closed before it finishes, the notice says so; if your agent has done nothing in 3 minutes, it is usually waiting for an answer in its window, and the notice offers to show it, launch it again or mark it as finished. On the “Agent” page, “How the window opens” lets you keep it visible behind the browser or use Windows Terminal.
+
+Where: “Agent”.
+
 ### What is “Leave for my next session”?
 
 It saves the request for later. Next time you open your agent, press “Handle requests” on the “Agent” page and it will do them one by one.

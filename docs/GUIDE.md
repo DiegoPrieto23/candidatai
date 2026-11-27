@@ -586,10 +586,17 @@ If an agent is not suited to an action (it has no browser to search for postings
 says so and does not launch it. With nothing chosen, `CAI_AGENT` from `.env` or the first installed
 agent is used.
 Your agent's window opens behind your browser, which stays in view: on Windows, a PowerShell window
-minimized on the taskbar, named after the action (approve the permissions it asks for there; with
-`CAI_TERMINAL=wt` in `.env`, Windows Terminal is used instead, and it does come to the front).
-On macOS and Linux, the buttons open Terminal.app or your desktop's terminal; to use another one
-(iTerm2, kitty…), set `CAI_TERMINAL=iterm` (or its name or path) in `.env`.
+minimized on the taskbar, named after the action (approve the permissions it asks for there). On the
+“Agent” page, **How the window opens** lets you pick another way: **visible, behind the browser**, or
+**in Windows Terminal**, which does come to the front (the same as `CAI_TERMINAL=wt` in `.env`, as
+long as you have not chosen anything else). The notice at the bottom right says which window it is
+in and, on Windows, **Show the window** restores it and brings it to the front (if Windows does not
+allow that, it is left flashing on the taskbar; a Windows Terminal tab cannot be brought back this
+way). If the window is closed before it finishes, the notice changes to **The window was closed**;
+if your agent has done nothing with the app in 3 minutes (it is usually waiting for an answer in its
+window), it changes to **The agent has not started**, with **Show the window**, **Launch again** and
+**Mark as finished**. On macOS and Linux, the buttons open Terminal.app or your desktop's terminal;
+to use another one (iTerm2, kitty…), set `CAI_TERMINAL=iterm` (or its name or path) in `.env`.
 
 **Spending tiers.** On the same page, “Economy”, “Balanced” and “Maximum” store the agent and model
 for the main actions. “Economy” uses a local model to process, assess and classify replies, and

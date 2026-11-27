@@ -320,6 +320,25 @@
         "always": "Always allowed in this project (removed on the “Agent” page).",
         "deny": "Denied."
       }
-    }
+    },
+    "window": {
+      "minimized": "In the “{{title}}” window (minimized in the taskbar). If it asks for permission, answer there.",
+      "behind": "In the “{{title}}” window, behind the browser. If it asks for permission, answer there.",
+      "wt": "In a Windows Terminal tab (“{{title}}”). If it asks for permission, answer there.",
+      "terminal": "In the “{{title}}” terminal window. If it asks for permission, answer there."
+    },
+    "silent": {
+      "title": "The agent has not started",
+      "body": "It has done nothing with the app in 3 minutes. It may be waiting for an answer in its window.",
+      "background": "No sign of activity in 3 minutes."
+    },
+    "closed": {
+      "title": "The window was closed",
+      "body": "The agent’s window was closed before it finished. What it had already saved stays."
+    },
+    "showWindow": "Show the window",
+    "windowFlashing": "Windows does not allow bringing it to the front: it is restored and flashing in the taskbar.",
+    "windowNotFound": "The window was not found: it may have been closed already.",
+    "relaunch": "Launch again"
   }
 }

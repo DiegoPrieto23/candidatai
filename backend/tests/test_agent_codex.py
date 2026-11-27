@@ -262,7 +262,7 @@ def terminal(monkeypatch: pytest.MonkeyPatch) -> list[str]:
     launcher = _Launcher("antigravity", ["agy", "-i", "{prompt}"], [])
     opened: list[str] = []
 
-    def open_terminal(title: str, command: str) -> None:
+    def open_terminal(title: str, command: str, *_: object) -> None:
         # Cuando se abre la ventana, la petición ya está guardada: el agente la lee desde otro
         # proceso en cuanto arranca.
         with session_scope() as other:

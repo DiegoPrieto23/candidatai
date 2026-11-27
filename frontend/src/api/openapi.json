@@ -14297,7 +14297,7 @@
           "agent"
         ],
         "summary": "Save Window Preference",
-        "description": "«Abrir en una ventana»: el botón principal abre el agente en una ventana en vez de seguirlo\nen el portal.",
+        "description": "«Abrir en una ventana»: el botón principal abre el agente en una ventana en vez de seguirlo\nen el portal. `window_style` (fase 48.1d): cómo se abre esa ventana en Windows.",
         "operationId": "save_window_preference",
         "requestBody": {
           "content": {
@@ -15871,6 +15871,129 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AgentTaskList"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/agent/tasks/{task_id}/show-window": {
+      "post": {
+        "tags": [
+          "agent"
+        ],
+        "summary": "Show Agent Task Window",
+        "description": "«Mostrar la ventana» (fase 48.1d, Windows): restaura la consola del agente y, si Windows lo\ndeja, la pone delante. No escribe nada en ella.",
+        "operationId": "show_agent_task_window",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmptyBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShowWindowResult"
                 }
               }
             }
@@ -26227,6 +26350,35 @@
             "type": "boolean",
             "title": "Open In Window",
             "default": false
+          },
+          "window_style": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "minimized",
+                  "behind",
+                  "wt"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Window Style"
+          },
+          "window_styles": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "minimized",
+                "behind",
+                "wt"
+              ]
+            },
+            "type": "array",
+            "title": "Window Styles",
+            "default": []
           }
         },
         "type": "object",
@@ -26361,7 +26513,9 @@
             "type": "string",
             "enum": [
               "running",
+              "silent",
               "stale",
+              "closed",
               "finished"
             ],
             "title": "Status"
@@ -26425,6 +26579,16 @@
             "type": "boolean",
             "title": "Asks Permissions",
             "default": false
+          },
+          "window": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WindowView"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "started_at": {
             "type": "string",
@@ -41878,6 +42042,24 @@
         ],
         "title": "SetWebsiteBody"
       },
+      "ShowWindowResult": {
+        "properties": {
+          "shown": {
+            "type": "boolean",
+            "title": "Shown"
+          },
+          "foreground": {
+            "type": "boolean",
+            "title": "Foreground"
+          }
+        },
+        "type": "object",
+        "required": [
+          "shown",
+          "foreground"
+        ],
+        "title": "ShowWindowResult"
+      },
       "SignOff": {
         "properties": {
           "es": {
@@ -44379,6 +44561,22 @@
           "open_in_window": {
             "type": "boolean",
             "title": "Open In Window"
+          },
+          "window_style": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "minimized",
+                  "behind",
+                  "wt"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Window Style"
           }
         },
         "additionalProperties": false,
@@ -44387,6 +44585,35 @@
           "open_in_window"
         ],
         "title": "WindowPreference"
+      },
+      "WindowView": {
+        "properties": {
+          "style": {
+            "type": "string",
+            "enum": [
+              "minimized",
+              "behind",
+              "wt",
+              "terminal"
+            ],
+            "title": "Style"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "can_show": {
+            "type": "boolean",
+            "title": "Can Show"
+          }
+        },
+        "type": "object",
+        "required": [
+          "style",
+          "title",
+          "can_show"
+        ],
+        "title": "WindowView"
       }
     }
   }

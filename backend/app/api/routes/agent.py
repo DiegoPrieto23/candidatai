@@ -67,6 +67,9 @@ class AgentStatus(agent_launch.AgentInfo):
     background: agent_launch.BackgroundInfo
     no_agent_installed: bool  # ninguno en el `PATH` (en Docker, siempre `false`)
     open_in_window: bool = False  # «Abrir en una ventana» (`launch_window`)
+    # Fase 48.1d: cómo se abre la ventana en Windows y qué se puede elegir (nada fuera de Windows).
+    window_style: launch_window.WindowStyle | None = None
+    window_styles: list[launch_window.WindowStyle] = []
 
 
 class RequestBody(BaseModel):
@@ -110,7 +113,8 @@ def get_agent_launcher(session: SessionDep) -> AgentStatus:
     agente de cada una según tus preferencias (fase 24.4)."""
     ctx = agent_launch.Context(session)
     lang = ui_language.current(session)
-    in_window = launch_window.get(session).open_in_window
+    window = launch_window.get(session)
+    in_window = window.open_in_window
     actions = []
     for action_id, spec in agent_launch.ACTIONS.items():
         if spec.hidden:
@@ -154,6 +158,8 @@ def get_agent_launcher(session: SessionDep) -> AgentStatus:
         background=agent_launch.background_info(session),
         no_agent_installed=agent_launch.no_agent_installed(),
         open_in_window=in_window,
+        window_style=window.window_style,
+        window_styles=launch_window.styles(),
     )
 
 
@@ -185,7 +191,7 @@ def save_window_preference(
     session: SessionDep, body: launch_window.WindowPreference
 ) -> launch_window.WindowPreference:
     """«Abrir en una ventana»: el botón principal abre el agente en una ventana en vez de seguirlo
-    en el portal."""
+    en el portal. `window_style` (fase 48.1d): cómo se abre esa ventana en Windows."""
     return launch_window.save(session, body)
 
 
@@ -368,6 +374,22 @@ def dismiss_agent_task(session: SessionDep, task_id: int) -> agent_tasks.AgentTa
     except agent_tasks.AgentTaskNotFoundError as exc:
         raise ToolError("not_found", str(exc)) from exc
     return agent_tasks.current(session)
+
+
+@router.post(
+    "/tasks/{task_id}/show-window",
+    operation_id="show_agent_task_window",
+    dependencies=[Depends(require_ui)],
+)
+def show_agent_task_window(
+    session: SessionDep, task_id: int, body: EmptyBody
+) -> agent_tasks.ShowWindowResult:
+    """«Mostrar la ventana» (fase 48.1d, Windows): restaura la consola del agente y, si Windows lo
+    deja, la pone delante. No escribe nada en ella."""
+    try:
+        return agent_tasks.show_window(session, task_id)
+    except agent_tasks.AgentTaskNotFoundError as exc:
+        raise ToolError("not_found", str(exc)) from exc
 
 
 # --- La búsqueda abierta en la terminal -----------------------------------------------------------

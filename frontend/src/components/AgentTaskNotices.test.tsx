@@ -159,6 +159,74 @@ describe('Avisos de lo que lanzan los botones', () => {
     })
   })
 
+  describe('La ventana, siempre a mano (fase 48.1d)', () => {
+    const windowed = (overrides: Partial<AgentTaskView> = {}) =>
+      task({
+        total: 0,
+        done: 0,
+        window: { style: 'minimized', title: 'CandidatAI · Valorar', can_show: true },
+        ...overrides,
+      })
+
+    it('dice dónde está la ventana y la trae con un clic', async () => {
+      const calls = mockApi(routes([windowed()], { 'POST /agent/tasks/3/show-window': { shown: true, foreground: true } }))
+      renderApp('/como-funciona')
+      expect(await screen.findByText(/En la ventana «CandidatAI · Valorar» \(minimizada en la barra de tareas\)/)).toBeInTheDocument()
+      await userEvent.click(screen.getByRole('button', { name: 'Mostrar la ventana' }))
+      await waitFor(() => expect(calls.some((c) => c.method === 'POST' && c.path === '/agent/tasks/3/show-window')).toBe(true))
+      expect(screen.queryByText(/parpadea en la barra de tareas/)).not.toBeInTheDocument()
+    })
+
+    it('si Windows no deja ponerla delante, lo dice', async () => {
+      mockApi(routes([windowed()], { 'POST /agent/tasks/3/show-window': { shown: true, foreground: false } }))
+      renderApp('/como-funciona')
+      await userEvent.click(await screen.findByRole('button', { name: 'Mostrar la ventana' }))
+      expect(await screen.findByText(/parpadea en la barra de tareas/)).toBeInTheDocument()
+    })
+
+    it('en Windows Terminal no ofrece traerla', async () => {
+      mockApi(routes([windowed({ window: { style: 'wt', title: 'CandidatAI · Valorar', can_show: false } })]))
+      renderApp('/como-funciona')
+      expect(await screen.findByText(/En una pestaña de Windows Terminal/)).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: 'Mostrar la ventana' })).not.toBeInTheDocument()
+    })
+
+    it('sin señales: lo dice y deja mostrarla, lanzarla de nuevo o marcarla como terminada', async () => {
+      const calls = mockApi(
+        routes([windowed({ status: 'silent', action: 'research-company', job_id: 42 })], {
+          'POST /agent/launch': { agent: 'claude', prompt: 'x', message: 'ok' },
+        }),
+      )
+      renderApp('/como-funciona')
+      expect(await screen.findByText('El agente no ha empezado')).toBeInTheDocument()
+      expect(screen.getByText(/Puede estar esperando una respuesta en su ventana/)).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Mostrar la ventana' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Marcar como terminada' })).toBeInTheDocument()
+      await userEvent.click(screen.getByRole('button', { name: 'Lanzar de nuevo' }))
+      await waitFor(() => {
+        const launched = calls.find((c) => c.method === 'POST' && c.path === '/agent/launch')
+        expect(launched?.body).toMatchObject({ action: 'research-company', job_id: 42 })
+      })
+    })
+
+    it('ventana cerrada: lo dice, sin «Mostrar la ventana»', async () => {
+      mockApi(routes([windowed({ status: 'closed', window: { style: 'minimized', title: 'CandidatAI · Valorar', can_show: false } })]))
+      renderApp('/como-funciona')
+      expect(await screen.findByText('La ventana se cerró')).toBeInTheDocument()
+      expect(screen.getByText(/Lo que ya había guardado se queda/)).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: 'Mostrar la ventana' })).not.toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Lanzar de nuevo' })).toBeInTheDocument()
+    })
+
+    it('sin ventana y sin salida: lo dice y se puede detener', async () => {
+      mockApi(routes([task({ status: 'silent', background: true, run_id: 11, agent: 'claude', total: 0, done: 0 })]))
+      renderApp('/como-funciona')
+      expect(await screen.findByText('En 3 minutos no ha dado ninguna señal.')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Detener' })).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: 'Lanzar de nuevo' })).not.toBeInTheDocument()
+    })
+  })
+
   describe('Sin ventana: el avance y la conversación en el portal (fase 48.1a)', () => {
     const steps = (current: number): AgentTaskView['steps'] =>
       ['job', 'profile', 'write', 'pdf', 'verify', 'done'].map((id, index) => ({

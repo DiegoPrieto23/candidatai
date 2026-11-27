@@ -166,6 +166,11 @@
       "a": "In the notice at the bottom right, which appears on every page with what it has done so far (the current step and the time, if it runs with no window) and changes when it finishes. “View conversation” opens a side panel with every tool your agent uses and what it writes. You can write to it there: midway, it gets your message at its next step and, once finished, it continues the same conversation. The “Terminal” tab shows it as a console, and each job's conversations can be opened again from its “History”.",
       "keywords": "progress notice finished running run status conversation panel steps"
     },
+    "agentWindow": {
+      "q": "Where is my agent's window?",
+      "a": "What opens in a window goes behind your browser: on Windows, minimized on the taskbar, named after the action (“CandidatAI · Generate CV”). The notice at the bottom right says which one it is and “Show the window” brings it to the front. If it is closed before it finishes, the notice says so; if your agent has done nothing in 3 minutes, it is usually waiting for an answer in its window, and the notice offers to show it, launch it again or mark it as finished. On the “Agent” page, “How the window opens” lets you keep it visible behind the browser or use Windows Terminal.",
+      "keywords": "window minimized taskbar show where is not started closed windows terminal"
+    },
     "agentLater": {
       "q": "What is “Leave for my next session”?",
       "a": "It saves the request for later. Next time you open your agent, press “Handle requests” on the “Agent” page and it will do them one by one.",

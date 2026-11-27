@@ -166,6 +166,11 @@
       "a": "En el aviso de abajo a la derecha, que sale en cualquier página con lo que lleva hecho (el paso en curso y el tiempo, si va sin ventana) y cambia cuando termina. «Ver conversación» abre un panel lateral con cada herramienta que usa el agente y lo que escribe. Ahí se le puede escribir: a mitad se le pasa en su siguiente paso y, al terminar, retoma la misma conversación. La pestaña «Terminal» lo enseña como en una consola, y las conversaciones de cada oferta se vuelven a abrir desde su «Historial».",
       "keywords": "progreso aviso terminado en curso ejecución estado conversación panel pasos"
     },
+    "agentWindow": {
+      "q": "¿Dónde está la ventana del agente?",
+      "a": "Lo que se abre en una ventana va detrás del navegador: en Windows, minimizada en la barra de tareas, con el nombre de la acción («CandidatAI · Generar CV»). El aviso de abajo a la derecha dice cuál es y «Mostrar la ventana» la trae delante. Si se cierra antes de terminar, el aviso lo dice; si en 3 minutos el agente no ha hecho nada, suele estar esperando una respuesta en su ventana, y el aviso ofrece mostrarla, lanzarlo de nuevo o marcarlo como terminado. En la página «Agente», «Cómo se abre la ventana» permite dejarla a la vista detrás del navegador o usar Windows Terminal.",
+      "keywords": "ventana minimizada barra de tareas mostrar dónde está no empieza cerrada windows terminal"
+    },
     "agentLater": {
       "q": "¿Qué es «Dejar para la próxima sesión»?",
       "a": "Guarda el encargo para más tarde. La próxima vez que se abra el agente, «Atender encargos» en la página «Agente» hace que los resuelva uno a uno.",

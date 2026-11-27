@@ -143,13 +143,17 @@ def posix_script(
     env: Mapping[str, str],
     cwd: Path,
     shell_path: str,
+    pid_file: Path | None = None,
 ) -> str:
     """La orden de la ventana, en una línea: entrar en `cwd`, quitar `unset_env`, poner `env`,
-    ejecutar `parts` y quedarse en el shell al terminar."""
+    ejecutar `parts` y quedarse en el shell al terminar. Con `pid_file`, deja antes ahí el PID del
+    shell (fase 48.1d; `exec` lo conserva)."""
     names = [*unset_env, *env]
     if bad := [name for name in names if not ENV_NAME_RE.fullmatch(name)]:
         raise ValueError(f"Nombre de variable de entorno no válido: {bad[0]!r}")
     steps = [f"cd {shlex.quote(cwd.as_posix())} || exit 1"]
+    if pid_file is not None:
+        steps.append(f"echo $$ > {shlex.quote(pid_file.as_posix())}")
     steps += [f"unset {name}" for name in unset_env]
     steps += [f"export {name}={shlex.quote(value)}" for name, value in env.items()]
     steps.append(shlex.join(parts))

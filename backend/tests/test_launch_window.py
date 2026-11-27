@@ -37,7 +37,7 @@ def test_portal_by_default_only_where_background_is_possible(
 
 def test_open_in_window_turns_the_portal_off(client: TestClient, fake: Path) -> None:  # noqa: F811
     saved = client.put("/agent/window-preference", json={"open_in_window": True}, headers=JSON)
-    assert saved.status_code == 200 and saved.json() == {"open_in_window": True}
+    assert saved.status_code == 200 and saved.json()["open_in_window"] is True
     assert client.get("/agent").json()["open_in_window"] is True
     assert actions(client)["generate-cv"]["portal"] is False
     client.put("/agent/window-preference", json={"open_in_window": False}, headers=JSON)
