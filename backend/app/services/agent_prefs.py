@@ -42,7 +42,6 @@ Mode = Literal["terminal", "background"]
 # Lo que necesita cada acción del agente. `import-cv-template` lee el PDF o la imagen del CV.
 REQUIRES: dict[str, tuple[Capability, ...]] = {
     "search-jobs": ("browser",),
-    "review-expired": ("browser",),
     "research-company": ("web",),
     "training-plan": ("web",),
     "import-cv-template": ("vision",),
@@ -59,7 +58,6 @@ UNTRUSTED: frozenset[str] = frozenset(
         "search-jobs",
         "configure-platforms",
         "expand",
-        "review-expired",
     }
 )
 

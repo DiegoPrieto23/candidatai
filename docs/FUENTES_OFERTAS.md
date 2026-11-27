@@ -480,7 +480,7 @@ son **observaciones, no veredictos**: la app nunca cierra una oferta por ellas.
   Tarda unos segundos por oferta.
 - En la práctica (comprobado en noviembre de 2026): los ATS y Tecnoempleo responden a la
   petición; Indeed la bloquea, pero el navegador la lee; Glassdoor bloquea los dos (Cloudflare) y
-  queda en `unknown`: para él está el skill `review-expired`. No se intenta esquivar ningún
+  queda en `unknown`. No se intenta esquivar ningún
   control: el aviso solo sale cuando hay evidencia.
 - **LinkedIn nunca** (la búsqueda pública de la fase 22 no cambia esto): `skipped`.
 
@@ -509,16 +509,12 @@ desactiva). Se salta las que ya tienen aviso, las que una comprobación de esos 
 las que el usuario confirmó con «Sigue abierta». Una comprobación posterior que la vea abierta
 quita el aviso. Nunca cierra ninguna.
 
-### Aviso de la Bandeja y skill `review-expired`
+### Aviso de la Bandeja
 
 La Bandeja reúne las ofertas abiertas antes de enviar con aviso (`GET /jobs/closure-suspects`),
 sea cual sea el motivo, y ofrece «Descartar las N» (descarte con el motivo `closed`, de una en una
-y con confirmación), «Comprobar ahora» (`POST /jobs/check-open`: encola las comprobaciones para el
-worker) y «Revisar ofertas caducadas», que lanza el skill `review-expired` con el agente del
-usuario. El skill toma las aprobadas y con CV listo, deja las que `check_job_open` ya resuelve, abre
-las demás en el navegador del usuario (LinkedIn solo si tiene activada la búsqueda con el agente
-en LinkedIn) y guarda lo que ve con `save_open_check` (motivo `agent_browser`). Nunca resuelve un
-captcha ni cierra una oferta.
+y con confirmación) y «Comprobar ahora» (`POST /jobs/check-open`: encola las comprobaciones para el
+worker). Nunca cierra una oferta.
 
 ### Republicadas
 

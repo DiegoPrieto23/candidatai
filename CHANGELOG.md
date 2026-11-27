@@ -9,6 +9,17 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 
 ## [Sin publicar]
 
+### Cambiado
+
+- **La terminal de `cai start` habla en español y en inglés a la vez**: cada mensaje sale en los dos
+  idiomas, primero en el del portal.
+
+### Eliminado
+
+- **«Revisar ofertas caducadas»** (skill `review-expired` y herramienta `save_open_check`): abría
+  ventanas del navegador para mirar las ofertas una a una. El aviso de la Bandeja sigue, con
+  «Descartar las N» y «Comprobar ahora».
+
 ## [1.0.0] - 2026-11-27
 
 Primera versión de CandidatAI: una app local para llevar la búsqueda de empleo de principio a fin

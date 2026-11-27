@@ -31,6 +31,5 @@
   "translate-summary": "Translates the Spanish summary of your profile into English, adding nothing. The suggestion appears next to the field so you can use, edit or discard it before saving.",
   "propose-stories": "Suggests interview stories (situation, task, action, result) from your experience and achievements. Adds them to your profile only with your confirmation.",
   "import-cv-template": "Turns this uploaded CV into a template with the same design for your next CVs. Lets you compare the result before saving it.",
-  "assistant": "Handles what you wrote in the portal “Assistant”, and leaves the answer in that panel.",
-  "review-expired": "Opens in the browser the approved jobs and jobs with a CV that the app cannot check by itself (Glassdoor, pages that block it) and flags those no longer accepting applications. It closes none."
+  "assistant": "Handles what you wrote in the portal “Assistant”, and leaves the answer in that panel."
 }

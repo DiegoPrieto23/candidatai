@@ -33,7 +33,7 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 | **Find your companies' job boards** from a list of names | `cai sources discover` | |
 | **Read and assess the new jobs in one step** ("Assess new jobs"): extracts each one into structured data with an isolated subagent that only sees that job, then assesses it against your profile; text aimed at an AI is flagged, never obeyed | `process-jobs` | |
 | **Still open? and reposts**: the app checks every day whether the open jobs not yet sent are still published (if the job board blocks the request, like Indeed, it opens them in Chrome with the window off screen) and marks "Reposted ×N"; it never closes any of them | `/jobs/:id` | |
-| **Expired jobs**: the Inbox notice gathers those that may be closed (by the check, by being posted over a month ago or because your agent saw it), with "Discard all N", "Check now" and "Review expired jobs", which opens in your browser the approved jobs and jobs with a CV that the app cannot check by itself (Glassdoor) | `/bandeja` · `review-expired` | |
+| **Expired jobs**: the Inbox notice gathers those that may be closed (by the check or by being posted over a month ago), with "Discard all N" and "Check now" | `/bandeja` | |
 | **Points to review on each job**: very wide salary range, hidden company or agency, temporary contract, old posting and AI screening, each explained; they do not change the fit | `/bandeja` | |
 
 ## 2. Review

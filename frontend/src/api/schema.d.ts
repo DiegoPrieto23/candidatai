@@ -3911,7 +3911,7 @@ export interface components {
              * Id
              * @enum {string}
              */
-            id: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "review-expired" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "translate-summary" | "propose-stories" | "import-cv-template" | "assistant";
+            id: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "translate-summary" | "propose-stories" | "import-cv-template" | "assistant";
             /** Label */
             label: string;
             /** Needs Job */
@@ -4238,7 +4238,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "review-expired" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "translate-summary" | "propose-stories" | "import-cv-template" | "assistant";
+            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "translate-summary" | "propose-stories" | "import-cv-template" | "assistant";
             /** Label */
             label: string;
             /** Job Id */
@@ -4279,7 +4279,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "review-expired" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "translate-summary" | "propose-stories" | "import-cv-template" | "assistant";
+            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "translate-summary" | "propose-stories" | "import-cv-template" | "assistant";
             /** Label */
             label: string;
             /** Job Id */
@@ -4352,7 +4352,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "review-expired" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "translate-summary" | "propose-stories" | "import-cv-template" | "assistant";
+            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "translate-summary" | "propose-stories" | "import-cv-template" | "assistant";
             /** Job Id */
             job_id: number | null;
             /** Milestone Id */
@@ -5076,8 +5076,6 @@ export interface components {
         ClosureSuspects: {
             /** Items */
             items: components["schemas"]["ClosureSuspect"][];
-            /** Unverified Important */
-            unverified_important: number;
         };
         /**
          * CompanyResearchContent
@@ -6020,7 +6018,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "review-expired" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "translate-summary" | "propose-stories" | "import-cv-template" | "assistant";
+            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "translate-summary" | "propose-stories" | "import-cv-template" | "assistant";
             /** Label */
             label: string;
             terminal: components["schemas"]["Resolution"];
@@ -7021,7 +7019,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "review-expired" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "translate-summary" | "propose-stories" | "import-cv-template" | "assistant";
+            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "translate-summary" | "propose-stories" | "import-cv-template" | "assistant";
             /** Job Id */
             job_id?: number | null;
             /** Milestone Id */
@@ -9006,7 +9004,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "review-expired" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "translate-summary" | "propose-stories" | "import-cv-template" | "assistant";
+            action: "search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "translate-summary" | "propose-stories" | "import-cv-template" | "assistant";
             /** Job Id */
             job_id?: number | null;
             /** Milestone Id */
@@ -10143,7 +10141,7 @@ export interface components {
         /** TiersView */
         TiersView: {
             /** Actions */
-            actions: ("search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "review-expired" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "translate-summary" | "propose-stories" | "import-cv-template" | "assistant")[];
+            actions: ("search-jobs" | "configure-platforms" | "process-jobs" | "assess-fit" | "assess-fit-job" | "generate-cv" | "correct-cv" | "verify-cv" | "generate-cover-letter" | "add-skills" | "training-plan" | "review-replies" | "draft-follow-ups" | "draft-follow-up" | "broaden-search" | "prepare-interview" | "correct-interview-guide" | "mock-interview" | "debrief-interview" | "offer-questions" | "prepare-negotiation" | "draft-message" | "research-company" | "handle-requests" | "review-search" | "expand" | "create-profile" | "import-profile-from-cv" | "improve-profile-item" | "translate-summary" | "propose-stories" | "import-cv-template" | "assistant")[];
             /** Tiers */
             tiers: components["schemas"]["TierView"][];
             /** Can Undo */

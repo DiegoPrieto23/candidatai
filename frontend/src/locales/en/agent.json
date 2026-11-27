@@ -32,8 +32,7 @@
     "translate-summary": "Generate English summary",
     "propose-stories": "Propose stories from my experience",
     "import-cv-template": "Turn into a template",
-    "assistant": "Assistant",
-    "review-expired": "Review expired jobs"
+    "assistant": "Assistant"
   },
   "job": "job {{id}}",
   "done": "Done.",

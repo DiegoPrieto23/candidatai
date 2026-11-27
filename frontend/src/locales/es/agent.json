@@ -32,8 +32,7 @@
     "translate-summary": "Generar resumen en inglés",
     "propose-stories": "Proponer historias desde la experiencia",
     "import-cv-template": "Convertir en plantilla",
-    "assistant": "Asistente",
-    "review-expired": "Revisar ofertas caducadas"
+    "assistant": "Asistente"
   },
   "job": "oferta {{id}}",
   "done": "Hecho.",

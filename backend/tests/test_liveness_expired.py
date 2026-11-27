@@ -247,46 +247,10 @@ def test_open_check_clears_the_age_flag(session: Session) -> None:
     assert read(job).possibly_closed is None
 
 
-# --- Lo que guarda el agente -------------------------------------------------------------------
-
-
-def test_agent_check_flags_and_clears(session: Session) -> None:
-    job = _job(session, GLASSDOOR)
-    _approve(session, job.id)
-
-    view = liveness.save_agent_check(
-        session, job.id, "possibly_closed", "  La página dice\n«ya no acepta solicitudes» ", NOW
-    )
-    assert view.status == "possibly_closed"
-    closed = read(job).possibly_closed
-    assert closed is not None and closed.reason == "agent_browser"
-    assert (
-        closed.detail
-        == "La página dice «ya no acepta solicitudes» (lo vio el agente en el navegador)"
-    )
-    assert len(_closure_events(session, job.id)) == 1
-
-    unknown = liveness.save_agent_check(session, job.id, "unknown", "captcha", NOW)
-    assert unknown.status == "unknown" and read(job).possibly_closed is not None
-
-    opened = liveness.save_agent_check(session, job.id, "open", "", NOW)
-    assert opened.status == "open" and read(job).possibly_closed is None
-    assert opened.detail == "comprobada en el navegador (lo vio el agente en el navegador)"
-
-
-def test_agent_check_needs_an_open_job_before_sending(session: Session) -> None:
-    job = _job(session, GENERIC)
-    events.record(session, job.id, "discarded", "user", {"reason": "skills"})
-    with pytest.raises(liveness.StageNotAllowedError):
-        liveness.save_agent_check(session, job.id, "open", "ok", NOW)
-    with pytest.raises(events.JobNotFoundError):
-        liveness.save_agent_check(session, 999, "open", "ok", NOW)
-
-
 # --- Aviso de la Bandeja -----------------------------------------------------------------------
 
 
-def test_closure_suspects_and_unverified_important(session: Session) -> None:
+def test_closure_suspects(session: Session) -> None:
     old = _job(session, GENERIC)
     _age(session, old, 45)
     blocked = _job(session, INDEED, title="BI Engineer")
@@ -305,7 +269,6 @@ def test_closure_suspects_and_unverified_important(session: Session) -> None:
     assert [item.job_id for item in suspects.items] == [old.id]
     assert suspects.items[0].company == "Acme Datos"
     assert suspects.items[0].reason == "stale"
-    assert suspects.unverified_important == 1  # la de Indeed; la abierta ya está comprobada
 
 
 # --- Worker y API ------------------------------------------------------------------------------
