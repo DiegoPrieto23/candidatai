@@ -1,7 +1,7 @@
 # CandidatAI frente a AI Job Search y career-ops
 
-Comparativa revisada el **6 de noviembre de 2026**, con CandidatAI en la `v0.3.0` (y la `v1.0.0` en
-preparación), entre este repositorio y los dos proyectos abiertos de los que más ideas ha tomado:
+Comparativa revisada el **6 de noviembre de 2026**, antes de la primera versión de CandidatAI
+(la `v1.0.0`), entre este repositorio y los dos proyectos abiertos de los que más ideas ha tomado:
 
 - **[AI Job Search](https://github.com/ai-job-search-dev/ai-job-search)** (Mads Lorentzen, MIT; desde
   noviembre, en la organización `ai-job-search-dev`): un marco de instrucciones, skills y comandos
@@ -41,7 +41,7 @@ estrellas, cientos de contribuidores e historias reales de gente contratada. Y c
 |---|---|---|---|
 | Estrellas / forks en GitHub | Recién publicado | ~70 000 / ~22 600 | ~80 600 / ~14 800 |
 | Contribuidores | 1 (con agentes de IA) | ~90 | ~470 con cuenta (unos 600 contando los commits sin cuenta), y una flota de agentes que mantiene el repo; 99 personas en las dos semanas de la `1.39.0` |
-| Primera release | `v0.1.0`, 24 de octubre de 2026 (va por la `v0.3.0`) | 2026 (va por la `v1.7.4`) | 2026 (va por la `1.39.0`, una cada una o dos semanas) |
+| Primera release | `v1.0.0`, 27 de noviembre de 2026 | 2026 (va por la `v1.7.4`) | 2026 (va por la `1.39.0`, una cada una o dos semanas) |
 | Releases | Zip con suma SHA-256 desde el `CHANGELOG` | Automáticas cada lunes, con las notas sacadas de los PR | release-please, npm y web por separado |
 | Historia del autor | 🟡 `cai stats story` da la línea; publicarla es decisión tuya | ✅ 69 candidaturas, 20 entrevistas, 1 contrato | ✅ 740 ofertas, 68 candidaturas, 12 entrevistas, 1 oferta |
 | Comunidad | ❌ | 🟡 Discussions e índice de forks por país | ✅ Discord (más de 5 000 personas), muro de contratados, manifiesto con firmas, prensa (WIRED, Business Insider), patrocinador |
