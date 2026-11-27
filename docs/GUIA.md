@@ -523,11 +523,19 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
 
 ## 11. El agente desde la UI
 
-Muchas pantallas tienen botones que abren el agente con la orden ya escrita:
+Muchas pantallas tienen botones que lanzan el agente con la orden ya escrita:
 
+- **Sin ventana, en el portal (por defecto):** si la acción puede ir en segundo plano con el agente
+  elegido (ver más abajo), el botón principal la lanza sin abrir ninguna ventana. El aviso de abajo a
+  la derecha dice en qué paso va («3/6 · Redactar» en «Generar CV») o qué herramienta usa, y el
+  tiempo que lleva; **Ver conversación** abre un panel lateral con cada herramienta que usa el agente
+  y lo que escribe (en pantallas anchas, la página se aparta para dejarle sitio). Si falla, el aviso
+  ofrece **Abrir en una ventana**, que retoma la misma sesión. Con **Abrir en una ventana** activado
+  en la página «Agente», el botón principal vuelve a abrir la ventana del agente.
 - **En una ventana aparte:** abre una ventana con el agente, donde se ve y se aprueba lo que hace.
-  Si un botón no puede abrir el agente, muestra la orden entera en un recuadro con «Copiar» e indica
-  dónde pegarla.
+  Es lo que hace el botón principal en las acciones que preguntan o usan el navegador o la web, y
+  una opción del desplegable en las demás. Si un botón no puede abrir el agente, muestra la orden
+  entera en un recuadro con «Copiar» e indica dónde pegarla.
 - **Avisos de lo que hace el agente:** lo que se lanza con un botón (leer y valorar ofertas, revisar
   respuestas, generar o corregir un CV, la carta, investigar la empresa, preparar una entrevista…)
   sale en un aviso en cualquier página, con lo que lleva hecho, y cambia cuando termina o si no ha
@@ -538,11 +546,13 @@ Muchas pantallas tienen botones que abren el agente con la orden ya escrita:
 - **El agente pregunta en la app:** si necesita un dato para escribir un CV, una carta o una guía,
   un aviso permite contestar ahí mismo. También se puede contestar en su ventana. Los permisos que
   pide y las conversaciones (un simulacro, p. ej.) siguen en su ventana.
-- **En segundo plano** (Claude Code; OpenCode solo en `process-jobs` y `assess-fit`): para los
-  skills que no preguntan (`process-jobs`, `assess-fit`, `generate-cv`, `correct-cv`, `verify-cv`,
-  `generate-cover-letter` y el resumen en inglés). Corre sin ventana, solo con las herramientas de la
-  app que necesita, y un aviso indica cuándo termina. Si el agente no puede, el desplegable propone
-  uno que sí. Necesita `cai worker` en marcha.
+- **En segundo plano** (Claude Code; OpenCode en `process-jobs`, `assess-fit`, «Valorar esta
+  oferta», el resumen en inglés y el Asistente; Codex en las mismas salvo `process-jobs`. Los dos
+  no pueden con el CV ni la carta: sus roles leen `docs/` y no se puede limitar a esa carpeta): para
+  los skills que no preguntan (`process-jobs`, `assess-fit`, `generate-cv`, `correct-cv`,
+  `verify-cv`, `generate-cover-letter` y el resumen en inglés). Corre sin ventana, solo con las
+  herramientas de la app que necesita, y el aviso dice cómo va. Si el agente no puede, el
+  desplegable propone uno que sí. Necesita `cai worker` en marcha (lo arranca `cai start`).
   - **Coste:** la sección «Coste» de la página «Agente» suma tokens, tiempo y, si el agente lo da,
     dinero, por acción, agente y modelo (7 y 30 días), con lo que pesa cada skill; la ficha indica lo
     gastado en esa oferta y «Resultados», por candidatura enviada y por entrevista. Lo que se hace en una

@@ -157,4 +157,115 @@ describe('Avisos de lo que lanzan los botones', () => {
       await waitFor(() => expect(calls.some((c) => c.path === '/agent/tasks/3/dismiss')).toBe(true))
     })
   })
+
+  describe('Sin ventana: el avance y la conversación en el portal (fase 48.1a)', () => {
+    const steps = (current: number): AgentTaskView['steps'] =>
+      ['job', 'profile', 'write', 'pdf', 'verify', 'done'].map((id, index) => ({
+        id,
+        state: index < current ? 'done' : index === current ? 'current' : 'pending',
+      }))
+    const cv = (overrides: Partial<AgentTaskView> = {}) =>
+      task({
+        action: 'generate-cv',
+        job_id: 7,
+        subject: 'Data Engineer · Acme',
+        total: 0,
+        done: 0,
+        background: true,
+        run_id: 11,
+        agent: 'claude',
+        steps: steps(2),
+        last_tool: 'get_profile',
+        ...overrides,
+      })
+    let seq = 0
+    const event = (kind: string, more: Record<string, unknown> = {}) => ({
+      seq: ++seq,
+      at: '2026-11-03T10:00:00Z',
+      kind,
+      tool: null,
+      text: null,
+      ok: null,
+      sub: false,
+      ...more,
+    })
+    const conversation = (status = 'running') => {
+      seq = 0
+      return {
+        run_id: 11,
+        status,
+        last_seq: 6,
+        events: [
+          event('system', { text: 'started' }),
+          event('tool_start', { tool: 'get_profile' }),
+          event('tool_result', { tool: 'get_profile', ok: true }),
+          event('text', { text: 'El perfil cubre dbt.\n<b>no es HTML</b>' }),
+          event('tool_start', { tool: 'Agent', text: 'writer' }),
+          event('tool_start', { tool: 'save_cv_content', sub: true }),
+        ],
+      }
+    }
+
+    it('dice el paso en curso con la barra de pasos y el tiempo', async () => {
+      mockApi(routes([cv()]))
+      renderApp('/como-funciona')
+      const notice = (await screen.findByText('Data Engineer · Acme')).closest('[role="status"]') as HTMLElement
+      expect(within(notice).getByText('3/6 · Redactar')).toBeInTheDocument()
+      expect(within(notice).getByText(/^(\d+:)?\d\d:\d\d$/)).toBeInTheDocument()
+      expect(within(notice).queryByText(/ventana del agente/)).not.toBeInTheDocument()
+    })
+
+    it('sin pasos, dice la última herramienta que ha usado', async () => {
+      mockApi(routes([cv({ action: 'assess-fit-job', steps: [], last_tool: 'save_fit_assessment' })]))
+      renderApp('/como-funciona')
+      expect(await screen.findByText('Guardando la valoración')).toBeInTheDocument()
+    })
+
+    it('«Ver conversación» abre el panel con lo que hace y escribe el agente, como texto plano', async () => {
+      const calls = mockApi(routes([cv()], { 'GET /agent/runs/11/events': conversation(), 'GET /agent/agents': { agents: [] } }))
+      renderApp('/como-funciona')
+      await userEvent.click(await screen.findByRole('button', { name: 'Ver conversación' }))
+      const panel = await screen.findByRole('complementary', { name: 'Generando el CV…' })
+      expect(within(panel).getByText('Leyendo el perfil')).toBeInTheDocument()
+      expect(within(panel).getByText('Subagente writer')).toBeInTheDocument()
+      expect(within(panel).getByText('(subagente)')).toBeInTheDocument()
+      // El texto del agente sale tal cual: ni HTML ni saltos de línea perdidos.
+      const said = within(panel).getByText(/El perfil cubre dbt\./)
+      expect(said.textContent).toBe('El perfil cubre dbt.\n<b>no es HTML</b>')
+      expect(said.querySelector('b')).toBeNull()
+      expect(within(panel).getByRole('list', { name: 'Pasos' })).toBeInTheDocument()
+      expect(calls.find((c) => c.path === '/agent/runs/11/events')?.search.get('after')).toBe('0')
+
+      await userEvent.keyboard('{Escape}')
+      expect(screen.queryByRole('complementary', { name: 'Generando el CV…' })).not.toBeInTheDocument()
+    })
+
+    it('al terminar, el resultado con el enlace y la conversación se siguen viendo', async () => {
+      const done = conversation('done')
+      done.events.push(event('tool_result', { tool: 'save_cv_content', ok: true, sub: true }), event('result', { ok: true }))
+      mockApi(
+        // «Verificar CV»: «Generar» y «Corregir» pasan el relevo al aviso «Tu CV está listo».
+        routes([cv({ action: 'verify-cv', status: 'finished', outcome: 'done', steps: steps(3), finished_at: '2026-11-03T10:03:00Z' })], {
+          'GET /agent/runs/11/events': done,
+          'GET /agent/agents': { agents: [] },
+        }),
+      )
+      renderApp('/como-funciona')
+      await userEvent.click(await screen.findByRole('button', { name: 'Ver conversación' }))
+      const panel = await screen.findByRole('complementary', { name: 'CV verificado' })
+      expect(within(panel).getByText('Terminado')).toBeInTheDocument()
+      expect(within(panel).getByRole('link', { name: 'Ver' })).toHaveAttribute('href', '/jobs/7')
+    })
+
+    it('si falla, deja abrirla en una ventana', async () => {
+      const calls = mockApi(
+        routes([cv({ status: 'finished', outcome: 'failed', finished_at: '2026-11-03T10:03:00Z' })], {
+          'POST /agent/runs/11/open': { status: 202, body: { ok: true, agent: 'claude', message: '' } },
+        }),
+      )
+      renderApp('/como-funciona')
+      await userEvent.click(await screen.findByRole('button', { name: 'Abrir en una ventana' }))
+      await waitFor(() => expect(calls.some((c) => c.method === 'POST' && c.path === '/agent/runs/11/open')).toBe(true))
+    })
+  })
 })

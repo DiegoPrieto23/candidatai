@@ -63,6 +63,7 @@ export const keys = {
   apply: (id: number) => ['apply', id] as const,
   agent: ['agent'] as const,
   agentRuns: ['agent', 'runs'] as const,
+  agentRunEvents: (runId: number) => ['agent', 'runs', runId, 'events'] as const,
   searchRun: ['agent', 'search-run'] as const,
   agentTasks: ['agent', 'tasks'] as const,
   agentAgents: ['agent', 'agents'] as const,
@@ -1465,7 +1466,54 @@ export function useStartAgentRun() {
   return useMutation({
     mutationFn: (body: LaunchTarget & { agent?: string }) =>
       unwrap(api.POST('/agent/runs', { body: { ...body, lang: portalLang() } })),
-    onSuccess: () => client.invalidateQueries({ queryKey: keys.agentRuns }),
+    // El aviso sale ya, sin esperar al siguiente sondeo.
+    onSuccess: () =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: keys.agentRuns }),
+        client.invalidateQueries({ queryKey: keys.agentTasks }),
+      ]),
+  })
+}
+
+export type AgentRunEvent = Schemas['AgentRunEventView']
+type RunEvents = Schemas['AgentRunEvents'] & { more: boolean }
+const EVENTS_PAGE = 500
+
+/**
+ * La conversación de una ejecución en segundo plano (fase 48.1a). Cada consulta pide solo lo nuevo
+ * (`after`) y lo junta con lo que ya había. Mientras está en curso, cada 1,5 s; al terminar, para.
+ */
+export function useAgentRunEvents(runId: number | null) {
+  const client = useQueryClient()
+  return useQuery({
+    queryKey: keys.agentRunEvents(runId ?? 0),
+    enabled: runId != null,
+    queryFn: async (): Promise<RunEvents> => {
+      const key = keys.agentRunEvents(runId ?? 0)
+      const previous = client.getQueryData<RunEvents>(key)
+      const data = await unwrap(
+        api.GET('/agent/runs/{run_id}/events', {
+          params: { path: { run_id: runId ?? 0 }, query: { after: previous?.last_seq ?? 0 } },
+        }),
+      )
+      return { ...data, events: [...(previous?.events ?? []), ...data.events], more: data.events.length >= EVENTS_PAGE }
+    },
+    refetchInterval: (query) => {
+      const data = query.state.data
+      if (!data) return false
+      return data.more || data.status === 'queued' || data.status === 'running' ? 1500 : false
+    },
+    refetchIntervalInBackground: true,
+  })
+}
+
+/** «Abrir en una ventana»: el botón principal abre el agente en una ventana en vez del portal. */
+export function useSaveWindowPreference() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (openInWindow: boolean) =>
+      unwrap(api.PUT('/agent/window-preference', { body: { open_in_window: openInWindow } })),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.agent, exact: true }),
   })
 }
 

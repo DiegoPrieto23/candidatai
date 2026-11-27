@@ -13,7 +13,7 @@ from app.api.main import create_app
 from app.core.db import session_scope
 from app.models import AgentRunEvent, AgentTask, McpCall
 from app.models.base import utcnow
-from app.services import agent_tasks
+from app.services import agent_runner, agent_tasks
 from app.services.agent_output import (
     DENIED,
     EVENT_TEXT_CHARS,
@@ -228,6 +228,19 @@ def test_agent_error_is_not_repeated(
     rows = saved(run_id)
     assert rows[-1].kind == "result" and rows[-1].ok is False
     assert not any(r.kind == "error" for r in rows)
+
+
+def test_a_long_conversation_keeps_room_for_how_it_ended(
+    db: None,  # noqa: F811
+    fake: Path,  # noqa: F811
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(agent_runner, "MAX_EVENTS", 4)
+    run_id = start()
+    assert run_now().status == "done"
+    rows = saved(run_id)
+    # Los dos primeros huecos para la conversación; el resultado entra aunque se haya cortado.
+    assert [(r.seq, r.kind) for r in rows] == [(1, "system"), (2, "text"), (3, "result")]
 
 
 def test_api_reads_the_conversation_from_a_point(db: None, fake: Path) -> None:  # noqa: F811

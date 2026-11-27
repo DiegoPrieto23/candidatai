@@ -1,26 +1,25 @@
-import { useEffect, useId, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { CheckCircleIcon, CircleNotchIcon, MinusIcon, WarningIcon, XIcon } from '@phosphor-icons/react'
+import { ChatsCircleIcon, CheckCircleIcon, CircleNotchIcon, MinusIcon, WarningIcon, XIcon } from '@phosphor-icons/react'
 import type { AgentTaskView } from '@/api/client'
-import { keys, useAgentTasks, useCancelAgentRun, useDismissAgentTask, type AgentAction } from '@/api/queries'
+import {
+  keys,
+  useAgentTasks,
+  useCancelAgentRun,
+  useDismissAgentTask,
+  useOpenAgentRun,
+  type AgentAction,
+} from '@/api/queries'
+import { AgentRunPanel } from '@/components/AgentRunPanel'
+import { Elapsed, StepBar } from '@/components/agentTaskParts'
+import { resultLink, stepText, toolLabel } from '@/lib/agentTasks'
 import { Button } from '@/components/ui/button'
+import { errorMessage } from '@/lib/errors'
 import { notifyIfHidden } from '@/lib/notify'
 import { WATCHED_ACTIONS } from '@/lib/readyWatch'
 import { cn } from '@/lib/utils'
-
-/** Dónde se ve el resultado. Lo que es de una oferta va a su ficha, en la pestaña que toca. */
-function resultLink(task: AgentTaskView): string | null {
-  const action = task.action as AgentAction
-  if (action === 'process-jobs') return '/bandeja'
-  if (action === 'assess-fit') return '/bandeja/revision'
-  if (action === 'review-replies') return '/respuestas'
-  if (task.job_id === null) return null
-  if (action === 'research-company') return `/jobs/${task.job_id}?tab=company`
-  if (action === 'draft-message' || action === 'draft-follow-up') return `/jobs/${task.job_id}?tab=process`
-  return `/jobs/${task.job_id}`
-}
 
 function Progress({ done, total }: { done: number; total: number }) {
   return (
@@ -30,16 +29,96 @@ function Progress({ done, total }: { done: number; total: number }) {
   )
 }
 
-function TaskNotice({ task }: { task: AgentTaskView }) {
+/** «Detener» con una confirmación corta en el sitio (nada de diálogos del navegador). */
+function StopControl({ task, className }: { task: AgentTaskView; className?: string }) {
   const { t } = useTranslation('nav', { keyPrefix: 'tasks' })
-  const dismiss = useDismissAgentTask()
   const cancel = useCancelAgentRun()
-  const client = useQueryClient()
-  const [minimized, setMinimized] = useState<string | null>(null)
-  // «Detener» pide una confirmación corta dentro del propio aviso (nada de diálogos del navegador).
   const [confirming, setConfirming] = useState(false)
   const confirmId = useId()
   const stopButton = useRef<HTMLButtonElement>(null)
+  if (task.status !== 'running' || task.run_id == null || task.stopping) return null
+  const runId = task.run_id
+  if (!confirming) {
+    return (
+      <div className={className}>
+        <Button
+          ref={stopButton}
+          size="sm"
+          variant="outline"
+          onClick={() => {
+            cancel.reset()
+            setConfirming(true)
+          }}
+        >
+          {t('stop')}
+        </Button>
+      </div>
+    )
+  }
+  const keepGoing = () => {
+    setConfirming(false)
+    // El foco vuelve a «Detener», que reaparece al cerrar la confirmación.
+    requestAnimationFrame(() => stopButton.current?.focus())
+  }
+  return (
+    <div role="group" aria-labelledby={confirmId} className={cn('space-y-2', className)}>
+      <p id={confirmId} className="text-xs">
+        {t('stopConfirm')}
+      </p>
+      {cancel.isError && (
+        <p role="alert" className="text-xs text-destructive">
+          {t('stopFailed')}
+        </p>
+      )}
+      <div className="flex gap-2">
+        <Button
+          size="sm"
+          variant="destructive"
+          disabled={cancel.isPending}
+          onClick={() => cancel.mutate(runId, { onSuccess: () => setConfirming(false) })}
+        >
+          {t('stopYes')}
+        </Button>
+        {/* El botón seguro recibe el foco al abrirse la confirmación. */}
+        <Button size="sm" variant="outline" autoFocus onClick={keepGoing}>
+          {t('stopNo')}
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+/** «Abrir en una ventana» de una ejecución sin ventana que falló o se quedó con una pregunta. */
+function OpenInWindow({ runId }: { runId: number }) {
+  const { t } = useTranslation('nav', { keyPrefix: 'tasks' })
+  const open = useOpenAgentRun()
+  return (
+    <>
+      <Button size="sm" variant="outline" disabled={open.isPending} onClick={() => open.mutate(runId)}>
+        {t('openWindow')}
+      </Button>
+      {open.isError && (
+        <p role="alert" className="basis-full text-xs text-destructive">
+          {errorMessage(open.error)}
+        </p>
+      )}
+    </>
+  )
+}
+
+function TaskNotice({
+  task,
+  panelOpen,
+  onConversation,
+}: {
+  task: AgentTaskView
+  panelOpen: boolean
+  onConversation: () => void
+}) {
+  const { t } = useTranslation('nav', { keyPrefix: 'tasks' })
+  const dismiss = useDismissAgentTask()
+  const client = useQueryClient()
+  const [minimized, setMinimized] = useState<string | null>(null)
 
   const running = task.status === 'running'
   const good = task.status === 'finished' && task.outcome === 'done'
@@ -76,8 +155,9 @@ function TaskNotice({ task }: { task: AgentTaskView }) {
     }
   }, [running, task.status, task.subject, title, t])
 
-  // El CV y la guía tienen su propio aviso («Tu CV está listo»), con el PDF a un clic.
-  const handedOver = good && WATCHED_ACTIONS[task.action as AgentAction] !== undefined
+  // El CV y la guía tienen su propio aviso («Tu CV está listo»), con el PDF a un clic. Con el panel
+  // abierto se queda: lo que pasó se sigue leyendo ahí.
+  const handedOver = good && WATCHED_ACTIONS[task.action as AgentAction] !== undefined && !panelOpen
   const { mutate: close } = dismiss
   useEffect(() => {
     if (handedOver) close(task.id)
@@ -92,6 +172,8 @@ function TaskNotice({ task }: { task: AgentTaskView }) {
     <WarningIcon className="size-4 shrink-0 text-warning-foreground" weight="fill" aria-hidden />
   )
   const counted = task.total > 0
+  const stepped = task.steps.length > 0
+  const step = stepText(t, task.steps)
 
   if (minimized === state) {
     return (
@@ -103,35 +185,28 @@ function TaskNotice({ task }: { task: AgentTaskView }) {
       >
         {icon}
         {title}
-        {running && counted && (
+        {running && (counted || step) && (
           <span className="tabular text-xs font-normal text-muted-foreground">
-            {task.done}/{task.total}
+            {counted ? `${task.done}/${task.total}` : step}
           </span>
         )}
       </button>
     )
   }
 
+  // Sin ventana, el aviso dice qué hace ahora: el paso o, sin pasos, la última herramienta.
+  const now = task.last_tool ? toolLabel(t, task.last_tool) : null
   let body: string
   if (running && task.stopping) body = t('stoppingBody')
-  else if (running) body = task.background ? t('runningBackground') : t('runningTerminal')
+  else if (running && task.background) body = (stepped ? step : now) ?? t('runningBackground')
+  else if (running) body = t('runningTerminal')
   else if (task.status === 'stale') body = t('stale')
   else if (good) body = counted ? t('doneCount', { count: task.done }) : t('doneBody')
   else body = t(`${ending}.body` as never)
 
-  // En segundo plano se puede detener; en una terminal, se para cerrando esa ventana.
-  const stoppable = running && task.run_id != null && !task.stopping
   const inTerminal = running && task.run_id == null
-  const keepGoing = () => {
-    setConfirming(false)
-    // El foco vuelve a «Detener», que reaparece al cerrar la confirmación.
-    requestAnimationFrame(() => stopButton.current?.focus())
-  }
-  const stop = () => {
-    if (task.run_id == null) return
-    cancel.mutate(task.run_id, { onSuccess: () => setConfirming(false) })
-  }
-
+  const conversation = task.run_id != null
+  const failedRun = task.run_id != null && task.status === 'finished' && (task.outcome === 'failed' || task.outcome === 'needs_user')
   const to = good ? resultLink(task) : null
   return (
     <div
@@ -149,49 +224,34 @@ function TaskNotice({ task }: { task: AgentTaskView }) {
             <p className="tabular mt-1.5 text-xs text-muted-foreground">{t('counts', { done: task.done, total: task.total })}</p>
           </>
         )}
-        {to && (
-          <div className="mt-2.5">
-            <Button asChild size="sm" variant="outline" onClick={() => dismiss.mutate(task.id)}>
-              <Link to={to}>{t('see')}</Link>
-            </Button>
+        {(running || good) && !counted && stepped && (
+          <div className="mt-2">
+            <StepBar steps={task.steps} />
           </div>
         )}
-        {stoppable && !confirming && (
-          <div className="mt-2.5">
-            <Button
-              ref={stopButton}
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                cancel.reset()
-                setConfirming(true)
-              }}
-            >
-              {t('stop')}
-            </Button>
-          </div>
+        {task.background && (running || task.status === 'finished') && (
+          <p className="mt-1.5 text-xs text-muted-foreground">
+            <Elapsed from={task.started_at} until={task.finished_at} />
+          </p>
         )}
-        {stoppable && confirming && (
-          <div role="group" aria-labelledby={confirmId} className="mt-2.5 space-y-2">
-            <p id={confirmId} className="text-xs">
-              {t('stopConfirm')}
-            </p>
-            {cancel.isError && (
-              <p role="alert" className="text-xs text-destructive">
-                {t('stopFailed')}
-              </p>
+        {(to || conversation || failedRun) && (
+          <div className="mt-2.5 flex flex-wrap gap-2">
+            {to && (
+              <Button asChild size="sm" variant="outline" onClick={() => dismiss.mutate(task.id)}>
+                <Link to={to}>{t('see')}</Link>
+              </Button>
             )}
-            <div className="flex gap-2">
-              <Button size="sm" variant="destructive" disabled={cancel.isPending} onClick={stop}>
-                {t('stopYes')}
+            {conversation && (
+              <Button size="sm" variant="outline" aria-expanded={panelOpen} onClick={onConversation}>
+                <ChatsCircleIcon />
+                {t('conversation')}
               </Button>
-              {/* El botón seguro recibe el foco al abrirse la confirmación. */}
-              <Button size="sm" variant="outline" autoFocus onClick={keepGoing}>
-                {t('stopNo')}
-              </Button>
-            </div>
+            )}
+            {failedRun && task.run_id != null && <OpenInWindow runId={task.run_id} />}
           </div>
         )}
+        {/* Con el panel abierto, «Detener» está en su cabecera. */}
+        {!panelOpen && <StopControl task={task} className="mt-2.5" />}
         {inTerminal && (
           <div className="mt-2.5 space-y-2">
             <p className="text-xs text-muted-foreground">{t('terminalStop')}</p>
@@ -216,15 +276,25 @@ function TaskNotice({ task }: { task: AgentTaskView }) {
 /**
  * «Leyendo ofertas…», «Generando el CV…» mientras tu agente trabaja en lo que lanzó un botón, en
  * cualquier página. Cambia cuando guarda el resultado o dice que no ha podido y se queda hasta que
- * lo cierras: puede acabar cuando no estás mirando. Cerrarlo no para al agente.
+ * lo cierras: puede acabar cuando no estás mirando. Cerrarlo no para al agente. Sin ventana (fase
+ * 48.1a), dice el paso en curso y abre el panel con la conversación.
  */
 export function AgentTaskNotices() {
   const tasks = useAgentTasks().data?.tasks ?? []
+  const [panelTask, setPanelTask] = useState<number | null>(null)
+  const shown = tasks.find((task) => task.id === panelTask && task.run_id != null)
+  const closePanel = useCallback(() => setPanelTask(null), [])
   return (
     <>
       {tasks.map((task) => (
-        <TaskNotice key={task.id} task={task} />
+        <TaskNotice
+          key={task.id}
+          task={task}
+          panelOpen={shown?.id === task.id}
+          onConversation={() => setPanelTask(shown?.id === task.id ? null : task.id)}
+        />
       ))}
+      {shown && <AgentRunPanel task={shown} onClose={closePanel} stop={<StopControl task={shown} />} />}
     </>
   )
 }

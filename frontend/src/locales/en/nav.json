@@ -116,7 +116,7 @@
   },
   "tasks": {
     "runningTerminal": "Still going in your agent's window. If it asks for permission, answer there.",
-    "runningBackground": "In the background: nothing for you to do.",
+    "runningBackground": "No window: progress is shown here.",
     "stale": "No news for 30 minutes. Check your agent's window or close this notice.",
     "doneBody": "You can see it now.",
     "doneCount_one": "{{count}} done.",
@@ -205,6 +205,79 @@
       "body": "You stopped it. What your agent had already saved stays."
     },
     "terminalStop": "To stop it, close your agent's window.",
-    "markDone": "Mark as finished"
+    "markDone": "Mark as finished",
+    "conversation": "View conversation",
+    "openWindow": "Open in a window",
+    "stepOf": "{{n}}/{{total}} · {{step}}",
+    "steps": {
+      "label": "Steps",
+      "job": "Job",
+      "profile": "Profile",
+      "read": "Read",
+      "write": "Write",
+      "pdf": "PDF",
+      "verify": "Verify",
+      "done": "Done",
+      "state": {
+        "done": "done",
+        "current": "in progress",
+        "pending": "pending"
+      }
+    },
+    "tools": {
+      "unknown": "Working",
+      "other": "Using {{tool}}",
+      "get_profile": "Reading the profile",
+      "get_context": "Reading the profile context",
+      "get_extraction": "Reading the job",
+      "get_match": "Reading the fit",
+      "get_cv_brief": "Reading the CV instructions",
+      "check_job_open": "Checking whether the job is still open",
+      "list_cv_templates": "Choosing the template",
+      "check_cv_fit": "Measuring the CV",
+      "save_cv_content": "Saving the CV and generating the PDF",
+      "get_cv_content": "Reading the CV",
+      "save_cv_verification": "Saving the verification",
+      "get_cv_correction": "Reading the requested corrections",
+      "get_cover_letter": "Reading the cover letter",
+      "save_cover_letter": "Saving the cover letter",
+      "save_cover_letter_verification": "Saving the cover letter verification",
+      "save_fit_assessment": "Saving the assessment",
+      "save_extraction": "Saving the job reading",
+      "list_jobs": "Looking up the jobs",
+      "get_job": "Reading the job text",
+      "get_status": "Checking the status",
+      "skill": "Following the {{detail}} skill",
+      "agent": "Subagent {{detail}}",
+      "read": "Reading {{detail}}",
+      "command_execution": "Terminal command",
+      "web_search": "Web search",
+      "file_change": "Editing files",
+      "collab_tool_call": "Subagent"
+    },
+    "panel": {
+      "conversation": "Conversation",
+      "noWindow": "no window",
+      "collapse": "Collapse to the notice",
+      "started": "The agent has started",
+      "bySubagent": "(subagent)",
+      "denied": "Not allowed in this action.",
+      "toolFailed": "It failed.",
+      "finished": "Finished",
+      "finishedWithError": "Finished with an error",
+      "error": "Error",
+      "loading": "Loading the conversation…",
+      "waiting": "Queued: the agent starts in a few seconds.",
+      "empty": "This run did not save its conversation.",
+      "status": {
+        "queued": "queued",
+        "running": "working",
+        "done": "finished",
+        "needs_user": "waiting for an answer",
+        "failed": "failed",
+        "cancelled": "stopped",
+        "timeout": "timed out"
+      }
+    }
   }
 }

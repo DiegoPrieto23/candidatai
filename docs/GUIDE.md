@@ -524,11 +524,19 @@ The worker runs the automatic sources every day at `connectors.daily_at`
 
 ## 11. The agent from the UI
 
-Many pages have buttons that open your agent with the instruction already written:
+Many pages have buttons that launch your agent with the instruction already written:
 
-- **In a separate window:** opens a window with your agent; you see and approve what it does. If
-  a button cannot open your agent, it shows the whole command in a box with **Copy** and says where
-  to paste it.
+- **No window, in the portal (the default):** if the action can run in the background with the
+  chosen agent (see below), the main button starts it without opening any window. The notice at
+  the bottom right says which step it is on ("3/6 · Write" in **Generate CV**) or which tool it is
+  using, and how long it has taken; **View conversation** opens a side panel with every tool your
+  agent uses and what it writes (on wide screens the page moves aside to make room for it). If it
+  fails, the notice offers **Open in a window**, which continues the same session. With **Open in a
+  window** turned on in the **Agent** page, the main button opens your agent's window again.
+- **In a separate window:** opens a window with your agent; you see and approve what it does. It
+  is what the main button does for actions that ask questions or use the browser or the web, and an
+  option in the menu for the rest. If a button cannot open your agent, it shows the whole command
+  in a box with **Copy** and says where to paste it.
 - **Notices of what your agent is doing:** what you launch with a button (reading and assessing
   jobs, reviewing replies, generating or correcting a CV, the cover letter, company research,
   preparing an interview…) shows up in a notice on every page, with what it has done so far, and
@@ -539,11 +547,13 @@ Many pages have buttons that open your agent with the instruction already writte
 - **Your agent asks you in the app:** if it needs to know something to write a CV, a cover letter
   or a guide, a notice lets you answer right there. You can also answer in its window. Permission
   requests and conversations (a mock interview, say) stay in its window.
-- **In the background** (Claude Code; OpenCode only for `process-jobs` and `assess-fit`): for skills that do not ask
-  questions (`process-jobs`, `assess-fit`, `generate-cv`, `correct-cv`, `verify-cv`,
-  `generate-cover-letter` and the English summary). It runs without a window, only with the app tools it needs, and a
-  notice tells you when it is done. If your agent cannot, the menu suggests one
-  that can. Requires `cai worker`.
+- **In the background** (Claude Code; OpenCode for `process-jobs`, `assess-fit`, **Assess this
+  job**, the English summary and the Assistant; Codex for the same except `process-jobs`. Neither
+  can do the CV or the cover letter: their roles read `docs/` and reading cannot be limited to that
+  folder): for skills that do not ask questions (`process-jobs`, `assess-fit`, `generate-cv`,
+  `correct-cv`, `verify-cv`, `generate-cover-letter` and the English summary). It runs without a
+  window, only with the app tools it needs, and the notice shows how it is going. If your agent
+  cannot, the menu suggests one that can. Requires `cai worker` (started by `cai start`).
   - **Cost:** the **Cost** section of the **Agent** page adds up tokens, time and, if the agent
     reports it, money, by action, agent and model (7 and 30 days), with how much each skill
     weighs; the job page shows what was spent on that job and **Results**, per sent application and

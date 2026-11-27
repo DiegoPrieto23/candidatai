@@ -243,32 +243,40 @@ def _save(run_id: int, **values: Any) -> bool:
     return _retry_locked(work)
 
 
-def _save_events(run_id: int, events: list[RunEvent], saved: int) -> int:
-    """Guarda los eventos de la conversación que aún no estaban (desde `saved`) y devuelve
-    cuántos hay guardados. Hasta `MAX_EVENTS`."""
-    fresh = events[saved:MAX_EVENTS]
-    if not fresh:
-        return saved
+FINAL_EVENTS = frozenset({"result", "error"})  # caben siempre: el panel dice cómo acabó
 
-    def work() -> None:
-        with session_scope() as session:
-            now = utcnow()
-            session.add_all(
-                AgentRunEvent(
-                    run_id=run_id,
-                    seq=saved + offset + 1,
-                    at=now,
-                    kind=event.kind,
-                    tool=event.tool,
-                    text=event.text,
-                    ok=event.ok,
-                    sub=event.sub,
-                )
-                for offset, event in enumerate(fresh)
+
+def _save_events(run_id: int, events: list[RunEvent], seen: int, stored: int) -> tuple[int, int]:
+    """Guarda los eventos de la conversación desde `seen` y devuelve hasta dónde se ha mirado y
+    cuántos hay guardados. Hasta `MAX_EVENTS`; los dos últimos huecos, solo para el resultado y
+    los errores."""
+    rows: list[AgentRunEvent] = []
+    now = utcnow()
+    for event in events[seen:]:
+        room = MAX_EVENTS if event.kind in FINAL_EVENTS else MAX_EVENTS - len(FINAL_EVENTS)
+        if stored >= room:
+            continue
+        stored += 1
+        rows.append(
+            AgentRunEvent(
+                run_id=run_id,
+                seq=stored,
+                at=now,
+                kind=event.kind,
+                tool=event.tool,
+                text=event.text,
+                ok=event.ok,
+                sub=event.sub,
             )
+        )
+    if rows:
 
-    _retry_locked(work)
-    return saved + len(fresh)
+        def work() -> None:
+            with session_scope() as session:
+                session.add_all(rows)
+
+        _retry_locked(work)
+    return len(events), stored
 
 
 def _mcp_prefix(agent: str) -> str | None:
@@ -313,7 +321,7 @@ def _execute(run: AgentRun, timeout: float | None, poll: float) -> AgentRunOutco
     progress: deque[dict[str, Any]] = deque(maxlen=policy.max_progress_lines)
     # La conversación: lo que da el lector de la salida más lo que dice el propio runner.
     events: list[RunEvent] = []
-    saved_events = 0
+    seen_events = stored_events = 0
 
     def note(kind: ProgressKind, text: str) -> None:
         progress.append({"at": utcnow().isoformat(), "kind": kind, "text": text})
@@ -327,7 +335,7 @@ def _execute(run: AgentRun, timeout: float | None, poll: float) -> AgentRunOutco
             if not told:
                 events.append(RunEvent("error", short(error, 500)))
         values = {"progress": list(progress), "finished_at": utcnow(), **values}
-        _save_events(run.id, events, saved_events)
+        _save_events(run.id, events, seen_events, stored_events)
         _save(run.id, status=status, error=error, **values)
         questions = len(values.get("questions") or [])
         return AgentRunOutcome(
@@ -397,7 +405,9 @@ def _execute(run: AgentRun, timeout: float | None, poll: float) -> AgentRunOutco
                 break
             if now >= next_flush:
                 next_flush = now + FLUSH_SECONDS
-                saved_events = _save_events(run.id, events, saved_events)
+                seen_events, stored_events = _save_events(
+                    run.id, events, seen_events, stored_events
+                )
                 if _save(run.id, progress=list(progress), session_id=state.session_id):
                     stop = "cancelled"
                     break

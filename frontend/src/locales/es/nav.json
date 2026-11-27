@@ -116,7 +116,7 @@
   },
   "tasks": {
     "runningTerminal": "Sigue en la ventana del agente. Si pide permiso, se contesta allí.",
-    "runningBackground": "En segundo plano: el agente avisa aquí al terminar.",
+    "runningBackground": "Sin ventana: el avance se ve aquí.",
     "stale": "Sin noticias desde hace 30 minutos. Conviene mirar la ventana del agente o cerrar este aviso.",
     "doneBody": "Ya se puede ver.",
     "doneCount_one": "{{count}} hecha.",
@@ -205,6 +205,79 @@
       "body": "Detenida a mano. Lo que el agente ya había guardado se queda."
     },
     "terminalStop": "Para pararla, se cierra la ventana del agente.",
-    "markDone": "Marcar como terminada"
+    "markDone": "Marcar como terminada",
+    "conversation": "Ver conversación",
+    "openWindow": "Abrir en una ventana",
+    "stepOf": "{{n}}/{{total}} · {{step}}",
+    "steps": {
+      "label": "Pasos",
+      "job": "Oferta",
+      "profile": "Perfil",
+      "read": "Lectura",
+      "write": "Redactar",
+      "pdf": "PDF",
+      "verify": "Verificar",
+      "done": "Listo",
+      "state": {
+        "done": "hecho",
+        "current": "en curso",
+        "pending": "pendiente"
+      }
+    },
+    "tools": {
+      "unknown": "Trabajando",
+      "other": "Usando {{tool}}",
+      "get_profile": "Leyendo el perfil",
+      "get_context": "Leyendo el contexto del perfil",
+      "get_extraction": "Leyendo la oferta",
+      "get_match": "Leyendo el encaje",
+      "get_cv_brief": "Leyendo las indicaciones del CV",
+      "check_job_open": "Comprobando si la oferta sigue abierta",
+      "list_cv_templates": "Eligiendo la plantilla",
+      "check_cv_fit": "Midiendo el CV",
+      "save_cv_content": "Guardando el CV y generando el PDF",
+      "get_cv_content": "Leyendo el CV",
+      "save_cv_verification": "Guardando la verificación",
+      "get_cv_correction": "Leyendo las correcciones pedidas",
+      "get_cover_letter": "Leyendo la carta",
+      "save_cover_letter": "Guardando la carta",
+      "save_cover_letter_verification": "Guardando la verificación de la carta",
+      "save_fit_assessment": "Guardando la valoración",
+      "save_extraction": "Guardando la lectura de la oferta",
+      "list_jobs": "Buscando las ofertas",
+      "get_job": "Leyendo el texto de la oferta",
+      "get_status": "Consultando el estado",
+      "skill": "Siguiendo el skill {{detail}}",
+      "agent": "Subagente {{detail}}",
+      "read": "Leyendo {{detail}}",
+      "command_execution": "Comando en la terminal",
+      "web_search": "Búsqueda web",
+      "file_change": "Editando ficheros",
+      "collab_tool_call": "Subagente"
+    },
+    "panel": {
+      "conversation": "Conversación",
+      "noWindow": "sin ventana",
+      "collapse": "Contraer al aviso",
+      "started": "El agente ha empezado",
+      "bySubagent": "(subagente)",
+      "denied": "No permitida en esta acción.",
+      "toolFailed": "Ha fallado.",
+      "finished": "Terminado",
+      "finishedWithError": "Terminado con un error",
+      "error": "Error",
+      "loading": "Cargando la conversación…",
+      "waiting": "En cola: el agente empieza en unos segundos.",
+      "empty": "Esta ejecución no guardó su conversación.",
+      "status": {
+        "queued": "en cola",
+        "running": "trabajando",
+        "done": "terminada",
+        "needs_user": "espera un dato",
+        "failed": "ha fallado",
+        "cancelled": "detenida",
+        "timeout": "tiempo agotado"
+      }
+    }
   }
 }

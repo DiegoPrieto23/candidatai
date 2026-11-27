@@ -9,8 +9,23 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 
 ## [Sin publicar]
 
+### Añadido
+
+- **La conversación con el agente, en el portal**: lo que se lanza sin ventana dice en el aviso de
+  abajo a la derecha en qué paso va («3/6 · Redactar» al generar el CV) o qué está haciendo, y el
+  tiempo que lleva. **Ver conversación** abre un panel lateral con cada herramienta que usa el
+  agente y lo que escribe; si falla, **Abrir en una ventana** retoma la misma sesión.
+- **«Abrir en una ventana»**, en la página «Agente», para quien prefiera que el botón principal abra
+  siempre la ventana del agente.
+
 ### Cambiado
 
+- **Los botones del agente ya no abren una ventana si no hace falta**: con Claude Code (y con
+  OpenCode o Codex en lo que pueden), «Generar CV», «Valorar esta oferta» y las demás acciones que
+  no preguntan van sin ventana y se siguen en el aviso. Las que preguntan o usan el navegador
+  siguen abriendo su ventana.
+- **Codex trabaja sin ventana en más acciones**: además del Asistente, «Valorar esta oferta», la
+  valoración de las ofertas por revisar y el resumen en inglés.
 - **Claude Code ya no pregunta si usar el servidor de CandidatAI** la primera vez que se abre en la
   carpeta: va aprobado en la configuración del proyecto. Sigue preguntando si confías en la carpeta.
 - **La terminal de `cai start` habla en español y en inglés a la vez**: cada mensaje sale en los dos

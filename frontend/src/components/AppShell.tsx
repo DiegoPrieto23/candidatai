@@ -137,7 +137,7 @@ export function AppShell() {
   const { pathname, state } = useLocation()
   useScrollToTop(pathname, state)
   return (
-    <div className="flex min-h-[100dvh]">
+    <div data-app-shell className="flex min-h-[100dvh]">
       <BrowserRemindersWatcher />
       <SkipLink />
       <Sidebar />
@@ -170,7 +170,7 @@ export function AppShell() {
       </div>
       {/* Abajo a la derecha, uno encima de otro: se ven al hacer scroll y no mueven la página. Sin pasar
           del alto de la ventana: con avisos encima, la ayuda encoge y su cabecera sigue a la vista. */}
-      <div className="pointer-events-none fixed right-4 bottom-4 z-40 flex max-h-[calc(100dvh-2rem)] flex-col items-end gap-2">
+      <div data-notice-dock className="pointer-events-none fixed right-4 bottom-4 z-40 flex max-h-[calc(100dvh-2rem)] flex-col items-end gap-2">
         <UserPrompts />
         <SearchRunNotice />
         <AgentTaskNotices />

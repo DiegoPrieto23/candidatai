@@ -287,7 +287,9 @@ targets:
       # `cai-run-<id>` deja solo las MCP de la acción (`enabled_tools`), sin terminal, web,
       # navegador ni plugins, en solo lectura y sin aprobaciones, y apaga los demás servidores MCP
       # de tu configuración. Los subagentes heredan ese techo. Comprobado con codex-cli 0.163.0.
-      # Por ahora solo el Asistente: las demás acciones leen texto de ofertas y Codex es de nivel B.
+      # Solo acciones que no leen el texto crudo de una oferta (Codex es de nivel B: fuera
+      # `process-jobs`). Las que delegan en `writer` o `verifier` (CV, carta) no caben: sus roles
+      # leen docs/ y el perfil de Codex no puede limitar la lectura a esa carpeta.
       headless:
         ceiling: config
         command: [codex, exec, --json, --skip-git-repo-check, -p, "cai-run-{run_id}", "{model}", "{prompt}"]
@@ -298,7 +300,7 @@ targets:
           home: ~/.codex
           agent: "cai-run-{run_id}"
         output: codex-json
-        actions: [assistant]
+        actions: [assistant, assess-fit, assess-fit-job, translate-summary]
     tools:                        # herramientas lógicas → nombres nativos (solo `mcp_prefix`)
       mcp_prefix: "mcp__candidatai__"
     # Codex no permite limitar herramientas por subagente: se aplica sandbox_mode del rol.

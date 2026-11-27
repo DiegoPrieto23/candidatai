@@ -27,6 +27,7 @@ from app.services import (
     agent_tasks,
     assess_threshold,
     assistant,
+    launch_window,
     local_models,
     search_runs,
     spend_tiers,
@@ -55,12 +56,16 @@ class Action(BaseModel):
     agent: Resolution
     alternatives: list[Resolution]
     background_agent: agent_launch.BackgroundInfo | None
+    # El botón principal la lanza sin ventana y se sigue en el portal: la acción y su agente pueden
+    # ir en segundo plano y no se ha elegido «Abrir en una ventana».
+    portal: bool = False
 
 
 class AgentStatus(agent_launch.AgentInfo):
     actions: list[Action]
     background: agent_launch.BackgroundInfo
     no_agent_installed: bool  # ninguno en el `PATH` (en Docker, siempre `false`)
+    open_in_window: bool = False  # «Abrir en una ventana» (`launch_window`)
 
 
 class RequestBody(BaseModel):
@@ -104,6 +109,7 @@ def get_agent_launcher(session: SessionDep) -> AgentStatus:
     agente de cada una según tus preferencias (fase 24.4)."""
     ctx = agent_launch.Context(session)
     lang = ui_language.current(session)
+    in_window = launch_window.get(session).open_in_window
     actions = []
     for action_id, spec in agent_launch.ACTIONS.items():
         if spec.hidden:
@@ -138,6 +144,7 @@ def get_agent_launcher(session: SessionDep) -> AgentStatus:
                     for name in others
                 ],
                 background_agent=background,
+                portal=background is not None and background.available and not in_window,
             )
         )
     return AgentStatus(
@@ -145,7 +152,21 @@ def get_agent_launcher(session: SessionDep) -> AgentStatus:
         actions=actions,
         background=agent_launch.background_info(session),
         no_agent_installed=agent_launch.no_agent_installed(),
+        open_in_window=in_window,
     )
+
+
+@router.put(
+    "/window-preference",
+    operation_id="save_window_preference",
+    dependencies=[Depends(require_ui)],
+)
+def save_window_preference(
+    session: SessionDep, body: launch_window.WindowPreference
+) -> launch_window.WindowPreference:
+    """«Abrir en una ventana»: el botón principal abre el agente en una ventana en vez de seguirlo
+    en el portal."""
+    return launch_window.save(session, body)
 
 
 @router.get("/agents", operation_id="list_agents")

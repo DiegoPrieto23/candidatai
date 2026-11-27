@@ -87,6 +87,11 @@
     "terminal": "No cuenta lo que se hace en una terminal: ahí el agente no devuelve su uso."
   },
   "semantic": "Comparación por significado",
+  "window": {
+    "title": "Abrir en una ventana",
+    "off": "Desactivado: lo que el agente puede hacer sin ventana (generar el CV, valorar una oferta…) se sigue en el aviso de abajo a la derecha, con su conversación. Lo demás se abre en su ventana.",
+    "on": "Activado: el botón principal abre siempre el agente en su ventana. Desde el menú del botón se puede lanzar sin ventana solo esa vez."
+  },
   "summary": {
     "ready": "Agente: {{agent}}, listo",
     "readyHint": "Los botones con el robot de toda la app lo abren en una ventana aparte con la orden ya escrita: ahí se ve lo que hace y se aprueba.",

@@ -14076,6 +14076,118 @@
         }
       }
     },
+    "/agent/window-preference": {
+      "put": {
+        "tags": [
+          "agent"
+        ],
+        "summary": "Save Window Preference",
+        "description": "«Abrir en una ventana»: el botón principal abre el agente en una ventana en vez de seguirlo\nen el portal.",
+        "operationId": "save_window_preference",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WindowPreference"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WindowPreference"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/agent/agents": {
       "get": {
         "tags": [
@@ -24379,6 +24491,11 @@
                 "type": "null"
               }
             ]
+          },
+          "portal": {
+            "type": "boolean",
+            "title": "Portal",
+            "default": false
           }
         },
         "type": "object",
@@ -25743,6 +25860,11 @@
           "no_agent_installed": {
             "type": "boolean",
             "title": "No Agent Installed"
+          },
+          "open_in_window": {
+            "type": "boolean",
+            "title": "Open In Window",
+            "default": false
           }
         },
         "type": "object",
@@ -43800,6 +43922,20 @@
           "week_start"
         ],
         "title": "WeekFunnel"
+      },
+      "WindowPreference": {
+        "properties": {
+          "open_in_window": {
+            "type": "boolean",
+            "title": "Open In Window"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "open_in_window"
+        ],
+        "title": "WindowPreference"
       }
     }
   }

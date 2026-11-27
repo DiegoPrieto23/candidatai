@@ -2325,6 +2325,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/agent/window-preference": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Save Window Preference
+         * @description «Abrir en una ventana»: el botón principal abre el agente en una ventana en vez de seguirlo
+         *     en el portal.
+         */
+        put: operations["save_window_preference"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/agent/agents": {
         parameters: {
             query?: never;
@@ -3951,6 +3972,11 @@ export interface components {
             /** Alternatives */
             alternatives: components["schemas"]["Resolution"][];
             background_agent: components["schemas"]["BackgroundInfo"] | null;
+            /**
+             * Portal
+             * @default false
+             */
+            portal: boolean;
         };
         /** ActionPref */
         ActionPref: {
@@ -4399,6 +4425,11 @@ export interface components {
             background: components["schemas"]["BackgroundInfo"];
             /** No Agent Installed */
             no_agent_installed: boolean;
+            /**
+             * Open In Window
+             * @default false
+             */
+            open_in_window: boolean;
         };
         /** AgentTaskList */
         AgentTaskList: {
@@ -10498,6 +10529,11 @@ export interface components {
              * Format: date
              */
             week_start: string;
+        };
+        /** WindowPreference */
+        WindowPreference: {
+            /** Open In Window */
+            open_in_window: boolean;
         };
     };
     responses: never;
@@ -21965,6 +22001,102 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AgentStatus"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    save_window_preference: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WindowPreference"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WindowPreference"];
                 };
             };
             /** @description Unauthorized */

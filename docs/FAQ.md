@@ -70,13 +70,13 @@ Where: “Agent”.
 
 ### What happens when I press an agent button?
 
-Your agent opens with the instruction already written. The arrow on the button lets you choose: in a separate window, which opens behind your browser (on the taskbar) and where you see and approve what it does; in the background, with no window; or leave it for your next session.
+Your agent starts working with the instruction already written. If the action does not need to ask anything (generating the CV, assessing a job…), it runs with no window and you follow it in the notice at the bottom right; the rest open your agent in a separate window, behind your browser (on the taskbar), where you see and approve what it does. The arrow on the button lets you choose: in a separate window, in the background or leave it for your next session. With “Open in a window”, on the “Agent” page, the main button always opens the window.
 
 Where: “Agent”.
 
 ### Where do I see what my agent is doing?
 
-In the notice at the bottom right, which appears on every page with what it has done so far and changes when it finishes. The “Agent” page keeps the detail of each run and its usage.
+In the notice at the bottom right, which appears on every page with what it has done so far (the current step and the time, if it runs with no window) and changes when it finishes. “View conversation” opens a side panel with every tool your agent uses and what it writes.
 
 Where: “Agent”.
 

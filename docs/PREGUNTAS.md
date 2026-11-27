@@ -70,13 +70,13 @@ Dónde: «Agente».
 
 ### ¿Qué pasa al pulsar un botón del agente?
 
-Se abre el agente con la orden ya escrita. La flecha del botón ofrece elegir: en una ventana aparte, que se abre detrás del navegador (en la barra de tareas) y donde se ve y se aprueba lo que hace; en segundo plano, sin ventana; o dejarlo para la próxima sesión.
+El agente se pone a trabajar con la orden ya escrita. Si la acción no necesita preguntar (generar el CV, valorar una oferta…), va sin ventana y se sigue en el aviso de abajo a la derecha; las demás abren el agente en una ventana aparte, detrás del navegador (en la barra de tareas), donde se ve y se aprueba lo que hace. La flecha del botón ofrece elegir: en una ventana aparte, en segundo plano o dejarlo para la próxima sesión. Con «Abrir en una ventana», en la página «Agente», el botón principal abre siempre la ventana.
 
 Dónde: «Agente».
 
 ### ¿Dónde se ve lo que está haciendo el agente?
 
-En el aviso de abajo a la derecha, que sale en cualquier página con lo que lleva hecho y cambia cuando termina. La página «Agente» guarda el detalle de cada ejecución y su uso.
+En el aviso de abajo a la derecha, que sale en cualquier página con lo que lleva hecho (el paso en curso y el tiempo, si va sin ventana) y cambia cuando termina. «Ver conversación» abre un panel lateral con cada herramienta que usa el agente y lo que escribe.
 
 Dónde: «Agente».
 
