@@ -57,7 +57,8 @@ SUPERVISOR_PID_ENV = "CAI_SUPERVISOR_PID"
 EXIT_FOR_UPDATE = 75
 
 
-# Lo que se ve en la terminal, en español o en inglés (`console_language`).
+# Lo que se ve en la terminal: cada mensaje en los dos idiomas, primero en el del portal
+# (`console_language`). Quien la mire puede no haber elegido aún el idioma.
 Lang = Literal["es", "en"]
 MESSAGES: dict[str, dict[Lang, str]] = {
     "already_running": {
@@ -149,7 +150,11 @@ def _system_language() -> Lang:
 
 
 def message(key: str, **values: Any) -> str:
-    return MESSAGES[key][console_language()].format(**values)
+    """El mensaje en los dos idiomas, una línea (o párrafo) cada uno, el del portal delante."""
+    first = console_language()
+    second: Lang = "en" if first == "es" else "es"
+    texts = MESSAGES[key]
+    return "\n".join(texts[lang].format(**values) for lang in (first, second))
 
 
 class LaunchError(RuntimeError):

@@ -199,7 +199,6 @@ def test_get_lists_agent_and_actions(client: TestClient, opened: list[tuple[str,
     actions = {a["id"]: a for a in body["actions"]}
     assert set(actions) == {
         "search-jobs",
-        "review-expired",
         "process-jobs",
         "assess-fit-job",
         "generate-cv",

@@ -3,7 +3,6 @@ import { ArrowSquareOutIcon, ArrowsClockwiseIcon, CaretDownIcon, LinkBreakIcon, 
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { useCheckOpenJobs, useClosureSuspects, useJobEvent } from '@/api/queries'
-import { AgentButton } from '@/components/AgentButton'
 import { BusyLabel } from '@/components/StableLabel'
 import { Button } from '@/components/ui/button'
 import { errorMessage } from '@/lib/errors'
@@ -15,9 +14,8 @@ const WATCH_MS = 3 * 60 * 1000
 
 /**
  * En la Bandeja: las ofertas abiertas antes de enviar que pueden estar cerradas o caducadas (las
- * marca la comprobación diaria, la antigüedad o el agente). Nunca se cierran solas: se descartan
- * todas de una vez o se abren una a una. Además, «Comprobar ahora» (el worker) y «Revisar ofertas
- * caducadas» (el agente, en el navegador del usuario, para las aprobadas y con CV).
+ * marca la comprobación diaria o la antigüedad). Nunca se cierran solas: se descartan todas de
+ * una vez o se abren una a una. Además, «Comprobar ahora» (el worker).
  */
 export function ClosureBanner() {
   const { t } = useTranslation('signals', { keyPrefix: 'closureBanner' })
@@ -71,7 +69,6 @@ export function ClosureBanner() {
           </h2>
           <p className={cn('mt-0.5 text-xs', count > 0 ? 'opacity-80' : 'text-muted-foreground')}>
             {t('intro')}
-            {data.unverified_important > 0 && ` ${t('unverified', { count: data.unverified_important })}`}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -85,7 +82,6 @@ export function ClosureBanner() {
             <ArrowsClockwiseIcon className={cn(check.isPending && 'animate-spin')} />
             <BusyLabel busy={check.isPending} busyText={t('checking')} text={t('checkNow')} />
           </Button>
-          <AgentButton action="review-expired">{t('review')}</AgentButton>
         </div>
       </div>
 

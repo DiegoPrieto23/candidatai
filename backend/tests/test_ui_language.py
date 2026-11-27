@@ -139,4 +139,5 @@ def test_cai_start_console_uses_the_saved_language(
     assert launcher.console_language() == "es"  # sin guardar: `CAI_LANG`
     _save("en")
     assert launcher.console_language() == "en"
-    assert launcher.message("closing") == "Closing CandidatAI…"
+    # Los dos idiomas, el guardado primero.
+    assert launcher.message("closing") == "Closing CandidatAI…\nCerrando CandidatAI…"

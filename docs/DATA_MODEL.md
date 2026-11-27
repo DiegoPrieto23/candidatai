@@ -727,7 +727,7 @@ Observaciones del código sobre la oferta que **no** son riesgo de inyección (m
 
 | Clave | Contenido | Quién |
 |---|---|---|
-| `possibly_closed` | `since`, `checked_at`, `reason` (`http_404`, `http_410`, `redirected`, `closed_text`, `expired_date`, `ats_missing`, `stale`: más de `liveness.stale_after_days` publicada; `agent_browser`: lo vio el agente con `save_open_check`), `detail`, `http_status?` | La comprobación «¿sigue abierta?» (`services/liveness.py`). Se borra si una comprobación posterior dice `open`; `unknown` la deja como estaba |
+| `possibly_closed` | `since`, `checked_at`, `reason` (`http_404`, `http_410`, `redirected`, `closed_text`, `expired_date`, `ats_missing`, `stale`: más de `liveness.stale_after_days` publicada), `detail`, `http_status?` | La comprobación «¿sigue abierta?» (`services/liveness.py`). Se borra si una comprobación posterior dice `open`; `unknown` la deja como estaba |
 | `liveness` | `checked_at`, `status` (`open`, `possibly_closed`, `unknown`, `skipped`), `reason?`, `detail`, `http_status?` | Última comprobación, sea cual sea |
 | `open_confirmed` | `at`, `reason?` | «Sigue abierta» en la UI: ese mismo motivo ya no vuelve a avisar, hasta que una comprobación dé `open` (entonces se borra) |
 | `reposted` | `count` (días distintos con publicación nueva), `dates[]`, `channel`, `window_days` | `services/reposts.py`, en todas las ofertas del grupo (misma empresa, título normalizado y ubicación). Se recalcula al ver una publicación nueva; no caduca sola |

@@ -36,7 +36,6 @@ ActionId = Literal[
     "research-company",
     "handle-requests",
     "review-search",
-    "review-expired",
     "expand",
     "create-profile",
     "import-profile-from-cv",
@@ -378,13 +377,6 @@ ACTIONS: dict[ActionId, Action] = {
         "Usa el skill review-search de CandidatAI para hacer la retrospectiva de mi búsqueda: "
         "qué funciona y qué cambiar.",
     ),
-    # Bandeja: el agente abre en el navegador del usuario las aprobadas y con CV que el código no
-    # puede comprobar (la página bloquea la petición) y guarda lo que ve. Nunca cierra ninguna.
-    "review-expired": Action(
-        "Revisar ofertas caducadas",
-        "Usa el skill review-expired de CandidatAI para comprobar en mi navegador si mis "
-        "ofertas aprobadas y con CV siguen abiertas.",
-    ),
     "draft-follow-up": Action(
         "Redactar seguimiento",
         "Usa el skill draft-follow-up de CandidatAI para la oferta {job_id}.",
@@ -580,11 +572,6 @@ ENGLISH: dict[ActionId, tuple[str, str]] = {
         "Review my search",
         "Use the CandidatAI review-search skill to run the retrospective of my search: what works "
         "and what to change.",
-    ),
-    "review-expired": (
-        "Review expired jobs",
-        "Use the CandidatAI review-expired skill to check in my browser whether my approved jobs "
-        "and the ones with a CV are still open.",
     ),
     "draft-follow-up": (
         "Draft follow-up",

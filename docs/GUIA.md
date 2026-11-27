@@ -582,7 +582,7 @@ clic. «Deshacer el último» deja las preferencias como estaban.
   `CAI_IMAP_FOLDER`, `CAI_IMAP_REPLIES_FOLDER`), `CAI_BROWSER_CHANNEL` (`chrome` o `msedge` para la
   candidatura asistida), `CAI_EMBEDDINGS=off`, `CAI_UPDATE_CHECK=off` (no pregunta a GitHub si hay
   una versión nueva), `UV_PATH` (uv fuera del PATH), `CAI_LANG` (`es` o
-  `en`: idioma de los mensajes de `cai start` en la terminal y de las órdenes al agente mientras no
+  `en`: idioma que va primero en los mensajes de `cai start` en la terminal, que salen en los dos, y de las órdenes al agente mientras no
   se elija idioma en el portal; sin ella, el del sistema). Nada es obligatorio. Las contraseñas y
   claves (`CAI_IMAP_PASSWORD`, `CAI_ADZUNA_APP_KEY`, `CAI_INFOJOBS_CLIENT_SECRET`) mejor en el
   llavero del sistema: si están en `.env`, la app ofrece moverlas allí.

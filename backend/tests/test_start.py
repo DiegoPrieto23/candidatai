@@ -387,15 +387,18 @@ def test_start_when_already_running_just_opens_the_browser(
 def test_start_speaks_the_system_language_or_cai_lang(
     ui_dir: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Los mensajes de la terminal, en español con el sistema en español y en inglés con cualquier
-    otro; `CAI_LANG` manda sobre el sistema."""
+    """Los mensajes de la terminal salen en los dos idiomas: primero en español con el sistema en
+    español y en inglés con cualquier otro; `CAI_LANG` manda sobre el sistema."""
     monkeypatch.setattr(launcher, "probe", lambda _port: "candidatai")
 
     def first_line() -> str:
         get_settings.cache_clear()
         lines: list[str] = []
         launcher.start(get_settings(), 8000, say=lines.append, browser=lambda _url: None)
-        return lines[0]
+        first, second = lines[0].split("\n")
+        both = {"ya está en marcha", "is already running"}
+        assert {phrase for phrase in both if phrase in first + second} == both
+        return first
 
     monkeypatch.delenv("CAI_LANG")
     for system, expected in (

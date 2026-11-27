@@ -21,7 +21,7 @@ describe('Ofertas que pueden estar cerradas (Bandeja)', () => {
     const calls = mockApi({
       'GET /status': status(),
       'GET /jobs': JOBS,
-      'GET /jobs/closure-suspects': { items: [SUSPECT, OTHER], unverified_important: 1 },
+      'GET /jobs/closure-suspects': { items: [SUSPECT, OTHER] },
       'POST /jobs/check-open': { stale: 2, queued: 5, message: '' },
       'POST /jobs/7/events': { event_id: 1, stage: 'closed' },
       'POST /jobs/8/events': { event_id: 2, stage: 'closed' },
@@ -29,8 +29,7 @@ describe('Ofertas que pueden estar cerradas (Bandeja)', () => {
     renderApp('/bandeja')
     const banner = await screen.findByRole('region', { name: 'Ofertas que pueden estar cerradas' })
     expect(within(banner).getByText('2 ofertas pueden estar cerradas o caducadas')).toBeInTheDocument()
-    expect(within(banner).getByText(/Hay una aprobada o con CV/)).toBeInTheDocument()
-    expect(within(banner).getByRole('button', { name: /Revisar ofertas caducadas/ })).toBeInTheDocument()
+    expect(within(banner).queryByRole('button', { name: /Revisar ofertas caducadas/ })).not.toBeInTheDocument()
 
     await userEvent.click(within(banner).getByRole('button', { name: 'Ver las 2' }))
     expect(within(banner).getByRole('link', { name: 'Data Engineer' })).toHaveAttribute('href', '/jobs/7')
@@ -51,7 +50,7 @@ describe('Ofertas que pueden estar cerradas (Bandeja)', () => {
     mockApi({
       'GET /status': status(),
       'GET /jobs': JOBS,
-      'GET /jobs/closure-suspects': { items: [], unverified_important: 0 },
+      'GET /jobs/closure-suspects': { items: [] },
     })
     renderApp('/bandeja')
     const banner = await screen.findByRole('region', { name: 'Ofertas que pueden estar cerradas' })

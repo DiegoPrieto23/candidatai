@@ -46,7 +46,6 @@ from app.services.ingest import LinkedInUrlError, PageUnavailableError
 from app.services.ingestion.browse import BrowsingNotAllowedError, PriorityConflictError
 from app.services.ingestion.service import SourceExistsError, SourceNotFoundError
 from app.services.interviews import InterviewNotAllowedError
-from app.services.liveness import StageNotAllowedError
 from app.services.mail_sources import (
     MailSourceExistsError,
     MailSourceNotAllowedError,
@@ -122,7 +121,6 @@ _ERROR_TYPES: tuple[tuple[type[Exception], str], ...] = (
     (InvalidTransitionError, "invalid_transition"),
     (LinkedInUrlError, "linkedin_url"),
     (PageUnavailableError, "page_unavailable"),
-    (StageNotAllowedError, "not_allowed"),
     # IngestError, InvalidQueryError, UnknownEventTypeError, ReservedEventError…
     (ValueError, "invalid_request"),
 )

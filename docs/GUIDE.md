@@ -584,7 +584,7 @@ one” puts your preferences back as they were.
   `CAI_BROWSER_CHANNEL` (`chrome` or `msedge` for assisted
   applications), `CAI_EMBEDDINGS=off`, `CAI_UPDATE_CHECK=off` (does not ask GitHub whether a new
   version is out), `UV_PATH` (uv outside the PATH), `CAI_LANG` (`es` or
-  `en`: language of the `cai start` messages in the terminal and of the orders to your agent until
+  `en`: language shown first in the `cai start` messages in the terminal, which appear in both, and of the orders to your agent until
   you choose a language in the portal; without it, your system's). Nothing
   is required. Passwords and keys (`CAI_IMAP_PASSWORD`, `CAI_ADZUNA_APP_KEY`,
   `CAI_INFOJOBS_CLIENT_SECRET`) are better kept in the system keychain: if you put them in `.env`,

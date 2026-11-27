@@ -20,7 +20,7 @@ import re
 import socket
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any, Literal
+from typing import Any
 from urllib.parse import parse_qs, urlsplit
 
 import httpx
@@ -53,8 +53,6 @@ _API_KINDS = frozenset({"greenhouse", "lever", "ashby"})
 # Etapas que el worker revisa cada día: las abiertas antes de enviar que ya tienen la oferta entera
 # (las `pending_detail` son resúmenes de alertas, casi siempre de LinkedIn, que no se comprueba).
 DAILY_STAGES = (Stage.PENDING_EXTRACTION, Stage.PENDING_TRIAGE, Stage.APPROVED, Stage.CV_READY)
-# Las que importan más: van camino de un CV o de enviarse. Las revisa el agente en su navegador.
-IMPORTANT_STAGES = (Stage.APPROVED, Stage.CV_READY)
 # Antes de enviar: donde tiene sentido avisar de un cierre y proponer descartar.
 BEFORE_SENDING = (
     Stage.PENDING_DETAIL,
@@ -687,47 +685,6 @@ def flag_stale(session: Session, now: datetime | None = None) -> list[int]:
     return flagged
 
 
-# --- Comprobación del agente en el navegador del usuario ----------------------------------------
-
-
-AgentCheckStatus = Literal["open", "possibly_closed", "unknown"]
-
-
-class StageNotAllowedError(ValueError):
-    """La oferta no está abierta antes de enviar."""
-
-
-def save_agent_check(
-    session: Session,
-    job_id: int,
-    status: AgentCheckStatus,
-    detail: str,
-    now: datetime | None = None,
-) -> LivenessView:
-    """Guarda lo que vio el agente al abrir la oferta en el navegador del usuario (skill
-    `review-expired`). Igual que la comprobación del código: `open` quita el aviso,
-    `possibly_closed` avisa (motivo `agent_browser`) y `unknown` no cambia el aviso. Nunca
-    cierra la oferta."""
-    now = now or utcnow()
-    job = session.get(Job, job_id)
-    if job is None:
-        raise JobNotFoundError(f"No existe la oferta {job_id}.")
-    stage = _stage(session, job_id)
-    if stage is None or stage not in BEFORE_SENDING:
-        where = stage.value if stage else "sin etapa"
-        raise StageNotAllowedError(
-            f"Solo se guarda en ofertas abiertas antes de enviar la candidatura (esta: {where})."
-        )
-    text = " ".join(detail.split())[:300] or "comprobada en el navegador"
-    result = LivenessResult(
-        status=status,
-        reason="agent_browser" if status == "possibly_closed" else None,
-        detail=f"{text} (lo vio el agente en el navegador)",
-    )
-    apply_result(session, job, result, now)
-    return _view(job, cached=False)
-
-
 # --- Lista para la Bandeja ---------------------------------------------------------------------
 
 
@@ -744,9 +701,6 @@ class ClosureSuspect(BaseModel):
 
 class ClosureSuspects(BaseModel):
     items: list[ClosureSuspect]
-    # Aprobadas o con CV listo sin una comprobación que diga algo (bloqueo, LinkedIn, sin
-    # comprobar): las que vale la pena que el agente abra en el navegador del usuario.
-    unverified_important: int
 
 
 def closure_suspects(session: Session) -> ClosureSuspects:
@@ -760,7 +714,6 @@ def closure_suspects(session: Session) -> ClosureSuspects:
         .order_by(Job.id)
     )
     items: list[ClosureSuspect] = []
-    unverified = 0
     for job, stage_value, company in rows:
         stage = Stage(stage_value)
         signals = read(job)
@@ -778,12 +731,8 @@ def closure_suspects(session: Session) -> ClosureSuspects:
                     since=closed.since,
                 )
             )
-        elif stage in IMPORTANT_STAGES and (
-            signals.liveness is None or signals.liveness.status in ("unknown", "skipped")
-        ):
-            unverified += 1
     items.sort(key=lambda item: item.since)
-    return ClosureSuspects(items=items, unverified_important=unverified)
+    return ClosureSuspects(items=items)
 
 
 class RefreshResult(BaseModel):

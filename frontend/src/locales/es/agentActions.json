@@ -31,6 +31,5 @@
   "translate-summary": "Traduce al inglés el resumen en español del perfil, sin añadir nada. La propuesta aparece junto al campo para usarla, editarla o descartarla antes de guardar.",
   "propose-stories": "Propone historias para entrevistas (situación, tarea, acción, resultado) a partir de la experiencia y los logros. Las añade al perfil solo con confirmación.",
   "import-cv-template": "Convierte este CV subido en una plantilla con el mismo diseño para los próximos CVs. Permite comparar el resultado antes de guardarla.",
-  "assistant": "Atiende lo escrito en el «Asistente» del portal y deja la respuesta en ese panel.",
-  "review-expired": "Abre en el navegador las ofertas aprobadas y con CV que la app no puede comprobar sola (Glassdoor, páginas que bloquean) y marca las que ya no aceptan candidaturas. No cierra ninguna."
+  "assistant": "Atiende lo escrito en el «Asistente» del portal y deja la respuesta en ese panel."
 }
