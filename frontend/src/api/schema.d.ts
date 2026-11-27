@@ -2296,6 +2296,8 @@ export interface paths {
         /**
          * Answer Prompt
          * @description «Ya está» o «Saltar». En una candidatura asistida, «Ya está» vuelve a rellenar la página.
+         *     Solo desde la UI (fase 48.1b): ninguna otra web puede contestar un permiso. Que no lo conteste
+         *     el propio agente lo garantiza su techo sin ventana: no tiene terminal ni web.
          */
         post: operations["answer_prompt"];
         delete?: never;
@@ -2320,6 +2322,46 @@ export interface paths {
         put?: never;
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/agent/permission-rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Permission Rules
+         * @description Lo permitido «siempre en este proyecto» desde el portal (fase 48.1b).
+         */
+        get: operations["list_permission_rules"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/agent/permission-rules/{rule_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete Permission Rule
+         * @description Quita un «permitir siempre»: la próxima vez se vuelve a preguntar.
+         */
+        delete: operations["delete_permission_rule"];
         options?: never;
         head?: never;
         patch?: never;
@@ -4350,6 +4392,11 @@ export interface components {
             events: components["schemas"]["AgentRunEventView"][];
             /** Last Seq */
             last_seq: number;
+            /**
+             * Prompts
+             * @default []
+             */
+            prompts: components["schemas"]["PromptView"][];
         };
         /** AgentRunList */
         AgentRunList: {
@@ -4485,6 +4532,11 @@ export interface components {
             last_tool?: string | null;
             /** Agent */
             agent?: string | null;
+            /**
+             * Asks Permissions
+             * @default false
+             */
+            asks_permissions: boolean;
             /**
              * Started At
              * Format: date-time
@@ -8283,6 +8335,25 @@ export interface components {
             /** Waiting Seconds */
             waiting_seconds: number;
         };
+        /** PermissionRuleView */
+        PermissionRuleView: {
+            /** Id */
+            id: number;
+            /** Tool */
+            tool: string;
+            /** Detail */
+            detail: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** PermissionRules */
+        PermissionRules: {
+            /** Rules */
+            rules: components["schemas"]["PermissionRuleView"][];
+        };
         /**
          * PhotoCrop
          * @description El recuadro elegido, en porcentaje de la original (como lo da el editor del navegador).
@@ -8525,7 +8596,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "captcha" | "anti_bot" | "login_required" | "question";
+            kind: "captcha" | "anti_bot" | "login_required" | "question" | "permission";
             /** Title */
             title: string;
             /** Message */
@@ -8566,6 +8637,10 @@ export interface components {
             answer?: string | null;
             /** Job Id */
             job_id?: number | null;
+            /** Run Id */
+            run_id?: number | null;
+            /** Tool */
+            tool?: string | null;
         };
         /** QueuedResult */
         QueuedResult: {
@@ -22001,6 +22076,192 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AgentStatus"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_permission_rules: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PermissionRules"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_permission_rule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                rule_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PermissionRules"];
                 };
             };
             /** @description Unauthorized */

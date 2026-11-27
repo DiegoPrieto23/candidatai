@@ -22,6 +22,7 @@ function task(overrides: Partial<AgentTaskView> = {}): AgentTaskView {
     steps: [],
     last_tool: null,
     agent: null,
+    asks_permissions: false,
     started_at: '2026-11-03T10:00:00Z',
     finished_at: null,
     ...overrides,
@@ -255,6 +256,112 @@ describe('Avisos de lo que lanzan los botones', () => {
       const panel = await screen.findByRole('complementary', { name: 'CV verificado' })
       expect(within(panel).getByText('Terminado')).toBeInTheDocument()
       expect(within(panel).getByRole('link', { name: 'Ver' })).toHaveAttribute('href', '/jobs/7')
+    })
+
+    describe('Preguntas y permisos en el panel (fase 48.1b)', () => {
+      const prompt = (overrides: Record<string, unknown>) => ({
+        id: 5,
+        kind: 'permission',
+        title: 'Tu agente pide permiso',
+        message: 'mkdir -p tmp/x',
+        url: null,
+        source_id: null,
+        source_name: null,
+        attempt_id: null,
+        status: 'pending',
+        created_at: '2026-11-03T10:00:30Z',
+        expires_at: '2026-11-03T10:05:30Z',
+        answered_at: null,
+        seconds_left: 240,
+        options: ['once', 'always', 'deny'],
+        answer: null,
+        job_id: 7,
+        run_id: 11,
+        tool: 'Bash',
+        ...overrides,
+      })
+
+      it('el aviso se pone ámbar con «Responder» y el permiso se concede desde el panel', async () => {
+        const permission = prompt({})
+        const conv = { ...conversation(), prompts: [permission] }
+        const calls = mockApi(
+          routes([cv({ asks_permissions: true })], {
+            'GET /prompts/pending': { prompts: [permission] },
+            'GET /agent/runs/11/events': conv,
+            'GET /agent/agents': { agents: [] },
+            'POST /prompts/5/answer': { ...permission, status: 'done', answer: 'once' },
+          }),
+        )
+        renderApp('/como-funciona')
+        expect(await screen.findByText('El agente pide permiso para seguir.')).toBeInTheDocument()
+        // El pop-up de avisos no lo repite: se contesta en el panel.
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+        await userEvent.click(screen.getByRole('button', { name: 'Responder' }))
+        const card = await screen.findByRole('listitem', { name: 'Permiso' })
+        expect(within(card).getByText('Quiere usar Bash:')).toBeInTheDocument()
+        expect(within(card).getByText('mkdir -p tmp/x')).toBeInTheDocument()
+        expect(within(card).getByText(/Se deniega solo en 4:00/)).toBeInTheDocument()
+        expect(within(card).getByRole('button', { name: 'Permitir siempre en este proyecto' })).toBeInTheDocument()
+        expect(screen.queryByText(/no pide permisos al portal/)).not.toBeInTheDocument()
+        await userEvent.click(within(card).getByRole('button', { name: 'Permitir una vez' }))
+        await waitFor(() =>
+          expect(calls.find((c) => c.path === '/prompts/5/answer')?.body).toEqual({ outcome: 'done', answer: 'once' }),
+        )
+      })
+
+      it('una pregunta se contesta en su tarjeta, con opciones o escrita', async () => {
+        const question = prompt({ kind: 'question', title: 'Tu agente te pregunta', message: '¿Con foto?', options: ['Sí', 'No'], tool: null })
+        const calls = mockApi(
+          routes([cv()], {
+            'GET /prompts/pending': { prompts: [question] },
+            'GET /agent/runs/11/events': { ...conversation(), prompts: [question] },
+            'GET /agent/agents': { agents: [] },
+            'POST /prompts/5/answer': { ...question, status: 'done', answer: 'Sí' },
+          }),
+        )
+        renderApp('/como-funciona')
+        expect(await screen.findByText('El agente espera una respuesta.')).toBeInTheDocument()
+        await userEvent.click(screen.getByRole('button', { name: 'Responder' }))
+        const card = await screen.findByRole('listitem', { name: 'Pregunta del agente' })
+        expect(within(card).getByText('¿Con foto?')).toBeInTheDocument()
+        await userEvent.click(within(card).getByRole('button', { name: 'Sí' }))
+        await waitFor(() =>
+          expect(calls.find((c) => c.path === '/prompts/5/answer')?.body).toEqual({ outcome: 'done', answer: 'Sí' }),
+        )
+        // Sin permisos al portal (Codex, OpenCode), el panel lo explica.
+        expect(screen.getByText(/no pide permisos al portal/)).toBeInTheDocument()
+      })
+
+      it('sin «siempre» donde la app no lo ofrece', async () => {
+        const once = prompt({ options: ['once', 'deny'] })
+        mockApi(
+          routes([cv({ asks_permissions: true })], {
+            'GET /prompts/pending': { prompts: [once] },
+            'GET /agent/runs/11/events': { ...conversation(), prompts: [once] },
+            'GET /agent/agents': { agents: [] },
+          }),
+        )
+        renderApp('/como-funciona')
+        await userEvent.click(await screen.findByRole('button', { name: 'Responder' }))
+        const card = await screen.findByRole('listitem', { name: 'Permiso' })
+        expect(within(card).getByRole('button', { name: 'Permitir una vez' })).toBeInTheDocument()
+        expect(within(card).queryByRole('button', { name: /siempre/ })).not.toBeInTheDocument()
+      })
+
+      it('lo ya contestado se queda en la conversación', async () => {
+        const answered = prompt({ status: 'done', answer: 'always', seconds_left: 0, answered_at: '2026-11-03T10:01:00Z' })
+        mockApi(
+          routes([cv({ asks_permissions: true })], {
+            'GET /agent/runs/11/events': { ...conversation(), prompts: [answered] },
+            'GET /agent/agents': { agents: [] },
+          }),
+        )
+        renderApp('/como-funciona')
+        await userEvent.click(await screen.findByRole('button', { name: 'Ver conversación' }))
+        const card = await screen.findByRole('listitem', { name: 'Permiso' })
+        expect(within(card).getByText(/Permitido siempre en este proyecto/)).toBeInTheDocument()
+        expect(within(card).queryByRole('button')).not.toBeInTheDocument()
+      })
     })
 
     it('si falla, deja abrirla en una ventana', async () => {

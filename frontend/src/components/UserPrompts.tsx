@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { ArrowSquareOutIcon, BellRingingIcon, RobotIcon, ShieldWarningIcon } from '@phosphor-icons/react'
 import { useTranslation } from 'react-i18next'
 import type { PromptView } from '@/api/client'
-import { useAnswerPrompt, usePendingPrompts } from '@/api/queries'
+import { useAgentTasks, useAnswerPrompt, usePendingPrompts } from '@/api/queries'
+import { PromptCard } from '@/components/PromptCard'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { errorMessage } from '@/lib/errors'
@@ -159,8 +160,13 @@ function QuestionPrompt({ prompt, left }: { prompt: PromptView; left: number }) 
 export function UserPrompts() {
   const { t } = useTranslation('prompts')
   const { data } = usePendingPrompts()
+  const tasks = useAgentTasks().data?.tasks ?? []
   const answer = useAnswerPrompt()
-  const prompt = data?.prompts[0]
+  // Fase 48.1b: lo que pregunta una ejecución con su aviso a la vista se contesta en su panel.
+  const followed = new Set(
+    tasks.filter((task) => task.status === 'running').map((task) => task.run_id).filter((id) => id != null),
+  )
+  const prompt = data?.prompts.find((p) => p.run_id == null || !followed.has(p.run_id))
   const left = useCountdown(prompt)
   const [hidden, setHidden] = useState<number | null>(null)
   const notified = useRef(new Set<number>())
@@ -185,6 +191,22 @@ export function UserPrompts() {
   if (!prompt) return null
   if (prompt.kind === 'question') {
     return <QuestionPrompt key={prompt.id} prompt={prompt} left={left} />
+  }
+  if (prompt.kind === 'permission') {
+    // Sin su aviso a la vista (se cerró): el mismo permiso, en un pop-up.
+    return (
+      <Dialog open>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{prompt.title}</DialogTitle>
+            <DialogDescription>{t('permissionDescription')}</DialogDescription>
+          </DialogHeader>
+          <ul>
+            <PromptCard prompt={prompt} />
+          </ul>
+        </DialogContent>
+      </Dialog>
+    )
   }
   const send = (outcome: 'done' | 'skipped') => answer.mutate({ promptId: prompt.id, outcome })
   const open = hidden !== prompt.id

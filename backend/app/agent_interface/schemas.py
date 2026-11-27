@@ -66,7 +66,11 @@ BY_TOOL = {entry.tool: entry for entry in CATALOG}
 
 
 def has_json_file(spec: ToolSpec) -> bool:
-    """La herramienta recibe por `--file` una entrada estructurada (y necesita esquema)."""
+    """La herramienta recibe por `--file` una entrada estructurada (y necesita esquema). Las que
+    llama el propio agente (`text_only`, p. ej. `request_permission`) no: su `--file` es la entrada
+    de otra herramienta, tal cual, y el agente no la redacta."""
+    if spec.text_only:
+        return False
     return bool(spec.cli.file_keys) or (
         spec.cli.file_field is not None and spec.cli.file_format == "json"
     )

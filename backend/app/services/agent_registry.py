@@ -191,6 +191,9 @@ class HeadlessSpec(_Strict):
     # Fase 46: las únicas acciones que lanza en segundo plano (`None`: todas las que admiten
     # segundo plano). Para empezar con poco un agente nuevo.
     actions: list[str] | None = None
+    # Fase 48.1b: el agente pregunta los permisos a la app (`request_permission`), que los enseña
+    # en el panel. Sin esto, lo que no tiene permitido se deniega sin preguntar.
+    asks_permissions: bool = False
 
     @property
     def complete(self) -> bool:

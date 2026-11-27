@@ -45,7 +45,7 @@ from app.core.db import session_scope
 from app.core.policies import get_policies
 from app.models import AgentRun, AgentRunEvent
 from app.models.base import utcnow
-from app.services import agent_registry, agent_run_config
+from app.services import agent_permissions, agent_registry, agent_run_config
 from app.services.agent_launch import CLIENT_ENV, QUESTION_PREFIX, QUESTION_PREFIX_EN
 from app.services.agent_output import PARSERS, RunEvent, short
 from app.services.agent_runs import INTERRUPTED, ProgressKind, RunStatus
@@ -352,7 +352,10 @@ def _execute(run: AgentRun, timeout: float | None, poll: float) -> AgentRunOutco
         return finish("failed", f"No se pudo preparar la configuración de la ejecución: {exc}")
     try:
         unset = [*run.unset_env, *clear_env]
-        proc = _popen(command, unset, run.agent, extra_env)
+        # Fase 48.1b: con la ejecución en el entorno, lo que pregunte o pida (`ask_user`,
+        # `request_permission`) sale en su panel.
+        run_env = {**extra_env, agent_permissions.RUN_ENV: str(run.id)}
+        proc = _popen(command, unset, run.agent, run_env)
     except OSError as exc:
         return finish("failed", f"No se pudo lanzar el agente: {exc}")
 

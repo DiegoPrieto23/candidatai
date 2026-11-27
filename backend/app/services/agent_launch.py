@@ -844,7 +844,25 @@ ASSISTANT_NOTE_EN = (
 )
 
 
-def background_note(lang: Lang = "es") -> str:
+# Fase 48.1b: sin ventana, pero con el portal: lo que pregunte sale en el panel de la ejecución.
+PORTAL_NOTE = (
+    " Estás sin ventana, pero el usuario te sigue en el portal de la app. Si necesitas un dato "
+    "suyo para seguir, pregúntaselo con ask_user y espera con wait_user_action (vuelve a "
+    "llamarla mientras siga `pending`). Si no contesta (`skipped` o `expired`), sigue sin ello si "
+    "puedes; si no, termina tu respuesta con una línea por pregunta que empiece por «PREGUNTA:»."
+)
+PORTAL_NOTE_EN = (
+    " You have no window, but the user follows you in the app portal. If you need something from "
+    "them to continue, ask with ask_user and wait with wait_user_action (call it again while it is "
+    "`pending`). If they do not answer (`skipped` or `expired`), continue without it if you can; "
+    "if not, end your answer with one line per question starting with “QUESTION:”."
+)
+
+
+def background_note(lang: Lang = "es", can_ask: bool = False) -> str:
+    """`can_ask`: la ejecución tiene `ask_user` (fase 48.1b) y pregunta en el portal."""
+    if can_ask:
+        return PORTAL_NOTE_EN if lang == "en" else PORTAL_NOTE
     return BACKGROUND_NOTE_EN if lang == "en" else BACKGROUND_NOTE
 
 

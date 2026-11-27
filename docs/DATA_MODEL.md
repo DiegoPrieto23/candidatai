@@ -552,21 +552,37 @@ Registro por paso en `data/logs/applier/<intento>.jsonl` (sin valores personales
 Avisos para que el usuario haga algo en el navegador (migración 0012): un captcha, una
 comprobación anti-bot o un login. Los crea el agente (`request_user_action`) al buscar ofertas o
 el worker cuando una candidatura asistida se para. También las preguntas del agente (`ask_user`,
-migración 0036). La UI los enseña en un pop-up.
+migración 0036). La UI los enseña en un pop-up. Desde la fase 48.1b (migración 0046), también los
+permisos que pide un agente sin ventana (`request_permission`); los de una ejecución que se sigue en
+el portal se contestan en su panel. Queda así registrado quién permitió qué y cuándo.
 
 | Columna | Tipo | Notas |
 |---|---|---|
 | id | int PK | |
-| kind | str | `captcha`, `anti_bot`, `login_required`, `question` |
+| kind | str | `captcha`, `anti_bot`, `login_required`, `question`, `permission` |
 | options | JSON? | Pregunta: las respuestas para elegir |
-| answer | text? | Pregunta: lo que contestó el usuario |
+| answer | text? | Pregunta: lo que contestó el usuario. Permiso: `once`, `always` o `deny` («Saltar» = `deny`) |
 | job_id | int? | Pregunta: la oferta de la que va |
-| message | text | Qué hacer y dónde |
+| run_id | FK agent_runs? | La ejecución sin ventana que preguntó o pidió permiso (de `CAI_RUN_ID`) |
+| tool | str? | Permiso: la herramienta (`Bash`, `Read`…) |
+| message | text | Qué hacer y dónde; en un permiso, lo que quiere hacer (el comando, el fichero…, hasta 500 caracteres) |
 | url | str? | La página afectada |
 | source_id | FK sources? | La plataforma (búsqueda con navegador) |
 | attempt_id | FK application_attempts? | El intento (candidatura asistida): con «Ya está» se encola `apply_fill_page` |
 | status | str | `pending` → `done` («Ya está») / `skipped` («Saltar») / `expired` (pasó `expires_at` o lo sustituyó otro aviso de lo mismo) |
-| created_at / expires_at / answered_at | datetime | Por defecto caduca a los 5 minutos |
+| created_at / expires_at / answered_at | datetime | Por defecto caduca a los 5 minutos (un permiso sin respuesta, denegado) |
+
+### `agent_permission_rules`
+«Permitir siempre en este proyecto» desde el portal (fase 48.1b, migración 0046): esa herramienta con
+ese detalle se permite sin preguntar en las ejecuciones sin ventana. Se guarda en la app, no en la
+configuración del agente, y se quita desde la página «Agente».
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | int PK | |
+| tool | str | La herramienta (único con `detail`) |
+| detail | text | Lo que se permite, tal cual lo describió el permiso (el comando, el fichero…) |
+| created_at | datetime | |
 
 ## Ampliaciones de la fase 13 (sin tablas nuevas)
 

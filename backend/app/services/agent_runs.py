@@ -21,13 +21,14 @@ from pydantic import BaseModel
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
-from app.models import AgentRun, AgentRunEvent, AssistantRequest, SkillGapMark
+from app.models import AgentRun, AgentRunEvent, AssistantRequest, SkillGapMark, UserPrompt
 from app.models.base import utcnow
-from app.services import agent_launch, agent_tasks, assess_threshold, ui_language
+from app.services import agent_launch, agent_tasks, assess_threshold, prompts, ui_language
 from app.services.agent_launch import ACTIONS, ActionId, LaunchError, LaunchResult
 from app.services.agent_usage import normalize_usage
 from app.services.matching import service as matching
 from app.services.matching import skills
+from app.services.prompts import PromptView
 
 RunStatus = Literal["queued", "running", "done", "needs_user", "failed", "cancelled", "timeout"]
 ACTIVE: tuple[RunStatus, ...] = ("queued", "running")
@@ -99,6 +100,8 @@ class AgentRunEvents(BaseModel):
     status: RunStatus
     events: list[AgentRunEventView]
     last_seq: int  # para la próxima consulta; el de `after` si no hay nada nuevo
+    # Fase 48.1b: sus preguntas y permisos, contestados o no (siempre todos: cambian de estado).
+    prompts: list[PromptView] = []
 
 
 class RunNotFoundError(LookupError):
@@ -237,7 +240,9 @@ def start(
     note = _cv_gaps_note(session, job_id) if action == "generate-cv" and job_id else ""
     lang = ui_language.current(session)
     closing = (
-        agent_launch.assistant_note(lang) if spec.assistant else agent_launch.background_note(lang)
+        agent_launch.assistant_note(lang)
+        if spec.assistant
+        else agent_launch.background_note(lang, can_ask="ask_user" in spec.background)
     )
     full_prompt = prompt + note + closing
     assert picked.headless is not None  # lo garantiza `pick_headless`
@@ -299,11 +304,15 @@ def run_events(session: Session, run_id: int, after: int = 0) -> AgentRunEvents:
         )
         for e in rows
     ]
+    asked = session.scalars(
+        select(UserPrompt).where(UserPrompt.run_id == run_id).order_by(UserPrompt.id)
+    ).all()
     return AgentRunEvents(
         run_id=run_id,
         status=row.status,  # type: ignore[arg-type]
         events=events,
         last_seq=events[-1].seq if events else after,
+        prompts=[prompts.get(session, p.id) for p in asked],
     )
 
 

@@ -544,8 +544,13 @@ Muchas pantallas tienen botones que lanzan el agente con la orden ya escrita:
   delante, también una notificación del sistema. El CV queda además en `data/cvs/` y la guía en
   `data/entrevistas/`.
 - **El agente pregunta en la app:** si necesita un dato para escribir un CV, una carta o una guía,
-  un aviso permite contestar ahí mismo. También se puede contestar en su ventana. Los permisos que
-  pide y las conversaciones (un simulacro, p. ej.) siguen en su ventana.
+  un aviso permite contestar ahí mismo. Sin ventana, el aviso se pone ámbar con **Responder** y la
+  pregunta sale en el panel de su conversación, con las opciones o un texto libre. Si Claude Code
+  necesita **permiso** para algo que la acción no tiene permitido de antemano, lo pide en el mismo
+  panel: «Permitir una vez», «Permitir siempre en este proyecto» o «Denegar»; sin respuesta en 5
+  minutos, se deniega. Lo permitido siempre se ve y se quita en la página «Agente». Un permiso nunca
+  sustituye la confirmación de una candidatura. Con Codex u OpenCode no se pide: lo que la acción no
+  permite se deniega. Las conversaciones (un simulacro, p. ej.) siguen en su ventana.
 - **En segundo plano** (Claude Code y OpenCode; Codex, en todas salvo `process-jobs`): para
   los skills que no preguntan (`process-jobs`, `assess-fit`, `generate-cv`, `correct-cv`,
   `verify-cv`, `generate-cover-letter` y el resumen en inglés). Corre sin ventana, solo con las

@@ -41,7 +41,9 @@ def _tool_definition(spec: ToolSpec) -> types.Tool:
         name=spec.name,
         description=spec.description,
         input_schema=spec.input_model.model_json_schema(),
-        output_schema=spec.output_model.model_json_schema(mode="serialization"),
+        output_schema=None
+        if spec.text_only
+        else spec.output_model.model_json_schema(mode="serialization"),
     )
 
 
@@ -76,6 +78,9 @@ async def _call_tool(
         result = await anyio.to_thread.run_sync(call_tool, spec, params.arguments, call_ctx)
     except ToolError as error:
         return _error_result(error)
+    if spec.text_only:
+        text = dump_json(result.model_dump(mode="json", exclude_none=True))
+        return types.CallToolResult(content=[types.TextContent(type="text", text=text)])
     data = result.model_dump(mode="json")
     return types.CallToolResult(
         content=[types.TextContent(type="text", text=dump_json(data))], structured_content=data

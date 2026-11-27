@@ -61,6 +61,12 @@ OUTREACH_STAGES = frozenset({Stage.APPROVED, Stage.CV_READY, Stage.APPLIED, Stag
 RESEARCH_STAGES = OUTREACH_STAGES | {Stage.PENDING_TRIAGE}
 
 
+# Fase 48.1b: lo que tiene toda ejecución sin ventana para preguntar en el portal. Una pregunta
+# se contesta en su panel; un permiso lo pide el propio agente (`--permission-prompt-tool`).
+QUESTION_TOOLS: tuple[str, ...] = ("ask_user", "wait_user_action")
+PERMISSION_TOOLS: tuple[str, ...] = ("request_permission",)
+
+
 @dataclass(frozen=True)
 class Step:
     """Un paso de una acción, para el aviso del portal. Se da por hecho cuando el agente llama bien
@@ -121,8 +127,14 @@ class Action:
     steps: tuple[Step, ...] = ()
 
     def __post_init__(self) -> None:
+        background = self.background
+        if background:
+            # Fase 48.1b: sin ventana, el permiso se pide en el portal y, salvo donde la sesión
+            # podría haber leído texto crudo de una oferta, también las preguntas.
+            asks = () if "get_job" in background else QUESTION_TOOLS
+            background = (*background, *asks, *PERMISSION_TOOLS)
         # Cada herramienta, una vez (las de los roles se añaden juntas y alguna ya estaba).
-        object.__setattr__(self, "background", tuple(dict.fromkeys(self.background)))
+        object.__setattr__(self, "background", tuple(dict.fromkeys(background)))
 
 
 # Lo que necesitan además los roles `writer` y `verifier` en las acciones del CV y la carta: las

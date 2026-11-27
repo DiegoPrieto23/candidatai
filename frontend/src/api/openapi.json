@@ -13857,7 +13857,7 @@
           "prompts"
         ],
         "summary": "Answer Prompt",
-        "description": "«Ya está» o «Saltar». En una candidatura asistida, «Ya está» vuelve a rellenar la página.",
+        "description": "«Ya está» o «Saltar». En una candidatura asistida, «Ya está» vuelve a rellenar la página.\nSolo desde la UI (fase 48.1b): ninguna otra web puede contestar un permiso. Que no lo conteste\nel propio agente lo garantiza su techo sin ventana: no tiene terminal ni web.",
         "operationId": "answer_prompt",
         "parameters": [
           {
@@ -14072,6 +14072,221 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/agent/permission-rules": {
+      "get": {
+        "tags": [
+          "agent"
+        ],
+        "summary": "List Permission Rules",
+        "description": "Lo permitido «siempre en este proyecto» desde el portal (fase 48.1b).",
+        "operationId": "list_permission_rules",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PermissionRules"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agent/permission-rules/{rule_id}": {
+      "delete": {
+        "tags": [
+          "agent"
+        ],
+        "summary": "Delete Permission Rule",
+        "description": "Quita un «permitir siempre»: la próxima vez se vuelve a preguntar.",
+        "operationId": "delete_permission_rule",
+        "parameters": [
+          {
+            "name": "rule_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Rule Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PermissionRules"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
           }
         }
       }
@@ -25556,6 +25771,14 @@
           "last_seq": {
             "type": "integer",
             "title": "Last Seq"
+          },
+          "prompts": {
+            "items": {
+              "$ref": "#/components/schemas/PromptView"
+            },
+            "type": "array",
+            "title": "Prompts",
+            "default": []
           }
         },
         "type": "object",
@@ -26058,6 +26281,11 @@
               }
             ],
             "title": "Agent"
+          },
+          "asks_permissions": {
+            "type": "boolean",
+            "title": "Asks Permissions",
+            "default": false
           },
           "started_at": {
             "type": "string",
@@ -37363,6 +37591,51 @@
         "title": "PendingTask",
         "description": "Tarea del worker para este intento que aún no ha terminado."
       },
+      "PermissionRuleView": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "tool": {
+            "type": "string",
+            "title": "Tool"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "tool",
+          "detail",
+          "created_at"
+        ],
+        "title": "PermissionRuleView"
+      },
+      "PermissionRules": {
+        "properties": {
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/PermissionRuleView"
+            },
+            "type": "array",
+            "title": "Rules"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rules"
+        ],
+        "title": "PermissionRules"
+      },
       "PhotoCrop": {
         "properties": {
           "x": {
@@ -38039,7 +38312,8 @@
               "captcha",
               "anti_bot",
               "login_required",
-              "question"
+              "question",
+              "permission"
             ],
             "title": "Kind"
           },
@@ -38160,6 +38434,28 @@
               }
             ],
             "title": "Job Id"
+          },
+          "run_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Id"
+          },
+          "tool": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tool"
           }
         },
         "type": "object",

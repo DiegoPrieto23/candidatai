@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next'
-import type { AgentTaskView } from '@/api/client'
+import type { AgentTaskView, PromptView } from '@/api/client'
 import type { AgentAction, AgentRunEvent } from '@/api/queries'
 
 /** Los textos del aviso (`nav`, `tasks`). */
@@ -94,4 +94,33 @@ export function pairTools(events: AgentRunEvent[]): RunItem[] {
     }
   }
   return items
+}
+
+
+/** Las herramientas con que el agente pregunta o pide permiso: en el panel las sustituye su tarjeta. */
+export const PROMPT_TOOLS = new Set(['ask_user', 'wait_user_action', 'request_permission'])
+
+/** Un paso de la conversación o una pregunta/permiso, para pintarlos juntos en orden. */
+export type PanelEntry = { kind: 'item'; item: RunItem } | { kind: 'prompt'; prompt: PromptView }
+
+function itemTime(item: RunItem): number {
+  return Date.parse(item.kind === 'tool' ? item.start.at : item.event.at)
+}
+
+/**
+ * Junta la conversación y las preguntas por la hora. Una pregunta va antes que el primer paso
+ * guardado después de ella (los pasos se guardan por tandas, unos segundos tarde); con la misma
+ * hora, primero el paso.
+ */
+export function mergeByTime(items: RunItem[], prompts: PromptView[]): PanelEntry[] {
+  const merged: PanelEntry[] = []
+  const queue = [...prompts].sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at))
+  for (const item of items) {
+    while (queue.length > 0 && Date.parse(queue[0].created_at) < itemTime(item)) {
+      merged.push({ kind: 'prompt', prompt: queue.shift() as PromptView })
+    }
+    merged.push({ kind: 'item', item })
+  }
+  for (const prompt of queue) merged.push({ kind: 'prompt', prompt })
+  return merged
 }

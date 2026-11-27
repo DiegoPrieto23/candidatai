@@ -3,7 +3,7 @@
 [mcp_servers.candidatai]
 command = "uv"
 args = ["run", "--no-sync", "--directory", "backend", "python", "-m", "app.mcp.server"]
-env_vars = ["CAI_DATA_DIR"]
+env_vars = ["CAI_DATA_DIR", "CAI_RUN_ID"]
 
 [mcp_servers.candidatai.tools.get_status]
 approval_mode = "approve"

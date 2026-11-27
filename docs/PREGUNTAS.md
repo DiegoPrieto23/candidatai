@@ -88,7 +88,7 @@ Dónde: «Agente».
 
 ### El agente hace una pregunta: ¿dónde se contesta?
 
-En el aviso que sale abajo a la derecha, o en la ventana del agente. Los permisos que pide y las conversaciones largas, como un simulacro de entrevista, siguen en su ventana.
+En el aviso que sale abajo a la derecha. Si trabaja sin ventana, el aviso se pone ámbar con «Responder» y la pregunta sale en el panel de su conversación; con Claude Code, también los permisos que pide («Permitir una vez», «Permitir siempre en este proyecto» o «Denegar»; sin respuesta en 5 minutos, se deniegan). Lo permitido siempre se quita en la página «Agente». Las conversaciones largas, como un simulacro de entrevista, siguen en su ventana.
 
 ### ¿Cómo se elige qué agente o qué modelo se usa?
 

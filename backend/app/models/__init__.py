@@ -1,6 +1,7 @@
 """Tablas SQLAlchemy (sin lÃ³gica). Importar este paquete registra todas en `Base.metadata`."""
 
 from app.models.agents import (
+    AgentPermissionRule,
     AgentPreference,
     AgentRequest,
     AgentRun,
@@ -41,6 +42,7 @@ __all__ = [
     "AgentTask",
     "AssistantConversation",
     "AssistantRequest",
+    "AgentPermissionRule",
     "AgentPreference",
     "AgentRequest",
     "AgentRun",

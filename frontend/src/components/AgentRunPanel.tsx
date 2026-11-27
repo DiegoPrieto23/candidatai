@@ -8,7 +8,8 @@ import { useAgentRunEvents, useAgentsOverview, type AgentRunEvent } from '@/api/
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { Elapsed, StepBar } from '@/components/agentTaskParts'
-import { pairTools, resultLink, toolLabel } from '@/lib/agentTasks'
+import { PromptCard } from '@/components/PromptCard'
+import { PROMPT_TOOLS, mergeByTime, pairTools, resultLink, toolLabel } from '@/lib/agentTasks'
 
 function ToolRow({ start, result, live }: { start: AgentRunEvent; result: AgentRunEvent | null; live: boolean }) {
   const { t } = useTranslation('nav', { keyPrefix: 'tasks' })
@@ -119,7 +120,10 @@ export function AgentRunPanel({
   const list = events.data?.events ?? []
   const status = events.data?.status
   const live = status === 'queued' || status === 'running'
-  const items = pairTools(list)
+  // Las preguntas y los permisos, en su sitio de la conversación (por la hora). Las llamadas con que
+  // el agente los hace no se pintan: la tarjeta ya lo dice.
+  const items = pairTools(list).filter((item) => item.kind !== 'tool' || !PROMPT_TOOLS.has(item.start.tool ?? ''))
+  const merged = mergeByTime(items, events.data?.prompts ?? [])
 
   // En pantallas anchas la página se aparta (CSS con `data-agent-panel`).
   useEffect(() => {
@@ -189,14 +193,19 @@ export function AgentRunPanel({
         {!events.isPending && items.length === 0 && (
           <li className="text-sm text-muted-foreground">{live ? t('panel.waiting') : t('panel.empty')}</li>
         )}
-        {items.map((item) =>
-          item.kind === 'tool' ? (
-            <ToolRow key={item.start.seq} start={item.start} result={item.result} live={live} />
+        {merged.map((entry) =>
+          entry.kind === 'prompt' ? (
+            <PromptCard key={`p${entry.prompt.id}`} prompt={entry.prompt} />
+          ) : entry.item.kind === 'tool' ? (
+            <ToolRow key={entry.item.start.seq} start={entry.item.start} result={entry.item.result} live={live} />
           ) : (
-            <EventRow key={item.event.seq} event={item.event} task={task} />
+            <EventRow key={entry.item.event.seq} event={entry.item.event} task={task} />
           ),
         )}
       </ol>
+      {!task.asks_permissions && (
+        <p className="border-t px-4 py-2.5 text-xs text-muted-foreground">{t('panel.noPermissions')}</p>
+      )}
     </aside>,
     document.body,
   )

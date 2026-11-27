@@ -64,6 +64,7 @@ export const keys = {
   agent: ['agent'] as const,
   agentRuns: ['agent', 'runs'] as const,
   agentRunEvents: (runId: number) => ['agent', 'runs', runId, 'events'] as const,
+  permissionRules: ['agent', 'permission-rules'] as const,
   searchRun: ['agent', 'search-run'] as const,
   agentTasks: ['agent', 'tasks'] as const,
   agentAgents: ['agent', 'agents'] as const,
@@ -732,7 +733,25 @@ export function useAnswerPrompt() {
       Promise.all([
         client.invalidateQueries({ queryKey: keys.prompts }),
         client.invalidateQueries({ queryKey: ['apply'] }),
+        // Fase 48.1b: la tarjeta de la conversación pasa a «contestada».
+        client.invalidateQueries({ queryKey: keys.agentRuns }),
       ]),
+  })
+}
+
+export type PermissionRule = Schemas['PermissionRuleView']
+
+/** Lo permitido «siempre en este proyecto» desde el portal (fase 48.1b). */
+export function usePermissionRules() {
+  return useQuery({ queryKey: keys.permissionRules, queryFn: () => unwrap(api.GET('/agent/permission-rules')) })
+}
+
+export function useDeletePermissionRule() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (ruleId: number) =>
+      unwrap(api.DELETE('/agent/permission-rules/{rule_id}', { params: { path: { rule_id: ruleId } } })),
+    onSuccess: (data) => client.setQueryData(keys.permissionRules, data),
   })
 }
 

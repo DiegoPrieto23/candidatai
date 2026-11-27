@@ -179,7 +179,9 @@ def make_command(spec: ToolSpec, render: Callable[[Any], None] | None) -> Callab
             _fail(error, as_json)
         if file is not None and not spec.cli.keep_file:
             file.unlink(missing_ok=True)
-        if as_json:
+        if as_json and spec.text_only:  # lo mismo que por MCP: sin campos vacíos
+            typer.echo(dump_json(result.model_dump(mode="json", exclude_none=True)))
+        elif as_json:
             typer.echo(dump_json(result))
         elif render is not None:
             render(result)

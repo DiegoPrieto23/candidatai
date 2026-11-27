@@ -27,7 +27,7 @@ mcp_server:
   # Variables del entorno del agente que el servidor necesita: `CAI_DATA_DIR` elige la carpeta de
   # datos (la demo). Casi todos los agentes pasan su entorno entero; Codex solo una lista blanca, y
   # estas van en su `env_vars` (comprobado el 2026-10-22: sin eso, la demo abría `data/`).
-  pass_env: [CAI_DATA_DIR]
+  pass_env: [CAI_DATA_DIR, CAI_RUN_ID]   # CAI_RUN_ID: la ejecución sin ventana (fase 48.1b)
 
 # Permisos neutrales (fase 24.3). Los emisores los traducen a cada agente. `.claude/settings.json`
 # se mantiene a mano, pero `sync_agents.py --check` falla si no dice lo mismo que esto.
@@ -124,9 +124,13 @@ targets:
       # preguntan. {allowed_tools}: `allow`, el skill de la acción (`skill_rule`) y sus herramientas
       # MCP; {denied_tools}: TODAS las demás herramientas MCP de la app, porque un deny gana a
       # cualquier allow de .claude/settings.json y las quita también a los subagentes. Una por
-      # argumento, con tools.mcp_prefix. Sin terminal ni web (--tools); Read solo sobre docs/ (el
-      # redactor y el verificador leen POLICIES.md); dontAsk deniega lo que no esté permitido.
+      # argumento, con tools.mcp_prefix. Sin terminal ni web (--tools); Read, sin data/ ni .env.
+      # Fase 48.1b: lo que necesitaría permiso se pregunta en el portal (--permission-prompt-tool,
+      # que solo actúa en el modo `default`: con `dontAsk` se deniega sin preguntar). Comprobado
+      # con Claude Code 2.1.332: recibe {tool_name, input, tool_use_id}, espera la respuesta (más
+      # de 5 min) y quiere un solo bloque de texto con {behavior, updatedInput | message}.
       headless:
+        asks_permissions: true
         command:
           - claude
           - -p
@@ -135,7 +139,9 @@ targets:
           - stream-json
           - --verbose
           - --permission-mode
-          - dontAsk
+          - default
+          - --permission-prompt-tool
+          - mcp__candidatai__request_permission
           - --strict-mcp-config
           - --mcp-config
           - .mcp.json

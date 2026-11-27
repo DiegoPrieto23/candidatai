@@ -88,7 +88,7 @@ Where: “Agent”.
 
 ### My agent is asking me something: where do I answer?
 
-In the notice that appears at the bottom right, or in your agent's window. The permissions it asks for and long conversations, such as a mock interview, stay in its window.
+In the notice that appears at the bottom right. If it works with no window, the notice turns amber with “Respond” and the question shows in its conversation panel; with Claude Code, so do the permissions it asks for (“Allow once”, “Always allow in this project” or “Deny”; with no answer in 5 minutes, they are denied). What is always allowed is removed on the “Agent” page. Long conversations, such as a mock interview, stay in its window.
 
 ### How do I choose which agent or model is used?
 

@@ -34,6 +34,7 @@ from app.schemas.mail_sources import MailSourceList
 from app.schemas.profile import MAX_LETTER_WORDS
 from app.schemas.sources import AgentBrowseSource, SourceList, SourceRunSummary
 from app.services import (
+    agent_permissions,
     agent_requests,
     agent_tasks,
     analytics,
@@ -339,6 +340,18 @@ class GetContextInput(_Input):
         if isinstance(value, str):
             return [part.strip() for part in value.split(",") if part.strip()]
         return value
+
+
+class RequestPermissionInput(_Input):
+    """Lo que manda el agente al pedir permiso (en Claude Code, `--permission-prompt-tool`)."""
+
+    tool_name: str = Field(
+        min_length=1, max_length=200, description="La herramienta que quiere usar."
+    )
+    input: dict[str, Any] = Field(
+        default_factory=dict, description="Su entrada, tal cual (por CLI, en `--file` JSON)."
+    )
+    tool_use_id: str | None = Field(default=None, max_length=200)
 
 
 class GetPoliciesInput(_Input):
@@ -717,7 +730,15 @@ def _ask_user(session: Session, args: AskUserInput, _ctx: CallContext) -> prompt
         options=args.options,
         job_id=args.job_id,
         timeout_seconds=args.timeout_seconds,
+        # Fase 48.1b: desde una ejecución sin ventana, se contesta en su panel.
+        run_id=agent_permissions.current_run_id(session),
     )
+
+
+def _request_permission(
+    _session: Session, args: RequestPermissionInput, _ctx: CallContext
+) -> agent_permissions.PermissionDecision:
+    return agent_permissions.request(args.tool_name, args.input)
 
 
 def _finish_task(
@@ -1541,6 +1562,25 @@ TOOLS: tuple[ToolSpec, ...] = (
         output_model=prompts.PromptView,
         handler=_ask_user,
         cli=CliSpec(path=("prompts", "ask")),
+    ),
+    ToolSpec(
+        name="request_permission",
+        description=(
+            "La llama el propio agente, sin ventana, cuando algo necesita permiso: la app lo "
+            "pregunta en el portal y devuelve permitir o denegar. Sin respuesta en 5 minutos, "
+            "deniega. No la llames tú: no sustituye ninguna confirmación de la UI."
+        ),
+        input_model=RequestPermissionInput,
+        output_model=agent_permissions.PermissionDecision,
+        handler=_request_permission,
+        cli=CliSpec(
+            path=("prompts", "permission"),
+            arguments=("tool_name",),
+            file_field="input",
+            file_format="json",
+        ),
+        audit_fields=("tool_name",),
+        text_only=True,
     ),
     ToolSpec(
         name="finish_task",

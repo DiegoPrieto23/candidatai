@@ -103,6 +103,23 @@ describe('Lo primero de «Agente» (fase 31)', () => {
     expect(screen.queryByRole('switch', { name: 'Abrir en una ventana' })).not.toBeInTheDocument()
   })
 
+  it('lista lo permitido siempre y lo quita (fase 48.1b)', async () => {
+    const rule = { id: 4, tool: 'Read', detail: 'C:/notas.txt', created_at: '2026-11-27T10:00:00Z' }
+    const calls = mockApi({
+      ...quiet,
+      'GET /agent': { ...launcher, no_agent_installed: false },
+      'GET /agent/agents': { agents: [entry('claude', 'Claude Code', true)], launchable: ['claude'], preferences: {}, effective: [] },
+      'GET /agent/permission-rules': { rules: [rule] },
+      'DELETE /agent/permission-rules/4': { rules: [] },
+    })
+    renderApp('/agente')
+    const section = await screen.findByRole('region', { name: 'Permitido siempre' })
+    expect(within(section).getByText('C:/notas.txt')).toBeInTheDocument()
+    await userEvent.click(within(section).getByRole('button', { name: 'Quitar el permiso de Read: C:/notas.txt' }))
+    expect(calls.some((c) => c.method === 'DELETE' && c.path === '/agent/permission-rules/4')).toBe(true)
+    expect(screen.queryByRole('region', { name: 'Permitido siempre' })).not.toBeInTheDocument()
+  })
+
   it('«Abrir en una ventana» está apagado por defecto y se guarda al cambiarlo (fase 48.1a)', async () => {
     const calls = mockApi({
       ...quiet,

@@ -95,6 +95,7 @@ La app nunca llama a un modelo y no depende de ningún proveedor.
 | `POST /apply/{id}/rescan`, `POST /apply/{id}/focus`, `POST /jobs/{id}/apply/manual-done` | «Volver a revisar» (nunca tras un clic de envío), «Terminar a mano» y «Marcar como enviada» (`applied_manually`) |
 | `POST /agent/runs`, `GET /agent/runs[/{id}]`, `POST /agent/runs/{id}/cancel`, `POST /agent/runs/{id}/open` | En segundo plano (fase 19): encolar (202), seguir, cancelar y «Abrir en terminal» (retoma la sesión). Los POST, solo desde la UI |
 | `GET /agent/runs/{id}/events?after=<seq>` | La conversación de una ejecución sin ventana (fase 48.1a): lo nuevo desde `after`, para el panel del aviso. Solo para la UI: sin herramienta MCP |
+| `GET /agent/permission-rules`, `DELETE /agent/permission-rules/{id}` | Lo permitido «siempre en este proyecto» desde el panel (fase 48.1b) y quitarlo (solo desde la UI). Los permisos se contestan con `POST /prompts/{id}/answer` (`answer`: `once`, `always` o `deny`) |
 | `PUT /agent/window-preference` | «Abrir en una ventana» (fase 48.1a): sin él, el botón principal lanza sin ventana lo que puede (`portal` de cada acción en `GET /agent`, con `open_in_window`). Solo desde la UI |
 | `GET /agent/agents`, `PUT /agent/preferences` | Agentes, preferencias y agente efectivo por acción; guardar las preferencias (fase 24.4, solo desde la UI) |
 | `GET /agent/requests`, `POST /agent/requests`, `POST /agent/requests/{id}/cancel` | Cola de encargos para tu próxima sesión (fase 19). Los POST, solo desde la UI |

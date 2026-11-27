@@ -277,6 +277,34 @@
         "failed": "ha fallado",
         "cancelled": "detenida",
         "timeout": "tiempo agotado"
+      },
+      "noPermissions": "Este agente no pide permisos al portal: lo que no tiene permitido en esta acción se deniega sin preguntar."
+    },
+    "waitingQuestion": "El agente espera una respuesta.",
+    "waitingPermission": "El agente pide permiso para seguir.",
+    "respond": "Responder",
+    "prompt": {
+      "questionTitle": "Pregunta del agente",
+      "permissionTitle": "Permiso",
+      "permissionAsk": "Quiere usar {{tool}}:",
+      "label": "Respuesta para el agente",
+      "placeholder": "Escribir la respuesta…",
+      "placeholderOther": "U otra respuesta…",
+      "send": "Enviar",
+      "skip": "Que siga sin ello",
+      "allowOnce": "Permitir una vez",
+      "allowAlways": "Permitir siempre en este proyecto",
+      "deny": "Denegar",
+      "expires": "Sigue sin respuesta en {{time}}.",
+      "permissionExpires": "Se deniega solo en {{time}}.",
+      "answer": "Respuesta: {{answer}}",
+      "skipped": "Sin respuesta: sigue sin ello.",
+      "expired": "Nadie contestó a tiempo.",
+      "expiredPermission": "Nadie contestó a tiempo: denegado.",
+      "answers": {
+        "once": "Permitido una vez.",
+        "always": "Permitido siempre en este proyecto (se quita en la página «Agente»).",
+        "deny": "Denegado."
       }
     }
   }

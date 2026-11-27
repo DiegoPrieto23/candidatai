@@ -97,5 +97,11 @@
     "readyHint": "The buttons with the robot all over the app open it in a separate window with the command already written: there you see what it does and approve it.",
     "cantOpen": "Your agent cannot be opened from here",
     "cantOpenHint": "{{reason}} The buttons with the robot show you the command so you can copy it and paste it into your agent."
+  },
+  "permissions": {
+    "title": "Always allowed",
+    "body": "What has been allowed “always in this project” from the agent panel. Once removed, it is asked again next time.",
+    "remove": "Remove the permission for {{tool}}: {{detail}}",
+    "removeShort": "Remove"
   }
 }

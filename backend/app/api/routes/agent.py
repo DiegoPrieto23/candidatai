@@ -20,6 +20,7 @@ from app.api.deps import EmptyBody, SessionDep, require_ui
 from app.services import (
     agent_costs,
     agent_launch,
+    agent_permissions,
     agent_prefs,
     agent_registry,
     agent_requests,
@@ -154,6 +155,25 @@ def get_agent_launcher(session: SessionDep) -> AgentStatus:
         no_agent_installed=agent_launch.no_agent_installed(),
         open_in_window=in_window,
     )
+
+
+@router.get("/permission-rules", operation_id="list_permission_rules")
+def list_permission_rules(session: SessionDep) -> agent_permissions.PermissionRules:
+    """Lo permitido «siempre en este proyecto» desde el portal (fase 48.1b)."""
+    return agent_permissions.list_rules(session)
+
+
+@router.delete(
+    "/permission-rules/{rule_id}",
+    operation_id="delete_permission_rule",
+    dependencies=[Depends(require_ui)],
+)
+def delete_permission_rule(session: SessionDep, rule_id: int) -> agent_permissions.PermissionRules:
+    """Quita un «permitir siempre»: la próxima vez se vuelve a preguntar."""
+    try:
+        return agent_permissions.delete_rule(session, rule_id)
+    except agent_permissions.RuleNotFoundError as exc:
+        raise ToolError("not_found", str(exc)) from exc
 
 
 @router.put(

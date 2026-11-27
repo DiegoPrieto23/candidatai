@@ -138,7 +138,8 @@ def test_codex_mcp_receives_the_data_dir() -> None:
     """Codex solo pasa al servidor MCP una lista blanca del entorno: sin `env_vars`, una demo
     (`CAI_DATA_DIR`) abriría `data/`."""
     config = _emit("codex")[REPO_ROOT / ".codex" / "config.toml"]
-    assert 'env_vars = ["CAI_DATA_DIR"]' in config
+    # Fase 48.1b: también la ejecución sin ventana, para preguntar en su panel.
+    assert 'env_vars = ["CAI_DATA_DIR", "CAI_RUN_ID"]' in config
     # `policy.auto_allow` sin preguntar; las que no están, con la aprobación de Codex.
     assert '[mcp_servers.candidatai.tools.get_status]\napproval_mode = "approve"' in config
     assert "tools.add_event]" not in config

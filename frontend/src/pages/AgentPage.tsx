@@ -24,6 +24,7 @@ import { CostsSection } from '@/components/CostsSection'
 import { GetAnAgent } from '@/components/GetAnAgent'
 import { Reveal } from '@/components/Reveal'
 import { SemanticMatchingCard } from '@/components/SemanticMatching'
+import { PermissionRules } from '@/components/PermissionRules'
 import { WindowSetting } from '@/components/WindowSetting'
 import { ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
@@ -238,6 +239,7 @@ export function AgentPage() {
               tarjetas dicen cómo instalar cada uno). */}
           {settings.toggle}
           <WindowSetting />
+          <PermissionRules />
         </section>
         <section aria-labelledby="requests-title" className="min-w-0">
           <h2 id="requests-title" className="mb-3 flex items-center gap-2 text-lg font-semibold tracking-tight">

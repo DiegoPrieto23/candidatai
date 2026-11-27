@@ -23,6 +23,7 @@ from sqlalchemy.orm import Session
 
 from app.models import AgentRun, AgentTask, Application, Company, Job, McpCall, Reply
 from app.models.base import utcnow
+from app.services import agent_registry
 from app.services.agent_actions import ACTIONS, ActionId
 from app.services.pipeline import Stage
 
@@ -97,6 +98,8 @@ class AgentTaskView(BaseModel):
     steps: list[TaskStep] = []
     last_tool: str | None = None
     agent: str | None = None  # el de la ejecución en segundo plano
+    # Fase 48.1b: su agente pide los permisos a la app (si no, lo no permitido se deniega solo).
+    asks_permissions: bool = False
     started_at: datetime
     finished_at: datetime | None
 
@@ -193,6 +196,14 @@ def _steps(action: str, called: set[str], finished_ok: bool) -> list[TaskStep]:
     return steps
 
 
+def _asks_permissions(agent: str) -> bool:
+    try:
+        spec = agent_registry.get(agent)
+    except agent_registry.ManifestError:
+        return False
+    return spec is not None and spec.headless is not None and spec.headless.asks_permissions
+
+
 def _view(session: Session, row: AgentTask, subject: str | None) -> AgentTaskView:
     track = TRACKED[row.action]  # type: ignore[index]
     calls = _calls_since(session, row)
@@ -249,6 +260,7 @@ def _view(session: Session, row: AgentTask, subject: str | None) -> AgentTaskVie
         steps=_steps(row.action, called, outcome == "done"),
         last_tool=mine[-1].tool if mine else None,
         agent=run.agent if run is not None else None,
+        asks_permissions=run is not None and _asks_permissions(run.agent),
         started_at=row.started_at,
         finished_at=finished_at if status == "finished" else None,
     )

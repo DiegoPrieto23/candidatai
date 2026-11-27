@@ -3,10 +3,11 @@ import { Link } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { ChatsCircleIcon, CheckCircleIcon, CircleNotchIcon, MinusIcon, WarningIcon, XIcon } from '@phosphor-icons/react'
-import type { AgentTaskView } from '@/api/client'
+import type { AgentTaskView, PromptView } from '@/api/client'
 import {
   keys,
   useAgentTasks,
+  usePendingPrompts,
   useCancelAgentRun,
   useDismissAgentTask,
   useOpenAgentRun,
@@ -110,10 +111,13 @@ function TaskNotice({
   task,
   panelOpen,
   onConversation,
+  waiting,
 }: {
   task: AgentTaskView
   panelOpen: boolean
   onConversation: () => void
+  /** Fase 48.1b: la pregunta o el permiso que espera respuesta en el panel. */
+  waiting?: PromptView
 }) {
   const { t } = useTranslation('nav', { keyPrefix: 'tasks' })
   const dismiss = useDismissAgentTask()
@@ -164,7 +168,9 @@ function TaskNotice({
   }, [handedOver, close, task.id])
   if (handedOver) return null
 
-  const icon = running ? (
+  const icon = running && waiting ? (
+    <WarningIcon className="size-4 shrink-0 text-warning-foreground" weight="fill" aria-hidden />
+  ) : running ? (
     <CircleNotchIcon className="size-4 shrink-0 animate-spin text-primary" weight="bold" aria-hidden />
   ) : good ? (
     <CheckCircleIcon className="size-4 shrink-0 text-primary" weight="fill" aria-hidden />
@@ -196,8 +202,10 @@ function TaskNotice({
 
   // Sin ventana, el aviso dice qué hace ahora: el paso o, sin pasos, la última herramienta.
   const now = task.last_tool ? toolLabel(t, task.last_tool) : null
+  const asking = running && waiting !== undefined
   let body: string
-  if (running && task.stopping) body = t('stoppingBody')
+  if (asking) body = waiting.kind === 'permission' ? t('waitingPermission') : t('waitingQuestion')
+  else if (running && task.stopping) body = t('stoppingBody')
   else if (running && task.background) body = (stepped ? step : now) ?? t('runningBackground')
   else if (running) body = t('runningTerminal')
   else if (task.status === 'stale') body = t('stale')
@@ -211,7 +219,10 @@ function TaskNotice({
   return (
     <div
       role="status"
-      className="pointer-events-auto flex w-80 max-w-[calc(100vw-2rem)] items-start gap-3 rounded-lg border bg-card p-3 text-sm shadow-lg animate-in fade-in slide-in-from-bottom-1 duration-200"
+      className={cn(
+        'pointer-events-auto flex w-80 max-w-[calc(100vw-2rem)] items-start gap-3 rounded-lg border bg-card p-3 text-sm shadow-lg animate-in fade-in slide-in-from-bottom-1 duration-200',
+        asking && 'border-warning-border bg-warning',
+      )}
     >
       <span className="mt-0.5">{icon}</span>
       <div className="min-w-0 flex-1">
@@ -241,7 +252,12 @@ function TaskNotice({
                 <Link to={to}>{t('see')}</Link>
               </Button>
             )}
-            {conversation && (
+            {conversation && asking && !panelOpen && (
+              <Button size="sm" onClick={onConversation}>
+                {t('respond')}
+              </Button>
+            )}
+            {conversation && !(asking && !panelOpen) && (
               <Button size="sm" variant="outline" aria-expanded={panelOpen} onClick={onConversation}>
                 <ChatsCircleIcon />
                 {t('conversation')}
@@ -281,6 +297,7 @@ function TaskNotice({
  */
 export function AgentTaskNotices() {
   const tasks = useAgentTasks().data?.tasks ?? []
+  const pending = usePendingPrompts().data?.prompts ?? []
   const [panelTask, setPanelTask] = useState<number | null>(null)
   const shown = tasks.find((task) => task.id === panelTask && task.run_id != null)
   const closePanel = useCallback(() => setPanelTask(null), [])
@@ -291,6 +308,7 @@ export function AgentTaskNotices() {
           key={task.id}
           task={task}
           panelOpen={shown?.id === task.id}
+          waiting={task.run_id != null ? pending.find((p) => p.run_id === task.run_id) : undefined}
           onConversation={() => setPanelTask(shown?.id === task.id ? null : task.id)}
         />
       ))}

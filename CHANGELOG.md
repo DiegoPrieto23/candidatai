@@ -15,6 +15,11 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   abajo a la derecha en qué paso va («3/6 · Redactar» al generar el CV) o qué está haciendo, y el
   tiempo que lleva. **Ver conversación** abre un panel lateral con cada herramienta que usa el
   agente y lo que escribe; si falla, **Abrir en una ventana** retoma la misma sesión.
+- **Preguntas y permisos del agente, en el portal**: sin ventana, lo que pregunta el agente sale en
+  el panel de su conversación (el aviso se pone ámbar con **Responder**), y con Claude Code también
+  lo que necesita permiso: «Permitir una vez», «Permitir siempre en este proyecto» o «Denegar». Sin
+  respuesta en 5 minutos, se deniega. Lo permitido siempre se ve y se quita en la página «Agente».
+  Un permiso nunca sustituye la confirmación de una candidatura.
 - **«Abrir en una ventana»**, en la página «Agente», para quien prefiera que el botón principal abra
   siempre la ventana del agente.
 

@@ -72,6 +72,20 @@ class AgentRunEvent(Base):
     sub: Mapped[bool] = mapped_column(default=False)
 
 
+class AgentPermissionRule(Base):
+    """«Permitir siempre en este proyecto» (fase 48.1b): esa herramienta con ese detalle (el
+    comando, el fichero, el skill) se permite sin preguntar en las ejecuciones sin ventana. Se
+    guarda en la app, no en la configuración del agente, y se quita desde la página «Agente»."""
+
+    __tablename__ = "agent_permission_rules"
+    __table_args__ = (UniqueConstraint("tool", "detail"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    tool: Mapped[str] = mapped_column(String(80))
+    detail: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
+
+
 class AgentTask(Base):
     """Lo que un botón acaba de lanzar y de lo que hay que avisar (`services/agent_tasks.py`).
 

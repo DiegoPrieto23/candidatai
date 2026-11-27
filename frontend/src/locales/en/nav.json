@@ -277,6 +277,34 @@
         "failed": "failed",
         "cancelled": "stopped",
         "timeout": "timed out"
+      },
+      "noPermissions": "This agent does not ask the portal for permission: whatever is not allowed in this action is denied without asking."
+    },
+    "waitingQuestion": "The agent is waiting for an answer.",
+    "waitingPermission": "The agent is asking for permission to continue.",
+    "respond": "Respond",
+    "prompt": {
+      "questionTitle": "Question from the agent",
+      "permissionTitle": "Permission",
+      "permissionAsk": "It wants to use {{tool}}:",
+      "label": "Answer for the agent",
+      "placeholder": "Write the answer…",
+      "placeholderOther": "Or another answer…",
+      "send": "Send",
+      "skip": "Continue without it",
+      "allowOnce": "Allow once",
+      "allowAlways": "Always allow in this project",
+      "deny": "Deny",
+      "expires": "It continues without an answer in {{time}}.",
+      "permissionExpires": "It is denied automatically in {{time}}.",
+      "answer": "Answer: {{answer}}",
+      "skipped": "No answer: it continues without it.",
+      "expired": "Nobody answered in time.",
+      "expiredPermission": "Nobody answered in time: denied.",
+      "answers": {
+        "once": "Allowed once.",
+        "always": "Always allowed in this project (removed on the “Agent” page).",
+        "deny": "Denied."
       }
     }
   }

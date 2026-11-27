@@ -545,8 +545,14 @@ Many pages have buttons that launch your agent with the instruction already writ
   allowed notifications and are in another window, a system notification too. The CV is also
   saved in `data/cvs/` and the guide in `data/entrevistas/`.
 - **Your agent asks you in the app:** if it needs to know something to write a CV, a cover letter
-  or a guide, a notice lets you answer right there. You can also answer in its window. Permission
-  requests and conversations (a mock interview, say) stay in its window.
+  or a guide, a notice lets you answer right there. With no window, the notice turns amber with
+  **Respond** and the question shows in its conversation panel, with the options or free text. If
+  Claude Code needs **permission** for something the action does not allow beforehand, it asks in
+  the same panel: "Allow once", "Always allow in this project" or "Deny"; with no answer in 5
+  minutes, it is denied. What is always allowed is listed, and can be removed, on the **Agent** page.
+  A permission never replaces confirming an application. With Codex or OpenCode it is not asked:
+  whatever the action does not allow is denied. Conversations (a mock interview, say) stay in its
+  window.
 - **In the background** (Claude Code and OpenCode; Codex, for all except `process-jobs`): for
   skills that do not ask questions (`process-jobs`, `assess-fit`, `generate-cv`,
   `correct-cv`, `verify-cv`, `generate-cover-letter` and the English summary). It runs without a

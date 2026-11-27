@@ -450,6 +450,17 @@ subagentes no tienen más. Hay dos formas de ponerlo (`ceiling`):
   `.codex/config.toml` que no sean el de la app. Solo las acciones de `launch.headless.actions`:
   todas las de segundo plano salvo `process-jobs`, la única que lee el texto crudo de una oferta
   (Codex es de nivel B).
+- **Preguntas y permisos en el portal** (fase 48.1b): el runner pone `CAI_RUN_ID` en el entorno
+  del agente (en Codex, por `pass_env`), así `ask_user` sale en el panel de esa ejecución. Toda
+  acción sin ventana tiene `request_permission` y, salvo `process-jobs` (cuya sesión podría haber
+  leído texto de una oferta), `ask_user` y `wait_user_action`. Los permisos los pide al portal solo
+  el agente con `asks_permissions` en `launch.headless`: Claude Code, con `--permission-mode
+  default` y `--permission-prompt-tool mcp__candidatai__request_permission` (comprobado con 2.1.332:
+  con `dontAsk` deniega sin preguntar; recibe `{tool_name, input, tool_use_id}`, espera más de 5
+  minutos y solo acepta un bloque de texto con `{behavior, updatedInput | message}`). Leer dentro
+  de la carpeta no pide permiso en ningún modo; `data/` y `.env` siguen denegados en la orden.
+  Codex no puede preguntar a la app (`exec` no pide aprobaciones) y OpenCode tampoco: lo que no
+  tienen permitido se deniega, y el panel lo dice.
 - **Los roles no leen ficheros** (fase 48.1a): `writer` y `verifier` piden las políticas con
   `get_policies` en vez de leer `docs/POLICIES.md`, y las acciones del CV y la carta llevan las
   herramientas de sus roles (`ROLE_EXTRAS`: las dos verificaciones y los dos documentos, porque

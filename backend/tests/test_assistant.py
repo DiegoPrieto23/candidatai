@@ -38,6 +38,7 @@ def test_ceiling_reads_structured_data_and_writes_what_other_buttons_write() -> 
     assert tools <= set(TOOLS_BY_NAME)
     assert not spec.roles  # sin subagentes: nada que amplíe lo que tiene
     own = {"get_assistant_request", "save_assistant_answer", "ask_user", "wait_user_action"}
+    own.add("request_permission")  # fase 48.1b: el permiso se pide en el portal
     assert tools == own | set(ASSISTANT_READS) | set(ASSISTANT_WRITES)
     # Leer: solo consultas.
     assert all(name.startswith(("get_", "list_")) for name in ASSISTANT_READS)
