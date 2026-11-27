@@ -546,9 +546,7 @@ Muchas pantallas tienen botones que lanzan el agente con la orden ya escrita:
 - **El agente pregunta en la app:** si necesita un dato para escribir un CV, una carta o una guía,
   un aviso permite contestar ahí mismo. También se puede contestar en su ventana. Los permisos que
   pide y las conversaciones (un simulacro, p. ej.) siguen en su ventana.
-- **En segundo plano** (Claude Code; OpenCode en `process-jobs`, `assess-fit`, «Valorar esta
-  oferta», el resumen en inglés y el Asistente; Codex en las mismas salvo `process-jobs`. Los dos
-  no pueden con el CV ni la carta: sus roles leen `docs/` y no se puede limitar a esa carpeta): para
+- **En segundo plano** (Claude Code y OpenCode; Codex, en todas salvo `process-jobs`): para
   los skills que no preguntan (`process-jobs`, `assess-fit`, `generate-cv`, `correct-cv`,
   `verify-cv`, `generate-cover-letter` y el resumen en inglés). Corre sin ventana, solo con las
   herramientas de la app que necesita, y el aviso dice cómo va. Si el agente no puede, el

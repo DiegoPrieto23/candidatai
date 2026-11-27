@@ -53,6 +53,7 @@ from app.services import (
     liveness,
     mail_sources,
     network,
+    policies_text,
     profile,
     profile_suggestions,
     prompts,
@@ -340,6 +341,24 @@ class GetContextInput(_Input):
         return value
 
 
+class GetPoliciesInput(_Input):
+    sections: list[int] | None = Field(
+        default=None,
+        description=(
+            "Números de sección de docs/POLICIES.md (por CLI, separados por comas): 1 veracidad, "
+            "2 encaje, 3 CV, 4 privacidad, 5 candidaturas, 6 contenido no confiable, 7 estilo, "
+            "8 navegador. Por defecto, todas."
+        ),
+    )
+
+    @field_validator("sections", mode="before")
+    @classmethod
+    def _split_text(cls, value: Any) -> Any:
+        if isinstance(value, str):
+            return [part.strip() for part in value.split(",") if part.strip()]
+        return value
+
+
 class SaveCvContentInput(_Input):
     job_id: int = Field(ge=1, description="Id de la oferta (aprobada).")
     content: CvContent
@@ -587,6 +606,15 @@ class JobList(BaseModel):
 
 def _get_status(session: Session, _args: NoInput, _ctx: CallContext) -> status.StatusReport:
     return status.get_status(session)
+
+
+def _get_policies(
+    _session: Session, args: GetPoliciesInput, _ctx: CallContext
+) -> policies_text.PoliciesView:
+    try:
+        return policies_text.read(args.sections)
+    except policies_text.UnknownSectionError as exc:
+        raise ToolError("not_found", str(exc)) from exc
 
 
 def _get_schema(_session: Session, args: GetSchemaInput, _ctx: CallContext) -> SchemaView:
@@ -1062,6 +1090,18 @@ TOOLS: tuple[ToolSpec, ...] = (
         handler=_get_schema,
         cli=CliSpec(path=("schema",), arguments=("name",), option_names={"example": "--example"}),
         audit_fields=("name",),
+    ),
+    ToolSpec(
+        name="get_policies",
+        description=(
+            "Las reglas de la app (docs/POLICIES.md) por secciones: veracidad, CV, privacidad, "
+            "estilo… Úsalo en vez de leer el fichero: así funciona también sin lectura de ficheros."
+        ),
+        input_model=GetPoliciesInput,
+        output_model=policies_text.PoliciesView,
+        handler=_get_policies,
+        cli=CliSpec(path=("policies", "show")),
+        audit_fields=("sections",),
     ),
     ToolSpec(
         name="add_job_from_url",

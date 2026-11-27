@@ -345,9 +345,9 @@ def test_background_uses_the_preferred_agent_and_model(
     _put(client, {"default_agent": "qwen"})  # Qwen Code no tiene segundo plano
     refused = client.post("/agent/runs", json={"action": "assess-fit"}, headers=JSON)
     assert refused.status_code == 503 and "headless" in refused.json()["error"]["message"]
-    # Codex sí, pero solo para el asistente (fase 46).
+    # Codex sí, pero no en `process-jobs`, la que lee el texto de las ofertas (fases 46 y 48.1a).
     _put(client, {"default_agent": "codex"})
-    refused = client.post("/agent/runs", json={"action": "assess-fit"}, headers=JSON)
+    refused = client.post("/agent/runs", json={"action": "process-jobs"}, headers=JSON)
     assert refused.status_code == 503 and "todavía no va" in refused.json()["error"]["message"]
     assert _effective(client, "process-jobs")["background_agent"]["available"] is False
 

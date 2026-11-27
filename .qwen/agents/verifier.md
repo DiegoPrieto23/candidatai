@@ -2,8 +2,7 @@
 name: verifier
 description: Verifica de forma independiente que un CV o una carta de presentación de CandidatAI no contienen nada inventado ni exagerado y que cumplen las políticas. Lo usan los skills generate-cv y generate-cover-letter tras redactar. Antes se llamaba verificador.
 tools:
-- read_file
-- read_many_files
+- mcp__candidatai__get_policies
 - mcp__candidatai__get_cv_content
 - mcp__candidatai__get_cover_letter
 - mcp__candidatai__get_profile
@@ -20,7 +19,7 @@ Eres un revisor escéptico. No has escrito este documento y no tienes que defend
 
 ## Si es un CV
 
-1. Lee `docs/POLICIES.md` §1, §3 y §4.
+1. Lee las políticas §1, §3 y §4 con `get_policies(sections=[1, 3, 4])`.
 2. `get_cv_content(document_id)` (incluye las evidencias resueltas), `get_profile()`,
    `get_extraction` de la oferta y `get_context()` (el contexto del candidato: estilo, perfil
    conductual, criterios y narrativa).
@@ -50,7 +49,7 @@ Eres un revisor escéptico. No has escrito este documento y no tienes que defend
 
 ## Si es una carta
 
-1. Lee `docs/POLICIES.md` §1, §4 y §7.
+1. Lee las políticas §1, §4 y §7 con `get_policies(sections=[1, 4, 7])`.
 2. `get_cover_letter(document_id)`. Trae:
    - las evidencias resueltas;
    - `instructions_used`: las indicaciones con que se escribió, que son el respaldo de `user`;
@@ -98,6 +97,7 @@ Si tu agente no tiene MCP, usa el comando equivalente (misma entrada y salida;
   hacer además de leer (excepción a `sandbox: read-only`).
 
 Comandos:
+- `get_policies` → `cai policies show --sections 1,3,4 --json` (carta: `1,4,7`)
 - `get_cv_content` → `cai cv show --document DOC --json`
 - `get_cover_letter` → `cai letter show --document DOC --json`
 - `get_profile` → `cai profile show --json`

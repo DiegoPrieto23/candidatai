@@ -120,6 +120,24 @@ class Action:
     # Los pasos que enseña el aviso del portal. Vacío: solo la actividad (la última herramienta).
     steps: tuple[Step, ...] = ()
 
+    def __post_init__(self) -> None:
+        # Cada herramienta, una vez (las de los roles se añaden juntas y alguna ya estaba).
+        object.__setattr__(self, "background", tuple(dict.fromkeys(self.background)))
+
+
+# Lo que necesitan además los roles `writer` y `verifier` en las acciones del CV y la carta: las
+# políticas (que leen con `get_policies`, no del fichero) y, como `verifier` sirve para el CV y para
+# la carta, las herramientas de los dos documentos. Así el techo de la acción cubre el de sus roles
+# y la ejecución cabe en los agentes que limitan las herramientas por configuración (Codex,
+# OpenCode). Ninguna lee texto crudo de una oferta.
+ROLE_EXTRAS: tuple[str, ...] = (
+    "get_policies",
+    "get_cv_content",
+    "get_cover_letter",
+    "save_cv_verification",
+    "save_cover_letter_verification",
+)
+
 
 # Lo que lee el asistente del portal: datos que la app ya guarda estructurados.
 ASSISTANT_READS: tuple[str, ...] = (
@@ -248,6 +266,7 @@ ACTIONS: dict[ActionId, Action] = {
             "save_cv_content",
             "get_cv_content",
             "save_cv_verification",
+            *ROLE_EXTRAS,
         ),
         roles=("writer", "verifier"),
         steps=CV_STEPS,
@@ -270,6 +289,7 @@ ACTIONS: dict[ActionId, Action] = {
             "check_cv_fit",
             "save_cv_content",
             "save_cv_verification",
+            *ROLE_EXTRAS,
         ),
         roles=("verifier",),
         steps=(
@@ -294,6 +314,7 @@ ACTIONS: dict[ActionId, Action] = {
             "get_profile",
             "get_context",
             "save_cv_verification",
+            *ROLE_EXTRAS,
         ),
         roles=("verifier",),
         steps=(
@@ -319,6 +340,7 @@ ACTIONS: dict[ActionId, Action] = {
             "get_context",
             "save_cover_letter",
             "save_cover_letter_verification",
+            *ROLE_EXTRAS,
         ),
         roles=("verifier",),
         steps=(

@@ -160,9 +160,30 @@ def test_roles_never_have_more_tools_than_their_action() -> None:
             assert agent_run_config.role_tools(role) <= allowed
 
 
-def test_generate_cv_cannot_be_capped_by_config() -> None:
-    """`writer` y `verifier` leen ficheros (POLICIES.md) y OpenCode no los acota como la
-    ejecución: con techo por configuración, `generate-cv` no tiene segundo plano."""
+@pytest.fixture
+def writer_reads(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Un `writer` que leyera ficheros (como antes de `get_policies`): la configuración de la
+    ejecución no puede acotarlo a lo que tiene la acción."""
+    real = agent_run_config.role_tools
+
+    def role_tools(role: str) -> frozenset[str]:
+        return real(role) | {"read"} if role == "writer" else real(role)
+
+    monkeypatch.setattr(agent_run_config, "role_tools", role_tools)
+
+
+def test_cv_and_letter_fit_a_config_ceiling_now() -> None:
+    """Fase 48.1a: `writer` y `verifier` piden las políticas con `get_policies`: sin leer ficheros,
+    el CV y la carta caben en una configuración propia (OpenCode, Codex)."""
+    for action in ("generate-cv", "correct-cv", "verify-cv", "generate-cover-letter"):
+        assert agent_run_config.ceiling_problem(action) is None
+        agent_run_config.build(action, RUN_CONFIG, OC_PREFIX)
+
+
+@pytest.mark.usefixtures("writer_reads")
+def test_a_role_that_reads_files_cannot_be_capped_by_config() -> None:
+    """Un rol con más de lo que tiene la acción (leer ficheros) no se puede acotar: sin segundo
+    plano con techo por configuración."""
     problem = agent_run_config.ceiling_problem("generate-cv")
     assert problem is not None and "«writer»" in problem and "read" in problem
     with pytest.raises(agent_run_config.RunConfigError):
@@ -196,7 +217,7 @@ def test_manifest_opencode_headless() -> None:
     assert "--pure" in headless.command
     assert "--auto" not in headless.command  # aprobaría solo lo que quede en `ask`
     assert spec.launch is not None and "{session_id}" in spec.launch.resume
-    # Qwen Code, sin segundo plano (docs/AGENTS_COMPAT.md); Codex, solo el asistente (fase 46).
+    # Qwen Code, sin segundo plano (docs/AGENTS_COMPAT.md).
     assert agent_registry.get("qwen").headless is None  # type: ignore[union-attr]
 
 
@@ -263,6 +284,7 @@ def test_start_stores_command_and_run_config(db: None, fake: Path) -> None:
     assert not any(OC_PREFIX in part for part in row.command)
 
 
+@pytest.mark.usefixtures("writer_reads")
 def test_generate_cv_with_opencode_offers_terminal(db: None, fake: Path) -> None:
     with session_scope() as session:
         launcher, res = agent_launch.choose(
@@ -277,6 +299,7 @@ def test_generate_cv_with_opencode_offers_terminal(db: None, fake: Path) -> None
         assert launcher is not None
 
 
+@pytest.mark.usefixtures("writer_reads")
 def test_headless_command_refuses_an_uncappable_action() -> None:
     with pytest.raises(LaunchError):
         agent_launch.headless_command(opencode_launcher(), "orden", "generate-cv")
@@ -464,6 +487,7 @@ def test_parsers_cover_the_manifest_outputs() -> None:
     assert set(PARSERS) == agent_registry.HEADLESS_OUTPUTS
 
 
+@pytest.mark.usefixtures("writer_reads")
 def test_api_suggests_an_agent_that_can_run_in_background(db: None, fake: Path) -> None:
     """`GET /agent`: si el agente de la acción no puede en segundo plano, propone otro (24.5)."""
     with session_scope() as session:

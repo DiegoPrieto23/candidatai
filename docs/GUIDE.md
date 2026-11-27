@@ -547,10 +547,8 @@ Many pages have buttons that launch your agent with the instruction already writ
 - **Your agent asks you in the app:** if it needs to know something to write a CV, a cover letter
   or a guide, a notice lets you answer right there. You can also answer in its window. Permission
   requests and conversations (a mock interview, say) stay in its window.
-- **In the background** (Claude Code; OpenCode for `process-jobs`, `assess-fit`, **Assess this
-  job**, the English summary and the Assistant; Codex for the same except `process-jobs`. Neither
-  can do the CV or the cover letter: their roles read `docs/` and reading cannot be limited to that
-  folder): for skills that do not ask questions (`process-jobs`, `assess-fit`, `generate-cv`,
+- **In the background** (Claude Code and OpenCode; Codex, for all except `process-jobs`): for
+  skills that do not ask questions (`process-jobs`, `assess-fit`, `generate-cv`,
   `correct-cv`, `verify-cv`, `generate-cover-letter` and the English summary). It runs without a
   window, only with the app tools it needs, and the notice shows how it is going. If your agent
   cannot, the menu suggests one that can. Requires `cai worker` (started by `cai start`).

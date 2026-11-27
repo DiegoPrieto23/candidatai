@@ -57,6 +57,9 @@ letter_app = typer.Typer(help="Cartas de presentación.", no_args_is_help=True)
 context_app = typer.Typer(
     help="Contexto del candidato (data/contexto/) y carpetas de documentos.", no_args_is_help=True
 )
+policies_app = typer.Typer(
+    help="Las reglas de la app (docs/POLICIES.md), por secciones.", no_args_is_help=True
+)
 skills_app = typer.Typer(
     help="Huecos de skills: lo que piden las ofertas y tu perfil no cubre.", no_args_is_help=True
 )
@@ -110,6 +113,7 @@ app.add_typer(stats_app, name="stats")
 app.add_typer(applications_app, name="applications")
 app.add_typer(letter_app, name="letter")
 app.add_typer(context_app, name="context")
+app.add_typer(policies_app, name="policies")
 app.add_typer(prompts_app, name="prompts")
 app.add_typer(skills_app, name="skills")
 app.add_typer(replies_app, name="replies")
@@ -2602,6 +2606,7 @@ register_tools(
         "prompts": prompts_app,
         "agents": agents_app,
         "context": context_app,
+        "policies": policies_app,
         "skills": skills_app,
         "replies": replies_app,
         "drafts": drafts_app,

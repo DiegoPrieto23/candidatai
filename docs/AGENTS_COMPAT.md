@@ -22,9 +22,9 @@ uv run --directory backend cai agents doctor         # cuál se usaría hoy, por
 | Agente | Licencia | En el manifiesto | Nivel | MCP | Segundo plano |
 |---|---|---|---|---|---|
 | Claude Code | propietaria | habilitado, configuración generada | A | sí | sí |
-| Codex | Apache-2.0 | habilitado, configuración generada, probado (24.6, 1 oferta) | B | sí | el asistente, `assess-fit`, `assess-fit-job` y el resumen en inglés (46, 48.1a) |
+| Codex | Apache-2.0 | habilitado, configuración generada, probado (24.6, 1 oferta) | B | sí | todo lo que va en segundo plano salvo `process-jobs` (46, 48.1a) |
 | Antigravity CLI | propietaria | habilitado, configuración generada (24.3) | C | sí | no |
-| OpenCode | MIT | habilitado, configuración generada (24.3) | B | sí | sí (24.5), salvo `generate-cv` |
+| OpenCode | MIT | habilitado, configuración generada (24.3) | B | sí | sí (24.5; el CV y la carta desde la 48.1a) |
 | Qwen Code | Apache-2.0 | habilitado, configuración generada (24.3) | B | sí | no |
 | Cursor CLI | propietaria | solo compatible vía `AGENTS.md` | C | sí | no |
 | GitHub Copilot CLI | propietaria | solo compatible vía `AGENTS.md` | C | sí | no |
@@ -211,8 +211,8 @@ aceptas en la UI, y aceptar no tiene herramienta ni comando.
   `finish_task`); las demás (`save_fit_assessment`, `save_cv_content`, `render_cv`…) piden permiso, como en Claude Code. «Allow for this session» evita que vuelva a
   preguntar hasta que cierres Codex.
 - Para delegar en un rol, pídelo explícitamente: "lanza el subagente `extractor` con el job_id 42".
-- **En segundo plano, el asistente, `assess-fit`, `assess-fit-job` y el resumen en inglés**
-  (comprobado con codex-cli 0.163.0 el 2026-11-19 y el 2026-11-27): ver
+- **En segundo plano, todo salvo `process-jobs`** (comprobado con codex-cli 0.163.0 el
+  2026-11-19 y el 2026-11-27): ver
   «En segundo plano y cola de encargos». Si el asistente falla con «No existe la carpeta de
   configuración del agente», abre Codex una vez para que cree `~/.codex` (o la de `CODEX_HOME`).
 - Los modelos por rol están vacíos en el manifiesto a propósito (heredan el de la sesión). Si
@@ -417,8 +417,8 @@ la orden para que la pegues tú. Probado con Claude Code; Codex, sin probar.
 
 ### En segundo plano y cola de encargos (fase 19; varios agentes en la 24.5)
 El desplegable de cada botón ofrece **«En segundo plano»** en `process-jobs`, `assess-fit`,
-`generate-cv`, `correct-cv`, `verify-cv`, `generate-cover-letter` y `translate-summary` (en OpenCode, solo en las dos
-primeras: las demás delegan en el rol `verifier`, que lee ficheros): el worker lanza tu agente sin ventana y un aviso
+`generate-cv`, `correct-cv`, `verify-cv`, `generate-cover-letter` y `translate-summary` (en Codex,
+todas salvo `process-jobs`): el worker lanza tu agente sin ventana y un aviso
 dice cuándo termina; la sección «Coste» de la página «Agente» suma lo que gasta. Sale de `launch.headless`
 del manifiesto, con el mismo `unset_env`. La garantía es el **techo de herramientas**: la
 ejecución solo tiene las herramientas MCP de su acción, sin terminal, edición ni web, y sus
@@ -447,10 +447,14 @@ subagentes no tienen más. Hay dos formas de ponerlo (`ceiling`):
   van en lista blanca, pero las funciones de Codex se apagan una a una (lista negra): **al subir de
   versión de Codex, repite la prueba** (una función nueva quedaría encendida; la sostienen el modo
   de solo lectura y `approval_policy = "never"`). También se apagan los servidores MCP de
-  `.codex/config.toml` que no sean el de la app. Solo las acciones de `launch.headless.actions`: el
-  asistente, `assess-fit`, `assess-fit-job` y el resumen en inglés, que no leen el texto crudo de
-  una oferta (Codex es de nivel B: fuera `process-jobs`). Las del CV y la carta tampoco: `writer`
-  y `verifier` leen `docs/` y el perfil no puede limitar la lectura a esa carpeta.
+  `.codex/config.toml` que no sean el de la app. Solo las acciones de `launch.headless.actions`:
+  todas las de segundo plano salvo `process-jobs`, la única que lee el texto crudo de una oferta
+  (Codex es de nivel B).
+- **Los roles no leen ficheros** (fase 48.1a): `writer` y `verifier` piden las políticas con
+  `get_policies` en vez de leer `docs/POLICIES.md`, y las acciones del CV y la carta llevan las
+  herramientas de sus roles (`ROLE_EXTRAS`: las dos verificaciones y los dos documentos, porque
+  `verifier` sirve para los dos). Así su techo cabe en una configuración propia, que no sabría
+  limitar la lectura a `docs/`.
 - **La conversación en el portal** (fase 48.1a): con cualquier agente con segundo plano, lo que
   lee `agent_output.py` se guarda en orden (`agent_run_events`) y el aviso abre un panel con ella.
   Comprobado el 2026-11-27 con Claude Code 2.1.332 y codex-cli 0.163.0: con `claude -p
@@ -469,7 +473,7 @@ OpenCode y generar un CV con Claude Code.
 
 | | Claude Code | OpenCode | Codex | Qwen Code | Otros |
 |---|---|---|---|---|---|
-| En segundo plano | Sí: `claude -p` con `stream-json`, `--tools Skill,Agent,Read`, `dontAsk`, `--allowedTools` con las herramientas MCP de la acción, `Skill(<su skill>)` y `Read(./docs/**)`, y `--disallowedTools` con todas las demás MCP de la app. Comprobado con `claude` 2.1.296 (ver abajo); el recorrido completo, pendiente de una prueba manual | Sí en `process-jobs` y `assess-fit`: `opencode run --format json --pure --agent cai-run [-m <modelo>] "<orden>"` con la configuración de la ejecución en `OPENCODE_CONFIG_CONTENT`. **No en `generate-cv`** (ni en `correct-cv`, `verify-cv` ni `generate-cover-letter`, que también usan `verifier`): `writer` y `verifier` leen ficheros (`POLICIES.md`) y en OpenCode su `read` no se acota a `docs/` como en la ejecución, así que el subagente tendría más que ella. La UI propone Claude Code. Comprobado con OpenCode 1.19.3 (ver abajo); con un modelo, pendiente de una prueba manual | `assistant`, `assess-fit`, `assess-fit-job` y `translate-summary`: `codex exec --json -p cai-run-<id>` con el techo en un perfil propio de la ejecución (lista blanca `enabled_tools`, sin terminal ni web). Lee el skill sin terminal. Comprobado con codex-cli 0.163.0 el 2026-11-19 (el asistente) y el 2026-11-27 (salida y `resume`); las otras tres, pendientes de una prueba manual. **No en el CV ni la carta**, por lo mismo que OpenCode | No, de momento: tiene `--core-tools` (lista blanca), `--allowed-mcp-server-names`, `--exclude-tools` y `-o stream-json`, pero no tiene forma de comprobar el techo sin un modelo (no tiene `debug`). Revisado con Qwen Code 0.25.2 el 2026-10-16; pendiente de comprobarlo con un modelo local | No (Antigravity no imprime nada sin terminal) |
+| En segundo plano | Sí: `claude -p` con `stream-json`, `--tools Skill,Agent,Read`, `dontAsk`, `--allowedTools` con las herramientas MCP de la acción, `Skill(<su skill>)` y `Read(./docs/**)`, y `--disallowedTools` con todas las demás MCP de la app. Comprobado con `claude` 2.1.296 (ver abajo); el recorrido completo, pendiente de una prueba manual | Sí: `opencode run --format json --pure --agent cai-run [-m <modelo>] "<orden>"` con la configuración de la ejecución en `OPENCODE_CONFIG_CONTENT`. Desde la 48.1a, también el CV y la carta: `writer` y `verifier` ya no leen ficheros (piden las políticas con `get_policies`). Comprobado con OpenCode 1.19.3 (ver abajo); con un modelo, y el CV y la carta, pendiente de una prueba manual | Todas salvo `process-jobs`: `codex exec --json -p cai-run-<id>` con el techo en un perfil propio de la ejecución (lista blanca `enabled_tools`, sin terminal ni web). Lee el skill sin terminal. Comprobado con codex-cli 0.163.0 el 2026-11-19 (el asistente) y el 2026-11-27 (salida y `resume`); las demás, pendientes de una prueba manual | No, de momento: tiene `--core-tools` (lista blanca), `--allowed-mcp-server-names`, `--exclude-tools` y `-o stream-json`, pero no tiene forma de comprobar el techo sin un modelo (no tiene `debug`). Revisado con Qwen Code 0.25.2 el 2026-10-16; pendiente de comprobarlo con un modelo local | No (Antigravity no imprime nada sin terminal) |
 | Cola de encargos | Sí (`list_agent_requests`, `complete_agent_request`, skill `handle-requests`) | Sí | Sí (mismas herramientas o `cai requests … --json`) | Sí | Sí, con MCP o CLI |
 
 Comprobado con `claude` 2.1.296 (2026-10-12, modelo haiku, sin datos):

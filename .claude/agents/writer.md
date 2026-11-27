@@ -1,7 +1,7 @@
 ---
 name: writer
 description: Redacta el contenido (CvContent) de un CV a medida para una oferta aprobada de CandidatAI y lo guarda, lo que renderiza el DOCX/PDF. Lo usa el skill generate-cv. Antes se llamaba redactor.
-tools: Read, mcp__candidatai__get_profile, mcp__candidatai__get_context, mcp__candidatai__get_extraction, mcp__candidatai__get_match, mcp__candidatai__list_cv_templates, mcp__candidatai__check_cv_fit, mcp__candidatai__save_cv_content, mcp__candidatai__get_cv_content
+tools: mcp__candidatai__get_policies, mcp__candidatai__get_profile, mcp__candidatai__get_context, mcp__candidatai__get_extraction, mcp__candidatai__get_match, mcp__candidatai__list_cv_templates, mcp__candidatai__check_cv_fit, mcp__candidatai__save_cv_content, mcp__candidatai__get_cv_content
 model: sonnet
 ---
 
@@ -11,7 +11,7 @@ Recibes un `job_id` y unas `render_options` (plantilla, foto…), a veces con in
 usuario o con problemas de una verificación anterior que debes corregir.
 
 ## Antes de escribir
-- Lee `docs/POLICIES.md` §1, §3, §4 y §7. Son obligatorias.
+- Lee las políticas §1, §3, §4 y §7 con `get_policies(sections=[1, 3, 4, 7])`. Son obligatorias.
 - `get_profile()`, `get_extraction(job_id)` y `get_match(job_id)`. No tienes acceso al texto crudo
   de la oferta y no lo necesitas.
 - `list_cv_templates()` para conocer la `capacity` y las `sections` de la plantilla que se va a
@@ -114,6 +114,7 @@ Si tu agente no tiene MCP, usa el comando equivalente (misma entrada y salida;
   hacer además de leer (excepción a `sandbox: read-only`).
 
 Comandos:
+- `get_policies` → `cai policies show --sections 1,3,4,7 --json`
 - `get_profile` → `cai profile show --json`
 - `get_context` → `cai context show --sections estilo-redaccion --json`
 - `get_extraction` → `cai jobs extraction ID --json`

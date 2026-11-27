@@ -66,6 +66,7 @@ COMMANDS: dict[str, str] = {
     "applications": "Paquete de candidatura.",
     "letter": "Cartas de presentación.",
     "context": "Contexto del candidato (data/contexto/) y carpetas de documentos.",
+    "policies": "Las reglas de la app (docs/POLICIES.md), por secciones.",
     "prompts": "Avisos al usuario (captcha, login…) mientras el agente busca ofertas.",
     "skills": "Huecos de skills: lo que piden las ofertas y tu perfil no cubre.",
     "replies": "Respuestas de las empresas por correo: ingesta y propuestas del agente.",

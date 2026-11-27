@@ -42,12 +42,22 @@ def codex_home(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
 
 def test_manifest_codex_headless_only_without_raw_job_text() -> None:
     """Fase 48.1a: las acciones que no leen el texto crudo de una oferta (Codex es de nivel B) y
-    cuyo techo cabe en un perfil (sin roles que lean ficheros)."""
+    cuyo techo cabe en un perfil (sin roles que lean ficheros: las políticas, con
+    `get_policies`)."""
     spec = agent_registry.get("codex")
     assert spec is not None and spec.headless is not None
     headless = spec.headless
     assert headless.ceiling == "config" and headless.output == "codex-json"
-    assert headless.actions == ["assistant", "assess-fit", "assess-fit-job", "translate-summary"]
+    assert headless.actions == [
+        "assistant",
+        "assess-fit",
+        "assess-fit-job",
+        "translate-summary",
+        "generate-cv",
+        "correct-cv",
+        "verify-cv",
+        "generate-cover-letter",
+    ]
     for action in headless.actions:
         assert "get_job" not in ACTIONS[action].background  # type: ignore[index]
         assert agent_run_config.ceiling_problem(action) is None  # type: ignore[arg-type]

@@ -37,6 +37,7 @@ policy:
   auto_allow:
     - mcp:get_status
     - mcp:get_schema
+    - mcp:get_policies
     - mcp:list_jobs
     - mcp:get_job
     - mcp:check_job_open
@@ -288,8 +289,8 @@ targets:
       # navegador ni plugins, en solo lectura y sin aprobaciones, y apaga los demás servidores MCP
       # de tu configuración. Los subagentes heredan ese techo. Comprobado con codex-cli 0.163.0.
       # Solo acciones que no leen el texto crudo de una oferta (Codex es de nivel B: fuera
-      # `process-jobs`). Las que delegan en `writer` o `verifier` (CV, carta) no caben: sus roles
-      # leen docs/ y el perfil de Codex no puede limitar la lectura a esa carpeta.
+      # `process-jobs`). El CV y la carta caben desde que `writer` y `verifier` piden las políticas
+      # con `get_policies` en vez de leer docs/ (el perfil no podría limitar la lectura a esa carpeta).
       headless:
         ceiling: config
         command: [codex, exec, --json, --skip-git-repo-check, -p, "cai-run-{run_id}", "{model}", "{prompt}"]
@@ -300,7 +301,15 @@ targets:
           home: ~/.codex
           agent: "cai-run-{run_id}"
         output: codex-json
-        actions: [assistant, assess-fit, assess-fit-job, translate-summary]
+        actions:
+          - assistant
+          - assess-fit
+          - assess-fit-job
+          - translate-summary
+          - generate-cv
+          - correct-cv
+          - verify-cv
+          - generate-cover-letter
     tools:                        # herramientas lógicas → nombres nativos (solo `mcp_prefix`)
       mcp_prefix: "mcp__candidatai__"
     # Codex no permite limitar herramientas por subagente: se aplica sandbox_mode del rol.

@@ -20,6 +20,7 @@
     "candidatai_*": "ask",
     "candidatai_get_status": "allow",
     "candidatai_get_schema": "allow",
+    "candidatai_get_policies": "allow",
     "candidatai_list_jobs": "allow",
     "candidatai_get_job": "allow",
     "candidatai_check_job_open": "allow",

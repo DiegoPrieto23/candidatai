@@ -20,12 +20,15 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 
 ### Cambiado
 
-- **Los botones del agente ya no abren una ventana si no hace falta**: con Claude Code (y con
-  OpenCode o Codex en lo que pueden), «Generar CV», «Valorar esta oferta» y las demás acciones que
+- **Los botones del agente ya no abren una ventana si no hace falta**: con Claude Code, Codex u
+  OpenCode, «Generar CV», «Valorar esta oferta» y las demás acciones que
   no preguntan van sin ventana y se siguen en el aviso. Las que preguntan o usan el navegador
   siguen abriendo su ventana.
-- **Codex trabaja sin ventana en más acciones**: además del Asistente, «Valorar esta oferta», la
-  valoración de las ofertas por revisar y el resumen en inglés.
+- **Codex y OpenCode generan el CV y la carta sin ventana**: el redactor y el verificador piden las
+  políticas a la app en vez de leer el fichero, así que caben en lo que la app les deja hacer.
+  Codex trabaja ya sin ventana en todo lo que lo admite salvo «Valorar las ofertas nuevas».
+- **Nuevo comando `cai policies show`** (herramienta `get_policies`): las reglas de la app por
+  secciones, para los agentes.
 - **Claude Code ya no pregunta si usar el servidor de CandidatAI** la primera vez que se abre en la
   carpeta: va aprobado en la configuración del proyecto. Sigue preguntando si confías en la carpeta.
 - **La terminal de `cai start` habla en español y en inglés a la vez**: cada mensaje sale en los dos

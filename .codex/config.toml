@@ -11,6 +11,9 @@ approval_mode = "approve"
 [mcp_servers.candidatai.tools.get_schema]
 approval_mode = "approve"
 
+[mcp_servers.candidatai.tools.get_policies]
+approval_mode = "approve"
+
 [mcp_servers.candidatai.tools.list_jobs]
 approval_mode = "approve"
 
