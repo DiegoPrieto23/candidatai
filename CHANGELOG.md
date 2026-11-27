@@ -11,6 +11,8 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 
 ### Cambiado
 
+- **Claude Code ya no pregunta si usar el servidor de CandidatAI** la primera vez que se abre en la
+  carpeta: va aprobado en la configuración del proyecto. Sigue preguntando si confías en la carpeta.
 - **La terminal de `cai start` habla en español y en inglés a la vez**: cada mensaje sale en los dos
   idiomas, primero en el del portal.
 

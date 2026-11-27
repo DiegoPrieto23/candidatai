@@ -184,7 +184,10 @@ aceptas en la UI, y aceptar no tiene herramienta ni comando.
 ## Notas por agente
 
 ### Claude Code
-- La primera vez te pedirá aprobar el servidor MCP del proyecto. Tras cambiar el código del
+- La primera vez pregunta si confías en la carpeta. El servidor `candidatai` va aprobado en
+  `.claude/settings.json` (`enabledMcpjsonServers`), así que después no pregunta si usarlo
+  (comprobado con Claude Code 2.1.332 el 2026-11-27: Claude Code solo lee ese ajuste en una
+  carpeta de confianza). `sync_agents.py --check` falla si falta. Tras cambiar el código del
   servidor, reinicia Claude Code (o reconecta en `/mcp`) para que arranque la versión nueva.
 - `get_job` y `save_extraction` están permitidas en `.claude/settings.json` para que el subagente
   `extractor` procese ofertas sin pedir permiso en cada una. Las herramientas que escriben
@@ -250,7 +253,10 @@ aceptas en la UI, y aceptar no tiene herramienta ni comando.
   "AGENTS.md"` (no hace falta `QWEN.md`), los permisos de `policy` (`permissions.allow` y `deny`) y
   `"$version": 4`: sin la versión, Qwen migra el fichero al abrirlo y lo reescribe.
 - Al abrirlo te pedirá aprobar el servidor del proyecto (`qwen mcp list` lo muestra como «Pending
-  approval» hasta entonces).
+  approval» hasta entonces). Qwen guarda esa aprobación en tu perfil (`~/.qwen/mcpApprovals.json`),
+  no en el proyecto, así que la app no puede darla por ti: «Approve this server» o, antes de
+  abrirlo, `qwen mcp approve candidatai` en la carpeta (comprobado con Qwen Code 0.26.0 el
+  2026-11-27; `"trust": true` en el servidor no la evita).
 - **Skills:** solo lee `.qwen/skills/`, que es una copia generada de `.agents/skills/`. Se invocan
   con `/generate-cv 42`.
 - **Subagentes:** `.qwen/agents/<rol>.md`, con una lista `tools` que, según su documentación, deja

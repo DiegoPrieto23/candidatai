@@ -2,6 +2,7 @@
   "env": {
     "MCP_TIMEOUT": "60000"
   },
+  "enabledMcpjsonServers": ["candidatai"],
   "permissions": {
     "allow": [
       "Bash(uv run pytest *)",

@@ -191,6 +191,7 @@ def test_claude_settings_must_match_policy(tmp_path: Path) -> None:
     real["permissions"]["allow"].remove("mcp__candidatai__get_status")
     real["permissions"]["allow"].append("mcp__candidatai__add_event")
     real["permissions"]["deny"].remove("Read(./.env)")
+    real["enabledMcpjsonServers"] = []  # sin aprobar, Claude Code pregunta la primera vez
     path = tmp_path / "settings.json"
     path.write_text(json.dumps(real), encoding="utf-8")
     with pytest.raises(SystemExit) as exc:
@@ -198,4 +199,5 @@ def test_claude_settings_must_match_policy(tmp_path: Path) -> None:
     message = str(exc.value)
     assert "falta en allow: mcp__candidatai__get_status" in message
     assert "sobra en allow (no está en policy.auto_allow): mcp__candidatai__add_event" in message
+    assert "falta en enabledMcpjsonServers: candidatai" in message
     assert "falta en deny: Read(./.env)" in message

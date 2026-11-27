@@ -147,6 +147,12 @@ hace y se aprueba. Si no puede abrirlo, el botón muestra la orden entera, con *
 pegarla en el agente. Su flechita ofrece además **En segundo plano** (sin ventana; un aviso indica
 cuándo termina) y **Dejar para la próxima sesión**.
 
+Si la primera vez que el agente se abre en la carpeta de CandidatAI pregunta si se confía en ella,
+hay que aceptar, o no podrá usar la app. Claude Code, Codex, OpenCode y Antigravity usan después las
+herramientas de CandidatAI sin preguntar nada más. Qwen Code pide además aprobar su servidor
+(«Approve this server»); también se puede aprobar antes con `qwen mcp approve candidatai` en esa
+carpeta.
+
 <img src="img/es/agent.webp" alt="Página Agente: el agente listo, «Configurar agentes», lo que queda para la próxima sesión y la comparación por significado" width="88%">
 
 ## 4. La primera vez: la demo
