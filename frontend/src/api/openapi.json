@@ -16211,6 +16211,130 @@
         }
       }
     },
+    "/agent/runs/{run_id}/events": {
+      "get": {
+        "tags": [
+          "agent"
+        ],
+        "summary": "Get Agent Run Events",
+        "description": "La conversación de una ejecución (herramientas, texto del agente, resultado) desde `after`.\nComo las demás lecturas de ejecuciones, solo para la UI: no hay herramienta MCP.",
+        "operationId": "get_agent_run_events",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Run Id"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "After"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentRunEvents"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
     "/agent/runs/{run_id}/cancel": {
       "post": {
         "tags": [
@@ -25210,6 +25334,123 @@
         ],
         "title": "AgentRequestView"
       },
+      "AgentRunEventView": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "At"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "system",
+              "tool_start",
+              "tool_result",
+              "text",
+              "user",
+              "question",
+              "permission",
+              "result",
+              "error"
+            ],
+            "title": "Kind"
+          },
+          "tool": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tool"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          },
+          "ok": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ok"
+          },
+          "sub": {
+            "type": "boolean",
+            "title": "Sub"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "at",
+          "kind",
+          "tool",
+          "text",
+          "ok",
+          "sub"
+        ],
+        "title": "AgentRunEventView"
+      },
+      "AgentRunEvents": {
+        "properties": {
+          "run_id": {
+            "type": "integer",
+            "title": "Run Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "running",
+              "done",
+              "needs_user",
+              "failed",
+              "cancelled",
+              "timeout"
+            ],
+            "title": "Status"
+          },
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/AgentRunEventView"
+            },
+            "type": "array",
+            "title": "Events"
+          },
+          "last_seq": {
+            "type": "integer",
+            "title": "Last Seq"
+          }
+        },
+        "type": "object",
+        "required": [
+          "run_id",
+          "status",
+          "events",
+          "last_seq"
+        ],
+        "title": "AgentRunEvents",
+        "description": "La conversación de una ejecución desde `after` (el `seq` del último que ya se tiene)."
+      },
       "AgentRunList": {
         "properties": {
           "runs": {
@@ -25665,6 +25906,36 @@
           "total": {
             "type": "integer",
             "title": "Total"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/TaskStep"
+            },
+            "type": "array",
+            "title": "Steps",
+            "default": []
+          },
+          "last_tool": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Tool"
+          },
+          "agent": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent"
           },
           "started_at": {
             "type": "string",
@@ -42277,6 +42548,29 @@
           "created_at"
         ],
         "title": "SuggestionView"
+      },
+      "TaskStep": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "done",
+              "current",
+              "pending"
+            ],
+            "title": "State"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "state"
+        ],
+        "title": "TaskStep"
       },
       "TemplateInfo": {
         "properties": {

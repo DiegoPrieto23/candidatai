@@ -45,7 +45,11 @@ Una fila por ejecución de una fuente; la usan los conectores y, desde la 09b, a
 ### `agent_tasks` (fase 39g)
 Lo que acaba de lanzar un botón de la app: de ella salen los avisos «Leyendo y valorando ofertas…», «Generando el
 CV…». Cómo va se calcula con `mcp_calls` (un guardado correcto posterior) y, en segundo plano, con
-`agent_runs`. Las conversaciones no se siguen: no tienen un final que avisar.
+`agent_runs`. Las conversaciones no se siguen: no tienen un final que avisar. Las acciones con
+pasos declarados (`agent_actions.Step`: «Generar CV», «Corregir CV», «Verificar CV», «Escribir
+carta») dicen en el aviso en qué paso van, también con `mcp_calls`: un paso está hecho si el agente
+llamó bien a una de sus herramientas o a la de un paso posterior.
+
 | Columna | Tipo | Notas |
 |---|---|---|
 | id | int PK | |
@@ -861,6 +865,25 @@ Reclamar es un `UPDATE` condicionado a que no haya otra `running`: una sola a la
 entre procesos. Cancelar y terminar también van condicionados al estado. Si el worker se para, la
 que esté en curso queda `failed`; si muere de golpe, al arrancar quedan `failed`, no se repiten y
 se para su agente si sigue vivo.
+
+### `agent_run_events`
+La conversación de una ejecución en segundo plano, en orden, para seguirla en el portal (migración
+0045). La escribe el runner con lo que leen los lectores de `agent_output.py` y la UI la lee con
+`GET /agent/runs/{id}/events?after=<seq>`. Hasta 2 000 por ejecución.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | int PK | |
+| run_id | FK agent_runs | |
+| seq | int | Orden dentro de la ejecución (único con `run_id`) |
+| at | datetime | Cuándo lo guardó el runner |
+| kind | str | `system` (arranque), `tool_start`, `tool_result`, `text` (lo que escribe el agente principal), `result`, `error`; reservados: `user`, `question`, `permission` |
+| tool | str? | La herramienta, sin prefijo MCP (`get_profile`, `Skill`, `command_execution`…) |
+| text | text? | El texto del agente (hasta 8 000 caracteres, con sus saltos de línea), el resultado si no repite el último mensaje, el error o, en una herramienta, un detalle corto: el skill, el subagente o el fichero. `denied` en un `tool_result` que el techo de la acción no permitió. Nunca la entrada ni la salida de una herramienta |
+| ok | bool? | En `tool_result` y `result`: si fue bien |
+| sub | bool | Lo hizo un subagente (su texto no se guarda) |
+
+El texto del agente es contenido no confiable: la UI lo pinta como texto plano.
 
 ### `agent_requests`
 Cola de encargos: lo que la UI deja para la próxima sesión interactiva del agente.

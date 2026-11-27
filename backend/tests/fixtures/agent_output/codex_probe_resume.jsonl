@@ -1,0 +1,4 @@
+{"type": "thread.started", "thread_id": "01a21e2e-4c5b-7261-ae3d-355c2ad341e8"}
+{"type": "turn.started"}
+{"type": "item.completed", "item": {"id": "item_0", "type": "agent_message", "text": "Me pediste consultar `get_status` y resumir en una frase cuántas ofertas hay por revisar."}}
+{"type": "turn.completed", "usage": {"input_tokens": 157902, "cached_input_tokens": 133376, "cache_write_input_tokens": 0, "output_tokens": 458, "reasoning_output_tokens": 81}}

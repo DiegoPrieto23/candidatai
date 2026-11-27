@@ -43,11 +43,11 @@ from app.core import processes
 from app.core.config import REPO_ROOT
 from app.core.db import session_scope
 from app.core.policies import get_policies
-from app.models import AgentRun
+from app.models import AgentRun, AgentRunEvent
 from app.models.base import utcnow
 from app.services import agent_registry, agent_run_config
 from app.services.agent_launch import CLIENT_ENV, QUESTION_PREFIX, QUESTION_PREFIX_EN
-from app.services.agent_output import PARSERS, short
+from app.services.agent_output import PARSERS, RunEvent, short
 from app.services.agent_runs import INTERRUPTED, ProgressKind, RunStatus
 
 logger = logging.getLogger(__name__)
@@ -55,6 +55,7 @@ logger = logging.getLogger(__name__)
 FLUSH_SECONDS = 2.0  # cada cuánto se guarda el progreso y se mira si han pedido cancelar
 RESULT_GRACE_SECONDS = 10.0  # tras el resultado final, lo que se espera a que el agente salga
 MAX_QUESTIONS = 10
+MAX_EVENTS = 2_000  # de la conversación de una ejecución; lo que pase de ahí no se guarda
 # «PREGUNTA:» con la orden en español y «QUESTION:» con la orden en inglés.
 _QUESTION_WORDS = "|".join(re.escape(p.rstrip(":")) for p in (QUESTION_PREFIX, QUESTION_PREFIX_EN))
 QUESTION_RE = re.compile(rf"^[\W_]*(?:{_QUESTION_WORDS})\s*:\**\s*(.+)$", re.I)
@@ -242,6 +243,34 @@ def _save(run_id: int, **values: Any) -> bool:
     return _retry_locked(work)
 
 
+def _save_events(run_id: int, events: list[RunEvent], saved: int) -> int:
+    """Guarda los eventos de la conversación que aún no estaban (desde `saved`) y devuelve
+    cuántos hay guardados. Hasta `MAX_EVENTS`."""
+    fresh = events[saved:MAX_EVENTS]
+    if not fresh:
+        return saved
+
+    def work() -> None:
+        with session_scope() as session:
+            now = utcnow()
+            session.add_all(
+                AgentRunEvent(
+                    run_id=run_id,
+                    seq=saved + offset + 1,
+                    at=now,
+                    kind=event.kind,
+                    tool=event.tool,
+                    text=event.text,
+                    ok=event.ok,
+                    sub=event.sub,
+                )
+                for offset, event in enumerate(fresh)
+            )
+
+    _retry_locked(work)
+    return saved + len(fresh)
+
+
 def _mcp_prefix(agent: str) -> str | None:
     """`tools.mcp_prefix` del agente que ejecutó, si tiene segundo plano (`agent_registry`)."""
     try:
@@ -282,14 +311,23 @@ def _execute(run: AgentRun, timeout: float | None, poll: float) -> AgentRunOutco
     policy = get_policies().background_runs
     timeout = timeout if timeout is not None else policy.timeout_minutes * 60
     progress: deque[dict[str, Any]] = deque(maxlen=policy.max_progress_lines)
+    # La conversación: lo que da el lector de la salida más lo que dice el propio runner.
+    events: list[RunEvent] = []
+    saved_events = 0
 
     def note(kind: ProgressKind, text: str) -> None:
         progress.append({"at": utcnow().isoformat(), "kind": kind, "text": text})
 
-    def finish(status: RunStatus, error: str | None = None, **values: Any) -> AgentRunOutcome:
+    def finish(
+        status: RunStatus, error: str | None = None, told: bool = False, **values: Any
+    ) -> AgentRunOutcome:
+        """`told`: el agente ya dejó el error en la conversación (no se repite)."""
         if error:
             note("error", short(error))
+            if not told:
+                events.append(RunEvent("error", short(error, 500)))
         values = {"progress": list(progress), "finished_at": utcnow(), **values}
+        _save_events(run.id, events, saved_events)
         _save(run.id, status=status, error=error, **values)
         questions = len(values.get("questions") or [])
         return AgentRunOutcome(
@@ -344,6 +382,7 @@ def _execute(run: AgentRun, timeout: float | None, poll: float) -> AgentRunOutco
                 for kind, text in state.progress[seen:]:
                     note(kind, text)
                 seen = len(state.progress)
+                events.extend(state.events[len(events) :])  # hasta `finish`, solo los del lector
                 if state.mcp_broken:
                     stop = "mcp"
                     break
@@ -358,6 +397,7 @@ def _execute(run: AgentRun, timeout: float | None, poll: float) -> AgentRunOutco
                 break
             if now >= next_flush:
                 next_flush = now + FLUSH_SECONDS
+                saved_events = _save_events(run.id, events, saved_events)
                 if _save(run.id, progress=list(progress), session_id=state.session_id):
                     stop = "cancelled"
                     break
@@ -411,7 +451,7 @@ def _execute(run: AgentRun, timeout: float | None, poll: float) -> AgentRunOutco
     if state.is_error:
         kind = f" ({state.subtype})" if state.subtype and state.subtype != "success" else ""
         reason = short(state.result or "sin detalle")
-        return finish("failed", f"El agente terminó con error{kind}: {reason}", **common)
+        return finish("failed", f"El agente terminó con error{kind}: {reason}", told=True, **common)
     questions = questions_in(state.result or "")
     note("info", "Terminada.")
     return finish("needs_user" if questions else "done", questions=questions, **common)

@@ -69,6 +69,14 @@ class AgentTaskNotFoundError(LookupError):
     """No existe ese aviso."""
 
 
+StepState = Literal["done", "current", "pending"]
+
+
+class TaskStep(BaseModel):
+    id: str  # el nombre sale de los textos de la UI
+    state: StepState
+
+
 class AgentTaskView(BaseModel):
     id: int
     action: ActionId
@@ -84,6 +92,11 @@ class AgentTaskView(BaseModel):
     outcome: TaskOutcome | None
     done: int
     total: int  # 0: no es por lotes
+    # Los pasos de la acción (`agent_actions.Step`), si los tiene, y la última herramienta de la
+    # app que ha llamado el agente (la actividad, para las que no tienen pasos).
+    steps: list[TaskStep] = []
+    last_tool: str | None = None
+    agent: str | None = None  # el de la ejecución en segundo plano
     started_at: datetime
     finished_at: datetime | None
 
@@ -159,6 +172,27 @@ def _for_this_job(row: AgentTask, call: McpCall) -> bool:
     return row.job_id is None or call.job_id is None or call.job_id == row.job_id
 
 
+def _steps(action: str, called: set[str], finished_ok: bool) -> list[TaskStep]:
+    """Hecho: se llamó bien a una de sus herramientas o a la de un paso posterior. El primero sin
+    hacer es el actual. Los pasos sin herramientas («Listo») solo al terminar bien."""
+    spec = ACTIONS.get(action)  # type: ignore[call-overload]
+    if spec is None or not spec.steps:
+        return []
+    reached = -1
+    for index, step in enumerate(spec.steps):
+        if step.tools and called.intersection(step.tools):
+            reached = index
+    if finished_ok:
+        reached = len(spec.steps) - 1
+    steps: list[TaskStep] = []
+    for index, step in enumerate(spec.steps):
+        state: StepState = (
+            "done" if index <= reached else "current" if index == reached + 1 else "pending"
+        )
+        steps.append(TaskStep(id=step.id, state=state))
+    return steps
+
+
 def _view(session: Session, row: AgentTask, subject: str | None) -> AgentTaskView:
     track = TRACKED[row.action]  # type: ignore[index]
     calls = _calls_since(session, row)
@@ -195,6 +229,8 @@ def _view(session: Session, row: AgentTask, subject: str | None) -> AgentTaskVie
         status = "stale"
     else:
         status = "running"
+    mine = [call for call in calls if _for_this_job(row, call)]
+    called = {call.tool for call in mine if call.ok}
     return AgentTaskView(
         id=row.id,
         action=row.action,  # type: ignore[arg-type]
@@ -210,6 +246,9 @@ def _view(session: Session, row: AgentTask, subject: str | None) -> AgentTaskVie
         outcome=outcome,
         done=min(done, row.total) if row.total else done,
         total=row.total,
+        steps=_steps(row.action, called, outcome == "done"),
+        last_tool=mine[-1].tool if mine else None,
+        agent=run.agent if run is not None else None,
         started_at=row.started_at,
         finished_at=finished_at if status == "finished" else None,
     )

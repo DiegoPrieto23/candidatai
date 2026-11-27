@@ -397,6 +397,18 @@ def get_agent_run(session: SessionDep, run_id: int) -> agent_runs.AgentRunView:
         raise _not_found(exc) from exc
 
 
+@router.get("/runs/{run_id}/events", operation_id="get_agent_run_events")
+def get_agent_run_events(
+    session: SessionDep, run_id: int, after: Annotated[int, Query(ge=0)] = 0
+) -> agent_runs.AgentRunEvents:
+    """La conversación de una ejecución (herramientas, texto del agente, resultado) desde `after`.
+    Como las demás lecturas de ejecuciones, solo para la UI: no hay herramienta MCP."""
+    try:
+        return agent_runs.run_events(session, run_id, after)
+    except agent_runs.RunNotFoundError as exc:
+        raise _not_found(exc) from exc
+
+
 @router.post(
     "/runs/{run_id}/cancel", operation_id="cancel_agent_run", dependencies=[Depends(require_ui)]
 )

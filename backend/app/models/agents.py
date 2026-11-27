@@ -47,6 +47,31 @@ class AgentRun(Base):
     finished_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
 
 
+class AgentRunEvent(Base):
+    """Un paso de la conversación de una ejecución en segundo plano, para verla en el portal.
+
+    `kind`: `system` (arranque), `tool_start`, `tool_result`, `text` (lo que escribe el agente),
+    `user`, `question`, `permission`, `result` o `error`. `seq` ordena los de una ejecución. De
+    las herramientas solo se guarda el nombre, un detalle corto (el skill, el subagente, el
+    fichero) y si fueron bien, nunca su entrada ni su salida: pueden llevar texto de una oferta.
+    `text` es contenido del agente, no confiable: la UI lo pinta como texto plano. `sub`: lo hizo
+    un subagente.
+    """
+
+    __tablename__ = "agent_run_events"
+    __table_args__ = (UniqueConstraint("run_id", "seq"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    run_id: Mapped[int] = mapped_column(ForeignKey("agent_runs.id"), index=True)
+    seq: Mapped[int]
+    at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
+    kind: Mapped[str] = mapped_column(String(16))
+    tool: Mapped[str | None] = mapped_column(String(80))
+    text: Mapped[str | None] = mapped_column(Text)
+    ok: Mapped[bool | None]
+    sub: Mapped[bool] = mapped_column(default=False)
+
+
 class AgentTask(Base):
     """Lo que un botón acaba de lanzar y de lo que hay que avisar (`services/agent_tasks.py`).
 

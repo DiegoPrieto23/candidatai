@@ -21,7 +21,7 @@ from pydantic import BaseModel
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
-from app.models import AgentRun, AssistantRequest, SkillGapMark
+from app.models import AgentRun, AgentRunEvent, AssistantRequest, SkillGapMark
 from app.models.base import utcnow
 from app.services import agent_launch, agent_tasks, assess_threshold, ui_language
 from app.services.agent_launch import ACTIONS, ActionId, LaunchError, LaunchResult
@@ -33,6 +33,18 @@ RunStatus = Literal["queued", "running", "done", "needs_user", "failed", "cancel
 ACTIVE: tuple[RunStatus, ...] = ("queued", "running")
 FINISHED: tuple[RunStatus, ...] = ("done", "needs_user", "failed", "cancelled", "timeout")
 ProgressKind = Literal["tool", "text", "info", "error"]
+# La conversación de una ejecución (`agent_run_events`), para seguirla en el portal.
+EventKind = Literal[
+    "system",
+    "tool_start",
+    "tool_result",
+    "text",
+    "user",
+    "question",
+    "permission",
+    "result",
+    "error",
+]
 INTERRUPTED = "El worker se cerró mientras se ejecutaba. No se repite: se puede lanzar otra vez."
 
 
@@ -68,6 +80,25 @@ class AgentRunView(BaseModel):
 class AgentRunList(BaseModel):
     runs: list[AgentRunView]
     active: int  # en cola o en curso
+
+
+class AgentRunEventView(BaseModel):
+    seq: int
+    at: datetime
+    kind: EventKind
+    tool: str | None  # sin prefijo MCP
+    text: str | None  # del agente: contenido no confiable, se pinta como texto plano
+    ok: bool | None
+    sub: bool
+
+
+class AgentRunEvents(BaseModel):
+    """La conversación de una ejecución desde `after` (el `seq` del último que ya se tiene)."""
+
+    run_id: int
+    status: RunStatus
+    events: list[AgentRunEventView]
+    last_seq: int  # para la próxima consulta; el de `after` si no hay nada nuevo
 
 
 class RunNotFoundError(LookupError):
@@ -242,6 +273,38 @@ def _row(session: Session, run_id: int) -> AgentRun:
 
 def get_run(session: Session, run_id: int) -> AgentRunView:
     return view(_row(session, run_id))
+
+
+EVENTS_PAGE = 500
+
+
+def run_events(session: Session, run_id: int, after: int = 0) -> AgentRunEvents:
+    """Lo nuevo de la conversación desde `after`, en orden. El portal la consulta cada poco."""
+    row = _row(session, run_id)
+    rows = session.scalars(
+        select(AgentRunEvent)
+        .where(AgentRunEvent.run_id == run_id, AgentRunEvent.seq > after)
+        .order_by(AgentRunEvent.seq)
+        .limit(EVENTS_PAGE)
+    ).all()
+    events = [
+        AgentRunEventView(
+            seq=e.seq,
+            at=e.at,
+            kind=e.kind,  # type: ignore[arg-type]
+            tool=e.tool,
+            text=e.text,
+            ok=e.ok,
+            sub=e.sub,
+        )
+        for e in rows
+    ]
+    return AgentRunEvents(
+        run_id=run_id,
+        status=row.status,  # type: ignore[arg-type]
+        events=events,
+        last_seq=events[-1].seq if events else after,
+    )
 
 
 def list_runs(session: Session, limit: int = 20, job_id: int | None = None) -> AgentRunList:

@@ -2676,6 +2676,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/agent/runs/{run_id}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Agent Run Events
+         * @description La conversación de una ejecución (herramientas, texto del agente, resultado) desde `after`.
+         *     Como las demás lecturas de ejecuciones, solo para la UI: no hay herramienta MCP.
+         */
+        get: operations["get_agent_run_events"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/agent/runs/{run_id}/cancel": {
         parameters: {
             query?: never;
@@ -4264,6 +4285,46 @@ export interface components {
             /** Completed At */
             completed_at: string | null;
         };
+        /** AgentRunEventView */
+        AgentRunEventView: {
+            /** Seq */
+            seq: number;
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "system" | "tool_start" | "tool_result" | "text" | "user" | "question" | "permission" | "result" | "error";
+            /** Tool */
+            tool: string | null;
+            /** Text */
+            text: string | null;
+            /** Ok */
+            ok: boolean | null;
+            /** Sub */
+            sub: boolean;
+        };
+        /**
+         * AgentRunEvents
+         * @description La conversación de una ejecución desde `after` (el `seq` del último que ya se tiene).
+         */
+        AgentRunEvents: {
+            /** Run Id */
+            run_id: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "queued" | "running" | "done" | "needs_user" | "failed" | "cancelled" | "timeout";
+            /** Events */
+            events: components["schemas"]["AgentRunEventView"][];
+            /** Last Seq */
+            last_seq: number;
+        };
         /** AgentRunList */
         AgentRunList: {
             /** Runs */
@@ -4384,6 +4445,15 @@ export interface components {
             done: number;
             /** Total */
             total: number;
+            /**
+             * Steps
+             * @default []
+             */
+            steps: components["schemas"]["TaskStep"][];
+            /** Last Tool */
+            last_tool?: string | null;
+            /** Agent */
+            agent?: string | null;
             /**
              * Started At
              * Format: date-time
@@ -10018,6 +10088,16 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+        };
+        /** TaskStep */
+        TaskStep: {
+            /** Id */
+            id: string;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "done" | "current" | "pending";
         };
         /**
          * TemplateInfo
@@ -23684,6 +23764,102 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AgentRunView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_agent_run_events: {
+        parameters: {
+            query?: {
+                after?: number;
+            };
+            header?: never;
+            path: {
+                run_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentRunEvents"];
                 };
             };
             /** @description Unauthorized */
