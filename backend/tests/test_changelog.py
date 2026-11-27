@@ -55,8 +55,8 @@ def test_the_changelog_has_the_expected_structure() -> None:
     assert notes.check(CHANGELOG) == []
     sections, _ = notes.parse(CHANGELOG)
     assert sections[0].name == "Sin publicar"
-    # Fase 28.1: la primera release publicada, 0.1.0, recoge todo lo anterior (fases 01-28.1).
-    first = next(s for s in sections if s.name == "0.1.0")
+    # La primera release, 1.0.0, recoge todo lo anterior.
+    first = next(s for s in sections if s.name == "1.0.0")
     for mark in ("OpenCode", "Personio", "expand", "cai stats story", "SHA-256", "Docker"):
         assert mark in first.text(), mark
 
