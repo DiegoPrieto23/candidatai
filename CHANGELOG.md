@@ -9,6 +9,11 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 
 ## [Sin publicar]
 
+### Corregido
+
+- **Los menús desplegables que no caben en la pantalla**, como el de la flecha de los botones del
+  agente en una ventana baja, se desplazan en lugar de quedar cortados.
+
 ## [1.2.0] - 2026-11-27
 
 ### Añadido
