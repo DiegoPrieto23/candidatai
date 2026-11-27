@@ -532,6 +532,11 @@ Muchas pantallas tienen botones que lanzan el agente con la orden ya escrita:
   y lo que escribe (en pantallas anchas, la página se aparta para dejarle sitio). Si falla, el aviso
   ofrece **Abrir en una ventana**, que retoma la misma sesión. Con **Abrir en una ventana** activado
   en la página «Agente», el botón principal vuelve a abrir la ventana del agente.
+  En el panel se le puede **escribir**: mientras trabaja, se le pasa en su siguiente paso; cuando
+  ya ha terminado, retoma la misma conversación (p. ej. «acorta el resumen» saca otra versión del CV
+  y la verifica), con Claude Code u OpenCode; con Codex, se sigue en una ventana. La pestaña
+  **Terminal** enseña lo mismo como en una consola. Las conversaciones de cada oferta se vuelven a
+  abrir desde su ficha, en «Historial».
 - **En una ventana aparte:** abre una ventana con el agente, donde se ve y se aprueba lo que hace.
   Es lo que hace el botón principal en las acciones que preguntan o usan el navegador o la web, y
   una opción del desplegable en las demás. Si un botón no puede abrir el agente, muestra la orden

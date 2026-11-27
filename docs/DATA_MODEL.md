@@ -898,6 +898,12 @@ La conversación de una ejecución en segundo plano, en orden, para seguirla en 
 | text | text? | El texto del agente (hasta 8 000 caracteres, con sus saltos de línea), el resultado si no repite el último mensaje, el error o, en una herramienta, un detalle corto: el skill, el subagente o el fichero. `denied` en un `tool_result` que el techo de la acción no permitió. Nunca la entrada ni la salida de una herramienta |
 | ok | bool? | En `tool_result` y `result`: si fue bien |
 | sub | bool | Lo hizo un subagente (su texto no se guarda) |
+| delivered_at | datetime? | Fase 48.1c (migración 0047): en un mensaje del usuario (`kind = user`) escrito mientras trabaja, cuándo se le pasó al agente (con su siguiente herramienta). Los que retoman la conversación van en la orden y nacen entregados |
+
+`user` (fase 48.1c) es lo que el usuario escribe en el panel. Al retomar una ejecución terminada,
+la misma fila de `agent_runs` vuelve a `queued` con la orden de retomar su sesión, y la conversación
+sigue con el `seq` siguiente: el `seq` lo da la base (el mayor más uno), porque escriben el runner y
+la API.
 
 El texto del agente es contenido no confiable: la UI lo pinta como texto plano.
 

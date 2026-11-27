@@ -438,6 +438,31 @@ def get_agent_run(session: SessionDep, run_id: int) -> agent_runs.AgentRunView:
         raise _not_found(exc) from exc
 
 
+class MessageBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    text: str = Field(min_length=1, max_length=agent_runs.MAX_MESSAGE)
+
+
+@router.post(
+    "/runs/{run_id}/messages",
+    operation_id="send_agent_run_message",
+    dependencies=[Depends(require_ui)],
+)
+def send_agent_run_message(
+    session: SessionDep, run_id: int, body: MessageBody
+) -> agent_runs.AgentRunEvents:
+    """Escribirle al agente (fase 48.1c): mientras trabaja, se le pasa con su siguiente
+    herramienta; si ya terminó, se retoma la misma conversación sin ventana."""
+    try:
+        return agent_runs.send_message(session, run_id, body.text)
+    except agent_runs.RunNotFoundError as exc:
+        raise _not_found(exc) from exc
+    except LaunchError as exc:
+        _raise(exc)
+        raise
+
+
 @router.get("/runs/{run_id}/events", operation_id="get_agent_run_events")
 def get_agent_run_events(
     session: SessionDep, run_id: int, after: Annotated[int, Query(ge=0)] = 0

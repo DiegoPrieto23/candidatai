@@ -34,6 +34,7 @@ function run(changes: Partial<AgentRunView> = {}): AgentRunView {
     usage: null,
     cancel_requested: false,
     can_resume: true,
+    asks_permissions: true,
     created_at: '2026-10-12T10:00:00Z',
     started_at: '2026-10-12T10:00:00Z',
     finished_at: '2026-10-12T10:01:30Z',

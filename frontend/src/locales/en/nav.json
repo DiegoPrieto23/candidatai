@@ -278,7 +278,21 @@
         "cancelled": "stopped",
         "timeout": "timed out"
       },
-      "noPermissions": "This agent does not ask the portal for permission: whatever is not allowed in this action is denied without asking."
+      "noPermissions": "This agent does not ask the portal for permission: whatever is not allowed in this action is denied without asking.",
+      "resumed": "The conversation continues",
+      "terminal": "Terminal",
+      "terminalOk": "done",
+      "views": "Conversation views",
+      "compose": {
+        "label": "Message for the agent",
+        "placeholderLive": "Instruction for the agent…",
+        "placeholderResume": "Ask for a change or continue…",
+        "send": "Send",
+        "hintLive": "It is passed on at its next step.",
+        "hintResume": "It continues the same conversation: it does not start from scratch.",
+        "windowOnly": "This agent does not continue the conversation without a window: it is followed in a window, in the same session.",
+        "openWindow": "Open in a window"
+      }
     },
     "waitingQuestion": "The agent is waiting for an answer.",
     "waitingPermission": "The agent is asking for permission to continue.",

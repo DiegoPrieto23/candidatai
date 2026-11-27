@@ -131,6 +131,9 @@ targets:
       # de 5 min) y quiere un solo bloque de texto con {behavior, updatedInput | message}.
       headless:
         asks_permissions: true
+        # Fase 48.1c: lo que se le escribe al terminar retoma la misma sesión, con el mismo techo.
+        resume_after: claude
+        resume_args: [--resume, "{session_id}"]
         command:
           - claude
           - -p
@@ -297,6 +300,9 @@ targets:
       # Solo acciones que no leen el texto crudo de una oferta (Codex es de nivel B: fuera
       # `process-jobs`). El CV y la carta caben desde que `writer` y `verifier` piden las políticas
       # con `get_policies` en vez de leer docs/ (el perfil no podría limitar la lectura a esa carpeta).
+      # Sin `resume_args` (fase 48.1c): `codex exec resume` no admite `-p`, y `codex exec -p <perfil>
+      # resume` lo ignora (comprobado: corrió con un perfil que no existe), así que retomaría sin
+      # techo. Lo que se le escribe al terminar se sigue en una ventana («Abrir en una ventana»).
       headless:
         ceiling: config
         command: [codex, exec, --json, --skip-git-repo-check, -p, "cai-run-{run_id}", "{model}", "{prompt}"]
@@ -410,6 +416,10 @@ targets:
       # 1.19.3 (docs/AGENTS_COMPAT.md).
       headless:
         ceiling: config
+        # Fase 48.1c: retomar la misma sesión, con su configuración de la ejecución (sin probar con
+        # un modelo: PENDIENTES).
+        resume_after: run
+        resume_args: [--session, "{session_id}"]
         command: [opencode, run, --format, json, --pure, --agent, cai-run, "{model}", "{prompt}"]
         config:
           format: opencode

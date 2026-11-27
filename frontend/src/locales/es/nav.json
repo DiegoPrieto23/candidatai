@@ -278,7 +278,21 @@
         "cancelled": "detenida",
         "timeout": "tiempo agotado"
       },
-      "noPermissions": "Este agente no pide permisos al portal: lo que no tiene permitido en esta acción se deniega sin preguntar."
+      "noPermissions": "Este agente no pide permisos al portal: lo que no tiene permitido en esta acción se deniega sin preguntar.",
+      "resumed": "Se retoma la conversación",
+      "terminal": "Terminal",
+      "terminalOk": "hecho",
+      "views": "Vistas de la conversación",
+      "compose": {
+        "label": "Mensaje para el agente",
+        "placeholderLive": "Indicación para el agente…",
+        "placeholderResume": "Pedir un cambio o seguir…",
+        "send": "Enviar",
+        "hintLive": "Se le pasa con su siguiente paso.",
+        "hintResume": "Retoma la misma conversación: no empieza de cero.",
+        "windowOnly": "Este agente no retoma la conversación sin ventana: se sigue en una ventana, en la misma sesión.",
+        "openWindow": "Abrir en una ventana"
+      }
     },
     "waitingQuestion": "El agente espera una respuesta.",
     "waitingPermission": "El agente pide permiso para seguir.",

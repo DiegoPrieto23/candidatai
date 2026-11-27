@@ -70,6 +70,9 @@ class AgentRunEvent(Base):
     text: Mapped[str | None] = mapped_column(Text)
     ok: Mapped[bool | None]
     sub: Mapped[bool] = mapped_column(default=False)
+    # Fase 48.1c: un mensaje del usuario (`kind = user`) escrito mientras trabaja se le pasa con la
+    # respuesta de su siguiente herramienta; aquí, cuándo. Al retomar, va en la orden.
+    delivered_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
 
 
 class AgentPermissionRule(Base):

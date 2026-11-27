@@ -364,6 +364,80 @@ describe('Avisos de lo que lanzan los botones', () => {
       })
     })
 
+    describe('Escribirle al agente y la pestaña «Terminal» (fase 48.1c)', () => {
+      const open = async () => {
+        await userEvent.click(await screen.findByRole('button', { name: 'Ver conversación' }))
+        return screen.findByRole('complementary', { name: /CV/ })
+      }
+
+      it('mientras trabaja, el mensaje se envía y sale en la conversación', async () => {
+        const conv = { ...conversation(), reply: 'live' }
+        const sent = { ...conv, events: [...conv.events, event('user', { text: 'En inglés, por favor.' })] }
+        const calls = mockApi(
+          routes([cv()], {
+            'GET /agent/runs/11/events': conv,
+            'GET /agent/agents': { agents: [] },
+            'POST /agent/runs/11/messages': sent,
+          }),
+        )
+        renderApp('/como-funciona')
+        const panel = await open()
+        expect(within(panel).getByText('Se le pasa con su siguiente paso.')).toBeInTheDocument()
+        await userEvent.type(within(panel).getByRole('textbox', { name: 'Mensaje para el agente' }), 'En inglés, por favor.{Enter}')
+        await waitFor(() =>
+          expect(calls.find((c) => c.path === '/agent/runs/11/messages')?.body).toEqual({ text: 'En inglés, por favor.' }),
+        )
+        expect(await within(panel).findByText('En inglés, por favor.')).toBeInTheDocument()
+        expect(within(panel).getByRole('textbox', { name: 'Mensaje para el agente' })).toHaveValue('')
+      })
+
+      it('al terminar, retoma la misma conversación; la segunda vez dice que se retoma', async () => {
+        const base = conversation('done')
+        const conv = {
+          ...base,
+          reply: 'resume',
+          events: [...base.events, event('result', { ok: true }), event('user', { text: 'Acorta el resumen.' }), event('system', { text: 'started' })],
+        }
+        mockApi(routes([cv({ action: 'verify-cv', status: 'finished', outcome: 'done', finished_at: '2026-11-03T10:03:00Z' })], { 'GET /agent/runs/11/events': conv, 'GET /agent/agents': { agents: [] } }))
+        renderApp('/como-funciona')
+        const panel = await open()
+        expect(within(panel).getByText('Retoma la misma conversación: no empieza de cero.')).toBeInTheDocument()
+        expect(within(panel).getByText('El agente ha empezado')).toBeInTheDocument()
+        expect(within(panel).getByText('Se retoma la conversación')).toBeInTheDocument()
+        expect(within(panel).getByText('Acorta el resumen.')).toBeInTheDocument()
+      })
+
+      it('si su agente no retoma sin ventana, ofrece abrirla en una ventana', async () => {
+        const conv = { ...conversation('done'), reply: 'window' }
+        const calls = mockApi(
+          routes([cv({ action: 'verify-cv', status: 'finished', outcome: 'done', finished_at: '2026-11-03T10:03:00Z' })], {
+            'GET /agent/runs/11/events': conv,
+            'GET /agent/agents': { agents: [] },
+            'POST /agent/runs/11/open': { status: 202, body: { ok: true, agent: 'codex', message: '' } },
+          }),
+        )
+        renderApp('/como-funciona')
+        const panel = await open()
+        expect(within(panel).queryByRole('textbox', { name: 'Mensaje para el agente' })).not.toBeInTheDocument()
+        await userEvent.click(within(panel).getByRole('button', { name: 'Abrir en una ventana' }))
+        await waitFor(() => expect(calls.some((c) => c.path === '/agent/runs/11/open')).toBe(true))
+      })
+
+      it('la pestaña «Terminal» enseña lo mismo como en una consola', async () => {
+        mockApi(routes([cv()], { 'GET /agent/runs/11/events': { ...conversation(), reply: 'live' }, 'GET /agent/agents': { agents: [] } }))
+        renderApp('/como-funciona')
+        const panel = await open()
+        await userEvent.click(within(panel).getByRole('tab', { name: 'Terminal' }))
+        const terminal = within(panel).getByRole('tabpanel', { name: 'Terminal' })
+        expect(terminal).toHaveTextContent('· El agente ha empezado')
+        expect(terminal).toHaveTextContent('● get_profile')
+        expect(terminal).toHaveTextContent('⎿ hecho')
+        expect(terminal).toHaveTextContent('● Agent(writer)')
+        expect(terminal).toHaveTextContent('↳ ● save_cv_content')
+        expect(terminal.querySelector('b')).toBeNull() // el texto del agente, tal cual
+      })
+    })
+
     it('si falla, deja abrirla en una ventana', async () => {
       const calls = mockApi(
         routes([cv({ status: 'finished', outcome: 'failed', finished_at: '2026-11-03T10:03:00Z' })], {

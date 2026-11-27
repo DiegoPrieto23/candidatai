@@ -6,7 +6,7 @@ import type { AgentAction, AgentRunEvent } from '@/api/queries'
 export type TasksT = TFunction<'nav', 'tasks'>
 
 /** Dónde se ve el resultado. Lo que es de una oferta va a su ficha, en la pestaña que toca. */
-export function resultLink(task: AgentTaskView): string | null {
+export function resultLink(task: Pick<AgentTaskView, 'action' | 'job_id'>): string | null {
   const action = task.action as AgentAction
   if (action === 'process-jobs') return '/bandeja'
   if (action === 'assess-fit') return '/bandeja/revision'
@@ -123,4 +123,50 @@ export function mergeByTime(items: RunItem[], prompts: PromptView[]): PanelEntry
   }
   for (const prompt of queue) merged.push({ kind: 'prompt', prompt })
   return merged
+}
+
+/** Una línea de la pestaña «Terminal», con su tono. */
+export type TerminalLine = { text: string; tone: 'normal' | 'dim' | 'accent' | 'warn' | 'error' }
+
+/**
+ * La conversación como en una consola (fase 48.1c): cada paso en una línea, en orden y tal cual,
+ * solo lectura. Lo que escribe el agente es texto plano.
+ */
+export function terminalLines(t: TasksT, events: AgentRunEvent[]): TerminalLine[] {
+  const lines: TerminalLine[] = []
+  let started = false
+  for (const event of events) {
+    const indent = event.sub ? '  ↳ ' : ''
+    switch (event.kind) {
+      case 'system':
+        lines.push({ text: `· ${started ? t('panel.resumed') : t('panel.started')}`, tone: 'dim' })
+        started = true
+        break
+      case 'tool_start':
+        lines.push({ text: `${indent}● ${event.tool ?? '?'}${event.text ? `(${event.text})` : ''}`, tone: 'accent' })
+        break
+      case 'tool_result':
+        lines.push({
+          text: `${indent}  ⎿ ${event.ok ? t('panel.terminalOk') : event.text === 'denied' ? t('panel.denied') : t('panel.toolFailed')}`,
+          tone: event.ok ? 'dim' : 'warn',
+        })
+        break
+      case 'text':
+        lines.push({ text: `● ${event.text ?? ''}`, tone: 'normal' })
+        break
+      case 'user':
+        lines.push({ text: `> ${event.text ?? ''}`, tone: 'normal' })
+        break
+      case 'result':
+        lines.push({ text: `${event.ok ? '✓' : '✗'} ${event.ok ? t('panel.finished') : t('panel.finishedWithError')}`, tone: event.ok ? 'accent' : 'error' })
+        if (event.text) lines.push({ text: event.text, tone: 'normal' })
+        break
+      case 'error':
+        lines.push({ text: `✗ ${event.text ?? t('panel.error')}`, tone: 'error' })
+        break
+      default:
+        break
+    }
+  }
+  return lines
 }

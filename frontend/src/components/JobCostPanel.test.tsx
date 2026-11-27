@@ -1,4 +1,5 @@
 import { screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import type { JobCost } from '@/api/client'
 import { jobView, mockApi, renderApp, status } from '@/test/utils'
@@ -58,6 +59,55 @@ describe('Coste del agente en la ficha (fase 25.4)', () => {
     expect(runs).toHaveTextContent(/Valorar las ofertas nuevas · claude · .* · repartida entre 2 ofertas/)
     expect(runs).toHaveTextContent(/Generar CV · opencode · ollama\/qwen3:8b/)
     expect(within(panel).getByText(/No cuenta lo que se hace en una terminal/)).toBeInTheDocument()
+  })
+
+  it('cada ejecución abre su conversación, donde se le puede seguir escribiendo (fase 48.1c)', async () => {
+    const run = {
+      id: 4,
+      action: 'generate-cv',
+      label: 'Generar CV',
+      job_id: 1,
+      milestone_id: null,
+      agent: 'claude',
+      model: null,
+      status: 'done',
+      prompt: '…',
+      allowed_tools: [],
+      progress: [],
+      result: 'Listo.',
+      questions: [],
+      error: null,
+      usage: null,
+      cancel_requested: false,
+      can_resume: true,
+      asks_permissions: true,
+      created_at: '2026-10-13T09:58:00Z',
+      started_at: '2026-10-13T09:58:00Z',
+      finished_at: '2026-10-13T10:00:00Z',
+    }
+    const events = {
+      run_id: 4,
+      status: 'done',
+      last_seq: 1,
+      prompts: [],
+      reply: 'resume',
+      events: [{ seq: 1, at: '2026-10-13T09:58:01Z', kind: 'text', tool: null, text: 'CV terminado.', ok: null, sub: false }],
+    }
+    mockApi({
+      'GET /status': status(),
+      'GET /jobs/1': jobView(),
+      'GET /jobs/1/costs': cost(),
+      'GET /agent/runs/4': run,
+      'GET /agent/runs/4/events': events,
+      'GET /agent/agents': { agents: [] },
+    })
+    renderApp('/jobs/1?tab=history')
+    const panel = await screen.findByRole('region', { name: 'Coste del agente' })
+    const [, second] = within(panel).getAllByRole('button', { name: 'Ver conversación' })
+    await userEvent.click(second)
+    const side = await screen.findByRole('complementary', { name: 'CV generado' })
+    expect(within(side).getByText('CV terminado.')).toBeInTheDocument()
+    expect(within(side).getByRole('textbox', { name: 'Mensaje para el agente' })).toBeInTheDocument()
   })
 
   it('sin ejecuciones no se enseña', async () => {

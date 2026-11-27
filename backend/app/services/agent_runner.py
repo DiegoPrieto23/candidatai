@@ -250,33 +250,63 @@ def _save_events(run_id: int, events: list[RunEvent], seen: int, stored: int) ->
     """Guarda los eventos de la conversación desde `seen` y devuelve hasta dónde se ha mirado y
     cuántos hay guardados. Hasta `MAX_EVENTS`; los dos últimos huecos, solo para el resultado y
     los errores."""
-    rows: list[AgentRunEvent] = []
-    now = utcnow()
+    fresh: list[RunEvent] = []
     for event in events[seen:]:
         room = MAX_EVENTS if event.kind in FINAL_EVENTS else MAX_EVENTS - len(FINAL_EVENTS)
         if stored >= room:
             continue
         stored += 1
-        rows.append(
-            AgentRunEvent(
-                run_id=run_id,
-                seq=stored,
-                at=now,
-                kind=event.kind,
-                tool=event.tool,
-                text=event.text,
-                ok=event.ok,
-                sub=event.sub,
-            )
-        )
-    if rows:
+        fresh.append(event)
+    if fresh:
 
         def work() -> None:
-            with session_scope() as session:
-                session.add_all(rows)
+            # El `seq` sale de la base: los mensajes del usuario (fase 48.1c) se escriben aquí
+            # también, desde la API. La lectura va dentro del savepoint, que reserva la base para
+            # escribir (`BEGIN IMMEDIATE`, `core.db`): nadie más escribe entre leer y guardar.
+            with session_scope() as session, session.begin_nested():
+                last = session.scalar(
+                    select(func.max(AgentRunEvent.seq)).where(AgentRunEvent.run_id == run_id)
+                )
+                now = utcnow()
+                session.add_all(
+                    AgentRunEvent(
+                        run_id=run_id,
+                        seq=(last or 0) + offset + 1,
+                        at=now,
+                        kind=event.kind,
+                        tool=event.tool,
+                        text=event.text,
+                        ok=event.ok,
+                        sub=event.sub,
+                    )
+                    for offset, event in enumerate(fresh)
+                )
 
         _retry_locked(work)
     return len(events), stored
+
+
+def merge_usage(before: dict[str, Any] | None, now: dict[str, Any]) -> dict[str, Any]:
+    """Fase 48.1c: al retomar una conversación, el uso se suma al de antes (las cifras) y lo demás
+    (las herramientas denegadas) se junta."""
+    merged: dict[str, Any] = dict(before or {})
+    for key, value in now.items():
+        old = merged.get(key)
+        # Lo que da cada agente al retomar es de esa invocación, no acumulado (comprobado con Claude
+        # Code 2.1.332: `num_turns` 1 y sus propios tokens), así que se suma.
+        numbers = (int, float)
+        if (
+            isinstance(value, numbers)
+            and isinstance(old, numbers)
+            and not isinstance(value, bool)
+            and not isinstance(old, bool)
+        ):
+            merged[key] = old + value
+        elif isinstance(value, list) and isinstance(old, list):
+            merged[key] = sorted(set(old) | set(value))
+        else:
+            merged[key] = value
+    return merged
 
 
 def _mcp_prefix(agent: str) -> str | None:
@@ -434,8 +464,8 @@ def _execute(run: AgentRun, timeout: float | None, poll: float) -> AgentRunOutco
 
     state = parser.state
     common: dict[str, Any] = {
-        "session_id": state.session_id,
-        "usage": state.usage or None,
+        "session_id": state.session_id or run.session_id,
+        "usage": merge_usage(run.usage, state.usage) or None,
         "result": state.result,
     }
     if stop == "cancelled":

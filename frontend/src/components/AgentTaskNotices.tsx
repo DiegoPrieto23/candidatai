@@ -312,7 +312,9 @@ export function AgentTaskNotices() {
           onConversation={() => setPanelTask(shown?.id === task.id ? null : task.id)}
         />
       ))}
-      {shown && <AgentRunPanel task={shown} onClose={closePanel} stop={<StopControl task={shown} />} />}
+      {shown && shown.run_id != null && (
+        <AgentRunPanel target={{ ...shown, run_id: shown.run_id }} onClose={closePanel} stop={<StopControl task={shown} />} />
+      )}
     </>
   )
 }

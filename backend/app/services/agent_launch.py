@@ -129,6 +129,9 @@ class Headless:
     config: RunConfigSpec | None = None
     # Fase 46: las únicas acciones que lanza en segundo plano (`None`: todas).
     actions: tuple[str, ...] | None = None
+    # Fase 48.1c: retomar sin ventana (`resume_args` detrás de `resume_after`); vacío: no se puede.
+    resume_after: str | None = None
+    resume_args: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -314,6 +317,8 @@ def _headless(spec: agent_registry.AgentSpec) -> Headless | None:
         headless.ceiling,
         headless.config,
         tuple(headless.actions) if headless.actions is not None else None,
+        headless.resume_after if headless.can_resume else None,
+        tuple(headless.resume_args) if headless.can_resume else (),
     )
 
 
@@ -877,7 +882,8 @@ def gaps_marked_note(lang: Lang = "es") -> str:
 QUESTION_PREFIX = "PREGUNTA:"
 QUESTION_PREFIX_EN = "QUESTION:"
 # Identificador de sesión que devuelve el agente: solo se pasa al comando si tiene esta forma.
-SESSION_ID_RE = re.compile(r"[A-Za-z0-9_-]{8,64}")  # OpenCode: `ses_…`
+# OpenCode: `ses_…`; Claude Code y Codex, un UUID. Nunca empieza por `-` (sería una opción).
+SESSION_ID_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]{7,63}")
 
 
 class BackgroundInfo(BaseModel):
@@ -935,6 +941,9 @@ def headless_command(launcher: _Launcher, prompt: str, action: ActionId) -> list
     spec = ACTIONS[action]
     if launcher.headless is None or not spec.background:
         raise LaunchError("unavailable", "Esta acción no se puede lanzar en segundo plano.")
+    if prompt.lstrip().startswith("-"):
+        # La orden va como argumento: empezando por `-`, el agente la leería como una opción.
+        raise LaunchError("invalid_request", "La orden no puede empezar por «-».")
     headless = launcher.headless
     if headless.ceiling == "config":
         if (problem := agent_run_config.ceiling_problem(action)) is not None:
@@ -959,6 +968,20 @@ def headless_command(launcher: _Launcher, prompt: str, action: ActionId) -> list
         else:
             command.append(part)
     return command
+
+
+def headless_resume_command(
+    launcher: _Launcher, prompt: str, action: ActionId, session_id: str
+) -> list[str]:
+    """Fase 48.1c: la orden sin ventana que retoma la sesión `session_id` con `prompt` como
+    mensaje nuevo, con el mismo techo que la primera vez. `LaunchError` si el agente no sabe."""
+    headless = launcher.headless
+    if headless is None or headless.resume_after is None or not SESSION_ID_RE.fullmatch(session_id):
+        raise LaunchError("unavailable", "Este agente no retoma la conversación sin ventana.")
+    command = headless_command(launcher, prompt, action)
+    at = command.index(headless.resume_after) + 1
+    extra = [arg.replace(SESSION_PLACEHOLDER, session_id) for arg in headless.resume_args]
+    return [*command[:at], *extra, *command[at:]]
 
 
 def run_config(launcher: _Launcher) -> dict[str, str] | None:

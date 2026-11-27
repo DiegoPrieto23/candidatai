@@ -1526,6 +1526,31 @@ export function useAgentRunEvents(runId: number | null) {
   })
 }
 
+/** Una ejecución, para abrir su conversación desde el historial de la ficha (fase 48.1c). */
+export function useAgentRun(runId: number | null) {
+  return useQuery({
+    queryKey: [...keys.agentRuns, runId ?? 0],
+    enabled: runId != null,
+    queryFn: () => unwrap(api.GET('/agent/runs/{run_id}', { params: { path: { run_id: runId ?? 0 } } })),
+  })
+}
+
+/**
+ * Escribirle al agente desde el panel (fase 48.1c). Devuelve la conversación entera, que sustituye
+ * a la guardada; si se retoma, el aviso vuelve a estar en curso.
+ */
+export function useSendAgentMessage(runId: number) {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (text: string) =>
+      unwrap(api.POST('/agent/runs/{run_id}/messages', { params: { path: { run_id: runId } }, body: { text } })),
+    onSuccess: (data) => {
+      client.setQueryData(keys.agentRunEvents(runId), { ...data, more: data.events.length >= EVENTS_PAGE })
+      void client.invalidateQueries({ queryKey: keys.agentTasks })
+    },
+  })
+}
+
 /** «Abrir en una ventana»: el botón principal abre el agente en una ventana en vez del portal. */
 export function useSaveWindowPreference() {
   const client = useQueryClient()

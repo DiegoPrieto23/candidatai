@@ -461,6 +461,15 @@ subagentes no tienen más. Hay dos formas de ponerlo (`ceiling`):
   de la carpeta no pide permiso en ningún modo; `data/` y `.env` siguen denegados en la orden.
   Codex no puede preguntar a la app (`exec` no pide aprobaciones) y OpenCode tampoco: lo que no
   tienen permitido se deniega, y el panel lo dice.
+- **Escribirle al agente** (fase 48.1c): mientras trabaja, el mensaje llega con la respuesta MCP de
+  su siguiente herramienta (`user_messages`), igual con todos los agentes. Al terminar, se retoma
+  la misma sesión sin ventana con `launch.headless.resume_after` + `resume_args`: Claude Code
+  (`claude --resume <id> …`, con la misma orden y techo) y OpenCode (`opencode run --session <id>
+  …`, sin probar con un modelo). **Codex no**: `codex exec resume` no admite `-p` y `codex exec -p
+  <perfil> resume …` ignora el perfil (comprobado con 0.163.0: corrió con uno que no existe), así
+  que retomaría sin techo; el panel ofrece seguir en una ventana. Comprobado con Claude Code
+  2.1.332: un bloque de texto aparte en la respuesta no le llega al modelo, por eso va dentro del
+  mismo JSON.
 - **Los roles no leen ficheros** (fase 48.1a): `writer` y `verifier` piden las políticas con
   `get_policies` en vez de leer `docs/POLICIES.md`, y las acciones del CV y la carta llevan las
   herramientas de sus roles (`ROLE_EXTRAS`: las dos verificaciones y los dos documentos, porque

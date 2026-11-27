@@ -196,7 +196,7 @@ def _steps(action: str, called: set[str], finished_ok: bool) -> list[TaskStep]:
     return steps
 
 
-def _asks_permissions(agent: str) -> bool:
+def asks_permissions(agent: str) -> bool:
     try:
         spec = agent_registry.get(agent)
     except agent_registry.ManifestError:
@@ -260,7 +260,7 @@ def _view(session: Session, row: AgentTask, subject: str | None) -> AgentTaskVie
         steps=_steps(row.action, called, outcome == "done"),
         last_tool=mine[-1].tool if mine else None,
         agent=run.agent if run is not None else None,
-        asks_permissions=run is not None and _asks_permissions(run.agent),
+        asks_permissions=run is not None and asks_permissions(run.agent),
         started_at=row.started_at,
         finished_at=finished_at if status == "finished" else None,
     )
@@ -303,6 +303,21 @@ def finish(session: Session, action: str, outcome: Literal["done", "stopped"]) -
     row.finished_at = utcnow()
     session.flush()
     return FinishTaskResult(closed=True, message="Hecho: la app ya lo avisa.")
+
+
+def reopen(session: Session, run_id: int) -> None:
+    """Fase 48.1c: al retomar una ejecución, su aviso vuelve a estar en curso (aunque se hubiera
+    cerrado). Los pasos se cuentan desde ahora."""
+    row = session.scalars(
+        select(AgentTask).where(AgentTask.run_id == run_id).order_by(AgentTask.id.desc()).limit(1)
+    ).first()
+    if row is None:
+        return
+    row.outcome = None
+    row.finished_at = None
+    row.dismissed_at = None
+    row.started_at = utcnow()
+    session.flush()
 
 
 def dismiss(session: Session, task_id: int) -> None:

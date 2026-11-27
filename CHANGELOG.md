@@ -20,6 +20,10 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
   lo que necesita permiso: «Permitir una vez», «Permitir siempre en este proyecto» o «Denegar». Sin
   respuesta en 5 minutos, se deniega. Lo permitido siempre se ve y se quita en la página «Agente».
   Un permiso nunca sustituye la confirmación de una candidatura.
+- **Escribirle al agente desde el portal**: en el panel de la conversación, lo que se escribe
+  mientras trabaja le llega en su siguiente paso; cuando ya ha terminado, retoma la misma
+  conversación (con Claude Code u OpenCode; con Codex, en una ventana). Pestaña **Terminal** con lo
+  mismo como en una consola, y las conversaciones de cada oferta, en su «Historial».
 - **«Abrir en una ventana»**, en la página «Agente», para quien prefiera que el botón principal abra
   siempre la ventana del agente.
 

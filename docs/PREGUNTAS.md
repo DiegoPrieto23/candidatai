@@ -76,7 +76,7 @@ Dónde: «Agente».
 
 ### ¿Dónde se ve lo que está haciendo el agente?
 
-En el aviso de abajo a la derecha, que sale en cualquier página con lo que lleva hecho (el paso en curso y el tiempo, si va sin ventana) y cambia cuando termina. «Ver conversación» abre un panel lateral con cada herramienta que usa el agente y lo que escribe.
+En el aviso de abajo a la derecha, que sale en cualquier página con lo que lleva hecho (el paso en curso y el tiempo, si va sin ventana) y cambia cuando termina. «Ver conversación» abre un panel lateral con cada herramienta que usa el agente y lo que escribe. Ahí se le puede escribir: a mitad se le pasa en su siguiente paso y, al terminar, retoma la misma conversación. La pestaña «Terminal» lo enseña como en una consola, y las conversaciones de cada oferta se vuelven a abrir desde su «Historial».
 
 Dónde: «Agente».
 

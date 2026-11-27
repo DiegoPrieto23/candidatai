@@ -2739,6 +2739,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/agent/runs/{run_id}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send Agent Run Message
+         * @description Escribirle al agente (fase 48.1c): mientras trabaja, se le pasa con su siguiente
+         *     herramienta; si ya terminó, se retoma la misma conversación sin ventana.
+         */
+        post: operations["send_agent_run_message"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/agent/runs/{run_id}/events": {
         parameters: {
             query?: never;
@@ -4397,6 +4418,12 @@ export interface components {
              * @default []
              */
             prompts: components["schemas"]["PromptView"][];
+            /**
+             * Reply
+             * @default none
+             * @enum {string}
+             */
+            reply: "live" | "resume" | "window" | "none";
         };
         /** AgentRunList */
         AgentRunList: {
@@ -4449,6 +4476,11 @@ export interface components {
             cancel_requested: boolean;
             /** Can Resume */
             can_resume: boolean;
+            /**
+             * Asks Permissions
+             * @default false
+             */
+            asks_permissions: boolean;
             /**
              * Created At
              * Format: date-time
@@ -7823,6 +7855,11 @@ export interface components {
             sources: components["schemas"]["SourceView"][];
             /** Default Max Offers */
             default_max_offers: number;
+        };
+        /** MessageBody */
+        MessageBody: {
+            /** Text */
+            text: string;
         };
         /** MessageDraftOut */
         MessageDraftOut: {
@@ -24157,6 +24194,104 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AgentRunView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    send_agent_run_message: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MessageBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentRunEvents"];
                 };
             };
             /** @description Unauthorized */

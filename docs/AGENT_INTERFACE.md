@@ -47,6 +47,12 @@ La app expone la misma interfaz de dos formas equivalentes, para que funcione co
   del cliente sale de la inicialización MCP (`clientInfo.name`) o, por CLI, de la variable
   opcional `CAI_CLIENT_NAME`; también se guarda como `agent_name` en los eventos que registra.
   `args_summary` guarda ids, URLs, etapas y tipos; del resto de textos, solo su longitud.
+- **Mensajes del usuario a mitad (fase 48.1c):** en una ejecución sin ventana (`CAI_RUN_ID`), lo
+  que el usuario escribe en el panel mientras el agente trabaja llega en la respuesta de su
+  siguiente herramienta por MCP, en el campo `user_messages` (una lista de textos «Indicación del
+  usuario…», dentro del mismo JSON: Claude Code solo le pasa al modelo ese bloque). Solo por MCP y
+  una vez cada mensaje; por CLI no se añade nada. Es una petición del usuario, no texto de una
+  oferta.
 - **Ninguna herramienta ni comando de esta interfaz envía nada al exterior** (ni formularios, ni
   emails, ni mensajes).
 

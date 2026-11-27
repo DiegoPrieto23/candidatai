@@ -76,7 +76,7 @@ Where: “Agent”.
 
 ### Where do I see what my agent is doing?
 
-In the notice at the bottom right, which appears on every page with what it has done so far (the current step and the time, if it runs with no window) and changes when it finishes. “View conversation” opens a side panel with every tool your agent uses and what it writes.
+In the notice at the bottom right, which appears on every page with what it has done so far (the current step and the time, if it runs with no window) and changes when it finishes. “View conversation” opens a side panel with every tool your agent uses and what it writes. You can write to it there: midway, it gets your message at its next step and, once finished, it continues the same conversation. The “Terminal” tab shows it as a console, and each job's conversations can be opened again from its “History”.
 
 Where: “Agent”.
 

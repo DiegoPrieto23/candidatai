@@ -16538,6 +16538,129 @@
         }
       }
     },
+    "/agent/runs/{run_id}/messages": {
+      "post": {
+        "tags": [
+          "agent"
+        ],
+        "summary": "Send Agent Run Message",
+        "description": "Escribirle al agente (fase 48.1c): mientras trabaja, se le pasa con su siguiente\nherramienta; si ya terminó, se retoma la misma conversación sin ventana.",
+        "operationId": "send_agent_run_message",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessageBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentRunEvents"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
     "/agent/runs/{run_id}/events": {
       "get": {
         "tags": [
@@ -25779,6 +25902,17 @@
             "type": "array",
             "title": "Prompts",
             "default": []
+          },
+          "reply": {
+            "type": "string",
+            "enum": [
+              "live",
+              "resume",
+              "window",
+              "none"
+            ],
+            "title": "Reply",
+            "default": "none"
           }
         },
         "type": "object",
@@ -25986,6 +26120,11 @@
           "can_resume": {
             "type": "boolean",
             "title": "Can Resume"
+          },
+          "asks_permissions": {
+            "type": "boolean",
+            "title": "Asks Permissions",
+            "default": false
           },
           "created_at": {
             "type": "string",
@@ -36037,6 +36176,22 @@
           "default_max_offers"
         ],
         "title": "MaxOffersResult"
+      },
+      "MessageBody": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Text"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "MessageBody"
       },
       "MessageDraftOut": {
         "properties": {

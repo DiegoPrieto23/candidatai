@@ -533,6 +533,11 @@ Many pages have buttons that launch your agent with the instruction already writ
   agent uses and what it writes (on wide screens the page moves aside to make room for it). If it
   fails, the notice offers **Open in a window**, which continues the same session. With **Open in a
   window** turned on in the **Agent** page, the main button opens your agent's window again.
+  You can **write** to your agent in the panel: while it works, it gets your message at its next
+  step; once it has finished, it continues the same conversation ("make the summary shorter"
+  produces another CV version and verifies it), with Claude Code or OpenCode; with Codex, it
+  continues in a window. The **Terminal** tab shows the same as a console. Each job's
+  conversations can be opened again from its page, under **History**.
 - **In a separate window:** opens a window with your agent; you see and approve what it does. It
   is what the main button does for actions that ask questions or use the browser or the web, and an
   option in the menu for the rest. If a button cannot open your agent, it shows the whole command
