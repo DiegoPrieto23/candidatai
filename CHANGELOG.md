@@ -38,6 +38,10 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 
 ### Cambiado
 
+- **El botón de la oferta dice adónde lleva**: en la ficha, «Ver original» pasa a «Ver en
+  LinkedIn», «Ver en InfoJobs»…, «Ver en el portal de {empresa}» si se publicó en su ATS
+  (Greenhouse, Lever, Ashby…) o «Abrir la oferta publicada» en otra web, con el dominio al pasar el
+  ratón. En la Bandeja, «Abrir» lo dice también al lector de pantalla y al pasar el ratón.
 - **Las respuestas de las empresas, con sus propias carpetas**: en cada buzón, las alertas y las
   respuestas van en bloques aparte. Las respuestas se leen por defecto de la bandeja de entrada y
   se pueden elegir otras, o varias (p. ej. una etiqueta «Procesos» de Gmail), con **Elegir del

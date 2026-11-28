@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Any, Literal, get_args
 
-from pydantic import BaseModel
+from pydantic import BaseModel, computed_field
 from sqlalchemy import case, func, or_, select
 from sqlalchemy.orm import Session, aliased, defer
 
@@ -12,6 +12,7 @@ from app.models import JobExtraction as JobExtractionRow
 from app.schemas.llm_io import JobExtraction, Salary
 from app.services import application_archive, extractions, network
 from app.services.events import EventOut, JobNotFoundError
+from app.services.job_sites import JobSite, site_of
 from app.services.pipeline import TRANSITIONS, EventType, Reached, Stage, job_events, reached_step
 from app.services.reopenings import ReopeningOf, reopening_of
 from app.services.signals import JobSignals
@@ -46,6 +47,12 @@ class JobSummary(BaseModel):
     injection_suspected: bool
     # Posible cierre y republicación (fase 16): observaciones del código, no veredictos.
     signals: JobSignals = JobSignals()
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def site(self) -> JobSite | None:
+        """Fase 48.4: en qué web se abre (portal, ATS u otra), por el dominio de la URL."""
+        return site_of(self.url)
 
 
 def last_match_subquery():

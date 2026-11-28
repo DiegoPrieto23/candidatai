@@ -145,6 +145,7 @@ export function jobRow(changes: Partial<JobRow> = {}): JobRow {
     salary: null,
     score: null,
     known_contacts: 0,
+    site: null,
     ...changes,
   }
 }

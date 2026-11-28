@@ -13,11 +13,11 @@ const erased = (count: number) => ({
 const inbox = { items: [jobRow()], total: 1, next_cursor: null }
 
 describe('Borrar datos', () => {
-  it('«Borrar oferta» está arriba, junto a «Ver original», y avisa de que no es descartar', async () => {
+  it('«Borrar oferta» está arriba, junto al enlace a la oferta, y avisa de que no es descartar', async () => {
     mockApi({ 'GET /status': status(), 'GET /jobs/1': jobView(), 'GET /jobs/1/match': matchView() })
     renderApp('/jobs/1')
     const button = await screen.findByRole('button', { name: 'Borrar oferta' })
-    const header = screen.getByRole('link', { name: /Ver original/ }).parentElement!
+    const header = screen.getByRole('link', { name: /Abrir la oferta publicada/ }).parentElement!
     expect(header).toContainElement(button)
 
     await userEvent.hover(button)

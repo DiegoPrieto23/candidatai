@@ -7148,6 +7148,8 @@ export interface components {
             closed_by?: string | null;
             /** Close Reason */
             close_reason?: ("discarded" | "filtered_out" | "rejected" | "withdrawn" | "expired" | "closed_by_company" | "duplicate" | "accepted") | null;
+            /** @description Fase 48.4: en qué web se abre (portal, ATS u otra), por el dominio de la URL. */
+            readonly site: components["schemas"]["JobSite"] | null;
         };
         /** JobRunCost */
         JobRunCost: {
@@ -7184,6 +7186,18 @@ export interface components {
             ai_screening?: components["schemas"]["AiScreeningSignal"] | null;
             stale_repost?: components["schemas"]["StaleRepostSignal"] | null;
             republished_after_close?: components["schemas"]["RepublishedSignal"] | null;
+        };
+        /** JobSite */
+        JobSite: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "portal" | "ats" | "web";
+            /** Name */
+            name: string | null;
+            /** Host */
+            host: string;
         };
         /** JobView */
         JobView: {
@@ -7232,6 +7246,8 @@ export interface components {
             close_reason?: ("discarded" | "filtered_out" | "rejected" | "withdrawn" | "expired" | "closed_by_company" | "duplicate" | "accepted") | null;
             /** Reached */
             reached?: ("before_applying" | "applied" | "interview" | "offer") | null;
+            /** @description Fase 48.4: en qué web se abre (portal, ATS u otra), por el dominio de la URL. */
+            readonly site: components["schemas"]["JobSite"] | null;
         };
         /**
          * KeywordCoverage

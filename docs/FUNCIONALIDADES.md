@@ -48,7 +48,7 @@ FEATURES.md dejan de coincidir fila a fila. -->
 | **Revisar con el teclado**: `J`/`K` para moverse, `A` aprobar, `D` descartar con motivo, `O` abrir, y Deshacer | `/bandeja/revision` | [▶ Teclado](img/es/anim/triage.webp) |
 | **El veredicto del agente**: encaje con riesgos y preguntas, citando los deal-breakers; en segundo plano se salta las de poco encaje. Avisa siempre de las ofertas con posible texto dirigido a una IA, que nunca salen como encaje fuerte. En cada oferta, «Valorar esta oferta»; para las ofertas nuevas, «Valorar las ofertas nuevas» | `assess-fit` | |
 | **«N contactos en la empresa»**: los contactos de LinkedIn (exportación oficial en CSV) cruzados con cada empresa | `/jobs/:id` | |
-| **La ficha de la oferta**, en pestañas (Oferta, Candidatura, Proceso, Empresa, Historial y notas) que se abren en la que toca según la fase: extracción, desglose del encaje, señales, historial, notas, coste en tiempo de agente y todas las secciones de abajo | `/jobs/:id` | [Ficha](img/es/job.webp) |
+| **La ficha de la oferta**, en pestañas (Oferta, Candidatura, Proceso, Empresa, Historial y notas) que se abren en la que toca según la fase: extracción, desglose del encaje, señales, historial, notas, coste en tiempo de agente y todas las secciones de abajo. Arriba, el botón de la oferta publicada dice en qué web se abre («Ver en LinkedIn», «Ver en el portal de Acme» si es un ATS como Greenhouse, o «Abrir la oferta publicada»), con el dominio al pasar el ratón | `/jobs/:id` | [Ficha](img/es/job.webp) |
 
 ## 3. CV y carta
 

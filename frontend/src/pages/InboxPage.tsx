@@ -54,6 +54,7 @@ import {
   STAGES,
 } from '@/lib/labels'
 import { useRadioGroup } from '@/lib/radioGroup'
+import { openJobLabel, siteTitle } from '@/lib/jobSite'
 import { cn } from '@/lib/utils'
 
 const MODE_FILTERS = ['onsite', 'hybrid', 'remote', 'unknown'] as const
@@ -471,7 +472,13 @@ function RowActions({ job, actions }: { job: JobRow; actions: QuickActions }) {
     <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
       {actions.openable && job.url && (
         <Button variant="ghost" size="xs" asChild>
-          <a href={job.url} target="_blank" rel="noopener noreferrer" aria-label={t('quick.openJob', { title: job.title })}>
+          <a
+            href={job.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={openJobLabel(job.site, job.title, job.company)}
+            title={siteTitle(job.site)}
+          >
             <ArrowSquareOutIcon />
             {t('quick.open')}
           </a>

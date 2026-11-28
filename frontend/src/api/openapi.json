@@ -34023,6 +34023,18 @@
               }
             ],
             "title": "Close Reason"
+          },
+          "site": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JobSite"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Fase 48.4: en qué web se abre (portal, ATS u otra), por el dominio de la URL.",
+            "readOnly": true
           }
         },
         "type": "object",
@@ -34039,7 +34051,8 @@
           "score",
           "injection_suspected",
           "remote_mode",
-          "salary"
+          "salary",
+          "site"
         ],
         "title": "JobRow"
       },
@@ -34219,6 +34232,41 @@
         },
         "type": "object",
         "title": "JobSignals"
+      },
+      "JobSite": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "portal",
+              "ats",
+              "web"
+            ],
+            "title": "Kind"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "host": {
+            "type": "string",
+            "title": "Host"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "name",
+          "host"
+        ],
+        "title": "JobSite"
       },
       "JobView": {
         "properties": {
@@ -34424,6 +34472,18 @@
               }
             ],
             "title": "Reached"
+          },
+          "site": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JobSite"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Fase 48.4: en qué web se abre (portal, ATS u otra), por el dominio de la URL.",
+            "readOnly": true
           }
         },
         "type": "object",
@@ -34443,7 +34503,8 @@
           "raw_text",
           "extraction",
           "events",
-          "injection"
+          "injection",
+          "site"
         ],
         "title": "JobView"
       },

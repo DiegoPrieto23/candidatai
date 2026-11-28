@@ -48,7 +48,7 @@ and FUNCIONALIDADES.md stop matching row by row. -->
 | **Review with the keyboard**: `J`/`K` to move, `A` approve, `D` discard with a reason, `O` open, and Undo | `/bandeja/revision` | [▶ Keyboard](img/en/anim/triage.webp) |
 | **Your agent's verdict**: fit with risks and questions, citing your deal-breakers; in the background it skips low-fit jobs. It always flags jobs with possible text aimed at an AI, which never come out as a strong fit. On each job, “Assess this job”; for new jobs, “Assess new jobs” | `assess-fit` | |
 | **"You know N people here"**: your LinkedIn connections (official CSV export) matched to each company | `/jobs/:id` | |
-| **The job page**, in tabs (Posting, Application, Process, Company, History & notes) that open on the one that fits the stage: extraction, fit breakdown, signals, history, notes, cost in agent time, and every section below | `/jobs/:id` | [Job](img/en/job.webp) |
+| **The job page**, in tabs (Posting, Application, Process, Company, History & notes) that open on the one that fits the stage: extraction, fit breakdown, signals, history, notes, cost in agent time, and every section below. At the top, the button for the published job says where it opens (“View on LinkedIn”, “View on Acme’s careers site” for an ATS such as Greenhouse, or “Open the published job”), with the domain on hover | `/jobs/:id` | [Job](img/en/job.webp) |
 
 ## 3. CV and cover letter
 
