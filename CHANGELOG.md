@@ -9,6 +9,8 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 
 ## [Sin publicar]
 
+## [1.1.0] - 2026-11-28
+
 ### Añadido
 
 - **La conversación con el agente, en el portal**: lo que se lanza sin ventana dice en el aviso de
@@ -183,5 +185,6 @@ pasos, en el README y en `docs/GUIA.md`. Tus datos van aparte y actualizar nunca
   herramientas para escribir tu perfil sin tu confirmación.
 - Los instaladores no instalan una release cuya suma SHA-256 no coincide con la publicada.
 
-[Sin publicar]: https://github.com/DiegoPrieto23/candidatai/compare/v1.0.0...HEAD
+[Sin publicar]: https://github.com/DiegoPrieto23/candidatai/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/DiegoPrieto23/candidatai/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/DiegoPrieto23/candidatai/releases/tag/v1.0.0
