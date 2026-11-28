@@ -238,7 +238,7 @@ Dónde: «Calendario».
 
 ### ¿Qué es «Respuestas»?
 
-Si se activa en un buzón, la app lee los correos de las empresas de los procesos, el agente propone qué ha pasado y la propuesta se acepta o se ignora. La app solo lee: enviar, mover y borrar correos queda fuera de su alcance.
+Si se activa en un buzón, la app lee los correos de las empresas de los procesos, el agente propone qué ha pasado y la propuesta se acepta o se ignora. Se leen de sus propias carpetas, aparte de la de las alertas: por defecto la bandeja de entrada, y en el buzón se eligen otras (p. ej. una etiqueta «Procesos») con «Elegir del buzón». Arriba, en «Respuestas», se ve de dónde se leen. La app solo lee: enviar, mover y borrar correos queda fuera de su alcance.
 
 Dónde: «Respuestas».
 

@@ -124,6 +124,10 @@
       "move": "mover",
       "accept": "aceptar",
       "ignore": "ignorar"
-    }
+    },
+    "readFrom": "Se leen: {{where}}",
+    "readNothing": "No se lee ningún buzón: las respuestas se leen de un buzón con «Leer aquí también las respuestas de las empresas».",
+    "change": "Cambiar",
+    "readNow": "Mirado: {{where}}"
   }
 }

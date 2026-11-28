@@ -2353,10 +2353,30 @@ export function useDeleteMailSource() {
 }
 
 /** Prueba un buzón guardado: login y apertura de su carpeta en solo lectura. */
-export function useTestMailSource() {
+export function useTestMailSource(purpose: 'alerts' | 'replies' = 'alerts') {
   return useMutation({
     mutationFn: (sourceId: number) =>
-      unwrap(api.POST('/mail-sources/{source_id}/test', { params: { path: { source_id: sourceId } }, body: {} })),
+      unwrap(
+        api.POST('/mail-sources/{source_id}/test', {
+          params: { path: { source_id: sourceId }, query: { purpose } },
+          body: {},
+        }),
+      ),
+  })
+}
+
+/** Fase 48.3: las carpetas de un buzón guardado (`LIST`, solo sus nombres), para elegirlas. */
+export function useMailFolders() {
+  return useMutation({
+    mutationFn: (sourceId: number) =>
+      unwrap(api.POST('/mail-sources/{source_id}/folders', { params: { path: { source_id: sourceId } }, body: {} })),
+  })
+}
+
+/** Lo mismo antes de guardarlo, con la contraseña que se acaba de escribir. */
+export function useNewMailFolders() {
+  return useMutation({
+    mutationFn: (body: Schemas['MailSourceInput']) => unwrap(api.POST('/mail-sources/folders', { body })),
   })
 }
 

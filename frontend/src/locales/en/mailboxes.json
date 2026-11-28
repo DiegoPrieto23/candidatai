@@ -35,7 +35,12 @@
       "environment": "Password set up outside the app",
       "move": "Move to keychain",
       "moving": "Moving…"
-    }
+    },
+    "alertsIn": "Alerts: {{folder}}",
+    "repliesIn": "Replies: {{folders}}",
+    "repliesOff": "not read",
+    "testAlerts": "Test alerts",
+    "testReplies": "Test replies"
   },
   "dialog": {
     "addTitle": "Add mailbox",
@@ -77,7 +82,18 @@
     "readRepliesHint": "The app checks the sender, date and subject of the emails in your inbox since your oldest open application, and saves only those from the companies you applied to. It only reads and sends nothing; a job changes stage when you accept the proposal.",
     "allowPrivate": "Server on my computer or network",
     "allowPrivateHint": "Only for your own server: for safety, the app does not connect to local addresses unless you tick this.",
-    "readRepliesHintAria": "Which emails it reads"
+    "readRepliesHintAria": "Which emails it reads",
+    "alertsBlock": "Jobs (alerts)",
+    "alertsFromEnv": "Alerts are read from “{{folder}}”. That folder is changed in the installation settings, as the email guide explains.",
+    "repliesBlock": "Replies from companies",
+    "repliesFolders": "Folders for replies",
+    "removeFolder": "Remove {{folder}}",
+    "sameFolder": "This is the same folder as the alerts one. Replies from companies usually arrive in the inbox.",
+    "loadFolders": "Choose from the mailbox",
+    "loadingFolders": "Looking for the folders…",
+    "typeFolder": "Another folder or label",
+    "addFolder": "Add",
+    "mailboxFolders": "Mailbox folders"
   },
   "providers": {
     "gmail": {
@@ -153,5 +169,6 @@
     "moving": "Moving…",
     "later": "Not now",
     "failed": "Not all of them could be moved: try again or check the system keychain."
-  }
+  },
+  "inbox": "Inbox"
 }

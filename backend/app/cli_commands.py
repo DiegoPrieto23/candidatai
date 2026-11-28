@@ -1590,7 +1590,9 @@ def _render_mail_sources(result: Any) -> None:
         if box.kind == "folder":
             where = box.path
         else:
-            where = f"{box.user} en {box.host}:{box.port}, carpeta «{box.folder}»"
+            where = f"{box.user} en {box.host}:{box.port}, alertas en «{box.folder}»"
+            if box.read_replies:
+                where += ", respuestas en " + ", ".join(f"«{f}»" for f in box.replies_folders)
             if not box.has_password:
                 where += f" (falta la contraseña: {box.secret_ref})"
             elif box.password_storage == "file":
@@ -1604,15 +1606,19 @@ def _render_mail_sources(result: Any) -> None:
 @mail_sources_app.command("test")
 def mail_sources_test(
     source_id: int = typer.Argument(..., help="Id del buzón (ver `cai mail-sources list`)."),
+    replies: bool = typer.Option(
+        False, "--replies", help="Las carpetas de respuestas en vez de la de alertas."
+    ),
     as_json: bool = JSON_OPTION,
 ) -> None:
     """Prueba un buzón: login y apertura de su carpeta en solo lectura, sin leer correos."""
     from app.core.db import session_scope
     from app.services import mail_sources
 
+    purpose: mail_sources.Purpose = "replies" if replies else "alerts"
     try:
         with session_scope() as session:
-            result = mail_sources.probe_mail_source(session, source_id)
+            result = mail_sources.probe_mail_source(session, source_id, purpose=purpose)
     except mail_sources.MailSourceNotFoundError as exc:
         error = ToolError("not_found", str(exc))
         if as_json:

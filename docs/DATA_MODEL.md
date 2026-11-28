@@ -625,11 +625,12 @@ entorno), con el nombre que guarda `secret_ref`.
 | security | str | `ssl` o `starttls` |
 | user | str? | |
 | folder | str | Carpeta IMAP de las alertas, o el nombre de la carpeta de `data/inbox/` |
-| replies_folder | str | Carpeta IMAP de las respuestas (`INBOX`) |
+| replies_folders | JSON | Fase 48.3: las carpetas IMAP de las respuestas, de 1 a 10 (`["INBOX"]` por defecto) |
+| replies_folders_set | bool | En la cuenta de `.env`: las carpetas de respuestas se eligieron en la UI y ya no salen de `CAI_IMAP_REPLIES_FOLDER` |
 | enabled | bool | |
 | read_replies | bool | Si se leen de aquí las respuestas de las empresas. Se activa a propósito, también en la «Principal» |
 | secret_ref | str? | Nombre de la contraseña en el llavero, o de su variable de entorno (`CAI_IMAP_<ALIAS>_PASSWORD`) |
-| from_env | bool | La cuenta `CAI_IMAP_*` de `.env`: servidor, usuario y carpetas salen de ahí |
+| from_env | bool | La cuenta `CAI_IMAP_*` de `.env`: servidor, usuario y carpeta de alertas salen de ahí (las de respuestas, de `.env` hasta que se eligen en la UI) |
 | allow_private | bool | «Servidor en mi equipo o mi red» (un servidor propio) |
 | last_polled_at | datetime? | Última lectura |
 | last_error | JSON? | `{code, message}` del último fallo (`MailboxError`), o `null` |

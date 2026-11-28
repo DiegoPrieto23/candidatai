@@ -1,7 +1,9 @@
 """Respuestas de las empresas por correo (fase 15).
 
-1. **Ingesta** (`poll_replies`): lee la carpeta de respuestas por IMAP en solo lectura
-   (`CAI_IMAP_REPLIES_FOLDER`, por defecto la bandeja de entrada) y `data/inbox/respuestas/`. Sin
+1. **Ingesta** (`poll_replies`): lee por IMAP en solo lectura las carpetas de respuestas de cada
+   buzón que las lee (por defecto la bandeja de entrada; varias desde la fase 48.3, elegidas en la
+   UI) y `data/inbox/respuestas/`. Un correo en dos carpetas (dos etiquetas de Gmail) cuenta una
+   vez. Sin
    candidaturas en `applied` o `in_process` no se abre el buzón. De IMAP se piden primero solo las
    cabeceras (`FROM`, `DATE`, `MESSAGE-ID`, `SUBJECT`) y el cuerpo solo de los correos que casan
    con un proceso; de los demás no se guarda nada.
@@ -212,6 +214,9 @@ class RepliesPollResult(BaseModel):
     reply_ids: list[int]
     errors: list[Issue]
     message: str
+    # Fase 48.3: lo que se ha leído bien, «Principal · INBOX» (sin procesos abiertos, nada). Un
+    # correo que está en dos carpetas cuenta dos veces en `checked`, que es orientativo.
+    read: list[str] = []
 
 
 # --- Dominios -------------------------------------------------------------------------------
@@ -493,14 +498,16 @@ def poll_replies(
             return []
         return _candidates(processes, domains, sender, name, subject, when)
 
+    accepted: set[str] = set()  # el mismo correo en otra carpeta no se descarga dos veces
+
     def wanted(header: bytes) -> bool:
         result.checked += 1
         parsed = message_from_bytes(header, policy=policy.default)
         message_id = message_id_of(header, parsed.get("Message-ID"))
-        if parsed.get("Message-ID") and _is_known(session, message_id):
+        if parsed.get("Message-ID") and (message_id in accepted or _is_known(session, message_id)):
             return False
         name, address = parseaddr(str(parsed.get("From", "")))
-        return bool(
+        matches = bool(
             candidates_of(
                 address.strip().lower(),
                 clean_header(name, 200),
@@ -508,18 +515,33 @@ def poll_replies(
                 parse_date(parsed.get("Date")),
             )
         )
+        if matches and parsed.get("Message-ID"):
+            accepted.add(message_id)
+        return matches
 
     mails: list[tuple[RawMail, str]] = []
     earliest = min(p.since for p in processes).astimezone(local_zone()).date()
     since: date = earliest - timedelta(days=1)  # SINCE va por días en la zona del servidor
     for box in boxes:  # uno detrás de otro: el fallo de uno no frena a los demás
         try:
-            account = mail_sources.account_of(box, "replies")
-            for raw in read_imap_matching(account, since, wanted, imap_factory):
-                mails.append((raw, "imap"))
+            accounts = mail_sources.replies_accounts(box)
         except MailboxError as exc:
             message = f"{box.label}: {exc.message}" if len(boxes) > 1 else exc.message
             result.errors.append(Issue(code=exc.code, message=message))
+            continue
+        for account in accounts:  # ni el de una carpeta a las otras
+            try:
+                for raw in read_imap_matching(account, since, wanted, imap_factory):
+                    mails.append((raw, "imap"))
+                result.read.append(f"{box.label} · {account.folder}")
+            except MailboxError as exc:
+                where = box.label if len(accounts) == 1 else f"{box.label} · {account.folder}"
+                message = (
+                    f"{where}: {exc.message}"
+                    if len(boxes) > 1 or len(accounts) > 1
+                    else exc.message
+                )
+                result.errors.append(Issue(code=exc.code, message=message))
     try:
         for raw in read_local(settings.replies_inbox_dir):
             result.checked += 1

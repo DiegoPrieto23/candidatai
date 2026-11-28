@@ -476,8 +476,11 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
   `review-replies` propone qué ha pasado y la propuesta se acepta en «Respuestas». Al aceptar o
   ignorar, un aviso indica en qué oferta ha quedado, con su enlace; «Ignorar» se puede deshacer
   desde él. Con el teclado: `J`/`K` para pasar de un correo a otro, `A` para aceptar, `I` para
-  ignorar. Sin activarlo, se anota en su ficha o en el tablero con «Actualizar estado». Qué lee
-  exactamente: [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md#respuestas-de-las-empresas).
+  ignorar. Sin activarlo, se anota en su ficha o en el tablero con «Actualizar estado». Las
+  respuestas se leen de sus propias carpetas, aparte de la de las alertas: por defecto la bandeja de
+  entrada, y se eligen en el buzón con **Elegir del buzón** (p. ej. también una etiqueta
+  «Procesos»). Arriba, en «Respuestas», se ve de qué buzones y carpetas se leen, con **Cambiar**. Qué
+  lee exactamente: [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md#respuestas-de-las-empresas).
 - **Resultados:** qué funciona. Arriba, frases sacadas de los datos: por qué canal responden más
   (referencia, web de la empresa, portales de empleo o las ofertas añadidas a mano), cuánto tardan
   las empresas en responder, por dónde responden antes y la mejor fuente. Cada frase sale cuando hay
@@ -604,7 +607,8 @@ clic. «Deshacer el último» deja las preferencias como estaban.
 
 - **`.env`** (en la raíz, fuera de git): `CAI_DATA_DIR`, `SOFFICE_PATH`, claves de InfoJobs y
   Adzuna, IMAP (`CAI_IMAP_HOST`, `CAI_IMAP_PORT`, `CAI_IMAP_USER`, `CAI_IMAP_PASSWORD`,
-  `CAI_IMAP_FOLDER`, `CAI_IMAP_REPLIES_FOLDER`), `CAI_BROWSER_CHANNEL` (`chrome` o `msedge` para la
+  `CAI_IMAP_FOLDER`, y `CAI_IMAP_REPLIES_FOLDER` hasta elegir las carpetas de respuestas en la UI),
+  `CAI_BROWSER_CHANNEL` (`chrome` o `msedge` para la
   candidatura asistida), `CAI_EMBEDDINGS=off`, `CAI_UPDATE_CHECK=off` (no pregunta a GitHub si hay
   una versión nueva), `UV_PATH` (uv fuera del PATH), `CAI_LANG` (`es` o
   `en`: idioma que va primero en los mensajes de `cai start` en la terminal, que salen en los dos, y de las órdenes al agente mientras no

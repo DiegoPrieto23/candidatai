@@ -8226,6 +8226,118 @@
         }
       }
     },
+    "/mail-sources/folders": {
+      "post": {
+        "tags": [
+          "mail-sources"
+        ],
+        "summary": "List New Mail Folders",
+        "description": "Fase 48.3: las carpetas de un buzón antes de guardarlo (`LIST`, solo sus nombres).",
+        "operationId": "list_new_mail_folders",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MailSourceInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MailFolderList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/mail-sources/{source_id}": {
       "patch": {
         "tags": [
@@ -8476,8 +8588,145 @@
           "mail-sources"
         ],
         "summary": "Test Mail Source",
-        "description": "Prueba un buzón guardado: login y `EXAMINE` de su carpeta, sin leer correos.",
+        "description": "Prueba un buzón guardado: login y `EXAMINE` de su carpeta de alertas o, con\n`purpose=replies`, de cada una de las de respuestas, sin leer correos.",
         "operationId": "test_mail_source",
+        "parameters": [
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Source Id"
+            }
+          },
+          {
+            "name": "purpose",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "alerts",
+                "replies"
+              ],
+              "type": "string",
+              "default": "alerts",
+              "title": "Purpose"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmptyBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MailTestResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/mail-sources/{source_id}/folders": {
+      "post": {
+        "tags": [
+          "mail-sources"
+        ],
+        "summary": "List Mail Folders",
+        "description": "Fase 48.3: las carpetas (o etiquetas de Gmail) del buzón, para elegir de cuáles se leen\nlas respuestas. Solo `LIST`: no abre ninguna ni lee correos.",
+        "operationId": "list_mail_folders",
         "parameters": [
           {
             "name": "source_id",
@@ -8505,7 +8754,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MailTestResult"
+                  "$ref": "#/components/schemas/MailFolderList"
                 }
               }
             }
@@ -35551,6 +35800,44 @@
         ],
         "title": "MailError"
       },
+      "MailFolderList": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "folders": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Folders",
+            "default": []
+          },
+          "code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "ok"
+        ],
+        "title": "MailFolderList",
+        "description": "Las carpetas del buzón (`LIST`), para elegirlas en la UI. Con `ok=False`, por qué no."
+      },
       "MailSaveResult": {
         "properties": {
           "source": {
@@ -35659,12 +35946,16 @@
             "title": "Folder",
             "default": "INBOX"
           },
-          "replies_folder": {
-            "type": "string",
-            "maxLength": 200,
-            "minLength": 1,
-            "title": "Replies Folder",
-            "default": "INBOX"
+          "replies_folders": {
+            "items": {
+              "type": "string",
+              "maxLength": 200,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 10,
+            "minItems": 1,
+            "title": "Replies Folders"
           },
           "enabled": {
             "type": "boolean",
@@ -35820,18 +36111,23 @@
             ],
             "title": "Folder"
           },
-          "replies_folder": {
+          "replies_folders": {
             "anyOf": [
               {
-                "type": "string",
-                "maxLength": 200,
-                "minLength": 1
+                "items": {
+                  "type": "string",
+                  "maxLength": 200,
+                  "minLength": 1
+                },
+                "type": "array",
+                "maxItems": 10,
+                "minItems": 1
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Replies Folder"
+            "title": "Replies Folders"
           },
           "enabled": {
             "anyOf": [
@@ -35935,9 +36231,13 @@
             "type": "string",
             "title": "Folder"
           },
-          "replies_folder": {
-            "type": "string",
-            "title": "Replies Folder"
+          "replies_folders": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Replies Folders",
+            "description": "Carpetas de las que se leen las respuestas de las empresas (fase 48.3)."
           },
           "enabled": {
             "type": "boolean",
@@ -36034,7 +36334,7 @@
           "security",
           "user",
           "folder",
-          "replies_folder",
+          "replies_folders",
           "enabled",
           "read_replies",
           "allow_private",
@@ -39552,6 +39852,14 @@
           "message": {
             "type": "string",
             "title": "Message"
+          },
+          "read": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Read",
+            "default": []
           }
         },
         "type": "object",

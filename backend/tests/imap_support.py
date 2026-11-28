@@ -1,9 +1,9 @@
 """Servidor IMAP falso y estricto para los tests: solo admite lecturas.
 
-Responde a `CAPABILITY`, `LOGIN`, `EXAMINE`, `UID SEARCH`, `UID FETCH` con `BODY.PEEK[…]`, `NOOP`
-y `LOGOUT`. Cualquier otra orden (`SELECT`, `STORE`, `COPY`, `MOVE`, `EXPUNGE`, `APPEND`, `DELETE`,
-`CLOSE`…) o un `FETCH` sin `PEEK` (que marcaría el correo como leído) queda en `violations` y
-recibe `BAD`. Escucha en 127.0.0.1, sin TLS.
+Responde a `CAPABILITY`, `LOGIN`, `LIST`, `EXAMINE`, `UID SEARCH`, `UID FETCH` con
+`BODY.PEEK[…]`, `NOOP` y `LOGOUT`. Cualquier otra orden (`SELECT`, `STORE`, `COPY`, `MOVE`,
+`EXPUNGE`, `APPEND`, `DELETE`, `CLOSE`…) o un `FETCH` sin `PEEK` (que marcaría el correo como
+leído) queda en `violations` y recibe `BAD`. Escucha en 127.0.0.1, sin TLS.
 """
 
 import re
@@ -14,8 +14,17 @@ from contextlib import contextmanager
 from dataclasses import dataclass, field
 
 USER, PASSWORD, FOLDER = "candidata@demo.invalid", "secreto-demo", "Alertas empleo"
-FOLDERS = (FOLDER, "INBOX")  # alertas (09b) y respuestas (fase 15)
-_ALLOWED = {"CAPABILITY", "LOGIN", "EXAMINE", "NOOP", "LOGOUT"}
+# Alertas (09b), respuestas (fase 15) y, para elegirlas en la UI (48.3), una etiqueta propia y otra
+# con tilde (UTF-7 modificado).
+FOLDERS = (FOLDER, "INBOX", "Procesos", "Entrevistas técnicas")
+LISTED = (
+    '(\\HasNoChildren) "/" "INBOX"',
+    '(\\HasNoChildren) "/" "Alertas empleo"',
+    '(\\HasNoChildren) "/" Procesos',
+    '(\\HasNoChildren) "/" "Entrevistas t&AOk-cnicas"',
+    '(\\HasChildren \\Noselect) "/" "[Gmail]"',
+)
+_ALLOWED = {"CAPABILITY", "LOGIN", "LIST", "EXAMINE", "NOOP", "LOGOUT"}
 _PEEK = re.compile(r"\(BODY\.PEEK\[(HEADER\.FIELDS \(([A-Z\- ]+)\))?\]\)", re.IGNORECASE)
 
 
@@ -65,8 +74,11 @@ class _Handler(socketserver.StreamRequestHandler):
                 # imaplib entrecomilla la contraseña y deja el usuario tal cual.
                 ok = [part.strip('"') for part in args.split(" ", 1)] == [USER, PASSWORD]
                 self._send(f"{tag} {'OK' if ok else 'NO'} login\r\n".encode())
+            elif command == "LIST":
+                lines = "".join(f"* LIST {line}\r\n" for line in LISTED)
+                self._send(f"{lines}{tag} OK LIST hecho\r\n".encode())
             elif command == "EXAMINE":
-                if args.strip('"') not in FOLDERS:
+                if args.strip('"') not in FOLDERS and args.strip('"') != "Entrevistas t&AOk-cnicas":
                     self._send(f"{tag} NO carpeta inexistente\r\n".encode())
                     continue
                 self._send(

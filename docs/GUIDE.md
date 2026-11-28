@@ -477,7 +477,10 @@ The worker runs the automatic sources every day at `connectors.daily_at`
   processes; `review-replies` proposes what happened and you accept it in **Replies**. When you
   accept or ignore one, a notice says which job it ended up on, with its link; **Ignore** can be undone
   from there. With the keyboard: `J`/`K` to move between emails, `A` to accept, `I` to ignore. If you
-  leave it off, note it on the job page or on the board with **Update status**.
+  leave it off, note it on the job page or on the board with **Update status**. Replies are read
+  from their own folders, separate from the alerts folder: the inbox by default, and you choose them
+  in the mailbox with **Choose from the mailbox** (a “Procesos” Gmail label as well, say). At the
+  top of **Replies** you see which mailboxes and folders are read, with **Change**.
 - **Results:** what works for you. At the top, sentences drawn from your data: which channel gets
   you more replies (referral, company careers site, job boards or the jobs you add yourself), how long
   companies take to reply, where they reply sooner and your best source. Each sentence appears once

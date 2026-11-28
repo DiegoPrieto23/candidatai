@@ -238,7 +238,7 @@ Where: “Calendar”.
 
 ### What is “Replies”?
 
-If you turn it on for a mailbox, the app reads the emails from the companies in your processes, your agent proposes what happened and you accept or ignore it. The app only reads: sending, moving and deleting emails stays in your hands.
+If you turn it on for a mailbox, the app reads the emails from the companies in your processes, your agent proposes what happened and you accept or ignore it. They are read from their own folders, separate from the alerts folder: the inbox by default, and in the mailbox you can choose others (a “Procesos” label, say) with “Choose from the mailbox”. At the top of “Replies” you see where they are read from. The app only reads: sending, moving and deleting emails stays in your hands.
 
 Where: “Replies”.
 

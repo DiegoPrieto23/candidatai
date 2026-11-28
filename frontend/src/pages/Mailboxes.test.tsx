@@ -14,7 +14,7 @@ function mailbox(id: number, overrides: Partial<MailSourceView> = {}): MailSourc
     security: 'ssl',
     user: 'ana@example.com',
     folder: 'Alertas empleo',
-    replies_folder: 'INBOX',
+    replies_folders: ['INBOX'],
     enabled: true,
     read_replies: false,
     allow_private: false,
@@ -232,7 +232,7 @@ describe('Buzones de las alertas (fase 27.4)', () => {
 
     const rows = screen.getAllByRole('listitem').filter((li) => li.textContent?.includes('Trabajo'))
     const row = rows[rows.length - 1]
-    await userEvent.click(within(row).getByRole('button', { name: 'Probar' }))
+    await userEvent.click(within(row).getByRole('button', { name: 'Probar las alertas' }))
     expect(await within(row).findByText(/Conectado/)).toBeInTheDocument()
     await userEvent.click(within(row).getByRole('switch', { name: 'Leer Trabajo' }))
     expect(calls.find((c) => c.method === 'PATCH')?.body).toEqual({ enabled: false })
@@ -244,7 +244,7 @@ describe('Buzones de las alertas (fase 27.4)', () => {
     expect(calls.some((c) => c.method === 'DELETE' && c.path === '/mail-sources/2')).toBe(true)
   })
 
-  it('editar la cuenta de .env solo deja cambiar el nombre y la contraseña', async () => {
+  it('editar la cuenta de .env deja cambiar el nombre, la contraseña y las respuestas, no el servidor', async () => {
     const principal = mailbox(1, { label: 'Principal', from_env: true, has_password: false, secret_ref: 'CAI_IMAP_PASSWORD' })
     const calls = mockApi(
       routes([principal], {
@@ -299,5 +299,60 @@ describe('Buzones de las alertas (fase 27.4)', () => {
     expect(section).not.toBeNull()
     await userEvent.click(within(section as HTMLElement).getByRole('button', { name: 'Añadir buzón' }))
     expect(await screen.findByRole('dialog')).toBeInTheDocument()
+  })
+
+  describe('Respuestas: de qué carpetas se leen (fase 48.3)', () => {
+    it('la tarjeta dice de dónde salen las alertas y de dónde las respuestas', async () => {
+      mockApi(routes([mailbox(1, { read_replies: true, replies_folders: ['INBOX', 'Procesos'] }), mailbox(2)]))
+      renderApp('/fuentes/correo')
+      expect(await screen.findByText('Respuestas: Bandeja de entrada y Procesos')).toBeInTheDocument()
+      expect(screen.getAllByText('Alertas: Alertas empleo')).toHaveLength(2)
+      expect(screen.getByText('Respuestas: no se leen')).toBeInTheDocument()
+      expect(screen.getAllByRole('button', { name: 'Probar las respuestas' })).toHaveLength(1)
+    })
+
+    it('las carpetas de respuestas se eligen de las del buzón y se guardan', async () => {
+      const principal = mailbox(1, { label: 'Principal', from_env: true, secret_ref: 'CAI_IMAP_PASSWORD' })
+      const calls = mockApi(
+        routes([principal], {
+          'POST /mail-sources/1/folders': { ok: true, folders: ['INBOX', 'Alertas empleo', 'Procesos'], message: '' },
+          'PATCH /mail-sources/1': { status: 200, body: { source: principal, message: 'ok', env_line: null } },
+        }),
+      )
+      renderApp('/fuentes/correo')
+      await userEvent.click(await screen.findByRole('button', { name: 'Editar Principal' }))
+      const dialog = await screen.findByRole('dialog')
+      // La carpeta de alertas de la cuenta de .env se ve, pero no se cambia aquí.
+      expect(within(dialog).getByText(/Las alertas se leen de «Alertas empleo»/)).toBeInTheDocument()
+      expect(within(dialog).queryByLabelText('Carpeta o etiqueta de las alertas')).not.toBeInTheDocument()
+      await userEvent.click(within(dialog).getByLabelText('Leer aquí también las respuestas de las empresas'))
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Elegir del buzón' }))
+      await userEvent.click(await within(dialog).findByRole('checkbox', { name: 'Procesos' }))
+      // Marcar la de alertas avisa: las respuestas no suelen llegar ahí.
+      await userEvent.click(within(dialog).getByRole('checkbox', { name: 'Alertas empleo' }))
+      expect(within(dialog).getByText(/Es la misma carpeta que la de las alertas/)).toBeInTheDocument()
+      await userEvent.click(within(dialog).getByRole('checkbox', { name: 'Alertas empleo' }))
+      await userEvent.type(within(dialog).getByLabelText('Otra carpeta o etiqueta'), 'Entrevistas{Enter}')
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Guardar' }))
+      expect(calls.find((c) => c.method === 'PATCH')?.body).toEqual({
+        label: 'Principal',
+        read_replies: true,
+        replies_folders: ['INBOX', 'Procesos', 'Entrevistas'],
+      })
+    })
+
+    it('si no se pueden pedir las carpetas, dice por qué y se pueden escribir', async () => {
+      mockApi(
+        routes([mailbox(1, { read_replies: true })], {
+          'POST /mail-sources/1/folders': { ok: false, folders: [], code: 'imap_auth', message: 'El servidor IMAP rechazó el usuario.' },
+        }),
+      )
+      renderApp('/fuentes/correo')
+      await userEvent.click(await screen.findByRole('button', { name: 'Editar Buzón 1' }))
+      const dialog = await screen.findByRole('dialog')
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Elegir del buzón' }))
+      expect(await within(dialog).findByText('El servidor IMAP rechazó el usuario.')).toBeInTheDocument()
+      expect(within(dialog).getByLabelText('Otra carpeta o etiqueta')).toBeInTheDocument()
+    })
   })
 })

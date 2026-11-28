@@ -1354,6 +1354,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/mail-sources/folders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * List New Mail Folders
+         * @description Fase 48.3: las carpetas de un buzón antes de guardarlo (`LIST`, solo sus nombres).
+         */
+        post: operations["list_new_mail_folders"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/mail-sources/{source_id}": {
         parameters: {
             query?: never;
@@ -1389,9 +1409,31 @@ export interface paths {
         put?: never;
         /**
          * Test Mail Source
-         * @description Prueba un buzón guardado: login y `EXAMINE` de su carpeta, sin leer correos.
+         * @description Prueba un buzón guardado: login y `EXAMINE` de su carpeta de alertas o, con
+         *     `purpose=replies`, de cada una de las de respuestas, sin leer correos.
          */
         post: operations["test_mail_source"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/mail-sources/{source_id}/folders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * List Mail Folders
+         * @description Fase 48.3: las carpetas (o etiquetas de Gmail) del buzón, para elegir de cuáles se leen
+         *     las respuestas. Solo `LIST`: no abre ninguna ni lee correos.
+         */
+        post: operations["list_mail_folders"];
         delete?: never;
         options?: never;
         head?: never;
@@ -7618,6 +7660,26 @@ export interface components {
             /** Message */
             message: string;
         };
+        /**
+         * MailFolderList
+         * @description Las carpetas del buzón (`LIST`), para elegirlas en la UI. Con `ok=False`, por qué no.
+         */
+        MailFolderList: {
+            /** Ok */
+            ok: boolean;
+            /**
+             * Folders
+             * @default []
+             */
+            folders: string[];
+            /** Code */
+            code?: string | null;
+            /**
+             * Message
+             * @default
+             */
+            message: string;
+        };
         /** MailSaveResult */
         MailSaveResult: {
             source: components["schemas"]["MailSourceView"];
@@ -7661,11 +7723,8 @@ export interface components {
              * @default INBOX
              */
             folder: string;
-            /**
-             * Replies Folder
-             * @default INBOX
-             */
-            replies_folder: string;
+            /** Replies Folders */
+            replies_folders?: string[];
             /**
              * Enabled
              * @default true
@@ -7722,8 +7781,8 @@ export interface components {
             password?: string | null;
             /** Folder */
             folder?: string | null;
-            /** Replies Folder */
-            replies_folder?: string | null;
+            /** Replies Folders */
+            replies_folders?: string[] | null;
             /** Enabled */
             enabled?: boolean | null;
             /** Read Replies */
@@ -7758,8 +7817,11 @@ export interface components {
             user: string | null;
             /** Folder */
             folder: string;
-            /** Replies Folder */
-            replies_folder: string;
+            /**
+             * Replies Folders
+             * @description Carpetas de las que se leen las respuestas de las empresas (fase 48.3).
+             */
+            replies_folders: string[];
             /** Enabled */
             enabled: boolean;
             /** Read Replies */
@@ -8977,6 +9039,11 @@ export interface components {
             errors: components["schemas"]["Issue"][];
             /** Message */
             message: string;
+            /**
+             * Read
+             * @default []
+             */
+            read: string[];
         };
         /**
          * ReplyDecision
@@ -17471,6 +17538,102 @@ export interface operations {
             };
         };
     };
+    list_new_mail_folders: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MailSourceInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MailFolderList"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     delete_mail_source: {
         parameters: {
             query?: never;
@@ -17669,7 +17832,9 @@ export interface operations {
     };
     test_mail_source: {
         parameters: {
-            query?: never;
+            query?: {
+                purpose?: "alerts" | "replies";
+            };
             header?: never;
             path: {
                 source_id: number;
@@ -17689,6 +17854,104 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MailTestResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_mail_folders: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmptyBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MailFolderList"];
                 };
             };
             /** @description Unauthorized */

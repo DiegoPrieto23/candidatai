@@ -131,7 +131,10 @@ class MailSource(Base):
     security: Mapped[str] = mapped_column(String(16), default="ssl")  # `ssl` o `starttls`
     user: Mapped[str | None] = mapped_column(String(320))
     folder: Mapped[str] = mapped_column(String(200), default="INBOX")
-    replies_folder: Mapped[str] = mapped_column(String(200), default="INBOX")
+    # Fase 48.3: las carpetas de las respuestas (por defecto la bandeja de entrada). En la cuenta de
+    # `.env`, `replies_folders_set` dice que se eligieron en la UI y ya no salen de `.env`.
+    replies_folders: Mapped[list[str]] = mapped_column(JSON, default=lambda: ["INBOX"])
+    replies_folders_set: Mapped[bool] = mapped_column(default=False)
     enabled: Mapped[bool] = mapped_column(default=True)
     read_replies: Mapped[bool] = mapped_column(default=False)
     secret_ref: Mapped[str | None] = mapped_column(String(64))

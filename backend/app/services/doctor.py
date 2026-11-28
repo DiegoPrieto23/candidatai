@@ -1,6 +1,7 @@
 """Comprobaciones del entorno local para `cai doctor`."""
 
 import contextlib
+import logging
 import os
 import shutil
 import sys
@@ -22,6 +23,8 @@ from app.core.config import (
     env_file_path,
 )
 from app.services.documents import pdf
+
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from app.services.agent_prefs import Resolution
@@ -385,6 +388,26 @@ def check_email_alerts(
     )
 
 
+def _env_replies_folders(settings: Settings) -> list[str]:
+    """Las carpetas de respuestas de la cuenta de `.env`: las elegidas en la UI (fase 48.3) o, si
+    no, `CAI_IMAP_REPLIES_FOLDER`. Solo lee: el diagnóstico no crea nada."""
+    from sqlalchemy import select
+    from sqlalchemy.exc import SQLAlchemyError
+
+    from app.core.db import session_scope
+    from app.models import MailSource
+    from app.services import mail_sources
+
+    try:
+        with session_scope() as session:
+            row = session.scalars(select(MailSource).where(MailSource.from_env.is_(True))).first()
+            if row is not None:
+                return mail_sources.replies_folders(row)
+    except SQLAlchemyError:  # sin base de datos aún: lo de `.env`
+        logger.debug("Sin base de datos para las carpetas de respuestas", exc_info=True)
+    return [settings.imap_replies_folder]
+
+
 def check_email_replies(
     settings: Settings, imap_factory: "ImapFactory | None" = None
 ) -> CheckResult:
@@ -408,21 +431,25 @@ def check_email_replies(
             detail="sin IMAP (opcional); deja las respuestas .eml o .mbox en "
             "data/inbox/respuestas/",
         )
-    folder = settings.imap_replies_folder
-    try:
-        kwargs = {"factory": imap_factory} if imap_factory else {}
-        account = settings_account(settings, folder)
-        assert account is not None
-        conn = connect_imap(account, **kwargs)
-    except MailboxError as exc:
-        status = CheckStatus.WARN if exc.code == "network" else CheckStatus.ERROR
-        return CheckResult(name=name, status=status, detail=exc.message)
-    with contextlib.suppress(Exception):
-        conn.logout()
+    folders = _env_replies_folders(settings)
+    for folder in folders:
+        try:
+            kwargs = {"factory": imap_factory} if imap_factory else {}
+            account = settings_account(settings, folder)
+            assert account is not None
+            conn = connect_imap(account, **kwargs)
+        except MailboxError as exc:
+            status = CheckStatus.WARN if exc.code == "network" else CheckStatus.ERROR
+            return CheckResult(name=name, status=status, detail=exc.message)
+        with contextlib.suppress(Exception):
+            conn.logout()
+    shown = ", ".join(f"«{folder}»" for folder in folders)
+    which = "carpeta" if len(folders) == 1 else "carpetas"
     return CheckResult(
         name=name,
         status=CheckStatus.OK,
-        detail=f"carpeta «{folder}» accesible en solo lectura; solo se lee si activas «Leer aquí "
+        detail=f"{which} {shown} accesible{'s' if len(folders) > 1 else ''} en solo lectura; "
+        "solo se lee si activas «Leer aquí "
         "también las respuestas» en un buzón, y solo se descargan los correos de las empresas de "
         "las candidaturas enviadas",
     )

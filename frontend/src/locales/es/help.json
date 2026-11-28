@@ -293,8 +293,8 @@
     },
     "replies": {
       "q": "¿Qué es «Respuestas»?",
-      "a": "Si se activa en un buzón, la app lee los correos de las empresas de los procesos, el agente propone qué ha pasado y la propuesta se acepta o se ignora. La app solo lee: enviar, mover y borrar correos queda fuera de su alcance.",
-      "keywords": "correos empresas respuestas aceptar ignorar clasificar"
+      "a": "Si se activa en un buzón, la app lee los correos de las empresas de los procesos, el agente propone qué ha pasado y la propuesta se acepta o se ignora. Se leen de sus propias carpetas, aparte de la de las alertas: por defecto la bandeja de entrada, y en el buzón se eligen otras (p. ej. una etiqueta «Procesos») con «Elegir del buzón». Arriba, en «Respuestas», se ve de dónde se leen. La app solo lee: enviar, mover y borrar correos queda fuera de su alcance.",
+      "keywords": "correos empresas respuestas aceptar ignorar clasificar carpeta bandeja de entrada etiqueta buzón"
     },
     "followUps": {
       "q": "¿Cómo se sabe a qué empresas conviene escribir de nuevo?",

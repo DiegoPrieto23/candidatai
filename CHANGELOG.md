@@ -38,6 +38,12 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 
 ### Cambiado
 
+- **Las respuestas de las empresas, con sus propias carpetas**: en cada buzón, las alertas y las
+  respuestas van en bloques aparte. Las respuestas se leen por defecto de la bandeja de entrada y
+  se pueden elegir otras, o varias (p. ej. una etiqueta «Procesos» de Gmail), con **Elegir del
+  buzón**, también en la cuenta configurada al instalar. La tarjeta dice «Alertas: … · Respuestas:
+  …», **Probar las respuestas** abre cada carpeta y la página **Respuestas** dice de dónde lee
+  (con **Cambiar**) y qué ha mirado al revisar el correo.
 - **Los botones del agente ya no abren una ventana si no hace falta**: con Claude Code, Codex u
   OpenCode, «Generar CV», «Valorar esta oferta» y las demás acciones que
   no preguntan van sin ventana y se siguen en el aviso. Las que preguntan o usan el navegador

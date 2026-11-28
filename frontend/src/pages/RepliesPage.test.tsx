@@ -324,6 +324,54 @@ describe('Respuestas', () => {
     expect(await screen.findByText('Sin respuestas nuevas.')).toBeInTheDocument()
     expect(calls.some((c) => c.method === 'POST' && c.path === '/replies/poll')).toBe(true)
   })
+
+  it('dice de qué buzones y carpetas lee, con el enlace para cambiarlo (fase 48.3)', async () => {
+    const box = {
+      id: 1,
+      label: 'Principal',
+      kind: 'imap',
+      host: 'imap.gmail.com',
+      port: 993,
+      security: 'ssl',
+      user: 'ana@example.com',
+      folder: 'Alertas empleo',
+      replies_folders: ['INBOX', 'Procesos'],
+      enabled: true,
+      read_replies: true,
+      allow_private: false,
+      from_env: true,
+      has_password: true,
+      secret_ref: 'CAI_IMAP_PASSWORD',
+      path: null,
+      last_polled_at: null,
+      last_error: null,
+    }
+    mockReplies([], {
+      'GET /mail-sources': { sources: [box], demo: false, can_store_passwords: true },
+      'POST /replies/poll': {
+        processes: 2,
+        checked: 40,
+        created: 0,
+        reply_ids: [],
+        errors: [],
+        message: 'Sin respuestas nuevas.',
+        read: ['Principal · INBOX', 'Principal · Procesos'],
+      },
+    })
+    renderApp('/respuestas')
+    expect(await screen.findByText('Se leen: Principal · Bandeja de entrada y Procesos')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Cambiar' })).toHaveAttribute('href', '/fuentes/correo')
+    await userEvent.click(screen.getByRole('button', { name: /Revisar correo ahora/ }))
+    expect(
+      await screen.findByText('Mirado: Principal · Bandeja de entrada y Principal · Procesos'),
+    ).toBeInTheDocument()
+  })
+
+  it('sin ningún buzón que lea respuestas, lo dice', async () => {
+    mockReplies([], { 'GET /mail-sources': { sources: [], demo: false, can_store_passwords: true } })
+    renderApp('/respuestas')
+    expect(await screen.findByText(/No se lee ningún buzón/)).toBeInTheDocument()
+  })
 })
 
 describe('Ficha de la oferta con una respuesta por revisar', () => {
