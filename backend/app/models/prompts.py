@@ -31,3 +31,8 @@ class UserPrompt(Base):
     options: Mapped[list[str] | None] = mapped_column(JSON)
     answer: Mapped[str | None] = mapped_column(Text)
     job_id: Mapped[int | None]
+    # Fase 48.1b: la ejecución sin ventana que lo pidió (se contesta en su panel) y, en un permiso
+    # (`kind = permission`), la herramienta; lo que quiere hacer con ella va en `message` y la
+    # respuesta (`once`, `always` o `deny`) en `answer`.
+    run_id: Mapped[int | None] = mapped_column(ForeignKey("agent_runs.id"), index=True)
+    tool: Mapped[str | None] = mapped_column(String(80))

@@ -702,3 +702,30 @@ def test_0042_lets_reopenings_share_the_fingerprint_and_back(db_url: str) -> Non
             conn.exec_driver_sql(insert, (3,))
     finally:
         engine.dispose()
+
+
+def test_0049_turns_each_replies_folder_into_a_list_and_back(db_url: str) -> None:
+    """Fase 48.3: cada buzón conserva su carpeta de respuestas, ya como lista."""
+    migrations.upgrade(db_url, "0048")
+    engine = create_engine(db_url)
+    try:
+        with engine.begin() as conn:
+            conn.exec_driver_sql(
+                "INSERT INTO mail_sources (id, label, kind, security, folder, replies_folder, "
+                "enabled, read_replies, from_env, allow_private, created_at) VALUES (1, 'B', "
+                "'imap', 'ssl', 'Alertas', 'Procesos', 1, 1, 0, 0, '2026-11-28 10:00:00')"
+            )
+        engine.dispose()
+        migrations.upgrade(db_url, "0049")
+        with engine.begin() as conn:
+            row = conn.exec_driver_sql(
+                "SELECT replies_folders, replies_folders_set FROM mail_sources"
+            ).one()
+            assert (json.loads(row[0]), row[1]) == (["Procesos"], 0)
+        engine.dispose()
+        migrations.downgrade(db_url, "0048")
+        with engine.begin() as conn:
+            folder = conn.exec_driver_sql("SELECT replies_folder FROM mail_sources").scalar()
+            assert folder == "Procesos"
+    finally:
+        engine.dispose()

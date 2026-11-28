@@ -47,11 +47,57 @@ class AgentRun(Base):
     finished_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
 
 
+class AgentRunEvent(Base):
+    """Un paso de la conversación de una ejecución en segundo plano, para verla en el portal.
+
+    `kind`: `system` (arranque), `tool_start`, `tool_result`, `text` (lo que escribe el agente),
+    `user`, `question`, `permission`, `result` o `error`. `seq` ordena los de una ejecución. De
+    las herramientas solo se guarda el nombre, un detalle corto (el skill, el subagente, el
+    fichero) y si fueron bien, nunca su entrada ni su salida: pueden llevar texto de una oferta.
+    `text` es contenido del agente, no confiable: la UI lo pinta como texto plano. `sub`: lo hizo
+    un subagente.
+    """
+
+    __tablename__ = "agent_run_events"
+    __table_args__ = (UniqueConstraint("run_id", "seq"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    run_id: Mapped[int] = mapped_column(ForeignKey("agent_runs.id"), index=True)
+    seq: Mapped[int]
+    at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
+    kind: Mapped[str] = mapped_column(String(16))
+    tool: Mapped[str | None] = mapped_column(String(80))
+    text: Mapped[str | None] = mapped_column(Text)
+    ok: Mapped[bool | None]
+    sub: Mapped[bool] = mapped_column(default=False)
+    # Fase 48.1c: un mensaje del usuario (`kind = user`) escrito mientras trabaja se le pasa con la
+    # respuesta de su siguiente herramienta; aquí, cuándo. Al retomar, va en la orden.
+    delivered_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
+
+
+class AgentPermissionRule(Base):
+    """«Permitir siempre en este proyecto» (fase 48.1b): esa herramienta con ese detalle (el
+    comando, el fichero, el skill) se permite sin preguntar en las ejecuciones sin ventana. Se
+    guarda en la app, no en la configuración del agente, y se quita desde la página «Agente»."""
+
+    __tablename__ = "agent_permission_rules"
+    __table_args__ = (UniqueConstraint("tool", "detail"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    tool: Mapped[str] = mapped_column(String(80))
+    detail: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
+
+
 class AgentTask(Base):
     """Lo que un botón acaba de lanzar y de lo que hay que avisar (`services/agent_tasks.py`).
 
     `total`: lo pendiente al pulsar, en las acciones por lotes. `run_id`: la ejecución, si va en
     segundo plano. `outcome`: lo que dijo el agente con `finish_task`. `dismissed_at`: ya cerrado.
+
+    Fase 48.1d, si se abrió en una ventana: `window_token` nombra el fichero donde la ventana deja
+    su PID al arrancar (`window_pid`), `window_style` cómo se abrió, `window_title` su título y
+    `window_closed_at` cuándo se vio cerrada sin haber terminado.
     """
 
     __tablename__ = "agent_tasks"
@@ -66,6 +112,11 @@ class AgentTask(Base):
     started_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
     finished_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
     dismissed_at: Mapped[datetime | None] = mapped_column(UTCDateTime, index=True)
+    window_token: Mapped[str | None] = mapped_column(String(32))
+    window_style: Mapped[str | None] = mapped_column(String(16))
+    window_title: Mapped[str | None] = mapped_column(String(120))
+    window_pid: Mapped[int | None]
+    window_closed_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
 
 
 class AgentRequest(Base):

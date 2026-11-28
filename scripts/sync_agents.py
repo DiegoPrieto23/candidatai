@@ -150,19 +150,24 @@ def emit_claude(
         out[path] = md_with_marker(meta, role.body, role.source)
     server = {"command": mcp["command"], "args": mcp["args"], "env": mcp.get("env") or {}}
     out[ROOT / cfg["mcp_file"]] = dump_json({"mcpServers": {mcp["name"]: server}})
-    check_claude_settings(cfg, policy)
+    check_claude_settings(cfg, policy, server=mcp["name"])
     return out
 
 
 CLAUDE_SETTINGS = ROOT / ".claude" / "settings.json"
 
 
-def check_claude_settings(cfg: dict, policy: dict, path: Path | None = None) -> None:
+def check_claude_settings(
+    cfg: dict, policy: dict, path: Path | None = None, server: str = "candidatai"
+) -> None:
     """`.claude/settings.json` se mantiene a mano (AGENTS.md), pero sus permisos de la app deben
-    decir lo mismo que `policy` del manifiesto, que es lo que reciben los demás agentes."""
+    decir lo mismo que `policy` del manifiesto, que es lo que reciben los demás agentes. Además
+    aprueba el servidor de `.mcp.json` (`enabledMcpjsonServers`): sin eso, Claude Code pregunta si
+    usarlo la primera vez que se abre en una carpeta, también en la instalada."""
     path = path or CLAUDE_SETTINGS
     prefix = cfg["tools"]["mcp_prefix"]
-    permissions = json.loads(path.read_text(encoding="utf-8")).get("permissions", {})
+    settings = json.loads(path.read_text(encoding="utf-8"))
+    permissions = settings.get("permissions", {})
     allowed = {rule for rule in permissions.get("allow", []) if rule.startswith(prefix)}
     expected = set(map_tools(policy.get("auto_allow", []), cfg["tools"], "policy.auto_allow"))
     denied = set(permissions.get("deny", []))
@@ -173,6 +178,8 @@ def check_claude_settings(cfg: dict, policy: dict, path: Path | None = None) -> 
         f"sobra en allow (no está en policy.auto_allow): {t}" for t in sorted(allowed - expected)
     ]
     problems += [f"falta en deny: {t}" for t in sorted(wanted_deny - denied)]
+    if server not in settings.get("enabledMcpjsonServers", []):
+        problems.append(f"falta en enabledMcpjsonServers: {server}")
     if problems:
         raise SystemExit(
             f"{rel(path)} no dice lo mismo que `policy` de .agents/manifest.yaml:\n  - "

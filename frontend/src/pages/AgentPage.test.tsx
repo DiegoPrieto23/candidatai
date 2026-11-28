@@ -34,6 +34,7 @@ function run(changes: Partial<AgentRunView> = {}): AgentRunView {
     usage: null,
     cancel_requested: false,
     can_resume: true,
+    asks_permissions: true,
     created_at: '2026-10-12T10:00:00Z',
     started_at: '2026-10-12T10:00:00Z',
     finished_at: '2026-10-12T10:01:30Z',
@@ -100,6 +101,73 @@ describe('Lo primero de «Agente» (fase 31)', () => {
     // Ya está en «Agente»: no se enlaza a sí misma.
     expect(within(notice).queryByRole('link', { name: /Otros agentes/ })).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: /^Ocultar la configuración/ })).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.queryByRole('switch', { name: 'Abrir en una ventana' })).not.toBeInTheDocument()
+  })
+
+  it('lista lo permitido siempre y lo quita (fase 48.1b)', async () => {
+    const rule = { id: 4, tool: 'Read', detail: 'C:/notas.txt', created_at: '2026-11-27T10:00:00Z' }
+    const calls = mockApi({
+      ...quiet,
+      'GET /agent': { ...launcher, no_agent_installed: false },
+      'GET /agent/agents': { agents: [entry('claude', 'Claude Code', true)], launchable: ['claude'], preferences: {}, effective: [] },
+      'GET /agent/permission-rules': { rules: [rule] },
+      'DELETE /agent/permission-rules/4': { rules: [] },
+    })
+    renderApp('/agente')
+    const section = await screen.findByRole('region', { name: 'Permitido siempre' })
+    expect(within(section).getByText('C:/notas.txt')).toBeInTheDocument()
+    await userEvent.click(within(section).getByRole('button', { name: 'Quitar el permiso de Read: C:/notas.txt' }))
+    expect(calls.some((c) => c.method === 'DELETE' && c.path === '/agent/permission-rules/4')).toBe(true)
+    expect(screen.queryByRole('region', { name: 'Permitido siempre' })).not.toBeInTheDocument()
+  })
+
+  it('«Abrir en una ventana» está apagado por defecto y se guarda al cambiarlo (fase 48.1a)', async () => {
+    const calls = mockApi({
+      ...quiet,
+      'GET /agent': { ...launcher, no_agent_installed: false, open_in_window: false },
+      'GET /agent/agents': { agents: [entry('claude', 'Claude Code', true)], launchable: ['claude'], preferences: {}, effective: [] },
+      'PUT /agent/window-preference': { open_in_window: true },
+    })
+    renderApp('/agente')
+    const toggle = await screen.findByRole('switch', { name: 'Abrir en una ventana' })
+    expect(toggle).toHaveAttribute('aria-checked', 'false')
+    expect(screen.getByText(/se sigue en el aviso de abajo a la derecha/)).toBeInTheDocument()
+    await userEvent.click(toggle)
+    expect(calls.find((c) => c.method === 'PUT' && c.path === '/agent/window-preference')?.body).toEqual({ open_in_window: true })
+  })
+
+  it('en Windows se elige cómo se abre la ventana (fase 48.1d)', async () => {
+    const calls = mockApi({
+      ...quiet,
+      'GET /agent': {
+        ...launcher,
+        no_agent_installed: false,
+        open_in_window: false,
+        window_style: 'minimized',
+        window_styles: ['minimized', 'behind'],
+      },
+      'GET /agent/agents': { agents: [entry('claude', 'Claude Code', true)], launchable: ['claude'], preferences: {}, effective: [] },
+      'PUT /agent/window-preference': { open_in_window: false, window_style: 'behind' },
+    })
+    renderApp('/agente')
+    expect(await screen.findByRole('radio', { name: /Minimizada en la barra de tareas/ })).toBeChecked()
+    expect(screen.queryByRole('radio', { name: /Windows Terminal/ })).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('radio', { name: /detrás del navegador/ }))
+    expect(calls.find((c) => c.method === 'PUT' && c.path === '/agent/window-preference')?.body).toEqual({
+      open_in_window: false,
+      window_style: 'behind',
+    })
+  })
+
+  it('fuera de Windows no hay nada que elegir', async () => {
+    mockApi({
+      ...quiet,
+      'GET /agent': { ...launcher, no_agent_installed: false, open_in_window: false, window_styles: [] },
+      'GET /agent/agents': { agents: [entry('claude', 'Claude Code', true)], launchable: ['claude'], preferences: {}, effective: [] },
+    })
+    renderApp('/agente')
+    await screen.findByRole('switch', { name: 'Abrir en una ventana' })
+    expect(screen.queryByText('Cómo se abre la ventana')).not.toBeInTheDocument()
   })
 })
 

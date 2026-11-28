@@ -1354,6 +1354,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/mail-sources/folders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * List New Mail Folders
+         * @description Fase 48.3: las carpetas de un buzón antes de guardarlo (`LIST`, solo sus nombres).
+         */
+        post: operations["list_new_mail_folders"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/mail-sources/{source_id}": {
         parameters: {
             query?: never;
@@ -1389,9 +1409,31 @@ export interface paths {
         put?: never;
         /**
          * Test Mail Source
-         * @description Prueba un buzón guardado: login y `EXAMINE` de su carpeta, sin leer correos.
+         * @description Prueba un buzón guardado: login y `EXAMINE` de su carpeta de alertas o, con
+         *     `purpose=replies`, de cada una de las de respuestas, sin leer correos.
          */
         post: operations["test_mail_source"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/mail-sources/{source_id}/folders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * List Mail Folders
+         * @description Fase 48.3: las carpetas (o etiquetas de Gmail) del buzón, para elegir de cuáles se leen
+         *     las respuestas. Solo `LIST`: no abre ninguna ni lee correos.
+         */
+        post: operations["list_mail_folders"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2296,6 +2338,8 @@ export interface paths {
         /**
          * Answer Prompt
          * @description «Ya está» o «Saltar». En una candidatura asistida, «Ya está» vuelve a rellenar la página.
+         *     Solo desde la UI (fase 48.1b): ninguna otra web puede contestar un permiso. Que no lo conteste
+         *     el propio agente lo garantiza su techo sin ventana: no tiene terminal ni web.
          */
         post: operations["answer_prompt"];
         delete?: never;
@@ -2318,6 +2362,67 @@ export interface paths {
          */
         get: operations["get_agent_launcher"];
         put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/agent/permission-rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Permission Rules
+         * @description Lo permitido «siempre en este proyecto» desde el portal (fase 48.1b).
+         */
+        get: operations["list_permission_rules"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/agent/permission-rules/{rule_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete Permission Rule
+         * @description Quita un «permitir siempre»: la próxima vez se vuelve a preguntar.
+         */
+        delete: operations["delete_permission_rule"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/agent/window-preference": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Save Window Preference
+         * @description «Abrir en una ventana»: el botón principal abre el agente en una ventana en vez de seguirlo
+         *     en el portal. `window_style` (fase 48.1d): cómo se abre esa ventana en Windows.
+         */
+        put: operations["save_window_preference"];
         post?: never;
         delete?: never;
         options?: never;
@@ -2595,6 +2700,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/agent/tasks/{task_id}/show-window": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Show Agent Task Window
+         * @description «Mostrar la ventana» (fase 48.1d, Windows): restaura la consola del agente y, si Windows lo
+         *     deja, la pone delante. No escribe nada en ella.
+         */
+        post: operations["show_agent_task_window"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/agent/search-run": {
         parameters: {
             query?: never;
@@ -2668,6 +2794,48 @@ export interface paths {
         };
         /** Get Agent Run */
         get: operations["get_agent_run"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/agent/runs/{run_id}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send Agent Run Message
+         * @description Escribirle al agente (fase 48.1c): mientras trabaja, se le pasa con su siguiente
+         *     herramienta; si ya terminó, se retoma la misma conversación sin ventana.
+         */
+        post: operations["send_agent_run_message"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/agent/runs/{run_id}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Agent Run Events
+         * @description La conversación de una ejecución (herramientas, texto del agente, resultado) desde `after`.
+         *     Como las demás lecturas de ejecuciones, solo para la UI: no hay herramienta MCP.
+         */
+        get: operations["get_agent_run_events"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3930,6 +4098,11 @@ export interface components {
             /** Alternatives */
             alternatives: components["schemas"]["Resolution"][];
             background_agent: components["schemas"]["BackgroundInfo"] | null;
+            /**
+             * Portal
+             * @default false
+             */
+            portal: boolean;
         };
         /** ActionPref */
         ActionPref: {
@@ -4264,6 +4437,57 @@ export interface components {
             /** Completed At */
             completed_at: string | null;
         };
+        /** AgentRunEventView */
+        AgentRunEventView: {
+            /** Seq */
+            seq: number;
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "system" | "tool_start" | "tool_result" | "text" | "user" | "question" | "permission" | "result" | "error";
+            /** Tool */
+            tool: string | null;
+            /** Text */
+            text: string | null;
+            /** Ok */
+            ok: boolean | null;
+            /** Sub */
+            sub: boolean;
+        };
+        /**
+         * AgentRunEvents
+         * @description La conversación de una ejecución desde `after` (el `seq` del último que ya se tiene).
+         */
+        AgentRunEvents: {
+            /** Run Id */
+            run_id: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "queued" | "running" | "done" | "needs_user" | "failed" | "cancelled" | "timeout";
+            /** Events */
+            events: components["schemas"]["AgentRunEventView"][];
+            /** Last Seq */
+            last_seq: number;
+            /**
+             * Prompts
+             * @default []
+             */
+            prompts: components["schemas"]["PromptView"][];
+            /**
+             * Reply
+             * @default none
+             * @enum {string}
+             */
+            reply: "live" | "resume" | "window" | "none";
+        };
         /** AgentRunList */
         AgentRunList: {
             /** Runs */
@@ -4316,6 +4540,11 @@ export interface components {
             /** Can Resume */
             can_resume: boolean;
             /**
+             * Asks Permissions
+             * @default false
+             */
+            asks_permissions: boolean;
+            /**
              * Created At
              * Format: date-time
              */
@@ -4338,6 +4567,18 @@ export interface components {
             background: components["schemas"]["BackgroundInfo"];
             /** No Agent Installed */
             no_agent_installed: boolean;
+            /**
+             * Open In Window
+             * @default false
+             */
+            open_in_window: boolean;
+            /** Window Style */
+            window_style?: ("minimized" | "behind" | "wt") | null;
+            /**
+             * Window Styles
+             * @default []
+             */
+            window_styles: ("minimized" | "behind" | "wt")[];
         };
         /** AgentTaskList */
         AgentTaskList: {
@@ -4377,13 +4618,28 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "running" | "stale" | "finished";
+            status: "running" | "silent" | "stale" | "closed" | "finished";
             /** Outcome */
             outcome: ("done" | "stopped" | "failed" | "needs_user") | null;
             /** Done */
             done: number;
             /** Total */
             total: number;
+            /**
+             * Steps
+             * @default []
+             */
+            steps: components["schemas"]["TaskStep"][];
+            /** Last Tool */
+            last_tool?: string | null;
+            /** Agent */
+            agent?: string | null;
+            /**
+             * Asks Permissions
+             * @default false
+             */
+            asks_permissions: boolean;
+            window?: components["schemas"]["WindowView"] | null;
             /**
              * Started At
              * Format: date-time
@@ -6892,6 +7148,8 @@ export interface components {
             closed_by?: string | null;
             /** Close Reason */
             close_reason?: ("discarded" | "filtered_out" | "rejected" | "withdrawn" | "expired" | "closed_by_company" | "duplicate" | "accepted") | null;
+            /** @description Fase 48.4: en qué web se abre (portal, ATS u otra), por el dominio de la URL. */
+            readonly site: components["schemas"]["JobSite"] | null;
         };
         /** JobRunCost */
         JobRunCost: {
@@ -6928,6 +7186,18 @@ export interface components {
             ai_screening?: components["schemas"]["AiScreeningSignal"] | null;
             stale_repost?: components["schemas"]["StaleRepostSignal"] | null;
             republished_after_close?: components["schemas"]["RepublishedSignal"] | null;
+        };
+        /** JobSite */
+        JobSite: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "portal" | "ats" | "web";
+            /** Name */
+            name: string | null;
+            /** Host */
+            host: string;
         };
         /** JobView */
         JobView: {
@@ -6976,6 +7246,8 @@ export interface components {
             close_reason?: ("discarded" | "filtered_out" | "rejected" | "withdrawn" | "expired" | "closed_by_company" | "duplicate" | "accepted") | null;
             /** Reached */
             reached?: ("before_applying" | "applied" | "interview" | "offer") | null;
+            /** @description Fase 48.4: en qué web se abre (portal, ATS u otra), por el dominio de la URL. */
+            readonly site: components["schemas"]["JobSite"] | null;
         };
         /**
          * KeywordCoverage
@@ -7404,6 +7676,26 @@ export interface components {
             /** Message */
             message: string;
         };
+        /**
+         * MailFolderList
+         * @description Las carpetas del buzón (`LIST`), para elegirlas en la UI. Con `ok=False`, por qué no.
+         */
+        MailFolderList: {
+            /** Ok */
+            ok: boolean;
+            /**
+             * Folders
+             * @default []
+             */
+            folders: string[];
+            /** Code */
+            code?: string | null;
+            /**
+             * Message
+             * @default
+             */
+            message: string;
+        };
         /** MailSaveResult */
         MailSaveResult: {
             source: components["schemas"]["MailSourceView"];
@@ -7447,11 +7739,8 @@ export interface components {
              * @default INBOX
              */
             folder: string;
-            /**
-             * Replies Folder
-             * @default INBOX
-             */
-            replies_folder: string;
+            /** Replies Folders */
+            replies_folders?: string[];
             /**
              * Enabled
              * @default true
@@ -7508,8 +7797,8 @@ export interface components {
             password?: string | null;
             /** Folder */
             folder?: string | null;
-            /** Replies Folder */
-            replies_folder?: string | null;
+            /** Replies Folders */
+            replies_folders?: string[] | null;
             /** Enabled */
             enabled?: boolean | null;
             /** Read Replies */
@@ -7544,8 +7833,11 @@ export interface components {
             user: string | null;
             /** Folder */
             folder: string;
-            /** Replies Folder */
-            replies_folder: string;
+            /**
+             * Replies Folders
+             * @description Carpetas de las que se leen las respuestas de las empresas (fase 48.3).
+             */
+            replies_folders: string[];
             /** Enabled */
             enabled: boolean;
             /** Read Replies */
@@ -7670,6 +7962,11 @@ export interface components {
             sources: components["schemas"]["SourceView"][];
             /** Default Max Offers */
             default_max_offers: number;
+        };
+        /** MessageBody */
+        MessageBody: {
+            /** Text */
+            text: string;
         };
         /** MessageDraftOut */
         MessageDraftOut: {
@@ -8182,6 +8479,25 @@ export interface components {
             /** Waiting Seconds */
             waiting_seconds: number;
         };
+        /** PermissionRuleView */
+        PermissionRuleView: {
+            /** Id */
+            id: number;
+            /** Tool */
+            tool: string;
+            /** Detail */
+            detail: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** PermissionRules */
+        PermissionRules: {
+            /** Rules */
+            rules: components["schemas"]["PermissionRuleView"][];
+        };
         /**
          * PhotoCrop
          * @description El recuadro elegido, en porcentaje de la original (como lo da el editor del navegador).
@@ -8424,7 +8740,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "captcha" | "anti_bot" | "login_required" | "question";
+            kind: "captcha" | "anti_bot" | "login_required" | "question" | "permission";
             /** Title */
             title: string;
             /** Message */
@@ -8465,6 +8781,10 @@ export interface components {
             answer?: string | null;
             /** Job Id */
             job_id?: number | null;
+            /** Run Id */
+            run_id?: number | null;
+            /** Tool */
+            tool?: string | null;
         };
         /** QueuedResult */
         QueuedResult: {
@@ -8735,6 +9055,11 @@ export interface components {
             errors: components["schemas"]["Issue"][];
             /** Message */
             message: string;
+            /**
+             * Read
+             * @default []
+             */
+            read: string[];
         };
         /**
          * ReplyDecision
@@ -9563,6 +9888,13 @@ export interface components {
             /** Website */
             website: string | null;
         };
+        /** ShowWindowResult */
+        ShowWindowResult: {
+            /** Shown */
+            shown: boolean;
+            /** Foreground */
+            foreground: boolean;
+        };
         /**
          * SignOff
          * @description Despedida de la carta por idioma («Un saludo,», «Kind regards,»).
@@ -10019,6 +10351,16 @@ export interface components {
              */
             created_at: string;
         };
+        /** TaskStep */
+        TaskStep: {
+            /** Id */
+            id: string;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "done" | "current" | "pending";
+        };
         /**
          * TemplateInfo
          * @description Lo que el agente y la UI necesitan de una plantilla para elegirla y ajustar la extensión.
@@ -10418,6 +10760,25 @@ export interface components {
              * Format: date
              */
             week_start: string;
+        };
+        /** WindowPreference */
+        WindowPreference: {
+            /** Open In Window */
+            open_in_window: boolean;
+            /** Window Style */
+            window_style?: ("minimized" | "behind" | "wt") | null;
+        };
+        /** WindowView */
+        WindowView: {
+            /**
+             * Style
+             * @enum {string}
+             */
+            style: "minimized" | "behind" | "wt" | "terminal";
+            /** Title */
+            title: string;
+            /** Can Show */
+            can_show: boolean;
         };
     };
     responses: never;
@@ -17193,6 +17554,102 @@ export interface operations {
             };
         };
     };
+    list_new_mail_folders: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MailSourceInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MailFolderList"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     delete_mail_source: {
         parameters: {
             query?: never;
@@ -17391,7 +17848,9 @@ export interface operations {
     };
     test_mail_source: {
         parameters: {
-            query?: never;
+            query?: {
+                purpose?: "alerts" | "replies";
+            };
             header?: never;
             path: {
                 source_id: number;
@@ -17411,6 +17870,104 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MailTestResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_mail_folders: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmptyBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MailFolderList"];
                 };
             };
             /** @description Unauthorized */
@@ -21961,6 +22518,288 @@ export interface operations {
             };
         };
     };
+    list_permission_rules: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PermissionRules"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_permission_rule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                rule_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PermissionRules"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    save_window_preference: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WindowPreference"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WindowPreference"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     list_agents: {
         parameters: {
             query?: never;
@@ -23285,6 +24124,104 @@ export interface operations {
             };
         };
     };
+    show_agent_task_window: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmptyBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShowWindowResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     get_search_run: {
         parameters: {
             query?: never;
@@ -23684,6 +24621,200 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AgentRunView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    send_agent_run_message: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MessageBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentRunEvents"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Request Entity Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_agent_run_events: {
+        parameters: {
+            query?: {
+                after?: number;
+            };
+            header?: never;
+            path: {
+                run_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentRunEvents"];
                 };
             };
             /** @description Unauthorized */

@@ -29,7 +29,7 @@ def opened(monkeypatch: pytest.MonkeyPatch) -> list[tuple[str, str]]:
     calls: list[tuple[str, str]] = []
     monkeypatch.setattr(agent_launch.sys, "platform", "win32")
     monkeypatch.setattr(agent_launch.shutil, "which", lambda name: f"C:/bin/{name}.exe")
-    monkeypatch.setattr(agent_launch, "_open_terminal", lambda t, c: calls.append((t, c)))
+    monkeypatch.setattr(agent_launch, "_open_terminal", lambda t, c, *_: calls.append((t, c)))
     return calls
 
 
@@ -673,8 +673,9 @@ def test_windows_opens_a_minimised_console_without_focus(
     get_settings.cache_clear()
     agent_launch._open_terminal("CandidatAI · Valorar", "& 'claude' 'hola'")
     argv, kwargs = launched[-1]
-    assert argv[:4] == ["powershell", "-NoLogo", "-NoExit", "-EncodedCommand"]
-    script = base64.b64decode(argv[4]).decode("utf-16-le")
+    assert argv[0].lower().endswith("conhost.exe")  # la consola clásica, se encuentra por su PID
+    assert argv[1:5] == ["powershell", "-NoLogo", "-NoExit", "-EncodedCommand"]
+    script = base64.b64decode(argv[5]).decode("utf-16-le")
     assert script == "$Host.UI.RawUI.WindowTitle = 'CandidatAI · Valorar'; & 'claude' 'hola'"
     assert kwargs["creationflags"] == getattr(subprocess, "CREATE_NEW_CONSOLE", 0)
     if hasattr(subprocess, "STARTUPINFO"):
@@ -682,9 +683,17 @@ def test_windows_opens_a_minimised_console_without_focus(
         assert info.wShowWindow == agent_launch.SW_SHOWMINNOACTIVE  # type: ignore[attr-defined]
         assert info.dwFlags & subprocess.STARTF_USESHOWWINDOW  # type: ignore[attr-defined]
 
-    monkeypatch.setenv("CAI_TERMINAL", "wt")
-    get_settings.cache_clear()
-    agent_launch._open_terminal("CandidatAI · Valorar", "& 'claude' 'hola'")
+    # Fase 48.1d: a la vista detrás del navegador, con `conhost.exe` (si no, Windows 11 se la pasa a
+    # Windows Terminal, que sale delante) y sin activar.
+    agent_launch._open_terminal("CandidatAI · Valorar", "& 'claude' 'hola'", "behind")
+    argv, kwargs = launched[-1]
+    assert argv[0].lower().endswith("conhost.exe")
+    assert argv[1:5] == ["powershell", "-NoLogo", "-NoExit", "-EncodedCommand"]
+    if hasattr(subprocess, "STARTUPINFO"):
+        info = kwargs["startupinfo"]
+        assert info.wShowWindow == agent_launch.SW_SHOWNOACTIVATE  # type: ignore[attr-defined]
+
+    agent_launch._open_terminal("CandidatAI · Valorar", "& 'claude' 'hola'", "wt")
     argv, kwargs = launched[-1]
     assert argv[:4] == ["C:/bin/wt.exe", "-w", "0", "new-tab"]
     assert "startupinfo" not in kwargs

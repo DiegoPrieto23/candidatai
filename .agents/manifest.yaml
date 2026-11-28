@@ -27,7 +27,7 @@ mcp_server:
   # Variables del entorno del agente que el servidor necesita: `CAI_DATA_DIR` elige la carpeta de
   # datos (la demo). Casi todos los agentes pasan su entorno entero; Codex solo una lista blanca, y
   # estas van en su `env_vars` (comprobado el 2026-10-22: sin eso, la demo abría `data/`).
-  pass_env: [CAI_DATA_DIR]
+  pass_env: [CAI_DATA_DIR, CAI_RUN_ID]   # CAI_RUN_ID: la ejecución sin ventana (fase 48.1b)
 
 # Permisos neutrales (fase 24.3). Los emisores los traducen a cada agente. `.claude/settings.json`
 # se mantiene a mano, pero `sync_agents.py --check` falla si no dice lo mismo que esto.
@@ -37,6 +37,7 @@ policy:
   auto_allow:
     - mcp:get_status
     - mcp:get_schema
+    - mcp:get_policies
     - mcp:list_jobs
     - mcp:get_job
     - mcp:check_job_open
@@ -123,9 +124,16 @@ targets:
       # preguntan. {allowed_tools}: `allow`, el skill de la acción (`skill_rule`) y sus herramientas
       # MCP; {denied_tools}: TODAS las demás herramientas MCP de la app, porque un deny gana a
       # cualquier allow de .claude/settings.json y las quita también a los subagentes. Una por
-      # argumento, con tools.mcp_prefix. Sin terminal ni web (--tools); Read solo sobre docs/ (el
-      # redactor y el verificador leen POLICIES.md); dontAsk deniega lo que no esté permitido.
+      # argumento, con tools.mcp_prefix. Sin terminal ni web (--tools); Read, sin data/ ni .env.
+      # Fase 48.1b: lo que necesitaría permiso se pregunta en el portal (--permission-prompt-tool,
+      # que solo actúa en el modo `default`: con `dontAsk` se deniega sin preguntar). Comprobado
+      # con Claude Code 2.1.332: recibe {tool_name, input, tool_use_id}, espera la respuesta (más
+      # de 5 min) y quiere un solo bloque de texto con {behavior, updatedInput | message}.
       headless:
+        asks_permissions: true
+        # Fase 48.1c: lo que se le escribe al terminar retoma la misma sesión, con el mismo techo.
+        resume_after: claude
+        resume_args: [--resume, "{session_id}"]
         command:
           - claude
           - -p
@@ -134,7 +142,9 @@ targets:
           - stream-json
           - --verbose
           - --permission-mode
-          - dontAsk
+          - default
+          - --permission-prompt-tool
+          - mcp__candidatai__request_permission
           - --strict-mcp-config
           - --mcp-config
           - .mcp.json
@@ -287,7 +297,12 @@ targets:
       # `cai-run-<id>` deja solo las MCP de la acción (`enabled_tools`), sin terminal, web,
       # navegador ni plugins, en solo lectura y sin aprobaciones, y apaga los demás servidores MCP
       # de tu configuración. Los subagentes heredan ese techo. Comprobado con codex-cli 0.163.0.
-      # Por ahora solo el Asistente: las demás acciones leen texto de ofertas y Codex es de nivel B.
+      # Solo acciones que no leen el texto crudo de una oferta (Codex es de nivel B: fuera
+      # `process-jobs`). El CV y la carta caben desde que `writer` y `verifier` piden las políticas
+      # con `get_policies` en vez de leer docs/ (el perfil no podría limitar la lectura a esa carpeta).
+      # Sin `resume_args` (fase 48.1c): `codex exec resume` no admite `-p`, y `codex exec -p <perfil>
+      # resume` lo ignora (comprobado: corrió con un perfil que no existe), así que retomaría sin
+      # techo. Lo que se le escribe al terminar se sigue en una ventana («Abrir en una ventana»).
       headless:
         ceiling: config
         command: [codex, exec, --json, --skip-git-repo-check, -p, "cai-run-{run_id}", "{model}", "{prompt}"]
@@ -298,7 +313,15 @@ targets:
           home: ~/.codex
           agent: "cai-run-{run_id}"
         output: codex-json
-        actions: [assistant]
+        actions:
+          - assistant
+          - assess-fit
+          - assess-fit-job
+          - translate-summary
+          - generate-cv
+          - correct-cv
+          - verify-cv
+          - generate-cover-letter
     tools:                        # herramientas lógicas → nombres nativos (solo `mcp_prefix`)
       mcp_prefix: "mcp__candidatai__"
     # Codex no permite limitar herramientas por subagente: se aplica sandbox_mode del rol.
@@ -393,6 +416,10 @@ targets:
       # 1.19.3 (docs/AGENTS_COMPAT.md).
       headless:
         ceiling: config
+        # Fase 48.1c: retomar la misma sesión, con su configuración de la ejecución (sin probar con
+        # un modelo: PENDIENTES).
+        resume_after: run
+        resume_args: [--session, "{session_id}"]
         command: [opencode, run, --format, json, --pure, --agent, cai-run, "{model}", "{prompt}"]
         config:
           format: opencode

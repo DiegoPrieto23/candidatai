@@ -40,12 +40,27 @@ def codex_home(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
 # --- Manifiesto --------------------------------------------------------------------------------
 
 
-def test_manifest_codex_headless_is_only_the_assistant() -> None:
+def test_manifest_codex_headless_only_without_raw_job_text() -> None:
+    """Fase 48.1a: las acciones que no leen el texto crudo de una oferta (Codex es de nivel B) y
+    cuyo techo cabe en un perfil (sin roles que lean ficheros: las políticas, con
+    `get_policies`)."""
     spec = agent_registry.get("codex")
     assert spec is not None and spec.headless is not None
     headless = spec.headless
     assert headless.ceiling == "config" and headless.output == "codex-json"
-    assert headless.actions == ["assistant"]
+    assert headless.actions == [
+        "assistant",
+        "assess-fit",
+        "assess-fit-job",
+        "translate-summary",
+        "generate-cv",
+        "correct-cv",
+        "verify-cv",
+        "generate-cover-letter",
+    ]
+    for action in headless.actions:
+        assert "get_job" not in ACTIONS[action].background  # type: ignore[index]
+        assert agent_run_config.ceiling_problem(action) is None  # type: ignore[arg-type]
     assert headless.config is not None and headless.config.value == "profile"
     assert headless.config.agent in headless.command  # `-p cai-run-{run_id}`
     assert "{run_id}" in headless.config.agent  # uno por ejecución
@@ -247,7 +262,7 @@ def terminal(monkeypatch: pytest.MonkeyPatch) -> list[str]:
     launcher = _Launcher("antigravity", ["agy", "-i", "{prompt}"], [])
     opened: list[str] = []
 
-    def open_terminal(title: str, command: str) -> None:
+    def open_terminal(title: str, command: str, *_: object) -> None:
         # Cuando se abre la ventana, la petición ya está guardada: el agente la lee desde otro
         # proceso en cuanto arranca.
         with session_scope() as other:

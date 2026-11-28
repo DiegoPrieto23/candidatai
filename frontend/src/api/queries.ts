@@ -63,6 +63,8 @@ export const keys = {
   apply: (id: number) => ['apply', id] as const,
   agent: ['agent'] as const,
   agentRuns: ['agent', 'runs'] as const,
+  agentRunEvents: (runId: number) => ['agent', 'runs', runId, 'events'] as const,
+  permissionRules: ['agent', 'permission-rules'] as const,
   searchRun: ['agent', 'search-run'] as const,
   agentTasks: ['agent', 'tasks'] as const,
   agentAgents: ['agent', 'agents'] as const,
@@ -731,7 +733,25 @@ export function useAnswerPrompt() {
       Promise.all([
         client.invalidateQueries({ queryKey: keys.prompts }),
         client.invalidateQueries({ queryKey: ['apply'] }),
+        // Fase 48.1b: la tarjeta de la conversación pasa a «contestada».
+        client.invalidateQueries({ queryKey: keys.agentRuns }),
       ]),
+  })
+}
+
+export type PermissionRule = Schemas['PermissionRuleView']
+
+/** Lo permitido «siempre en este proyecto» desde el portal (fase 48.1b). */
+export function usePermissionRules() {
+  return useQuery({ queryKey: keys.permissionRules, queryFn: () => unwrap(api.GET('/agent/permission-rules')) })
+}
+
+export function useDeletePermissionRule() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (ruleId: number) =>
+      unwrap(api.DELETE('/agent/permission-rules/{rule_id}', { params: { path: { rule_id: ruleId } } })),
+    onSuccess: (data) => client.setQueryData(keys.permissionRules, data),
   })
 }
 
@@ -1465,7 +1485,87 @@ export function useStartAgentRun() {
   return useMutation({
     mutationFn: (body: LaunchTarget & { agent?: string }) =>
       unwrap(api.POST('/agent/runs', { body: { ...body, lang: portalLang() } })),
-    onSuccess: () => client.invalidateQueries({ queryKey: keys.agentRuns }),
+    // El aviso sale ya, sin esperar al siguiente sondeo.
+    onSuccess: () =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: keys.agentRuns }),
+        client.invalidateQueries({ queryKey: keys.agentTasks }),
+      ]),
+  })
+}
+
+export type AgentRunEvent = Schemas['AgentRunEventView']
+type RunEvents = Schemas['AgentRunEvents'] & { more: boolean }
+const EVENTS_PAGE = 500
+
+/**
+ * La conversación de una ejecución en segundo plano (fase 48.1a). Cada consulta pide solo lo nuevo
+ * (`after`) y lo junta con lo que ya había. Mientras está en curso, cada 1,5 s; al terminar, para.
+ */
+export function useAgentRunEvents(runId: number | null) {
+  const client = useQueryClient()
+  return useQuery({
+    queryKey: keys.agentRunEvents(runId ?? 0),
+    enabled: runId != null,
+    queryFn: async (): Promise<RunEvents> => {
+      const key = keys.agentRunEvents(runId ?? 0)
+      const previous = client.getQueryData<RunEvents>(key)
+      const data = await unwrap(
+        api.GET('/agent/runs/{run_id}/events', {
+          params: { path: { run_id: runId ?? 0 }, query: { after: previous?.last_seq ?? 0 } },
+        }),
+      )
+      return { ...data, events: [...(previous?.events ?? []), ...data.events], more: data.events.length >= EVENTS_PAGE }
+    },
+    refetchInterval: (query) => {
+      const data = query.state.data
+      if (!data) return false
+      return data.more || data.status === 'queued' || data.status === 'running' ? 1500 : false
+    },
+    refetchIntervalInBackground: true,
+  })
+}
+
+/** Una ejecución, para abrir su conversación desde el historial de la ficha (fase 48.1c). */
+export function useAgentRun(runId: number | null) {
+  return useQuery({
+    queryKey: [...keys.agentRuns, runId ?? 0],
+    enabled: runId != null,
+    queryFn: () => unwrap(api.GET('/agent/runs/{run_id}', { params: { path: { run_id: runId ?? 0 } } })),
+  })
+}
+
+/**
+ * Escribirle al agente desde el panel (fase 48.1c). Devuelve la conversación entera, que sustituye
+ * a la guardada; si se retoma, el aviso vuelve a estar en curso.
+ */
+export function useSendAgentMessage(runId: number) {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (text: string) =>
+      unwrap(api.POST('/agent/runs/{run_id}/messages', { params: { path: { run_id: runId } }, body: { text } })),
+    onSuccess: (data) => {
+      client.setQueryData(keys.agentRunEvents(runId), { ...data, more: data.events.length >= EVENTS_PAGE })
+      void client.invalidateQueries({ queryKey: keys.agentTasks })
+    },
+  })
+}
+
+/** «Abrir en una ventana»: el botón principal abre el agente en una ventana en vez del portal. */
+export function useSaveWindowPreference() {
+  const client = useQueryClient()
+  return useMutation({
+    // Fase 48.1d: sin `window_style`, el servidor deja el que hubiera.
+    mutationFn: (body: Schemas['WindowPreference']) => unwrap(api.PUT('/agent/window-preference', { body })),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.agent, exact: true }),
+  })
+}
+
+/** «Mostrar la ventana» (fase 48.1d): restaura la ventana del agente y, si Windows deja, la pone delante. */
+export function useShowAgentTaskWindow() {
+  return useMutation({
+    mutationFn: (taskId: number) =>
+      unwrap(api.POST('/agent/tasks/{task_id}/show-window', { params: { path: { task_id: taskId } }, body: {} })),
   })
 }
 
@@ -2253,10 +2353,30 @@ export function useDeleteMailSource() {
 }
 
 /** Prueba un buzón guardado: login y apertura de su carpeta en solo lectura. */
-export function useTestMailSource() {
+export function useTestMailSource(purpose: 'alerts' | 'replies' = 'alerts') {
   return useMutation({
     mutationFn: (sourceId: number) =>
-      unwrap(api.POST('/mail-sources/{source_id}/test', { params: { path: { source_id: sourceId } }, body: {} })),
+      unwrap(
+        api.POST('/mail-sources/{source_id}/test', {
+          params: { path: { source_id: sourceId }, query: { purpose } },
+          body: {},
+        }),
+      ),
+  })
+}
+
+/** Fase 48.3: las carpetas de un buzón guardado (`LIST`, solo sus nombres), para elegirlas. */
+export function useMailFolders() {
+  return useMutation({
+    mutationFn: (sourceId: number) =>
+      unwrap(api.POST('/mail-sources/{source_id}/folders', { params: { path: { source_id: sourceId } }, body: {} })),
+  })
+}
+
+/** Lo mismo antes de guardarlo, con la contraseña que se acaba de escribir. */
+export function useNewMailFolders() {
+  return useMutation({
+    mutationFn: (body: Schemas['MailSourceInput']) => unwrap(api.POST('/mail-sources/folders', { body })),
   })
 }
 

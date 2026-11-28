@@ -35,7 +35,12 @@
       "environment": "Contraseña configurada fuera de la app",
       "move": "Mover al llavero",
       "moving": "Moviendo…"
-    }
+    },
+    "alertsIn": "Alertas: {{folder}}",
+    "repliesIn": "Respuestas: {{folders}}",
+    "repliesOff": "no se leen",
+    "testAlerts": "Probar las alertas",
+    "testReplies": "Probar las respuestas"
   },
   "dialog": {
     "addTitle": "Añadir buzón",
@@ -77,7 +82,18 @@
     "readRepliesHint": "La app mira el remitente, la fecha y el asunto de los correos de la bandeja de entrada desde la candidatura abierta más antigua, y guarda solo los de las empresas de las candidaturas. Solo lee y no envía nada; la etapa de una oferta cambia al aceptar la propuesta.",
     "allowPrivate": "Servidor en este equipo o en la red local",
     "allowPrivateHint": "Solo para un servidor propio: por seguridad, la app no se conecta a direcciones locales sin esta marca.",
-    "readRepliesHintAria": "Qué correos lee"
+    "readRepliesHintAria": "Qué correos lee",
+    "alertsBlock": "Ofertas (alertas)",
+    "alertsFromEnv": "Las alertas se leen de «{{folder}}». Esa carpeta se cambia en la configuración de la instalación, como explica la guía del correo.",
+    "repliesBlock": "Respuestas de empresas",
+    "repliesFolders": "Carpetas de las respuestas",
+    "removeFolder": "Quitar {{folder}}",
+    "sameFolder": "Es la misma carpeta que la de las alertas. Las respuestas de las empresas suelen llegar a la bandeja de entrada.",
+    "loadFolders": "Elegir del buzón",
+    "loadingFolders": "Buscando las carpetas…",
+    "typeFolder": "Otra carpeta o etiqueta",
+    "addFolder": "Añadir",
+    "mailboxFolders": "Carpetas del buzón"
   },
   "providers": {
     "gmail": {
@@ -153,5 +169,6 @@
     "moving": "Moviendo…",
     "later": "Ahora no",
     "failed": "No se pudieron mover todas: conviene intentarlo de nuevo o revisar el llavero del sistema."
-  }
+  },
+  "inbox": "Bandeja de entrada"
 }

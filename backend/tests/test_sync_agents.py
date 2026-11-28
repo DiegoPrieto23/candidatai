@@ -138,7 +138,8 @@ def test_codex_mcp_receives_the_data_dir() -> None:
     """Codex solo pasa al servidor MCP una lista blanca del entorno: sin `env_vars`, una demo
     (`CAI_DATA_DIR`) abriría `data/`."""
     config = _emit("codex")[REPO_ROOT / ".codex" / "config.toml"]
-    assert 'env_vars = ["CAI_DATA_DIR"]' in config
+    # Fase 48.1b: también la ejecución sin ventana, para preguntar en su panel.
+    assert 'env_vars = ["CAI_DATA_DIR", "CAI_RUN_ID"]' in config
     # `policy.auto_allow` sin preguntar; las que no están, con la aprobación de Codex.
     assert '[mcp_servers.candidatai.tools.get_status]\napproval_mode = "approve"' in config
     assert "tools.add_event]" not in config
@@ -191,6 +192,7 @@ def test_claude_settings_must_match_policy(tmp_path: Path) -> None:
     real["permissions"]["allow"].remove("mcp__candidatai__get_status")
     real["permissions"]["allow"].append("mcp__candidatai__add_event")
     real["permissions"]["deny"].remove("Read(./.env)")
+    real["enabledMcpjsonServers"] = []  # sin aprobar, Claude Code pregunta la primera vez
     path = tmp_path / "settings.json"
     path.write_text(json.dumps(real), encoding="utf-8")
     with pytest.raises(SystemExit) as exc:
@@ -198,4 +200,5 @@ def test_claude_settings_must_match_policy(tmp_path: Path) -> None:
     message = str(exc.value)
     assert "falta en allow: mcp__candidatai__get_status" in message
     assert "sobra en allow (no está en policy.auto_allow): mcp__candidatai__add_event" in message
+    assert "falta en enabledMcpjsonServers: candidatai" in message
     assert "falta en deny: Read(./.env)" in message

@@ -11,6 +11,7 @@ from mcp import Client
 from typer.testing import CliRunner
 
 from app import cli
+from app.agent_interface.tools import TOOLS_BY_NAME
 from app.core.config import get_settings
 from app.mcp.server import build_server
 
@@ -81,5 +82,7 @@ def mcp_call(
     assert isinstance(block, types.TextContent)
     payload = json.loads(block.text)
     if not result.is_error:
-        assert result.structured_content == payload
+        # `text_only` (fase 48.1b): solo el bloque de texto, como lo pide el agente.
+        text_only = TOOLS_BY_NAME[name].text_only
+        assert result.structured_content == (None if text_only else payload)
     return result.is_error, payload

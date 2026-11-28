@@ -87,10 +87,37 @@
     "terminal": "No cuenta lo que se hace en una terminal: ahí el agente no devuelve su uso."
   },
   "semantic": "Comparación por significado",
+  "window": {
+    "title": "Abrir en una ventana",
+    "off": "Desactivado: lo que el agente puede hacer sin ventana (generar el CV, valorar una oferta…) se sigue en el aviso de abajo a la derecha, con su conversación. Lo demás se abre en su ventana.",
+    "on": "Activado: el botón principal abre siempre el agente en su ventana. Desde el menú del botón se puede lanzar sin ventana solo esa vez.",
+    "style": {
+      "title": "Cómo se abre la ventana",
+      "hint": "Para lo que se abre en una ventana. El aviso de abajo a la derecha dice dónde está y la trae con «Mostrar la ventana».",
+      "minimized": {
+        "label": "Minimizada en la barra de tareas",
+        "hint": "El navegador sigue delante. Recomendado."
+      },
+      "behind": {
+        "label": "A la vista, detrás del navegador",
+        "hint": "Se ve al apartar o minimizar el navegador."
+      },
+      "wt": {
+        "label": "En Windows Terminal",
+        "hint": "Una pestaña nueva, que se pone delante del navegador."
+      }
+    }
+  },
   "summary": {
     "ready": "Agente: {{agent}}, listo",
     "readyHint": "Los botones con el robot de toda la app lo abren en una ventana aparte con la orden ya escrita: ahí se ve lo que hace y se aprueba.",
     "cantOpen": "Agente: no se puede abrir desde aquí",
     "cantOpenHint": "{{reason}} Los botones con el robot muestran la orden para copiarla y pegarla en el agente."
+  },
+  "permissions": {
+    "title": "Permitido siempre",
+    "body": "Lo que se ha permitido «siempre en este proyecto» desde el panel del agente. Al quitarlo, la próxima vez se vuelve a preguntar.",
+    "remove": "Quitar el permiso de {{tool}}: {{detail}}",
+    "removeShort": "Quitar"
   }
 }

@@ -191,6 +191,22 @@ class HeadlessSpec(_Strict):
     # Fase 46: las únicas acciones que lanza en segundo plano (`None`: todas las que admiten
     # segundo plano). Para empezar con poco un agente nuevo.
     actions: list[str] | None = None
+    # Fase 48.1b: el agente pregunta los permisos a la app (`request_permission`), que los enseña
+    # en el panel. Sin esto, lo que no tiene permitido se deniega sin preguntar.
+    asks_permissions: bool = False
+    # Fase 48.1c: cómo se retoma sin ventana la misma sesión al escribirle cuando ya terminó: los
+    # `resume_args` (con `{session_id}`) van justo detrás de `resume_after` en `command`. Sin
+    # ellos, no se retoma sin ventana (se ofrece «Abrir en una ventana»).
+    resume_after: str | None = None
+    resume_args: list[str] = []
+
+    @property
+    def can_resume(self) -> bool:
+        return (
+            self.resume_after is not None
+            and self.resume_after in self.command
+            and any(SESSION_PLACEHOLDER in arg for arg in self.resume_args)
+        )
 
     @property
     def complete(self) -> bool:

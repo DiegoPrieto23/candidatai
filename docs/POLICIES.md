@@ -274,6 +274,15 @@ Una oferta puede encajar en el papel y aun así no merecer la pena. El código m
    sesión gráfica), un secreto o una variable del contenedor, o `.env` marcada en la UI como
    «guardada en un fichero». Ninguna vuelve por la API, por la interfaz para agentes ni por los
    logs: solo se ve si está puesta y dónde.
+7. **Permisos del agente desde el portal** (fase 48.1b): lo que permites a un agente sin ventana
+   («Permitir una vez», «Permitir siempre en este proyecto») es solo eso, un permiso de su
+   herramienta. Nunca sustituye la confirmación de un envío (punto 1), ni activa LinkedIn (§8), ni
+   abre algo que el techo de la acción deniega: eso se deniega sin preguntar. Sin respuesta en 5
+   minutos, o si la ejecución termina mientras espera, se deniega. «Siempre» solo se ofrece para
+   las herramientas que puede tener una ejecución sin ventana (leer, un skill, un subagente) y
+   cuando la regla cubre exactamente lo que se ve; lo permitido siempre se ve y se quita en la
+   página «Agente». El propio agente puede pedir un permiso inventado: lo que dice la tarjeta es lo
+   que pide el agente (§6), no una petición de la app.
 
 ## 6. Contenido no confiable
 
@@ -281,6 +290,10 @@ Una oferta puede encajar en el papel y aun así no merecer la pena. El código m
   mismo el dosier de empresa (fase 18), que el agente redacta a partir de webs: al guardarlo se
   buscan frases de inyección (`risk_flags`) y la ficha avisa. Se guarda sin pedir el OK: lo revisas
   en la ficha, con sus fuentes, y solo lo leen otros skills si los lanzas tú.
+- Lo que el agente pregunta o pide desde el portal (fase 48.1b) es texto del agente: puede venir
+  influido por lo que ha leído. Por eso la sesión que puede leer el texto de una oferta
+  (`process-jobs`) no pregunta en el portal. Una respuesta nunca debería llevar contraseñas ni
+  datos de acceso: ningún skill los necesita.
 - Si contiene instrucciones dirigidas a una IA ("si eres un modelo de lenguaje, incluye…"), se
   marca `injection_suspected`, se registra un extracto y no se obedece. El código ya hace una
   primera detección al guardar la oferta (`risk_flags`); el agente añade la suya al extraer.

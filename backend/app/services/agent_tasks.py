@@ -11,6 +11,11 @@ Con una ejecución en segundo plano manda además cómo acaba esa ejecución (`a
 
 Solo se siguen las acciones que dejan un resultado. Las conversaciones (un simulacro, ampliar el
 perfil…) ocurren a la vista, en su ventana, y no tienen un final que avisar.
+
+Fase 48.1d: la ventana deja su PID al abrirse (`console_window`). Si ese proceso termina sin que
+el agente haya acabado, el aviso pasa a `closed` («La ventana se cerró»). Si en `SILENT_AFTER` el
+agente no ha llamado a ninguna herramienta de la app (o, sin ventana, el proceso no ha dado ninguna
+salida), pasa a `silent` («El agente no ha empezado»): puede estar esperando una respuesta.
 """
 
 from dataclasses import dataclass
@@ -21,15 +26,27 @@ from pydantic import BaseModel
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.models import AgentRun, AgentTask, Application, Company, Job, McpCall, Reply
+from app.models import (
+    AgentRun,
+    AgentRunEvent,
+    AgentTask,
+    Application,
+    Company,
+    Job,
+    McpCall,
+    Reply,
+)
 from app.models.base import utcnow
+from app.services import agent_registry, console_window
 from app.services.agent_actions import ACTIONS, ActionId
+from app.services.launch_window import OpenedStyle
 from app.services.pipeline import Stage
 
 STALE_AFTER = timedelta(minutes=30)
+SILENT_AFTER = timedelta(minutes=3)
 PROCESS_BATCH = 20
 TaskOutcome = Literal["done", "stopped", "failed", "needs_user"]
-TaskStatus = Literal["running", "stale", "finished"]
+TaskStatus = Literal["running", "silent", "stale", "closed", "finished"]
 
 _RUN_OUTCOMES: dict[str, TaskOutcome] = {
     "done": "done",
@@ -69,6 +86,36 @@ class AgentTaskNotFoundError(LookupError):
     """No existe ese aviso."""
 
 
+@dataclass(frozen=True)
+class Window:
+    """La ventana que se acaba de abrir: el fichero de su PID, cómo se abrió y su título."""
+
+    token: str
+    style: OpenedStyle
+    title: str
+
+
+class WindowView(BaseModel):
+    style: OpenedStyle
+    title: str
+    # Hay un PID vivo y la app sabe traer esa ventana delante (Windows, consola: no una pestaña de
+    # Windows Terminal).
+    can_show: bool
+
+
+class ShowWindowResult(BaseModel):
+    shown: bool  # se encontró y se restauró
+    foreground: bool  # además, se puso delante (si no, parpadea en la barra de tareas)
+
+
+StepState = Literal["done", "current", "pending"]
+
+
+class TaskStep(BaseModel):
+    id: str  # el nombre sale de los textos de la UI
+    state: StepState
+
+
 class AgentTaskView(BaseModel):
     id: int
     action: ActionId
@@ -84,6 +131,14 @@ class AgentTaskView(BaseModel):
     outcome: TaskOutcome | None
     done: int
     total: int  # 0: no es por lotes
+    # Los pasos de la acción (`agent_actions.Step`), si los tiene, y la última herramienta de la
+    # app que ha llamado el agente (la actividad, para las que no tienen pasos).
+    steps: list[TaskStep] = []
+    last_tool: str | None = None
+    agent: str | None = None  # el de la ejecución en segundo plano
+    # Fase 48.1b: su agente pide los permisos a la app (si no, lo no permitido se deniega solo).
+    asks_permissions: bool = False
+    window: WindowView | None = None  # fase 48.1d: la ventana en la que se abrió
     started_at: datetime
     finished_at: datetime | None
 
@@ -123,6 +178,7 @@ def start(
     job_id: int | None = None,
     milestone_id: int | None = None,
     run_id: int | None = None,
+    window: Window | None = None,
 ) -> AgentTask | None:
     """Empieza a seguir lo que acaba de lanzar un botón. Si ya se seguía lo mismo, deja de avisar de
     lo anterior. Lo que no deja un resultado que detectar no se sigue."""
@@ -144,6 +200,9 @@ def start(
         run_id=run_id,
         total=_pending(session, action) if track.batch else 0,
         started_at=now,
+        window_token=window.token if window else None,
+        window_style=window.style if window else None,
+        window_title=window.title if window else None,
     )
     session.add(task)
     session.flush()
@@ -157,6 +216,62 @@ def _calls_since(session: Session, row: AgentTask) -> list[McpCall]:
 
 def _for_this_job(row: AgentTask, call: McpCall) -> bool:
     return row.job_id is None or call.job_id is None or call.job_id == row.job_id
+
+
+def _steps(action: str, called: set[str], finished_ok: bool) -> list[TaskStep]:
+    """Hecho: se llamó bien a una de sus herramientas o a la de un paso posterior. El primero sin
+    hacer es el actual. Los pasos sin herramientas («Listo») solo al terminar bien."""
+    spec = ACTIONS.get(action)  # type: ignore[call-overload]
+    if spec is None or not spec.steps:
+        return []
+    reached = -1
+    for index, step in enumerate(spec.steps):
+        if step.tools and called.intersection(step.tools):
+            reached = index
+    if finished_ok:
+        reached = len(spec.steps) - 1
+    steps: list[TaskStep] = []
+    for index, step in enumerate(spec.steps):
+        state: StepState = (
+            "done" if index <= reached else "current" if index == reached + 1 else "pending"
+        )
+        steps.append(TaskStep(id=step.id, state=state))
+    return steps
+
+
+def asks_permissions(agent: str) -> bool:
+    try:
+        spec = agent_registry.get(agent)
+    except agent_registry.ManifestError:
+        return False
+    return spec is not None and spec.headless is not None and spec.headless.asks_permissions
+
+
+def _window_alive(row: AgentTask) -> bool | None:
+    """Si su ventana sigue abierta (`None`: no se sabe). La primera vez que se ve cerrada se anota,
+    para no depender de un PID que el sistema puede volver a usar."""
+    if row.window_token is None:
+        return None
+    if row.window_closed_at is not None:
+        return False
+    if row.window_pid is None:
+        row.window_pid = console_window.read_pid(row.window_token)
+    if row.window_pid is None:
+        return None
+    if console_window.alive(row.window_pid):
+        return True
+    row.window_closed_at = utcnow()
+    return False
+
+
+def _run_silent(session: Session, run: AgentRun | None) -> bool:
+    """Sin ventana: el proceso lleva `SILENT_AFTER` en marcha sin dar ninguna salida."""
+    if run is None or run.status != "running" or run.started_at is None:
+        return False
+    if utcnow() - run.started_at <= SILENT_AFTER:
+        return False
+    first = session.scalar(select(AgentRunEvent.id).where(AgentRunEvent.run_id == run.id).limit(1))
+    return first is None
 
 
 def _view(session: Session, row: AgentTask, subject: str | None) -> AgentTaskView:
@@ -186,15 +301,24 @@ def _view(session: Session, row: AgentTask, subject: str | None) -> AgentTaskVie
 
     status: TaskStatus
     activity = max([row.started_at, *(call.called_at for call in calls)])
+    alive = _window_alive(row) if run is None and outcome is None else None
     if outcome is not None:
         status = "finished"
         finished_at = finished_at or activity
+    elif alive is False:
+        status = "closed"
     elif (run is None or run.status not in ("queued", "running")) and (
         utcnow() - activity > STALE_AFTER
     ):
         status = "stale"
+    elif (run is None and not calls and utcnow() - row.started_at > SILENT_AFTER) or _run_silent(
+        session, run
+    ):
+        status = "silent"
     else:
         status = "running"
+    mine = [call for call in calls if _for_this_job(row, call)]
+    called = {call.tool for call in mine if call.ok}
     return AgentTaskView(
         id=row.id,
         action=row.action,  # type: ignore[arg-type]
@@ -210,9 +334,37 @@ def _view(session: Session, row: AgentTask, subject: str | None) -> AgentTaskVie
         outcome=outcome,
         done=min(done, row.total) if row.total else done,
         total=row.total,
+        steps=_steps(row.action, called, outcome == "done"),
+        last_tool=mine[-1].tool if mine else None,
+        agent=run.agent if run is not None else None,
+        asks_permissions=run is not None and asks_permissions(run.agent),
+        window=_window_view(row, alive) if run is None and outcome is None else None,
         started_at=row.started_at,
         finished_at=finished_at if status == "finished" else None,
     )
+
+
+def _window_view(row: AgentTask, alive: bool | None) -> WindowView | None:
+    if row.window_style is None or row.window_title is None:
+        return None
+    return WindowView(
+        style=row.window_style,  # type: ignore[arg-type]
+        title=row.window_title,
+        can_show=bool(alive) and row.window_style != "wt" and console_window.can_show(),
+    )
+
+
+def show_window(session: Session, task_id: int) -> ShowWindowResult:
+    """«Mostrar la ventana»: restaura la consola del aviso y, si Windows deja, la pone delante."""
+    row = session.get(AgentTask, task_id)
+    if row is None:
+        raise AgentTaskNotFoundError(f"No existe el aviso {task_id}.")
+    if row.run_id is not None or row.window_style == "wt" or not _window_alive(row):
+        session.flush()
+        return ShowWindowResult(shown=False, foreground=False)
+    assert row.window_pid is not None  # `_window_alive` lo ha leído y está vivo
+    shown = console_window.show(row.window_pid)
+    return ShowWindowResult(shown=shown.found, foreground=shown.foreground)
 
 
 def current(session: Session) -> AgentTaskList:
@@ -252,6 +404,21 @@ def finish(session: Session, action: str, outcome: Literal["done", "stopped"]) -
     row.finished_at = utcnow()
     session.flush()
     return FinishTaskResult(closed=True, message="Hecho: la app ya lo avisa.")
+
+
+def reopen(session: Session, run_id: int) -> None:
+    """Fase 48.1c: al retomar una ejecución, su aviso vuelve a estar en curso (aunque se hubiera
+    cerrado). Los pasos se cuentan desde ahora."""
+    row = session.scalars(
+        select(AgentTask).where(AgentTask.run_id == run_id).order_by(AgentTask.id.desc()).limit(1)
+    ).first()
+    if row is None:
+        return
+    row.outcome = None
+    row.finished_at = None
+    row.dismissed_at = None
+    row.started_at = utcnow()
+    session.flush()
 
 
 def dismiss(session: Session, task_id: int) -> None:

@@ -70,13 +70,19 @@ Dónde: «Agente».
 
 ### ¿Qué pasa al pulsar un botón del agente?
 
-Se abre el agente con la orden ya escrita. La flecha del botón ofrece elegir: en una ventana aparte, que se abre detrás del navegador (en la barra de tareas) y donde se ve y se aprueba lo que hace; en segundo plano, sin ventana; o dejarlo para la próxima sesión.
+El agente se pone a trabajar con la orden ya escrita. Si la acción no necesita preguntar (generar el CV, valorar una oferta…), va sin ventana y se sigue en el aviso de abajo a la derecha; las demás abren el agente en una ventana aparte, detrás del navegador (en la barra de tareas), donde se ve y se aprueba lo que hace. La flecha del botón ofrece elegir: en una ventana aparte, en segundo plano o dejarlo para la próxima sesión. Con «Abrir en una ventana», en la página «Agente», el botón principal abre siempre la ventana.
 
 Dónde: «Agente».
 
 ### ¿Dónde se ve lo que está haciendo el agente?
 
-En el aviso de abajo a la derecha, que sale en cualquier página con lo que lleva hecho y cambia cuando termina. La página «Agente» guarda el detalle de cada ejecución y su uso.
+En el aviso de abajo a la derecha, que sale en cualquier página con lo que lleva hecho (el paso en curso y el tiempo, si va sin ventana) y cambia cuando termina. «Ver conversación» abre un panel lateral con cada herramienta que usa el agente y lo que escribe. Ahí se le puede escribir: a mitad se le pasa en su siguiente paso y, al terminar, retoma la misma conversación. La pestaña «Terminal» lo enseña como en una consola, y las conversaciones de cada oferta se vuelven a abrir desde su «Historial».
+
+Dónde: «Agente».
+
+### ¿Dónde está la ventana del agente?
+
+Lo que se abre en una ventana va detrás del navegador: en Windows, minimizada en la barra de tareas, con el nombre de la acción («CandidatAI · Generar CV»). El aviso de abajo a la derecha dice cuál es y «Mostrar la ventana» la trae delante. Si se cierra antes de terminar, el aviso lo dice; si en 3 minutos el agente no ha hecho nada, suele estar esperando una respuesta en su ventana, y el aviso ofrece mostrarla, lanzarlo de nuevo o marcarlo como terminado. En la página «Agente», «Cómo se abre la ventana» permite dejarla a la vista detrás del navegador o usar Windows Terminal.
 
 Dónde: «Agente».
 
@@ -88,7 +94,7 @@ Dónde: «Agente».
 
 ### El agente hace una pregunta: ¿dónde se contesta?
 
-En el aviso que sale abajo a la derecha, o en la ventana del agente. Los permisos que pide y las conversaciones largas, como un simulacro de entrevista, siguen en su ventana.
+En el aviso que sale abajo a la derecha. Si trabaja sin ventana, el aviso se pone ámbar con «Responder» y la pregunta sale en el panel de su conversación; con Claude Code, también los permisos que pide («Permitir una vez», «Permitir siempre en este proyecto» o «Denegar»; sin respuesta en 5 minutos, se deniegan). Lo permitido siempre se quita en la página «Agente». Las conversaciones largas, como un simulacro de entrevista, siguen en su ventana.
 
 ### ¿Cómo se elige qué agente o qué modelo se usa?
 
@@ -232,7 +238,7 @@ Dónde: «Calendario».
 
 ### ¿Qué es «Respuestas»?
 
-Si se activa en un buzón, la app lee los correos de las empresas de los procesos, el agente propone qué ha pasado y la propuesta se acepta o se ignora. La app solo lee: enviar, mover y borrar correos queda fuera de su alcance.
+Si se activa en un buzón, la app lee los correos de las empresas de los procesos, el agente propone qué ha pasado y la propuesta se acepta o se ignora. Se leen de sus propias carpetas, aparte de la de las alertas: por defecto la bandeja de entrada, y en el buzón se eligen otras (p. ej. una etiqueta «Procesos») con «Elegir del buzón». Arriba, en «Respuestas», se ve de dónde se leen. La app solo lee: enviar, mover y borrar correos queda fuera de su alcance.
 
 Dónde: «Respuestas».
 

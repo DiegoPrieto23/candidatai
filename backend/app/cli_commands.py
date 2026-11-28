@@ -57,6 +57,9 @@ letter_app = typer.Typer(help="Cartas de presentación.", no_args_is_help=True)
 context_app = typer.Typer(
     help="Contexto del candidato (data/contexto/) y carpetas de documentos.", no_args_is_help=True
 )
+policies_app = typer.Typer(
+    help="Las reglas de la app (docs/POLICIES.md), por secciones.", no_args_is_help=True
+)
 skills_app = typer.Typer(
     help="Huecos de skills: lo que piden las ofertas y tu perfil no cubre.", no_args_is_help=True
 )
@@ -110,6 +113,7 @@ app.add_typer(stats_app, name="stats")
 app.add_typer(applications_app, name="applications")
 app.add_typer(letter_app, name="letter")
 app.add_typer(context_app, name="context")
+app.add_typer(policies_app, name="policies")
 app.add_typer(prompts_app, name="prompts")
 app.add_typer(skills_app, name="skills")
 app.add_typer(replies_app, name="replies")
@@ -1586,7 +1590,9 @@ def _render_mail_sources(result: Any) -> None:
         if box.kind == "folder":
             where = box.path
         else:
-            where = f"{box.user} en {box.host}:{box.port}, carpeta «{box.folder}»"
+            where = f"{box.user} en {box.host}:{box.port}, alertas en «{box.folder}»"
+            if box.read_replies:
+                where += ", respuestas en " + ", ".join(f"«{f}»" for f in box.replies_folders)
             if not box.has_password:
                 where += f" (falta la contraseña: {box.secret_ref})"
             elif box.password_storage == "file":
@@ -1600,15 +1606,19 @@ def _render_mail_sources(result: Any) -> None:
 @mail_sources_app.command("test")
 def mail_sources_test(
     source_id: int = typer.Argument(..., help="Id del buzón (ver `cai mail-sources list`)."),
+    replies: bool = typer.Option(
+        False, "--replies", help="Las carpetas de respuestas en vez de la de alertas."
+    ),
     as_json: bool = JSON_OPTION,
 ) -> None:
     """Prueba un buzón: login y apertura de su carpeta en solo lectura, sin leer correos."""
     from app.core.db import session_scope
     from app.services import mail_sources
 
+    purpose: mail_sources.Purpose = "replies" if replies else "alerts"
     try:
         with session_scope() as session:
-            result = mail_sources.probe_mail_source(session, source_id)
+            result = mail_sources.probe_mail_source(session, source_id, purpose=purpose)
     except mail_sources.MailSourceNotFoundError as exc:
         error = ToolError("not_found", str(exc))
         if as_json:
@@ -2602,6 +2612,7 @@ register_tools(
         "prompts": prompts_app,
         "agents": agents_app,
         "context": context_app,
+        "policies": policies_app,
         "skills": skills_app,
         "replies": replies_app,
         "drafts": drafts_app,

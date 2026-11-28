@@ -76,7 +76,6 @@
   "loading": "Loading job",
   "back": "Job inbox",
   "invalidId": "That job ID is not valid.",
-  "viewOriginal": "View original",
   "addedOn": "Added on {{date}}",
   "postedOn": ". Posted on {{date}}",
   "archive": {
@@ -110,5 +109,17 @@
     "readHint": "It pulls out the level, work mode, skills and salary.",
     "done": "Done",
     "pending": "To do"
+  },
+  "site": {
+    "view": {
+      "portal": "View on {{name}}",
+      "ats": "View on {{company}}’s careers site",
+      "web": "Open the published job"
+    },
+    "open": {
+      "portal": "Open {{title}} on {{name}}",
+      "ats": "Open {{title}} on {{company}}’s careers site",
+      "web": "Open {{title}} on {{host}}"
+    }
   }
 }

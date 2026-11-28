@@ -311,6 +311,20 @@ describe('Descartar desde la Bandeja (fase 27.6)', () => {
     ])
   const ok = { ok: true, event_id: 9, stage: 'closed' }
 
+  it('«Abrir» dice en qué web se abre la oferta (fase 48.4)', async () => {
+    mockApi({
+      'GET /status': status(0, 0, 1),
+      'GET /jobs': page([
+        jobRow({ id: 1, title: 'Analytics Engineer', stage: 'pending_detail', site: { kind: 'portal', name: 'LinkedIn', host: 'linkedin.com' } }),
+      ]),
+    })
+    renderApp('/bandeja?stage=pending_detail')
+    const table = await screen.findByRole('table')
+    const link = within(table).getByRole('link', { name: 'Abrir Analytics Engineer en LinkedIn' })
+    expect(link).toHaveAttribute('title', 'linkedin.com')
+    expect(link).toHaveTextContent('Abrir')
+  })
+
   it('solo enseña «Descartar» en «Por completar» y «Por leer»', async () => {
     mockApi({ 'GET /status': status(0, 1), 'GET /jobs': page() })
     renderApp('/bandeja?stage=pending_triage')

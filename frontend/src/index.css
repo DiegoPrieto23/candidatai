@@ -281,3 +281,14 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Panel de la conversación del agente (fase 48.1a): en pantallas anchas la página y los avisos se
+   apartan para dejarle sitio; en las estrechas lo tapa todo. */
+@media (min-width: 80rem) {
+  html[data-agent-panel] [data-app-shell] {
+    padding-right: 27.5rem;
+  }
+  html[data-agent-panel] [data-notice-dock] {
+    right: calc(27.5rem + 1rem);
+  }
+}

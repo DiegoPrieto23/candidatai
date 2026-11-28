@@ -52,6 +52,9 @@ class ToolSpec:
     cli: CliSpec
     # Campos de texto que pueden ir tal cual a `mcp_calls` (nunca texto de ofertas ni del perfil).
     audit_fields: tuple[str, ...] = ()
+    # Por MCP, solo un bloque de texto con el JSON (sin `structuredContent` ni esquema de salida)
+    # y sin campos vacíos: lo exige el agente cuando la llama él mismo (`request_permission`).
+    text_only: bool = False
 
     def job_id_of(self, args: BaseModel, result: BaseModel | None) -> int | None:
         for source in (args, result):

@@ -21,5 +21,6 @@
     "timeUp": "Time is up: it will ask in its window.",
     "inTerminal": "Answer in the terminal",
     "send": "Send"
-  }
+  },
+  "permissionDescription": "Its notice was closed, so the permission is shown here. Without an answer, it is denied."
 }

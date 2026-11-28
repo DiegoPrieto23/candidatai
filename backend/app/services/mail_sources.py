@@ -1,4 +1,5 @@
-"""Buzones de los que se leen alertas y respuestas (fase 27.4).
+"""Buzones de los que se leen alertas y respuestas (fase 27.4; varias carpetas de respuestas,
+fase 48.3).
 
 Un buzón es IMAP (siempre en solo lectura, ver `mailboxes.py`) o una carpeta `data/inbox/<nombre>/`
 de `.eml`/`.mbox`. La cuenta `CAI_IMAP_*` de `.env` aparece sola como «Principal» (`from_env`):
@@ -24,6 +25,7 @@ from app.models import MailSource, MailSourceChange
 from app.models.base import utcnow
 from app.schemas.mail_sources import (
     MailError,
+    MailFolderList,
     MailSaveResult,
     MailSourceInput,
     MailSourceList,
@@ -36,6 +38,7 @@ from app.services.ingestion.email.mailboxes import (
     ImapFactory,
     MailboxError,
     connect_imap,
+    list_folders,
 )
 
 logger = logging.getLogger(__name__)
@@ -46,8 +49,9 @@ _DOCKER_PASSWORD = (
     " Falta su contraseña: en Docker se configura en el contenedor (ver «Detalles técnicos» y la "
     "guía del correo)."
 )
-# Lo que de la cuenta de `.env` se cambia en `.env`, no aquí.
-_ENV_FIELDS = ("host", "port", "security", "user", "folder", "replies_folder", "allow_private")
+# Lo que de la cuenta de `.env` se cambia en `.env`, no aquí. Sus carpetas de respuestas, en
+# cambio, se eligen en la UI (fase 48.3): `CAI_IMAP_REPLIES_FOLDER` solo vale hasta entonces.
+_ENV_FIELDS = ("host", "port", "security", "user", "folder", "allow_private")
 
 Purpose = Literal["alerts", "replies"]
 
@@ -91,7 +95,7 @@ def sync_env_source(session: Session) -> MailSource | None:
         kind="imap",
         security="ssl",
         folder=settings.imap_folder,
-        replies_folder=settings.imap_replies_folder,
+        replies_folders=[settings.imap_replies_folder],
         enabled=True,
         read_replies=False,  # abrir la bandeja de entrada se activa a propósito, en la UI
         secret_ref=ENV_SECRET,
@@ -116,22 +120,28 @@ def _visible(session: Session) -> list[MailSource]:
 
 
 def effective(row: MailSource) -> dict[str, object]:
-    """Servidor, usuario y carpetas: los de `.env` en la cuenta heredada."""
+    """Servidor, usuario y carpetas: los de `.env` en la cuenta heredada (salvo las carpetas de
+    respuestas, si ya se eligieron en la UI)."""
     if not row.from_env:
         return {
             "host": row.host,
             "port": row.port,
             "user": row.user,
             "folder": row.folder,
-            "replies_folder": row.replies_folder,
+            "replies_folders": list(row.replies_folders or ["INBOX"]),
         }
     settings = get_settings()
+    replies = (
+        list(row.replies_folders)
+        if row.replies_folders_set and row.replies_folders
+        else [settings.imap_replies_folder]
+    )
     return {
         "host": settings.imap_host,
         "port": settings.imap_port,
         "user": settings.imap_user,
         "folder": settings.imap_folder,
-        "replies_folder": settings.imap_replies_folder,
+        "replies_folders": replies,
     }
 
 
@@ -228,7 +238,8 @@ def create_mail_source(session: Session, data: MailSourceInput) -> MailSaveResul
         security=data.security,
         user=data.user,
         folder=data.folder,
-        replies_folder=data.replies_folder,
+        replies_folders=data.replies_folders,
+        replies_folders_set=True,
         enabled=data.enabled,
         read_replies=data.read_replies,
         allow_private=data.allow_private,
@@ -257,12 +268,14 @@ def update_mail_source(session: Session, source_id: int, patch: MailSourcePatch)
     changes = patch.model_dump(exclude_unset=True, exclude={"password"})
     if row.from_env and any(f in changes for f in _ENV_FIELDS):
         raise MailSourceNotAllowedError(
-            f"«{row.label}» es la cuenta configurada al instalar: su servidor, su usuario y sus "
-            "carpetas se cambian en la configuración de la instalación (ver la guía del correo). "
-            "Aquí se cambian su nombre, su contraseña y si se lee."
+            f"«{row.label}» es la cuenta configurada al instalar: su servidor, su usuario y su "
+            "carpeta de alertas se cambian en la configuración de la instalación (ver la guía del "
+            "correo). Aquí se cambian su nombre, su contraseña, si se lee y de qué carpetas se "
+            "leen las respuestas."
         )
     if "label" in changes:
         changes["label"] = _check_label(session, changes["label"], exclude=row.id)
+    previous_replies = replies_folders(row)
     if not row.from_env:
         # Se valida el buzón entero, con las mismas reglas que al darlo de alta.
         current = {
@@ -273,7 +286,7 @@ def update_mail_source(session: Session, source_id: int, patch: MailSourcePatch)
             "security": row.security,
             "user": row.user,
             "folder": row.folder,
-            "replies_folder": row.replies_folder,
+            "replies_folders": row.replies_folders,
             "enabled": row.enabled,
             "read_replies": row.read_replies,
             "allow_private": row.allow_private,
@@ -282,6 +295,9 @@ def update_mail_source(session: Session, source_id: int, patch: MailSourcePatch)
         changes = {k: getattr(merged, k) for k in changes}
     for key, value in changes.items():
         setattr(row, key, value)
+    # La cuenta de `.env` deja de seguir `CAI_IMAP_REPLIES_FOLDER` solo si se eligen otras.
+    if "replies_folders" in changes and changes["replies_folders"] != previous_replies:
+        row.replies_folders_set = True
     env_line = None
     fields = list(changes)
     if patch.password is not None:
@@ -373,11 +389,11 @@ def _account(
     )
 
 
-def account_of(row: MailSource, purpose: Purpose = "alerts") -> ImapAccount:
-    """La cuenta de un buzón IMAP, con su contraseña (del llavero, del entorno o de `.env`).
-    `MailboxError` si falta algo o el servidor no está permitido."""
+def account_of(row: MailSource) -> ImapAccount:
+    """La cuenta de un buzón IMAP en su carpeta de alertas, con su contraseña (del llavero, del
+    entorno o de `.env`). `MailboxError` si falta algo o el servidor no está permitido."""
     fields = effective(row)
-    folder = str(fields["replies_folder" if purpose == "replies" else "folder"])
+    folder = str(fields["folder"])
     password = secrets.get(row.secret_ref) if row.secret_ref else None
     return _account(
         fields["host"],  # type: ignore[arg-type]
@@ -388,6 +404,16 @@ def account_of(row: MailSource, purpose: Purpose = "alerts") -> ImapAccount:
         row.security,
         row.allow_private or row.from_env,
     )
+
+
+def replies_folders(row: MailSource) -> list[str]:
+    return list(effective(row)["replies_folders"])  # type: ignore[call-overload]
+
+
+def replies_accounts(row: MailSource) -> list[ImapAccount]:
+    """La cuenta en cada una de sus carpetas de respuestas (fase 48.3)."""
+    account = account_of(row)
+    return [account.with_folder(folder) for folder in replies_folders(row)]
 
 
 def _try(account: ImapAccount, factory: ImapFactory | None) -> MailTestResult:
@@ -414,16 +440,81 @@ def _folder_test(folder: str) -> MailTestResult:
 
 
 def probe_mail_source(
-    session: Session, source_id: int, factory: ImapFactory | None = None
+    session: Session,
+    source_id: int,
+    factory: ImapFactory | None = None,
+    purpose: Purpose = "alerts",
 ) -> MailTestResult:
-    """Login y `EXAMINE` de su carpeta de alertas (sin leer correos), o que exista su carpeta."""
+    """Login y `EXAMINE` de su carpeta de alertas o, con `replies`, de cada una de las de
+    respuestas (sin leer correos); o que exista su carpeta."""
     row = _get(session, source_id)
     if row.kind == "folder":
         return _folder_test(row.folder)
     try:
-        return _try(account_of(row), factory)
+        if purpose == "alerts":
+            return _try(account_of(row), factory)
+        accounts = replies_accounts(row)
     except MailboxError as exc:
         return MailTestResult(ok=False, code=exc.code, message=exc.message)
+    opened: list[str] = []
+    for account in accounts:
+        try:
+            _try(account, factory)
+        except MailboxError as exc:
+            message = f"«{account.folder}»: {exc.message}" if len(accounts) > 1 else exc.message
+            return MailTestResult(ok=False, code=exc.code, message=message)
+        opened.append(f"«{account.folder}»")
+    if len(opened) == 1:
+        message = f"Conectado: carpeta {opened[0]} abierta en solo lectura."
+    else:
+        message = f"Conectado: carpetas {', '.join(opened)} abiertas en solo lectura."
+    return MailTestResult(ok=True, message=message)
+
+
+def _folder_list(account: ImapAccount, factory: ImapFactory | None) -> MailFolderList:
+    try:
+        folders = list_folders(account, factory)
+    except MailboxError as exc:
+        return MailFolderList(ok=False, code=exc.code, message=exc.message)
+    return MailFolderList(ok=True, folders=folders)
+
+
+def folders_of(
+    session: Session, source_id: int, factory: ImapFactory | None = None
+) -> MailFolderList:
+    """Las carpetas de un buzón IMAP guardado (`LIST`, solo los nombres)."""
+    row = _get(session, source_id)
+    if row.kind != "imap":
+        return MailFolderList(
+            ok=False, code="not_imap", message="Una carpeta de correos no tiene subcarpetas."
+        )
+    try:
+        account = account_of(row)
+    except MailboxError as exc:
+        return MailFolderList(ok=False, code=exc.code, message=exc.message)
+    return _folder_list(account, factory)
+
+
+def folders_of_new(data: MailSourceInput, factory: ImapFactory | None = None) -> MailFolderList:
+    """Lo mismo antes de guardar el buzón, con la contraseña que se acaba de escribir."""
+    if data.kind != "imap":
+        return MailFolderList(
+            ok=False, code="not_imap", message="Una carpeta de correos no tiene subcarpetas."
+        )
+    password = data.password.get_secret_value() if data.password else None
+    try:
+        account = _account(
+            data.host,
+            data.port,
+            data.user,
+            password,
+            data.folder,
+            data.security,
+            data.allow_private,
+        )
+    except MailboxError as exc:
+        return MailFolderList(ok=False, code=exc.code, message=exc.message)
+    return _folder_list(account, factory)
 
 
 def probe_new_mail_source(

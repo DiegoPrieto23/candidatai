@@ -9,8 +9,56 @@ y su texto son las notas de la release en GitHub (`scripts/release_notes.py`).
 
 ## [Sin publicar]
 
+### Añadido
+
+- **La conversación con el agente, en el portal**: lo que se lanza sin ventana dice en el aviso de
+  abajo a la derecha en qué paso va («3/6 · Redactar» al generar el CV) o qué está haciendo, y el
+  tiempo que lleva. **Ver conversación** abre un panel lateral con cada herramienta que usa el
+  agente y lo que escribe; si falla, **Abrir en una ventana** retoma la misma sesión.
+- **Preguntas y permisos del agente, en el portal**: sin ventana, lo que pregunta el agente sale en
+  el panel de su conversación (el aviso se pone ámbar con **Responder**), y con Claude Code también
+  lo que necesita permiso: «Permitir una vez», «Permitir siempre en este proyecto» o «Denegar». Sin
+  respuesta en 5 minutos, se deniega. Lo permitido siempre se ve y se quita en la página «Agente».
+  Un permiso nunca sustituye la confirmación de una candidatura.
+- **Escribirle al agente desde el portal**: en el panel de la conversación, lo que se escribe
+  mientras trabaja le llega en su siguiente paso; cuando ya ha terminado, retoma la misma
+  conversación (con Claude Code u OpenCode; con Codex, en una ventana). Pestaña **Terminal** con lo
+  mismo como en una consola, y las conversaciones de cada oferta, en su «Historial».
+- **«Abrir en una ventana»**, en la página «Agente», para quien prefiera que el botón principal abra
+  siempre la ventana del agente.
+- **La ventana del agente, siempre a mano**: el aviso de lo que se abre en una ventana (con Qwen
+  Code, Antigravity CLI o «Abrir en una ventana») dice cuál es («En la ventana «CandidatAI · Generar
+  CV» (minimizada en la barra de tareas)») y, en Windows, **Mostrar la ventana** la trae delante. Si
+  se cierra antes de terminar, el aviso dice **La ventana se cerró**; si en 3 minutos el agente no
+  ha hecho nada (suele estar esperando una respuesta en su ventana), **El agente no ha empezado**,
+  con **Lanzar de nuevo** y **Marcar como terminada**. Sin ventana, lo mismo si el agente no da
+  ninguna señal.
+- **Cómo se abre la ventana** (Windows), en la página «Agente»: minimizada en la barra de tareas,
+  a la vista detrás del navegador o en Windows Terminal.
+
 ### Cambiado
 
+- **El botón de la oferta dice adónde lleva**: en la ficha, «Ver original» pasa a «Ver en
+  LinkedIn», «Ver en InfoJobs»…, «Ver en el portal de {empresa}» si se publicó en su ATS
+  (Greenhouse, Lever, Ashby…) o «Abrir la oferta publicada» en otra web, con el dominio al pasar el
+  ratón. En la Bandeja, «Abrir» lo dice también al lector de pantalla y al pasar el ratón.
+- **Las respuestas de las empresas, con sus propias carpetas**: en cada buzón, las alertas y las
+  respuestas van en bloques aparte. Las respuestas se leen por defecto de la bandeja de entrada y
+  se pueden elegir otras, o varias (p. ej. una etiqueta «Procesos» de Gmail), con **Elegir del
+  buzón**, también en la cuenta configurada al instalar. La tarjeta dice «Alertas: … · Respuestas:
+  …», **Probar las respuestas** abre cada carpeta y la página **Respuestas** dice de dónde lee
+  (con **Cambiar**) y qué ha mirado al revisar el correo.
+- **Los botones del agente ya no abren una ventana si no hace falta**: con Claude Code, Codex u
+  OpenCode, «Generar CV», «Valorar esta oferta» y las demás acciones que
+  no preguntan van sin ventana y se siguen en el aviso. Las que preguntan o usan el navegador
+  siguen abriendo su ventana.
+- **Codex y OpenCode generan el CV y la carta sin ventana**: el redactor y el verificador piden las
+  políticas a la app en vez de leer el fichero, así que caben en lo que la app les deja hacer.
+  Codex trabaja ya sin ventana en todo lo que lo admite salvo «Valorar las ofertas nuevas».
+- **Nuevo comando `cai policies show`** (herramienta `get_policies`): las reglas de la app por
+  secciones, para los agentes.
+- **Claude Code ya no pregunta si usar el servidor de CandidatAI** la primera vez que se abre en la
+  carpeta: va aprobado en la configuración del proyecto. Sigue preguntando si confías en la carpeta.
 - **La terminal de `cai start` habla en español y en inglés a la vez**: cada mensaje sale en los dos
   idiomas, primero en el del portal.
 

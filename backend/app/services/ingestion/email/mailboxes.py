@@ -1,9 +1,10 @@
 """Lectura de correos de alertas sin modificar nunca el buzón.
 
 - **IMAP**: la carpeta se abre con `EXAMINE` (`select(readonly=True)`) y los mensajes se leen con
-  `BODY.PEEK[]`, que no marca como leído. Solo se usan `LOGIN`, `EXAMINE`, `UID SEARCH`,
-  `UID FETCH` (con `PEEK`) y `LOGOUT`: nada de `STORE`, `COPY`, `MOVE`, `EXPUNGE`, `APPEND`,
-  `DELETE` ni `CLOSE`. Primero se piden solo los `Message-ID` y luego el cuerpo de los nuevos.
+  `BODY.PEEK[]`, que no marca como leído. Solo se usan `LOGIN`, `LIST` (los nombres de las
+  carpetas, para elegirlas en la UI; fase 48.3), `EXAMINE`, `UID SEARCH`, `UID FETCH` (con `PEEK`)
+  y `LOGOUT`: nada de `STORE`, `COPY`, `MOVE`, `EXPUNGE`, `APPEND`, `DELETE` ni `CLOSE`. Primero
+  se piden solo los `Message-ID` y luego el cuerpo de los nuevos.
 - **Carpeta local**: `data/inbox/*.eml` y `*.mbox` (sin subcarpetas: `samples/` no se lee). Los
   ficheros no se mueven ni se borran.
 """
@@ -127,6 +128,85 @@ def imap_utf7(folder: str) -> str:
     return f'"{name}"'
 
 
+def decode_imap_utf7(name: str) -> str:
+    """Lo contrario de `imap_utf7`, sin comillas: «Entrevistas t&AOk-cnicas» → «Entrevistas
+    técnicas». Un tramo mal formado se deja tal cual."""
+    out: list[str] = []
+    pos = 0
+    while pos < len(name):
+        start = name.find("&", pos)
+        if start < 0:
+            out.append(name[pos:])
+            break
+        out.append(name[pos:start])
+        end = name.find("-", start)
+        if end < 0:
+            out.append(name[start:])
+            break
+        chunk = name[start + 1 : end]
+        if not chunk:
+            out.append("&")
+        else:
+            padded = chunk.replace(",", "/") + "=" * (-len(chunk) % 4)
+            try:
+                out.append(base64.b64decode(padded, validate=True).decode("utf-16-be"))
+            except (ValueError, UnicodeDecodeError):
+                out.append(name[start : end + 1])
+        pos = end + 1
+    return "".join(out)
+
+
+# Una línea de `LIST`: `(\HasNoChildren) "/" "INBOX"` o, sin comillas, `(\Noselect) "/" Archivo`.
+_LIST_LINE = re.compile(rb'^\((?P<flags>[^)]*)\) (?:"(?:[^"\\]|\\.)*"|NIL) (?P<name>.+)$')
+MAX_FOLDERS = 500
+
+
+MAX_FOLDER_CHARS = 200  # lo que admite una carpeta al guardarla
+
+
+def _usable(name: str) -> bool:
+    """Lo que se podría guardar como carpeta: el nombre viene del servidor, no es de fiar."""
+    if not 1 <= len(name) <= MAX_FOLDER_CHARS:
+        return False
+    return not any(ord(c) < 0x20 or 0x7F <= ord(c) <= 0x9F or c in "\u2028\u2029" for c in name)
+
+
+def _list_name(raw: bytes) -> str:
+    text = raw.decode("ascii", "replace").strip()
+    if len(text) >= 2 and text.startswith('"') and text.endswith('"'):
+        text = text[1:-1].replace('\\"', '"').replace("\\\\", "\\")
+    return decode_imap_utf7(text)
+
+
+def _parse_list(data: list[object]) -> list[str]:
+    """Las carpetas que se pueden abrir (sin `\\Noselect`), con `INBOX` primero."""
+    names: list[str] = []
+    pending: bytes | None = None
+    for item in data:
+        if isinstance(item, tuple):  # nombre en literal: (b'(\\X) "/" {12}', b'Nombre raro')
+            head, literal = item[0], item[1]
+            if isinstance(head, bytes) and isinstance(literal, bytes):
+                escaped = literal.replace(b"\\", b"\\\\").replace(b'"', b'\\"')
+                pending = head.rsplit(b" ", 1)[0] + b' "' + escaped + b'"'
+            else:
+                continue
+        elif isinstance(item, bytes):
+            pending = item
+        else:
+            continue
+        match = _LIST_LINE.match(pending)
+        pending = None
+        if match is None or b"\\noselect" in match.group("flags").lower():
+            continue
+        name = _list_name(match.group("name"))
+        if _usable(name) and name not in names:
+            names.append(name)
+        if len(names) >= MAX_FOLDERS:
+            break
+    inbox = [n for n in names if n.upper() == "INBOX"]
+    return inbox + sorted((n for n in names if n.upper() != "INBOX"), key=str.casefold)
+
+
 def _imap_date(day: date) -> str:
     return f"{day.day:02d}-{_MONTHS[day.month - 1]}-{day.year}"
 
@@ -161,9 +241,8 @@ def _bodies(data: list[object]) -> Iterator[tuple[str, bytes]]:
             yield match.group(1).decode(), body
 
 
-def connect_imap(account: ImapAccount, factory: ImapFactory | None = None) -> imaplib.IMAP4:
-    """Login y `EXAMINE` de la carpeta de la cuenta. Lanza `MailboxError` con un mensaje claro."""
-    folder = account.folder
+def _login(account: ImapAccount, factory: ImapFactory | None = None) -> imaplib.IMAP4:
+    """Conexión y login. Lanza `MailboxError` con un mensaje claro."""
     factory = factory or default_factory(account)
     try:
         conn = factory(account.host, account.port, IMAP_TIMEOUT)
@@ -187,6 +266,17 @@ def connect_imap(account: ImapAccount, factory: ImapFactory | None = None) -> im
                 "El servidor IMAP rechazó el usuario o la contraseña. En Gmail hace falta una "
                 "contraseña de aplicación (con la verificación en dos pasos activada).",
             ) from None
+    except BaseException:
+        _logout(conn)
+        raise
+    return conn
+
+
+def connect_imap(account: ImapAccount, factory: ImapFactory | None = None) -> imaplib.IMAP4:
+    """Login y `EXAMINE` de la carpeta de la cuenta. Lanza `MailboxError` con un mensaje claro."""
+    folder = account.folder
+    conn = _login(account, factory)
+    try:
         try:
             typ, _ = conn.select(imap_utf7(folder), readonly=True)
         except imaplib.IMAP4.error:
@@ -196,6 +286,23 @@ def connect_imap(account: ImapAccount, factory: ImapFactory | None = None) -> im
         _logout(conn)
         raise
     return conn
+
+
+def list_folders(account: ImapAccount, factory: ImapFactory | None = None) -> list[str]:
+    """Las carpetas (o etiquetas de Gmail) del buzón, con `LIST`: solo sus nombres. No abre
+    ninguna ni lee correos."""
+    conn = _login(account, factory)
+    try:
+        typ, data = conn.list('""', "*")
+        _ok(typ, "la lista de carpetas")
+        return _parse_list(list(data or []))
+    except (TimeoutError, OSError) as exc:
+        name = type(exc).__name__
+        raise MailboxError("network", f"Se cortó la conexión IMAP ({name}).") from None
+    except imaplib.IMAP4.error as exc:
+        raise MailboxError("imap_error", f"Error del servidor IMAP: {exc}") from None
+    finally:
+        _logout(conn)
 
 
 def _logout(conn: imaplib.IMAP4) -> None:

@@ -116,7 +116,7 @@
   },
   "tasks": {
     "runningTerminal": "Sigue en la ventana del agente. Si pide permiso, se contesta allí.",
-    "runningBackground": "En segundo plano: el agente avisa aquí al terminar.",
+    "runningBackground": "Sin ventana: el avance se ve aquí.",
     "stale": "Sin noticias desde hace 30 minutos. Conviene mirar la ventana del agente o cerrar este aviso.",
     "doneBody": "Ya se puede ver.",
     "doneCount_one": "{{count}} hecha.",
@@ -205,6 +205,140 @@
       "body": "Detenida a mano. Lo que el agente ya había guardado se queda."
     },
     "terminalStop": "Para pararla, se cierra la ventana del agente.",
-    "markDone": "Marcar como terminada"
+    "markDone": "Marcar como terminada",
+    "conversation": "Ver conversación",
+    "openWindow": "Abrir en una ventana",
+    "stepOf": "{{n}}/{{total}} · {{step}}",
+    "steps": {
+      "label": "Pasos",
+      "job": "Oferta",
+      "profile": "Perfil",
+      "read": "Lectura",
+      "write": "Redactar",
+      "pdf": "PDF",
+      "verify": "Verificar",
+      "done": "Listo",
+      "state": {
+        "done": "hecho",
+        "current": "en curso",
+        "pending": "pendiente"
+      }
+    },
+    "tools": {
+      "unknown": "Trabajando",
+      "other": "Usando {{tool}}",
+      "get_profile": "Leyendo el perfil",
+      "get_context": "Leyendo el contexto del perfil",
+      "get_extraction": "Leyendo la oferta",
+      "get_match": "Leyendo el encaje",
+      "get_cv_brief": "Leyendo las indicaciones del CV",
+      "check_job_open": "Comprobando si la oferta sigue abierta",
+      "list_cv_templates": "Eligiendo la plantilla",
+      "check_cv_fit": "Midiendo el CV",
+      "save_cv_content": "Guardando el CV y generando el PDF",
+      "get_cv_content": "Leyendo el CV",
+      "save_cv_verification": "Guardando la verificación",
+      "get_cv_correction": "Leyendo las correcciones pedidas",
+      "get_cover_letter": "Leyendo la carta",
+      "save_cover_letter": "Guardando la carta",
+      "save_cover_letter_verification": "Guardando la verificación de la carta",
+      "save_fit_assessment": "Guardando la valoración",
+      "save_extraction": "Guardando la lectura de la oferta",
+      "list_jobs": "Buscando las ofertas",
+      "get_job": "Leyendo el texto de la oferta",
+      "get_status": "Consultando el estado",
+      "skill": "Siguiendo el skill {{detail}}",
+      "agent": "Subagente {{detail}}",
+      "read": "Leyendo {{detail}}",
+      "command_execution": "Comando en la terminal",
+      "web_search": "Búsqueda web",
+      "file_change": "Editando ficheros",
+      "collab_tool_call": "Subagente"
+    },
+    "panel": {
+      "conversation": "Conversación",
+      "noWindow": "sin ventana",
+      "collapse": "Contraer al aviso",
+      "started": "El agente ha empezado",
+      "bySubagent": "(subagente)",
+      "denied": "No permitida en esta acción.",
+      "toolFailed": "Ha fallado.",
+      "finished": "Terminado",
+      "finishedWithError": "Terminado con un error",
+      "error": "Error",
+      "loading": "Cargando la conversación…",
+      "waiting": "En cola: el agente empieza en unos segundos.",
+      "empty": "Esta ejecución no guardó su conversación.",
+      "status": {
+        "queued": "en cola",
+        "running": "trabajando",
+        "done": "terminada",
+        "needs_user": "espera un dato",
+        "failed": "ha fallado",
+        "cancelled": "detenida",
+        "timeout": "tiempo agotado"
+      },
+      "noPermissions": "Este agente no pide permisos al portal: lo que no tiene permitido en esta acción se deniega sin preguntar.",
+      "resumed": "Se retoma la conversación",
+      "terminal": "Terminal",
+      "terminalOk": "hecho",
+      "views": "Vistas de la conversación",
+      "compose": {
+        "label": "Mensaje para el agente",
+        "placeholderLive": "Indicación para el agente…",
+        "placeholderResume": "Pedir un cambio o seguir…",
+        "send": "Enviar",
+        "hintLive": "Se le pasa con su siguiente paso.",
+        "hintResume": "Retoma la misma conversación: no empieza de cero.",
+        "windowOnly": "Este agente no retoma la conversación sin ventana: se sigue en una ventana, en la misma sesión.",
+        "openWindow": "Abrir en una ventana"
+      }
+    },
+    "waitingQuestion": "El agente espera una respuesta.",
+    "waitingPermission": "El agente pide permiso para seguir.",
+    "respond": "Responder",
+    "prompt": {
+      "questionTitle": "Pregunta del agente",
+      "permissionTitle": "Permiso",
+      "permissionAsk": "Quiere usar {{tool}}:",
+      "label": "Respuesta para el agente",
+      "placeholder": "Escribir la respuesta…",
+      "placeholderOther": "U otra respuesta…",
+      "send": "Enviar",
+      "skip": "Que siga sin ello",
+      "allowOnce": "Permitir una vez",
+      "allowAlways": "Permitir siempre en este proyecto",
+      "deny": "Denegar",
+      "expires": "Sigue sin respuesta en {{time}}.",
+      "permissionExpires": "Se deniega solo en {{time}}.",
+      "answer": "Respuesta: {{answer}}",
+      "skipped": "Sin respuesta: sigue sin ello.",
+      "expired": "Nadie contestó a tiempo.",
+      "expiredPermission": "Nadie contestó a tiempo: denegado.",
+      "answers": {
+        "once": "Permitido una vez.",
+        "always": "Permitido siempre en este proyecto (se quita en la página «Agente»).",
+        "deny": "Denegado."
+      }
+    },
+    "window": {
+      "minimized": "En la ventana «{{title}}» (minimizada en la barra de tareas). Si pide permiso, se contesta allí.",
+      "behind": "En la ventana «{{title}}», detrás del navegador. Si pide permiso, se contesta allí.",
+      "wt": "En una pestaña de Windows Terminal («{{title}}»). Si pide permiso, se contesta allí.",
+      "terminal": "En la ventana «{{title}}» de la terminal. Si pide permiso, se contesta allí."
+    },
+    "silent": {
+      "title": "El agente no ha empezado",
+      "body": "En 3 minutos no ha hecho nada con la app. Puede estar esperando una respuesta en su ventana.",
+      "background": "En 3 minutos no ha dado ninguna señal."
+    },
+    "closed": {
+      "title": "La ventana se cerró",
+      "body": "La ventana del agente se cerró antes de terminar. Lo que ya había guardado se queda."
+    },
+    "showWindow": "Mostrar la ventana",
+    "windowFlashing": "Windows no deja ponerla delante: está restaurada y parpadea en la barra de tareas.",
+    "windowNotFound": "No se ha encontrado la ventana: puede que ya se haya cerrado.",
+    "relaunch": "Lanzar de nuevo"
   }
 }

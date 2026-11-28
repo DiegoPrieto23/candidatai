@@ -180,12 +180,18 @@ export function AgentButton({
     })
   })
 
-  const runInBackground = (agentName?: string) => prepared(() =>
+  /** `portal`: el botón principal (fase 48.1a); el aviso de abajo dice cómo va. */
+  const runInBackground = (agentName?: string, portal = false) => prepared(() =>
     startRun.mutate(agentName ? { ...target, agent: agentName } : target, {
       onSuccess: (result) => {
         show({
           tone: 'ok',
-          text: result.status === 'running' ? t('alreadyRunning') : t('queued'),
+          text:
+            result.status === 'running'
+              ? t('alreadyRunning')
+              : portal
+                ? t('startedPortal', { agent: result.agent })
+                : t('queued'),
         })
         watchFor(action, result.job_id ?? jobId, milestoneId)
         onStarted?.()
@@ -210,7 +216,14 @@ export function AgentButton({
   const alternatives = spec?.alternatives ?? []
   const busy = launch.isPending || startRun.isPending || leave.isPending || preparing
   const hint = tHint(action)
-  const mechanism = agent ? t('titleAgent', { agent: shownAgent ?? agent }) : t('titleCopy')
+  // Fase 48.1a: si la acción y su agente pueden ir sin ventana, el botón principal va al portal.
+  const portal = (spec?.portal ?? false) && background?.available === true
+  const mechanism = portal
+    ? t('titlePortal', { agent: shownAgent ?? background?.agent ?? agent })
+    : agent
+      ? t('titleAgent', { agent: shownAgent ?? agent })
+      : t('titleCopy')
+  const main = () => (portal ? runInBackground(undefined, true) : run())
   const variant = primary ? 'default' : 'outline'
   return (
     <Popover.Root
@@ -229,7 +242,7 @@ export function AgentButton({
             <span className="grid gap-1.5">
               <span className="font-semibold">{tAgent(`actions.${action}`)}</span>
               <span>{hint}</span>
-              {blocked ? (
+              {blocked && !portal ? (
                 <span className="rounded-sm border border-warning-border bg-warning px-1.5 py-1 text-warning-foreground">
                   {blocked}
                 </span>
@@ -242,15 +255,15 @@ export function AgentButton({
           {/* Bloqueado, el botón no recibe el foco: lo recibe el envoltorio (con el nombre del botón) para que el globo salga con el teclado. */}
           <span
             className={cn('inline-flex', fill && 'flex-1')}
-            {...(blocked ? { tabIndex: 0, role: 'group', 'aria-labelledby': buttonId } : {})}
+            {...(blocked && !portal ? { tabIndex: 0, role: 'group', 'aria-labelledby': buttonId } : {})}
           >
             <Button
               id={buttonId}
               type="button"
               variant={variant}
               size={size}
-              onClick={() => run()}
-              disabled={busy || disabled || blocked !== null}
+              onClick={main}
+              disabled={busy || disabled || (blocked !== null && !portal)}
               className={cn('rounded-r-none', fill && 'flex-1')}
               aria-describedby={hintId}
             >
@@ -260,7 +273,7 @@ export function AgentButton({
           </span>
         </Hint>
         <span id={hintId} className="sr-only">
-          {`${hint} ${blocked ?? mechanism}`}
+          {`${hint} ${blocked && !portal ? blocked : mechanism}`}
         </span>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

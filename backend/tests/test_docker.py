@@ -97,7 +97,7 @@ def test_terminal_buttons_copy_the_command_in_docker(
     opened: list[tuple[str, str]] = []
     monkeypatch.setattr(agent_launch.sys, "platform", "win32")  # ni siquiera en Windows
     monkeypatch.setattr(agent_launch.shutil, "which", lambda name: f"C:/bin/{name}.exe")
-    monkeypatch.setattr(agent_launch, "_open_terminal", lambda t, c: opened.append((t, c)))
+    monkeypatch.setattr(agent_launch, "_open_terminal", lambda t, c, *_: opened.append((t, c)))
     assert agent_launch.no_terminal() == container.TERMINAL
     assert agent_launch.info().reason == container.TERMINAL
     response = client.post("/agent/launch", json={"action": "process-jobs"}, headers=JSON)

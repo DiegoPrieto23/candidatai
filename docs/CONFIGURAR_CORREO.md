@@ -265,13 +265,18 @@ oferta. Tú decides: nada cambia de etapa hasta que pulsas «Aceptar».
 - **Lo que queda en tu equipo:** el texto de esos correos, sin cifrar, en la base de datos de `data/`.
   La contraseña, cifrada en el llavero del sistema (o en `.env` donde no lo hay).
 
-Para limitarlo más: una etiqueta propia con un filtro de Gmail (`CAI_IMAP_REPLIES_FOLDER="Procesos"`
-en la cuenta de `.env`), una cuenta aparte a la que reenvíes esos correos, o los `.eml` en una carpeta,
-sin contraseña. Con la etiqueta o la cuenta aparte, lo que el filtro no atrape no se lee.
+Para limitarlo más: una etiqueta propia con un filtro de Gmail (p. ej. «Procesos», elegida como
+carpeta de respuestas en el buzón), una cuenta aparte a la que reenvíes esos correos, o los `.eml` en
+una carpeta, sin contraseña. Con la etiqueta o la cuenta aparte, lo que el filtro no atrape no se lee.
 
-- **Carpeta:** la bandeja de entrada (`INBOX`). En la cuenta de `.env` se cambia con
-  `CAI_IMAP_REPLIES_FOLDER`: si prefieres limitarla, crea una etiqueta (p. ej. «Procesos») con un
-  filtro de Gmail y pon su nombre: `CAI_IMAP_REPLIES_FOLDER="Procesos"`.
+- **Carpetas:** por defecto, la bandeja de entrada (`INBOX`), aparte de la carpeta de las alertas.
+  Se eligen en el buzón (**Dónde buscar → Alertas por correo → Editar**), en el bloque **Respuestas
+  de empresas**: **Elegir del buzón** pide al servidor la lista de carpetas y etiquetas (solo sus
+  nombres, con `LIST`) y se marcan una o varias (hasta 10), p. ej. la bandeja de entrada y una
+  etiqueta «Procesos» de Gmail; también se pueden escribir a mano. Un correo que está en dos de
+  ellas cuenta una vez. En la cuenta de `.env` también se eligen ahí: `CAI_IMAP_REPLIES_FOLDER`
+  solo vale mientras no se elija ninguna. **Probar las respuestas** abre cada una en solo lectura, y
+  la página **Respuestas** dice de qué buzones y carpetas lee y qué ha mirado en cada revisión.
 - **Qué lee:** solo si tienes alguna candidatura enviada abierta (`applied` o `in_process`); si no,
   ni se conecta. De cada correo desde el envío más antiguo (como mucho `replies.max_days` días,
   120) pide primero **solo las cabeceras** (remitente, fecha, asunto y `Message-ID`): de todos

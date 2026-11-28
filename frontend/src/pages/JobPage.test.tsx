@@ -7,6 +7,28 @@ const noProfile = { exists: false, file_hash: null, profile: null, issues: [], p
 const withProfile = { ...noProfile, exists: true, file_hash: 'h', profile: {}, profile_version_id: 1 }
 
 describe('Ficha de oferta', () => {
+  it('el botón de la oferta dice en qué web se abre (fase 48.4)', async () => {
+    const cases: [ReturnType<typeof jobView>['site'], string, string | null][] = [
+      [{ kind: 'portal', name: 'LinkedIn', host: 'linkedin.com' }, 'Ver en LinkedIn', 'linkedin.com'],
+      [
+        { kind: 'ats', name: 'Greenhouse', host: 'job-boards.greenhouse.io' },
+        'Ver en el portal de Brétema Analytics',
+        'Greenhouse · job-boards.greenhouse.io',
+      ],
+      [{ kind: 'web', name: null, host: 'bretema.example' }, 'Abrir la oferta publicada', 'bretema.example'],
+      [null, 'Abrir la oferta publicada', null],
+    ]
+    for (const [site, label, title] of cases) {
+      mockApi({ 'GET /status': status(), 'GET /jobs/1': jobView({ site }) })
+      const { unmount } = renderApp('/jobs/1')
+      const link = await screen.findByRole('link', { name: label })
+      expect(link).toHaveAttribute('href', 'https://example.com/jobs/1')
+      if (title) expect(link).toHaveAttribute('title', title)
+      else expect(link).not.toHaveAttribute('title')
+      unmount()
+    }
+  })
+
   it('muestra la extracción legible y el historial con el agente', async () => {
     mockApi({ 'GET /status': status(), 'GET /jobs/1': jobView() })
     renderApp('/jobs/1')

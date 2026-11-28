@@ -66,6 +66,7 @@ import {
   SENIORITY_LABEL,
   VERDICT_LABEL,
 } from '@/lib/labels'
+import { siteTitle, viewLabel } from '@/lib/jobSite'
 import { cn } from '@/lib/utils'
 import { BusyLabel } from '@/components/StableLabel'
 
@@ -794,8 +795,8 @@ export function JobPage() {
               <Decision job={job} />
               {job.url && (
                 <Button asChild variant="outline" size="sm">
-                  <a href={job.url} target="_blank" rel="noopener noreferrer nofollow">
-                    {t('viewOriginal')}
+                  <a href={job.url} target="_blank" rel="noopener noreferrer nofollow" title={siteTitle(job.site)}>
+                    {viewLabel(job.site, job.company)}
                     <ArrowSquareOutIcon />
                   </a>
                 </Button>

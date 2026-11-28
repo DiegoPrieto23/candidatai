@@ -8226,6 +8226,118 @@
         }
       }
     },
+    "/mail-sources/folders": {
+      "post": {
+        "tags": [
+          "mail-sources"
+        ],
+        "summary": "List New Mail Folders",
+        "description": "Fase 48.3: las carpetas de un buzón antes de guardarlo (`LIST`, solo sus nombres).",
+        "operationId": "list_new_mail_folders",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MailSourceInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MailFolderList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/mail-sources/{source_id}": {
       "patch": {
         "tags": [
@@ -8476,8 +8588,145 @@
           "mail-sources"
         ],
         "summary": "Test Mail Source",
-        "description": "Prueba un buzón guardado: login y `EXAMINE` de su carpeta, sin leer correos.",
+        "description": "Prueba un buzón guardado: login y `EXAMINE` de su carpeta de alertas o, con\n`purpose=replies`, de cada una de las de respuestas, sin leer correos.",
         "operationId": "test_mail_source",
+        "parameters": [
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Source Id"
+            }
+          },
+          {
+            "name": "purpose",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "alerts",
+                "replies"
+              ],
+              "type": "string",
+              "default": "alerts",
+              "title": "Purpose"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmptyBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MailTestResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/mail-sources/{source_id}/folders": {
+      "post": {
+        "tags": [
+          "mail-sources"
+        ],
+        "summary": "List Mail Folders",
+        "description": "Fase 48.3: las carpetas (o etiquetas de Gmail) del buzón, para elegir de cuáles se leen\nlas respuestas. Solo `LIST`: no abre ninguna ni lee correos.",
+        "operationId": "list_mail_folders",
         "parameters": [
           {
             "name": "source_id",
@@ -8505,7 +8754,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MailTestResult"
+                  "$ref": "#/components/schemas/MailFolderList"
                 }
               }
             }
@@ -13857,7 +14106,7 @@
           "prompts"
         ],
         "summary": "Answer Prompt",
-        "description": "«Ya está» o «Saltar». En una candidatura asistida, «Ya está» vuelve a rellenar la página.",
+        "description": "«Ya está» o «Saltar». En una candidatura asistida, «Ya está» vuelve a rellenar la página.\nSolo desde la UI (fase 48.1b): ninguna otra web puede contestar un permiso. Que no lo conteste\nel propio agente lo garantiza su techo sin ventana: no tiene terminal ni web.",
         "operationId": "answer_prompt",
         "parameters": [
           {
@@ -13989,6 +14238,333 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AgentStatus"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agent/permission-rules": {
+      "get": {
+        "tags": [
+          "agent"
+        ],
+        "summary": "List Permission Rules",
+        "description": "Lo permitido «siempre en este proyecto» desde el portal (fase 48.1b).",
+        "operationId": "list_permission_rules",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PermissionRules"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agent/permission-rules/{rule_id}": {
+      "delete": {
+        "tags": [
+          "agent"
+        ],
+        "summary": "Delete Permission Rule",
+        "description": "Quita un «permitir siempre»: la próxima vez se vuelve a preguntar.",
+        "operationId": "delete_permission_rule",
+        "parameters": [
+          {
+            "name": "rule_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Rule Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PermissionRules"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/agent/window-preference": {
+      "put": {
+        "tags": [
+          "agent"
+        ],
+        "summary": "Save Window Preference",
+        "description": "«Abrir en una ventana»: el botón principal abre el agente en una ventana en vez de seguirlo\nen el portal. `window_style` (fase 48.1d): cómo se abre esa ventana en Windows.",
+        "operationId": "save_window_preference",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WindowPreference"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WindowPreference"
                 }
               }
             }
@@ -15631,6 +16207,129 @@
         }
       }
     },
+    "/agent/tasks/{task_id}/show-window": {
+      "post": {
+        "tags": [
+          "agent"
+        ],
+        "summary": "Show Agent Task Window",
+        "description": "«Mostrar la ventana» (fase 48.1d, Windows): restaura la consola del agente y, si Windows lo\ndeja, la pone delante. No escribe nada en ella.",
+        "operationId": "show_agent_task_window",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmptyBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShowWindowResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
     "/agent/search-run": {
       "get": {
         "tags": [
@@ -16124,6 +16823,253 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AgentRunView"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/agent/runs/{run_id}/messages": {
+      "post": {
+        "tags": [
+          "agent"
+        ],
+        "summary": "Send Agent Run Message",
+        "description": "Escribirle al agente (fase 48.1c): mientras trabaja, se le pasa con su siguiente\nherramienta; si ya terminó, se retoma la misma conversación sin ventana.",
+        "operationId": "send_agent_run_message",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessageBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentRunEvents"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/agent/runs/{run_id}/events": {
+      "get": {
+        "tags": [
+          "agent"
+        ],
+        "summary": "Get Agent Run Events",
+        "description": "La conversación de una ejecución (herramientas, texto del agente, resultado) desde `after`.\nComo las demás lecturas de ejecuciones, solo para la UI: no hay herramienta MCP.",
+        "operationId": "get_agent_run_events",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Run Id"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "After"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentRunEvents"
                 }
               }
             }
@@ -24255,6 +25201,11 @@
                 "type": "null"
               }
             ]
+          },
+          "portal": {
+            "type": "boolean",
+            "title": "Portal",
+            "default": false
           }
         },
         "type": "object",
@@ -25210,6 +26161,142 @@
         ],
         "title": "AgentRequestView"
       },
+      "AgentRunEventView": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "At"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "system",
+              "tool_start",
+              "tool_result",
+              "text",
+              "user",
+              "question",
+              "permission",
+              "result",
+              "error"
+            ],
+            "title": "Kind"
+          },
+          "tool": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tool"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          },
+          "ok": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ok"
+          },
+          "sub": {
+            "type": "boolean",
+            "title": "Sub"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "at",
+          "kind",
+          "tool",
+          "text",
+          "ok",
+          "sub"
+        ],
+        "title": "AgentRunEventView"
+      },
+      "AgentRunEvents": {
+        "properties": {
+          "run_id": {
+            "type": "integer",
+            "title": "Run Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "running",
+              "done",
+              "needs_user",
+              "failed",
+              "cancelled",
+              "timeout"
+            ],
+            "title": "Status"
+          },
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/AgentRunEventView"
+            },
+            "type": "array",
+            "title": "Events"
+          },
+          "last_seq": {
+            "type": "integer",
+            "title": "Last Seq"
+          },
+          "prompts": {
+            "items": {
+              "$ref": "#/components/schemas/PromptView"
+            },
+            "type": "array",
+            "title": "Prompts",
+            "default": []
+          },
+          "reply": {
+            "type": "string",
+            "enum": [
+              "live",
+              "resume",
+              "window",
+              "none"
+            ],
+            "title": "Reply",
+            "default": "none"
+          }
+        },
+        "type": "object",
+        "required": [
+          "run_id",
+          "status",
+          "events",
+          "last_seq"
+        ],
+        "title": "AgentRunEvents",
+        "description": "La conversación de una ejecución desde `after` (el `seq` del último que ya se tiene)."
+      },
       "AgentRunList": {
         "properties": {
           "runs": {
@@ -25406,6 +26493,11 @@
             "type": "boolean",
             "title": "Can Resume"
           },
+          "asks_permissions": {
+            "type": "boolean",
+            "title": "Asks Permissions",
+            "default": false
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -25502,6 +26594,40 @@
           "no_agent_installed": {
             "type": "boolean",
             "title": "No Agent Installed"
+          },
+          "open_in_window": {
+            "type": "boolean",
+            "title": "Open In Window",
+            "default": false
+          },
+          "window_style": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "minimized",
+                  "behind",
+                  "wt"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Window Style"
+          },
+          "window_styles": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "minimized",
+                "behind",
+                "wt"
+              ]
+            },
+            "type": "array",
+            "title": "Window Styles",
+            "default": []
           }
         },
         "type": "object",
@@ -25636,7 +26762,9 @@
             "type": "string",
             "enum": [
               "running",
+              "silent",
               "stale",
+              "closed",
               "finished"
             ],
             "title": "Status"
@@ -25665,6 +26793,51 @@
           "total": {
             "type": "integer",
             "title": "Total"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/TaskStep"
+            },
+            "type": "array",
+            "title": "Steps",
+            "default": []
+          },
+          "last_tool": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Tool"
+          },
+          "agent": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent"
+          },
+          "asks_permissions": {
+            "type": "boolean",
+            "title": "Asks Permissions",
+            "default": false
+          },
+          "window": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WindowView"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "started_at": {
             "type": "string",
@@ -32850,6 +34023,18 @@
               }
             ],
             "title": "Close Reason"
+          },
+          "site": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JobSite"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Fase 48.4: en qué web se abre (portal, ATS u otra), por el dominio de la URL.",
+            "readOnly": true
           }
         },
         "type": "object",
@@ -32866,7 +34051,8 @@
           "score",
           "injection_suspected",
           "remote_mode",
-          "salary"
+          "salary",
+          "site"
         ],
         "title": "JobRow"
       },
@@ -33046,6 +34232,41 @@
         },
         "type": "object",
         "title": "JobSignals"
+      },
+      "JobSite": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "portal",
+              "ats",
+              "web"
+            ],
+            "title": "Kind"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "host": {
+            "type": "string",
+            "title": "Host"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "name",
+          "host"
+        ],
+        "title": "JobSite"
       },
       "JobView": {
         "properties": {
@@ -33251,6 +34472,18 @@
               }
             ],
             "title": "Reached"
+          },
+          "site": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JobSite"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Fase 48.4: en qué web se abre (portal, ATS u otra), por el dominio de la URL.",
+            "readOnly": true
           }
         },
         "type": "object",
@@ -33270,7 +34503,8 @@
           "raw_text",
           "extraction",
           "events",
-          "injection"
+          "injection",
+          "site"
         ],
         "title": "JobView"
       },
@@ -34627,6 +35861,44 @@
         ],
         "title": "MailError"
       },
+      "MailFolderList": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "folders": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Folders",
+            "default": []
+          },
+          "code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "ok"
+        ],
+        "title": "MailFolderList",
+        "description": "Las carpetas del buzón (`LIST`), para elegirlas en la UI. Con `ok=False`, por qué no."
+      },
       "MailSaveResult": {
         "properties": {
           "source": {
@@ -34735,12 +36007,16 @@
             "title": "Folder",
             "default": "INBOX"
           },
-          "replies_folder": {
-            "type": "string",
-            "maxLength": 200,
-            "minLength": 1,
-            "title": "Replies Folder",
-            "default": "INBOX"
+          "replies_folders": {
+            "items": {
+              "type": "string",
+              "maxLength": 200,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 10,
+            "minItems": 1,
+            "title": "Replies Folders"
           },
           "enabled": {
             "type": "boolean",
@@ -34896,18 +36172,23 @@
             ],
             "title": "Folder"
           },
-          "replies_folder": {
+          "replies_folders": {
             "anyOf": [
               {
-                "type": "string",
-                "maxLength": 200,
-                "minLength": 1
+                "items": {
+                  "type": "string",
+                  "maxLength": 200,
+                  "minLength": 1
+                },
+                "type": "array",
+                "maxItems": 10,
+                "minItems": 1
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Replies Folder"
+            "title": "Replies Folders"
           },
           "enabled": {
             "anyOf": [
@@ -35011,9 +36292,13 @@
             "type": "string",
             "title": "Folder"
           },
-          "replies_folder": {
-            "type": "string",
-            "title": "Replies Folder"
+          "replies_folders": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Replies Folders",
+            "description": "Carpetas de las que se leen las respuestas de las empresas (fase 48.3)."
           },
           "enabled": {
             "type": "boolean",
@@ -35110,7 +36395,7 @@
           "security",
           "user",
           "folder",
-          "replies_folder",
+          "replies_folders",
           "enabled",
           "read_replies",
           "allow_private",
@@ -35416,6 +36701,22 @@
           "default_max_offers"
         ],
         "title": "MaxOffersResult"
+      },
+      "MessageBody": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Text"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "MessageBody"
       },
       "MessageDraftOut": {
         "properties": {
@@ -36970,6 +38271,51 @@
         "title": "PendingTask",
         "description": "Tarea del worker para este intento que aún no ha terminado."
       },
+      "PermissionRuleView": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "tool": {
+            "type": "string",
+            "title": "Tool"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "tool",
+          "detail",
+          "created_at"
+        ],
+        "title": "PermissionRuleView"
+      },
+      "PermissionRules": {
+        "properties": {
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/PermissionRuleView"
+            },
+            "type": "array",
+            "title": "Rules"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rules"
+        ],
+        "title": "PermissionRules"
+      },
       "PhotoCrop": {
         "properties": {
           "x": {
@@ -37646,7 +38992,8 @@
               "captcha",
               "anti_bot",
               "login_required",
-              "question"
+              "question",
+              "permission"
             ],
             "title": "Kind"
           },
@@ -37767,6 +39114,28 @@
               }
             ],
             "title": "Job Id"
+          },
+          "run_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Id"
+          },
+          "tool": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tool"
           }
         },
         "type": "object",
@@ -38544,6 +39913,14 @@
           "message": {
             "type": "string",
             "title": "Message"
+          },
+          "read": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Read",
+            "default": []
           }
         },
         "type": "object",
@@ -41034,6 +42411,24 @@
         ],
         "title": "SetWebsiteBody"
       },
+      "ShowWindowResult": {
+        "properties": {
+          "shown": {
+            "type": "boolean",
+            "title": "Shown"
+          },
+          "foreground": {
+            "type": "boolean",
+            "title": "Foreground"
+          }
+        },
+        "type": "object",
+        "required": [
+          "shown",
+          "foreground"
+        ],
+        "title": "ShowWindowResult"
+      },
       "SignOff": {
         "properties": {
           "es": {
@@ -42278,6 +43673,29 @@
         ],
         "title": "SuggestionView"
       },
+      "TaskStep": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "done",
+              "current",
+              "pending"
+            ],
+            "title": "State"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "state"
+        ],
+        "title": "TaskStep"
+      },
       "TemplateInfo": {
         "properties": {
           "id": {
@@ -43506,6 +44924,65 @@
           "week_start"
         ],
         "title": "WeekFunnel"
+      },
+      "WindowPreference": {
+        "properties": {
+          "open_in_window": {
+            "type": "boolean",
+            "title": "Open In Window"
+          },
+          "window_style": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "minimized",
+                  "behind",
+                  "wt"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Window Style"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "open_in_window"
+        ],
+        "title": "WindowPreference"
+      },
+      "WindowView": {
+        "properties": {
+          "style": {
+            "type": "string",
+            "enum": [
+              "minimized",
+              "behind",
+              "wt",
+              "terminal"
+            ],
+            "title": "Style"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "can_show": {
+            "type": "boolean",
+            "title": "Can Show"
+          }
+        },
+        "type": "object",
+        "required": [
+          "style",
+          "title",
+          "can_show"
+        ],
+        "title": "WindowView"
       }
     }
   }

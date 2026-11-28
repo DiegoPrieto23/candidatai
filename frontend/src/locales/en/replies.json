@@ -124,6 +124,10 @@
       "move": "move",
       "accept": "accept",
       "ignore": "ignore"
-    }
+    },
+    "readFrom": "Read from: {{where}}",
+    "readNothing": "No mailbox is read: replies are read from a mailbox with “Also read replies from companies here”.",
+    "change": "Change",
+    "readNow": "Checked: {{where}}"
   }
 }

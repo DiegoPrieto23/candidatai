@@ -2,6 +2,7 @@ import { CoinsIcon } from '@phosphor-icons/react'
 import { useTranslation } from 'react-i18next'
 import { useJobCosts } from '@/api/queries'
 import { formatDate, formatTokens, formatUsd } from '@/lib/labels'
+import { RunConversation } from '@/components/RunConversation'
 
 /**
  * Ficha (fase 25.4): lo que se ha gastado en esta oferta en segundo plano. Sus ejecuciones enteras
@@ -27,11 +28,15 @@ export function JobCostPanel({ jobId }: { jobId: number }) {
       </p>
       <ul className="mt-2 space-y-1 text-xs text-muted-foreground" aria-label={t('runs')}>
         {data.runs.map((run) => (
-          <li key={run.run_id} className="tabular">
-            {run.label} · {run.agent}
-            {run.model && ` · ${run.model}`}
-            {run.finished_at && ` · ${formatDate(run.finished_at)}`}
-            {run.shared_with > 1 && ` · ${t('shared', { count: run.shared_with })}`}
+          <li key={run.run_id} className="tabular flex flex-wrap items-center gap-x-1">
+            <span>
+              {run.label} · {run.agent}
+              {run.model && ` · ${run.model}`}
+              {run.finished_at && ` · ${formatDate(run.finished_at)}`}
+              {run.shared_with > 1 && ` · ${t('shared', { count: run.shared_with })}`}
+            </span>
+            {/* Fase 48.1c: su conversación, donde se le puede seguir escribiendo. */}
+            <RunConversation runId={run.run_id} subject={run.label} />
           </li>
         ))}
       </ul>

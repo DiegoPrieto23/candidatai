@@ -66,6 +66,26 @@ def _secret(value: SecretStr) -> SecretStr:
 Password = Annotated[SecretStr, Field(min_length=1, max_length=256), AfterValidator(_secret)]
 
 
+def _folders(value: list[str]) -> list[str]:
+    """Sin repetidas (la bandeja de entrada se compara sin mayúsculas, como en IMAP)."""
+    seen: set[str] = set()
+    out: list[str] = []
+    for folder in value:
+        key = folder.upper() if folder.upper() == "INBOX" else folder
+        if key not in seen:
+            seen.add(key)
+            out.append("INBOX" if key == "INBOX" else folder)
+    return out
+
+
+MAX_REPLIES_FOLDERS = 10
+Folders = Annotated[
+    list[Folder],
+    Field(min_length=1, max_length=MAX_REPLIES_FOLDERS),
+    AfterValidator(_folders),
+]
+
+
 class _Strict(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -81,7 +101,7 @@ class MailSourceInput(_Strict):
     user: User | None = None
     password: Password | None = None
     folder: Folder = "INBOX"
-    replies_folder: Folder = "INBOX"
+    replies_folders: Folders = Field(default_factory=lambda: ["INBOX"])
     enabled: bool = True
     read_replies: bool = False
     allow_private: bool = False
@@ -119,7 +139,7 @@ class MailSourcePatch(_Strict):
     user: User | None = None
     password: Password | None = None
     folder: Folder | None = None
-    replies_folder: Folder | None = None
+    replies_folders: Folders | None = None
     enabled: bool | None = None
     read_replies: bool | None = None
     allow_private: bool | None = None
@@ -141,7 +161,9 @@ class MailSourceView(BaseModel):
     security: MailSecurity
     user: str | None
     folder: str
-    replies_folder: str
+    replies_folders: list[str] = Field(
+        description="Carpetas de las que se leen las respuestas de las empresas (fase 48.3)."
+    )
     enabled: bool
     read_replies: bool
     allow_private: bool
@@ -173,6 +195,15 @@ class MailTestResult(BaseModel):
     ok: bool
     code: str | None = None  # el de `MailboxError` si falla
     message: str
+
+
+class MailFolderList(BaseModel):
+    """Las carpetas del buzón (`LIST`), para elegirlas en la UI. Con `ok=False`, por qué no."""
+
+    ok: bool
+    folders: list[str] = []
+    code: str | None = None
+    message: str = ""
 
 
 class MailSaveResult(BaseModel):

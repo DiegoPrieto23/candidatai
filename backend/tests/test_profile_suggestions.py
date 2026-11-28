@@ -40,7 +40,14 @@ def suggest(text: str = EN, agent: str | None = "claude") -> int:
 
 def test_translate_summary_only_reads_the_profile_and_leaves_a_suggestion() -> None:
     spec = ACTIONS["translate-summary"]
-    assert set(spec.background) == {"get_profile", "save_profile_suggestion"}
+    # Fase 48.1b: más lo de preguntar y pedir permiso en el portal (`agent_actions`).
+    assert set(spec.background) == {
+        "get_profile",
+        "save_profile_suggestion",
+        "ask_user",
+        "wait_user_action",
+        "request_permission",
+    }
     assert set(spec.background) <= set(TOOLS_BY_NAME)
     assert spec.skill == "update-profile" and not spec.roles
     # La orden es fija: nada del perfil va en ella.

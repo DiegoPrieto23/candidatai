@@ -76,7 +76,6 @@
   "loading": "Cargando oferta",
   "back": "Bandeja de ofertas",
   "invalidId": "Ese identificador de oferta no es válido.",
-  "viewOriginal": "Ver original",
   "addedOn": "Alta el {{date}}",
   "postedOn": ". Publicada el {{date}}",
   "archive": {
@@ -110,5 +109,17 @@
     "readHint": "Saca el nivel, la modalidad, las skills y el salario.",
     "done": "Hecho",
     "pending": "Falta"
+  },
+  "site": {
+    "view": {
+      "portal": "Ver en {{name}}",
+      "ats": "Ver en el portal de {{company}}",
+      "web": "Abrir la oferta publicada"
+    },
+    "open": {
+      "portal": "Abrir {{title}} en {{name}}",
+      "ats": "Abrir {{title}} en el portal de {{company}}",
+      "web": "Abrir {{title}} en {{host}}"
+    }
   }
 }

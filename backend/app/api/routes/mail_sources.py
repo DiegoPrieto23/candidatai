@@ -1,11 +1,14 @@
 """Buzones de las alertas (fase 27.4). Solo la UI: la contraseña entra por aquí y no
 vuelve nunca. El agente solo los ve (`list_mail_sources`)."""
 
-from fastapi import APIRouter, Depends, status
+from typing import Literal
+
+from fastapi import APIRouter, Depends, Query, status
 from pydantic import BaseModel
 
 from app.api.deps import EmptyBody, SessionDep, require_ui, require_ui_read
 from app.schemas.mail_sources import (
+    MailFolderList,
     MailSaveResult,
     MailSourceInput,
     MailSourceList,
@@ -44,6 +47,12 @@ def test_new_mail_source(body: MailSourceInput) -> MailTestResult:
     return mail_sources.probe_new_mail_source(body)
 
 
+@router.post("/folders", operation_id="list_new_mail_folders", dependencies=[Depends(require_ui)])
+def list_new_mail_folders(body: MailSourceInput) -> MailFolderList:
+    """Fase 48.3: las carpetas de un buzón antes de guardarlo (`LIST`, solo sus nombres)."""
+    return mail_sources.folders_of_new(body)
+
+
 @router.patch("/{source_id}", operation_id="update_mail_source", dependencies=[Depends(require_ui)])
 def update_mail_source(
     session: SessionDep, source_id: int, body: MailSourcePatch
@@ -55,9 +64,24 @@ def update_mail_source(
 @router.post(
     "/{source_id}/test", operation_id="test_mail_source", dependencies=[Depends(require_ui)]
 )
-def test_mail_source(session: SessionDep, source_id: int, _body: EmptyBody) -> MailTestResult:
-    """Prueba un buzón guardado: login y `EXAMINE` de su carpeta, sin leer correos."""
-    return mail_sources.probe_mail_source(session, source_id)
+def test_mail_source(
+    session: SessionDep,
+    source_id: int,
+    _body: EmptyBody,
+    purpose: Literal["alerts", "replies"] = Query(default="alerts"),
+) -> MailTestResult:
+    """Prueba un buzón guardado: login y `EXAMINE` de su carpeta de alertas o, con
+    `purpose=replies`, de cada una de las de respuestas, sin leer correos."""
+    return mail_sources.probe_mail_source(session, source_id, purpose=purpose)
+
+
+@router.post(
+    "/{source_id}/folders", operation_id="list_mail_folders", dependencies=[Depends(require_ui)]
+)
+def list_mail_folders(session: SessionDep, source_id: int, _body: EmptyBody) -> MailFolderList:
+    """Fase 48.3: las carpetas (o etiquetas de Gmail) del buzón, para elegir de cuáles se leen
+    las respuestas. Solo `LIST`: no abre ninguna ni lee correos."""
+    return mail_sources.folders_of(session, source_id)
 
 
 @router.delete(

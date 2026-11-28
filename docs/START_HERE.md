@@ -145,6 +145,12 @@ you watch what it does and approve it. If it cannot be opened, the button shows 
 instruction, with **Copy**, so you can paste it into your agent. Their small arrow also offers **In the background**
 (no window; a notice tells you when it is done) and **Leave for my next session**.
 
+If, the first time your agent opens in the CandidatAI folder, it asks whether you trust it, accept,
+or it will not be able to use the app. Claude Code, Codex, OpenCode and Antigravity then use the
+CandidatAI tools without asking anything else. Qwen Code also asks you to approve its server
+("Approve this server"); you can approve it beforehand with `qwen mcp approve candidatai` in that
+folder.
+
 <img src="img/en/agent.webp" alt="Agent page: the agent ready, “Configure agents”, what is left for the next session and the meaning-based comparison" width="88%">
 
 ## 4. First run: the demo

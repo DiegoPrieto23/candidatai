@@ -150,6 +150,34 @@ describe('Botones «en tu agente»', () => {
     expect(calls.find((c) => c.method === 'POST' && c.path === '/agent/runs')?.body).toEqual({ lang: 'es', action: 'process-jobs' })
   })
 
+  it('sin ventana por defecto: el botón principal lo lanza y se sigue en el aviso (fase 48.1a)', async () => {
+    const calls = home({
+      'GET /status': status(2, 0),
+      'GET /agent': {
+        ...launcher,
+        actions: [launcher.actions[0], { ...launcher.actions[1], portal: true }],
+      },
+      'POST /agent/runs': { status: 202, body: { id: 1, status: 'queued', agent: 'claude' } },
+    })
+    renderApp('/')
+    await userEvent.click(await screen.findByRole('button', { name: 'Valorar las ofertas nuevas' }))
+    expect(await screen.findByText('En marcha con claude: el avance se ve en el aviso de abajo a la derecha.', { exact: false })).toBeInTheDocument()
+    expect(calls.some((c) => c.path === '/agent/launch')).toBe(false)
+    expect(calls.find((c) => c.method === 'POST' && c.path === '/agent/runs')?.body).toEqual({ lang: 'es', action: 'process-jobs' })
+  })
+
+  it('con «Abrir en una ventana», el botón principal vuelve a abrir la ventana', async () => {
+    const calls = home({
+      'GET /status': status(2, 0),
+      'GET /agent': { ...launcher, open_in_window: true },
+      'POST /agent/launch': { ok: true, agent: 'claude', prompt: 'Usa…', message: 'ok' },
+    })
+    renderApp('/')
+    await userEvent.click(await screen.findByRole('button', { name: 'Valorar las ofertas nuevas' }))
+    await waitFor(() => expect(calls.some((c) => c.path === '/agent/launch')).toBe(true))
+    expect(calls.some((c) => c.method === 'POST' && c.path === '/agent/runs')).toBe(false)
+  })
+
   it('los skills que preguntan no ofrecen segundo plano, pero sí dejarlo para luego', async () => {
     const calls = home({ 'POST /agent/requests': { id: 3, status: 'pending' } })
     renderApp('/')

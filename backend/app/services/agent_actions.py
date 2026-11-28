@@ -61,6 +61,34 @@ OUTREACH_STAGES = frozenset({Stage.APPROVED, Stage.CV_READY, Stage.APPLIED, Stag
 RESEARCH_STAGES = OUTREACH_STAGES | {Stage.PENDING_TRIAGE}
 
 
+# Fase 48.1b: lo que tiene toda ejecución sin ventana para preguntar en el portal. Una pregunta
+# se contesta en su panel; un permiso lo pide el propio agente (`--permission-prompt-tool`).
+QUESTION_TOOLS: tuple[str, ...] = ("ask_user", "wait_user_action")
+PERMISSION_TOOLS: tuple[str, ...] = ("request_permission",)
+
+
+@dataclass(frozen=True)
+class Step:
+    """Un paso de una acción, para el aviso del portal. Se da por hecho cuando el agente llama bien
+    a una de sus herramientas o a la de un paso posterior. Sin herramientas: el último, «Listo»,
+    que se marca al terminar. El nombre que se ve sale de los textos de la UI (`id`)."""
+
+    id: str
+    tools: tuple[str, ...] = ()
+
+
+# Los pasos de «Generar CV»: la oferta, el perfil, redactar (medir con `check_cv_fit`), el PDF (lo
+# hace `save_cv_content`), la verificación y listo.
+CV_STEPS: tuple[Step, ...] = (
+    Step("job", ("check_job_open", "get_cv_brief", "get_extraction", "get_match")),
+    Step("profile", ("get_profile", "get_context", "list_cv_templates")),
+    Step("write", ("check_cv_fit",)),
+    Step("pdf", ("save_cv_content",)),
+    Step("verify", ("save_cv_verification",)),
+    Step("done"),
+)
+
+
 @dataclass(frozen=True)
 class Action:
     label: str
@@ -95,6 +123,32 @@ class Action:
     # Sigue existiendo (ejecuciones antiguas, preferencias guardadas), pero la UI no la ofrece: ni
     # botón, ni fila en «Agente», ni en los niveles de gasto.
     hidden: bool = False
+    # Los pasos que enseña el aviso del portal. Vacío: solo la actividad (la última herramienta).
+    steps: tuple[Step, ...] = ()
+
+    def __post_init__(self) -> None:
+        background = self.background
+        if background:
+            # Fase 48.1b: sin ventana, el permiso se pide en el portal y, salvo donde la sesión
+            # podría haber leído texto crudo de una oferta, también las preguntas.
+            asks = () if "get_job" in background else QUESTION_TOOLS
+            background = (*background, *asks, *PERMISSION_TOOLS)
+        # Cada herramienta, una vez (las de los roles se añaden juntas y alguna ya estaba).
+        object.__setattr__(self, "background", tuple(dict.fromkeys(background)))
+
+
+# Lo que necesitan además los roles `writer` y `verifier` en las acciones del CV y la carta: las
+# políticas (que leen con `get_policies`, no del fichero) y, como `verifier` sirve para el CV y para
+# la carta, las herramientas de los dos documentos. Así el techo de la acción cubre el de sus roles
+# y la ejecución cabe en los agentes que limitan las herramientas por configuración (Codex,
+# OpenCode). Ninguna lee texto crudo de una oferta.
+ROLE_EXTRAS: tuple[str, ...] = (
+    "get_policies",
+    "get_cv_content",
+    "get_cover_letter",
+    "save_cv_verification",
+    "save_cover_letter_verification",
+)
 
 
 # Lo que lee el asistente del portal: datos que la app ya guarda estructurados.
@@ -224,8 +278,10 @@ ACTIONS: dict[ActionId, Action] = {
             "save_cv_content",
             "get_cv_content",
             "save_cv_verification",
+            *ROLE_EXTRAS,
         ),
         roles=("writer", "verifier"),
+        steps=CV_STEPS,
     ),
     # Aplica lo que el usuario pidió en la ficha y lo verifica. Quien corrige es el propio skill.
     "correct-cv": Action(
@@ -245,8 +301,16 @@ ACTIONS: dict[ActionId, Action] = {
             "check_cv_fit",
             "save_cv_content",
             "save_cv_verification",
+            *ROLE_EXTRAS,
         ),
         roles=("verifier",),
+        steps=(
+            Step("read", ("get_cv_correction", "get_cv_content", "get_extraction", "get_profile")),
+            Step("write", ("check_cv_fit",)),
+            Step("pdf", ("save_cv_content",)),
+            Step("verify", ("save_cv_verification",)),
+            Step("done"),
+        ),
     ),
     # Sobre todo tras editar a mano: esa versión queda sin verificar.
     "verify-cv": Action(
@@ -262,8 +326,14 @@ ACTIONS: dict[ActionId, Action] = {
             "get_profile",
             "get_context",
             "save_cv_verification",
+            *ROLE_EXTRAS,
         ),
         roles=("verifier",),
+        steps=(
+            Step("read", ("get_cv_content", "get_extraction", "get_profile", "get_context")),
+            Step("verify", ("save_cv_verification",)),
+            Step("done"),
+        ),
     ),
     # Sin indicaciones, el skill pregunta una vez qué destacar; en segundo plano sigue con las de
     # por defecto (su sección «En segundo plano»). La verificación la hace el rol `verifier`.
@@ -282,8 +352,16 @@ ACTIONS: dict[ActionId, Action] = {
             "get_context",
             "save_cover_letter",
             "save_cover_letter_verification",
+            *ROLE_EXTRAS,
         ),
         roles=("verifier",),
+        steps=(
+            Step("job", ("get_cover_letter", "save_cover_letter_brief", "get_extraction")),
+            Step("profile", ("get_profile", "get_cv_content", "get_context")),
+            Step("write", ("save_cover_letter",)),
+            Step("verify", ("save_cover_letter_verification",)),
+            Step("done"),
+        ),
     ),
     # Página «Skills» (fase 14). Los nombres de las skills salen de las ofertas, así que no van en
     # la orden: el agente los lee de las marcas con `get_skill_gaps`.

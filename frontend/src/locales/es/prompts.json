@@ -21,5 +21,6 @@
     "timeUp": "Se ha acabado el tiempo: el agente lo preguntará en su ventana.",
     "inTerminal": "Contestar en la terminal",
     "send": "Enviar"
-  }
+  },
+  "permissionDescription": "Su aviso se ha cerrado, así que el permiso sale aquí. Sin respuesta, se deniega."
 }

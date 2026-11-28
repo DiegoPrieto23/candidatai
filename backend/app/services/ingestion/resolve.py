@@ -37,6 +37,7 @@ from app.core.policies import get_policies
 from app.schemas.sources import KIND_LABELS
 from app.services import ingest, liveness
 from app.services.ingestion import discover
+from app.services.job_sites import ATS_HOSTS
 from app.services.normalize import fold, normalize_company
 
 logger = logging.getLogger(__name__)
@@ -51,21 +52,10 @@ _NOT_SLUGS = frozenset(
 )  # fmt: skip
 # Primer segmento de la ruta que no es el slug en los ATS que lo ponen en la ruta.
 _NOT_PATH_SLUGS = frozenset({"embed", "v1", "v0", "api", "jobs", "j", "o", "static", "assets"})
-_ATS_HOSTS = (
-    "greenhouse.io",
-    "lever.co",
-    "ashbyhq.com",
-    "personio.de",
-    "personio.com",
-    "teamtailor.com",
-    "workable.com",
-    "smartrecruiters.com",
-    "recruitee.com",
-)
 # Direcciones de ATS dentro del HTML: con o sin esquema, y con `\/` en el JSON de un script.
 _ATS_URL = re.compile(
     r"(?:https?:)?//(?:[a-z0-9-]+\.)*(?:"
-    + "|".join(re.escape(h) for h in _ATS_HOSTS)
+    + "|".join(re.escape(h) for h in ATS_HOSTS)
     + r")(?::\d+)?(?:/[^\s\"'<>()\\]*)?",
     re.IGNORECASE,
 )
@@ -246,7 +236,7 @@ def company_website(url: str) -> str | None:
     si está en el dominio de un ATS."""
     parts = urlsplit(url)
     host = (parts.hostname or "").lower().rstrip(".")
-    if not host or "." not in host or any(_host_is(host, d) for d in _ATS_HOSTS):
+    if not host or "." not in host or any(_host_is(host, d) for d in ATS_HOSTS):
         return None
     labels = host.split(".")
     if len(labels) > 2 and labels[0] in _CAREER_LABELS | {"www"}:

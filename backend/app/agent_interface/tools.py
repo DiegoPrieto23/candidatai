@@ -34,6 +34,7 @@ from app.schemas.mail_sources import MailSourceList
 from app.schemas.profile import MAX_LETTER_WORDS
 from app.schemas.sources import AgentBrowseSource, SourceList, SourceRunSummary
 from app.services import (
+    agent_permissions,
     agent_requests,
     agent_tasks,
     analytics,
@@ -53,6 +54,7 @@ from app.services import (
     liveness,
     mail_sources,
     network,
+    policies_text,
     profile,
     profile_suggestions,
     prompts,
@@ -340,6 +342,36 @@ class GetContextInput(_Input):
         return value
 
 
+class RequestPermissionInput(_Input):
+    """Lo que manda el agente al pedir permiso (en Claude Code, `--permission-prompt-tool`)."""
+
+    tool_name: str = Field(
+        min_length=1, max_length=200, description="La herramienta que quiere usar."
+    )
+    input: dict[str, Any] = Field(
+        default_factory=dict, description="Su entrada, tal cual (por CLI, en `--file` JSON)."
+    )
+    tool_use_id: str | None = Field(default=None, max_length=200)
+
+
+class GetPoliciesInput(_Input):
+    sections: list[int] | None = Field(
+        default=None,
+        description=(
+            "Números de sección de docs/POLICIES.md (por CLI, separados por comas): 1 veracidad, "
+            "2 encaje, 3 CV, 4 privacidad, 5 candidaturas, 6 contenido no confiable, 7 estilo, "
+            "8 navegador. Por defecto, todas."
+        ),
+    )
+
+    @field_validator("sections", mode="before")
+    @classmethod
+    def _split_text(cls, value: Any) -> Any:
+        if isinstance(value, str):
+            return [part.strip() for part in value.split(",") if part.strip()]
+        return value
+
+
 class SaveCvContentInput(_Input):
     job_id: int = Field(ge=1, description="Id de la oferta (aprobada).")
     content: CvContent
@@ -589,6 +621,15 @@ def _get_status(session: Session, _args: NoInput, _ctx: CallContext) -> status.S
     return status.get_status(session)
 
 
+def _get_policies(
+    _session: Session, args: GetPoliciesInput, _ctx: CallContext
+) -> policies_text.PoliciesView:
+    try:
+        return policies_text.read(args.sections)
+    except policies_text.UnknownSectionError as exc:
+        raise ToolError("not_found", str(exc)) from exc
+
+
 def _get_schema(_session: Session, args: GetSchemaInput, _ctx: CallContext) -> SchemaView:
     if args.name in (None, "list"):
         return SchemaView(
@@ -689,7 +730,15 @@ def _ask_user(session: Session, args: AskUserInput, _ctx: CallContext) -> prompt
         options=args.options,
         job_id=args.job_id,
         timeout_seconds=args.timeout_seconds,
+        # Fase 48.1b: desde una ejecución sin ventana, se contesta en su panel.
+        run_id=agent_permissions.current_run_id(session),
     )
+
+
+def _request_permission(
+    _session: Session, args: RequestPermissionInput, _ctx: CallContext
+) -> agent_permissions.PermissionDecision:
+    return agent_permissions.request(args.tool_name, args.input)
 
 
 def _finish_task(
@@ -1062,6 +1111,18 @@ TOOLS: tuple[ToolSpec, ...] = (
         handler=_get_schema,
         cli=CliSpec(path=("schema",), arguments=("name",), option_names={"example": "--example"}),
         audit_fields=("name",),
+    ),
+    ToolSpec(
+        name="get_policies",
+        description=(
+            "Las reglas de la app (docs/POLICIES.md) por secciones: veracidad, CV, privacidad, "
+            "estilo… Úsalo en vez de leer el fichero: así funciona también sin lectura de ficheros."
+        ),
+        input_model=GetPoliciesInput,
+        output_model=policies_text.PoliciesView,
+        handler=_get_policies,
+        cli=CliSpec(path=("policies", "show")),
+        audit_fields=("sections",),
     ),
     ToolSpec(
         name="add_job_from_url",
@@ -1501,6 +1562,25 @@ TOOLS: tuple[ToolSpec, ...] = (
         output_model=prompts.PromptView,
         handler=_ask_user,
         cli=CliSpec(path=("prompts", "ask")),
+    ),
+    ToolSpec(
+        name="request_permission",
+        description=(
+            "La llama el propio agente, sin ventana, cuando algo necesita permiso: la app lo "
+            "pregunta en el portal y devuelve permitir o denegar. Sin respuesta en 5 minutos, "
+            "deniega. No la llames tú: no sustituye ninguna confirmación de la UI."
+        ),
+        input_model=RequestPermissionInput,
+        output_model=agent_permissions.PermissionDecision,
+        handler=_request_permission,
+        cli=CliSpec(
+            path=("prompts", "permission"),
+            arguments=("tool_name",),
+            file_field="input",
+            file_format="json",
+        ),
+        audit_fields=("tool_name",),
+        text_only=True,
     ),
     ToolSpec(
         name="finish_task",

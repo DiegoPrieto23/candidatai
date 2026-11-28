@@ -18,21 +18,39 @@ from datetime import datetime
 from typing import Literal
 
 from pydantic import BaseModel
-from sqlalchemy import select, update
+from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
-from app.models import AgentRun, AssistantRequest, SkillGapMark
+from app.models import AgentRun, AgentRunEvent, AssistantRequest, SkillGapMark, UserPrompt
 from app.models.base import utcnow
-from app.services import agent_launch, agent_tasks, assess_threshold, ui_language
+from app.services import agent_launch, agent_tasks, assess_threshold, prompts, ui_language
 from app.services.agent_launch import ACTIONS, ActionId, LaunchError, LaunchResult
 from app.services.agent_usage import normalize_usage
 from app.services.matching import service as matching
 from app.services.matching import skills
+from app.services.prompts import PromptView
 
 RunStatus = Literal["queued", "running", "done", "needs_user", "failed", "cancelled", "timeout"]
 ACTIVE: tuple[RunStatus, ...] = ("queued", "running")
 FINISHED: tuple[RunStatus, ...] = ("done", "needs_user", "failed", "cancelled", "timeout")
 ProgressKind = Literal["tool", "text", "info", "error"]
+# La conversación de una ejecución (`agent_run_events`), para seguirla en el portal.
+# Fase 48.1c: escribirle al agente. `live`: está trabajando y lo recibe con su siguiente
+# herramienta; `resume`: terminó y se retoma la misma sesión sin ventana; `window`: terminó y solo
+# se puede seguir en una ventana; `none`: no se puede.
+ReplyMode = Literal["live", "resume", "window", "none"]
+MAX_MESSAGE = 2000
+EventKind = Literal[
+    "system",
+    "tool_start",
+    "tool_result",
+    "text",
+    "user",
+    "question",
+    "permission",
+    "result",
+    "error",
+]
 INTERRUPTED = "El worker se cerró mientras se ejecutaba. No se repite: se puede lanzar otra vez."
 
 
@@ -60,6 +78,7 @@ class AgentRunView(BaseModel):
     usage: dict[str, int | float] | None  # `agent_usage.USAGE_KEYS`; `None` sin uso
     cancel_requested: bool
     can_resume: bool  # «Abrir en terminal» retoma la misma sesión
+    asks_permissions: bool = False  # fase 48.1b: su agente pide los permisos al portal
     created_at: datetime
     started_at: datetime | None
     finished_at: datetime | None
@@ -68,6 +87,29 @@ class AgentRunView(BaseModel):
 class AgentRunList(BaseModel):
     runs: list[AgentRunView]
     active: int  # en cola o en curso
+
+
+class AgentRunEventView(BaseModel):
+    seq: int
+    at: datetime
+    kind: EventKind
+    tool: str | None  # sin prefijo MCP
+    text: str | None  # del agente: contenido no confiable, se pinta como texto plano
+    ok: bool | None
+    sub: bool
+
+
+class AgentRunEvents(BaseModel):
+    """La conversación de una ejecución desde `after` (el `seq` del último que ya se tiene)."""
+
+    run_id: int
+    status: RunStatus
+    events: list[AgentRunEventView]
+    last_seq: int  # para la próxima consulta; el de `after` si no hay nada nuevo
+    # Fase 48.1b: sus preguntas y permisos, contestados o no (siempre todos: cambian de estado).
+    prompts: list[PromptView] = []
+    # Fase 48.1c: qué pasa si se le escribe ahora (`reply_mode`).
+    reply: ReplyMode = "none"
 
 
 class RunNotFoundError(LookupError):
@@ -96,6 +138,7 @@ def view(row: AgentRun, resumable: frozenset[str] | None = None) -> AgentRunView
         usage=normalize_usage(row.usage) or None,  # fase 25.4: claves comunes
         cancel_requested=row.cancel_requested,
         can_resume=bool(row.session_id) and row.status in FINISHED and row.agent in resumable,
+        asks_permissions=agent_tasks.asks_permissions(row.agent),
         created_at=row.created_at,
         started_at=row.started_at,
         finished_at=row.finished_at,
@@ -206,7 +249,9 @@ def start(
     note = _cv_gaps_note(session, job_id) if action == "generate-cv" and job_id else ""
     lang = ui_language.current(session)
     closing = (
-        agent_launch.assistant_note(lang) if spec.assistant else agent_launch.background_note(lang)
+        agent_launch.assistant_note(lang)
+        if spec.assistant
+        else agent_launch.background_note(lang, can_ask="ask_user" in spec.background)
     )
     full_prompt = prompt + note + closing
     assert picked.headless is not None  # lo garantiza `pick_headless`
@@ -242,6 +287,199 @@ def _row(session: Session, run_id: int) -> AgentRun:
 
 def get_run(session: Session, run_id: int) -> AgentRunView:
     return view(_row(session, run_id))
+
+
+EVENTS_PAGE = 500
+
+
+def run_events(session: Session, run_id: int, after: int = 0) -> AgentRunEvents:
+    """Lo nuevo de la conversación desde `after`, en orden. El portal la consulta cada poco."""
+    row = _row(session, run_id)
+    rows = session.scalars(
+        select(AgentRunEvent)
+        .where(AgentRunEvent.run_id == run_id, AgentRunEvent.seq > after)
+        .order_by(AgentRunEvent.seq)
+        .limit(EVENTS_PAGE)
+    ).all()
+    events = [
+        AgentRunEventView(
+            seq=e.seq,
+            at=e.at,
+            kind=e.kind,  # type: ignore[arg-type]
+            tool=e.tool,
+            text=e.text,
+            ok=e.ok,
+            sub=e.sub,
+        )
+        for e in rows
+    ]
+    asked = session.scalars(
+        select(UserPrompt).where(UserPrompt.run_id == run_id).order_by(UserPrompt.id)
+    ).all()
+    return AgentRunEvents(
+        run_id=run_id,
+        status=row.status,  # type: ignore[arg-type]
+        events=events,
+        last_seq=events[-1].seq if events else after,
+        prompts=[prompts.get(session, p.id) for p in asked],
+        reply=reply_mode(row),
+    )
+
+
+# --- Escribirle al agente (fase 48.1c) ---------------------------------------------------------
+
+
+def _launcher_of(agent: str) -> agent_launch._Launcher | None:
+    return next((x for x in agent_launch._launchers() if x.agent == agent), None)
+
+
+def reply_mode(row: AgentRun) -> ReplyMode:
+    if row.status in ACTIVE:
+        return "live"
+    launcher = _launcher_of(row.agent)
+    if launcher is None or not row.session_id:
+        return "none"
+    if launcher.headless is not None and launcher.headless.resume_after is not None:
+        return "resume"
+    return "window" if launcher.resume else "none"
+
+
+def _last_seq(session: Session, run_id: int) -> int:
+    last = session.scalar(select(func.max(AgentRunEvent.seq)).where(AgentRunEvent.run_id == run_id))
+    return last or 0
+
+
+def _next_seq(session: Session, run_id: int) -> int:
+    return _last_seq(session, run_id) + 1
+
+
+def _clean_message(text: str) -> str:
+    clean = text.strip()
+    if not clean:
+        raise LaunchError("invalid_request", "Falta escribir el mensaje.")
+    if len(clean) > MAX_MESSAGE:
+        raise LaunchError(
+            "invalid_request", f"El mensaje no puede pasar de {MAX_MESSAGE} caracteres."
+        )
+    return clean
+
+
+def send_message(session: Session, run_id: int, text: str) -> AgentRunEvents:
+    """Lo que el usuario le escribe al agente desde el panel. Mientras trabaja, se guarda y se le
+    pasa con la respuesta de su siguiente herramienta (`take_user_messages`). Si ya terminó y su
+    agente sabe retomar sin ventana, la misma ejecución vuelve a la cola con la sesión de antes y
+    el mensaje como orden: la conversación, los pasos y el coste siguen en el mismo sitio."""
+    message = _clean_message(text)
+    _row(session, run_id)
+    # Con la base reservada para escribir (savepoint → `BEGIN IMMEDIATE`, `core.db`): el estado
+    # leído aquí es el que se cambia (el worker no puede reclamarla ni terminarla entre medias) y el
+    # `seq` no choca con el del runner.
+    with session.begin_nested():
+        row = _row(session, run_id)
+        session.refresh(row)
+        mode = reply_mode(row)
+        if mode in ("window", "none"):
+            raise LaunchError(
+                "invalid_request",
+                "Esta ejecución no se puede retomar sin ventana: hay que abrirla en una ventana.",
+            )
+        now = utcnow()
+        session.add(
+            AgentRunEvent(
+                run_id=run_id,
+                seq=_next_seq(session, run_id),
+                at=now,
+                kind="user",
+                text=message,
+                sub=False,
+                delivered_at=None,  # al retomar, `_resume` la pasa en la orden
+            )
+        )
+        session.flush()
+        if mode == "resume":
+            _resume(session, row)
+    session.flush()
+    return run_events(session, run_id)
+
+
+# Delante de lo que escribe el usuario: la orden nunca empieza por su texto (no puede colarse una
+# bandera como `--algo`), y el agente sabe que es una petición del usuario.
+RESUME_HEADER = {
+    "es": "Mensajes del usuario en el portal, sobre lo que acabas de hacer:",
+    "en": "Messages from the user in the portal, about what you have just done:",
+}
+
+
+def _resume(session: Session, row: AgentRun) -> None:
+    """Vuelve a poner en cola la misma ejecución, retomando su sesión. Mismo agente, modelo y
+    techo; el aviso de la acción se reabre. La orden lleva todo lo que el usuario escribió y aún no
+    le había llegado (también lo escrito a mitad, si ya no llamó a ninguna herramienta), y lo que
+    quedara por contestar en el portal de esa ejecución se cierra."""
+    action: ActionId = row.action  # type: ignore[assignment]
+    lang = ui_language.current(session)
+    pending = list(
+        session.scalars(
+            select(AgentRunEvent)
+            .where(
+                AgentRunEvent.run_id == row.id,
+                AgentRunEvent.kind == "user",
+                AgentRunEvent.delivered_at.is_(None),
+            )
+            .order_by(AgentRunEvent.seq)
+        )
+    )
+    now = utcnow()
+    for event in pending:
+        event.delivered_at = event.delivered_at or now
+    lines = "\n".join(f"- {event.text}" for event in pending)
+    prompt = f"{RESUME_HEADER[lang]}\n{lines}" + agent_launch.background_note(
+        lang, can_ask="ask_user" in ACTIONS[action].background
+    )
+    for asked in session.scalars(
+        select(UserPrompt).where(UserPrompt.run_id == row.id, UserPrompt.status == "pending")
+    ):
+        asked.status = "expired"
+    picked = agent_launch.pick(
+        session,
+        action,
+        prompt,
+        agent=row.agent,
+        model=row.model,
+        preset=row.preset,
+        mode="background",
+    )
+    assert row.session_id is not None  # lo garantiza `reply_mode`
+    row.command = agent_launch.headless_resume_command(picked, prompt, action, row.session_id)
+    row.run_config = agent_launch.run_config(picked)
+    # `prompt` se queda con la orden original (la que se ve en el historial); la nueva va en
+    # `command` y lo escrito, en la conversación.
+    row.status = "queued"
+    row.result = None
+    row.error = None
+    row.questions = []
+    row.cancel_requested = False
+    row.pid = None
+    row.started_at = None
+    row.finished_at = None
+    agent_tasks.reopen(session, row.id)
+
+
+def take_user_messages(session: Session, run_id: int) -> list[str]:
+    """Los mensajes escritos mientras trabaja que aún no se le han pasado, marcados como pasados.
+    Los usa el servidor MCP al devolver la respuesta de una herramienta de esta ejecución."""
+    rows = session.scalars(
+        select(AgentRunEvent)
+        .where(
+            AgentRunEvent.run_id == run_id,
+            AgentRunEvent.kind == "user",
+            AgentRunEvent.delivered_at.is_(None),
+        )
+        .order_by(AgentRunEvent.seq)
+    ).all()
+    now = utcnow()
+    for row in rows:
+        row.delivered_at = now
+    return [row.text or "" for row in rows]
 
 
 def list_runs(session: Session, limit: int = 20, job_id: int | None = None) -> AgentRunList:

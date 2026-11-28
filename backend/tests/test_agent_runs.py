@@ -138,7 +138,14 @@ def test_background_tools_exist_and_are_minimal() -> None:
         "get_match",
         "get_extraction",
         "save_fit_assessment",
+        # Fase 48.1b: el permiso se pide en el portal. Las preguntas, no: la sesión podría haber
+        # leído texto de una oferta (`get_job`).
+        "request_permission",
     }
+    for action, spec in ACTIONS.items():
+        if spec.background:
+            assert "request_permission" in spec.background, action
+            assert ("ask_user" in spec.background) == ("get_job" not in spec.background), action
     # Solo process-jobs (su subagente extractor) lee el texto de las ofertas.
     assert "get_job" not in ACTIONS["assess-fit"].background
     assert "get_job" not in ACTIONS["assess-fit-job"].background
@@ -162,7 +169,11 @@ def test_manifest_command_allows_only_the_action_tools(action: str) -> None:
 
     assert command[:3] == ["claude", "-p", "ORDEN"]
     assert command[command.index("--output-format") + 1] == "stream-json"
-    assert command[command.index("--permission-mode") + 1] == "dontAsk"
+    # Fase 48.1b: lo que necesitaría permiso se pregunta en el portal (solo en modo `default`).
+    assert command[command.index("--permission-mode") + 1] == "default"
+    tool = command[command.index("--permission-prompt-tool") + 1]
+    assert tool == PREFIX + "request_permission"
+    assert "request_permission" in spec.background  # nunca entre las denegadas
     assert "--strict-mcp-config" in command
     assert command[command.index("--mcp-config") + 1] == ".mcp.json"
     builtin = command[command.index("--tools") + 1].split(",")
@@ -411,7 +422,7 @@ def test_open_in_terminal_resumes_the_session(
     db: None, fake: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     opened: list[tuple[str, str]] = []
-    monkeypatch.setattr(agent_launch, "_open_terminal", lambda t, c: opened.append((t, c)))
+    monkeypatch.setattr(agent_launch, "_open_terminal", lambda t, c, *_: opened.append((t, c)))
     monkeypatch.setenv("FAKE_AGENT_MODE", "question")
     run_id = start()
     with session_scope() as session, pytest.raises(LaunchError, match="esperar"):

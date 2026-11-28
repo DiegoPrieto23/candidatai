@@ -70,13 +70,19 @@ Where: “Agent”.
 
 ### What happens when I press an agent button?
 
-Your agent opens with the instruction already written. The arrow on the button lets you choose: in a separate window, which opens behind your browser (on the taskbar) and where you see and approve what it does; in the background, with no window; or leave it for your next session.
+Your agent starts working with the instruction already written. If the action does not need to ask anything (generating the CV, assessing a job…), it runs with no window and you follow it in the notice at the bottom right; the rest open your agent in a separate window, behind your browser (on the taskbar), where you see and approve what it does. The arrow on the button lets you choose: in a separate window, in the background or leave it for your next session. With “Open in a window”, on the “Agent” page, the main button always opens the window.
 
 Where: “Agent”.
 
 ### Where do I see what my agent is doing?
 
-In the notice at the bottom right, which appears on every page with what it has done so far and changes when it finishes. The “Agent” page keeps the detail of each run and its usage.
+In the notice at the bottom right, which appears on every page with what it has done so far (the current step and the time, if it runs with no window) and changes when it finishes. “View conversation” opens a side panel with every tool your agent uses and what it writes. You can write to it there: midway, it gets your message at its next step and, once finished, it continues the same conversation. The “Terminal” tab shows it as a console, and each job's conversations can be opened again from its “History”.
+
+Where: “Agent”.
+
+### Where is my agent's window?
+
+What opens in a window goes behind your browser: on Windows, minimized on the taskbar, named after the action (“CandidatAI · Generate CV”). The notice at the bottom right says which one it is and “Show the window” brings it to the front. If it is closed before it finishes, the notice says so; if your agent has done nothing in 3 minutes, it is usually waiting for an answer in its window, and the notice offers to show it, launch it again or mark it as finished. On the “Agent” page, “How the window opens” lets you keep it visible behind the browser or use Windows Terminal.
 
 Where: “Agent”.
 
@@ -88,7 +94,7 @@ Where: “Agent”.
 
 ### My agent is asking me something: where do I answer?
 
-In the notice that appears at the bottom right, or in your agent's window. The permissions it asks for and long conversations, such as a mock interview, stay in its window.
+In the notice that appears at the bottom right. If it works with no window, the notice turns amber with “Respond” and the question shows in its conversation panel; with Claude Code, so do the permissions it asks for (“Allow once”, “Always allow in this project” or “Deny”; with no answer in 5 minutes, they are denied). What is always allowed is removed on the “Agent” page. Long conversations, such as a mock interview, stay in its window.
 
 ### How do I choose which agent or model is used?
 
@@ -232,7 +238,7 @@ Where: “Calendar”.
 
 ### What is “Replies”?
 
-If you turn it on for a mailbox, the app reads the emails from the companies in your processes, your agent proposes what happened and you accept or ignore it. The app only reads: sending, moving and deleting emails stays in your hands.
+If you turn it on for a mailbox, the app reads the emails from the companies in your processes, your agent proposes what happened and you accept or ignore it. They are read from their own folders, separate from the alerts folder: the inbox by default, and in the mailbox you can choose others (a “Procesos” label, say) with “Choose from the mailbox”. At the top of “Replies” you see where they are read from. The app only reads: sending, moving and deleting emails stays in your hands.
 
 Where: “Replies”.
 

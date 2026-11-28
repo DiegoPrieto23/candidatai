@@ -116,7 +116,7 @@
   },
   "tasks": {
     "runningTerminal": "Still going in your agent's window. If it asks for permission, answer there.",
-    "runningBackground": "In the background: nothing for you to do.",
+    "runningBackground": "No window: progress is shown here.",
     "stale": "No news for 30 minutes. Check your agent's window or close this notice.",
     "doneBody": "You can see it now.",
     "doneCount_one": "{{count}} done.",
@@ -205,6 +205,140 @@
       "body": "You stopped it. What your agent had already saved stays."
     },
     "terminalStop": "To stop it, close your agent's window.",
-    "markDone": "Mark as finished"
+    "markDone": "Mark as finished",
+    "conversation": "View conversation",
+    "openWindow": "Open in a window",
+    "stepOf": "{{n}}/{{total}} · {{step}}",
+    "steps": {
+      "label": "Steps",
+      "job": "Job",
+      "profile": "Profile",
+      "read": "Read",
+      "write": "Write",
+      "pdf": "PDF",
+      "verify": "Verify",
+      "done": "Done",
+      "state": {
+        "done": "done",
+        "current": "in progress",
+        "pending": "pending"
+      }
+    },
+    "tools": {
+      "unknown": "Working",
+      "other": "Using {{tool}}",
+      "get_profile": "Reading the profile",
+      "get_context": "Reading the profile context",
+      "get_extraction": "Reading the job",
+      "get_match": "Reading the fit",
+      "get_cv_brief": "Reading the CV instructions",
+      "check_job_open": "Checking whether the job is still open",
+      "list_cv_templates": "Choosing the template",
+      "check_cv_fit": "Measuring the CV",
+      "save_cv_content": "Saving the CV and generating the PDF",
+      "get_cv_content": "Reading the CV",
+      "save_cv_verification": "Saving the verification",
+      "get_cv_correction": "Reading the requested corrections",
+      "get_cover_letter": "Reading the cover letter",
+      "save_cover_letter": "Saving the cover letter",
+      "save_cover_letter_verification": "Saving the cover letter verification",
+      "save_fit_assessment": "Saving the assessment",
+      "save_extraction": "Saving the job reading",
+      "list_jobs": "Looking up the jobs",
+      "get_job": "Reading the job text",
+      "get_status": "Checking the status",
+      "skill": "Following the {{detail}} skill",
+      "agent": "Subagent {{detail}}",
+      "read": "Reading {{detail}}",
+      "command_execution": "Terminal command",
+      "web_search": "Web search",
+      "file_change": "Editing files",
+      "collab_tool_call": "Subagent"
+    },
+    "panel": {
+      "conversation": "Conversation",
+      "noWindow": "no window",
+      "collapse": "Collapse to the notice",
+      "started": "The agent has started",
+      "bySubagent": "(subagent)",
+      "denied": "Not allowed in this action.",
+      "toolFailed": "It failed.",
+      "finished": "Finished",
+      "finishedWithError": "Finished with an error",
+      "error": "Error",
+      "loading": "Loading the conversation…",
+      "waiting": "Queued: the agent starts in a few seconds.",
+      "empty": "This run did not save its conversation.",
+      "status": {
+        "queued": "queued",
+        "running": "working",
+        "done": "finished",
+        "needs_user": "waiting for an answer",
+        "failed": "failed",
+        "cancelled": "stopped",
+        "timeout": "timed out"
+      },
+      "noPermissions": "This agent does not ask the portal for permission: whatever is not allowed in this action is denied without asking.",
+      "resumed": "The conversation continues",
+      "terminal": "Terminal",
+      "terminalOk": "done",
+      "views": "Conversation views",
+      "compose": {
+        "label": "Message for the agent",
+        "placeholderLive": "Instruction for the agent…",
+        "placeholderResume": "Ask for a change or continue…",
+        "send": "Send",
+        "hintLive": "It is passed on at its next step.",
+        "hintResume": "It continues the same conversation: it does not start from scratch.",
+        "windowOnly": "This agent does not continue the conversation without a window: it is followed in a window, in the same session.",
+        "openWindow": "Open in a window"
+      }
+    },
+    "waitingQuestion": "The agent is waiting for an answer.",
+    "waitingPermission": "The agent is asking for permission to continue.",
+    "respond": "Respond",
+    "prompt": {
+      "questionTitle": "Question from the agent",
+      "permissionTitle": "Permission",
+      "permissionAsk": "It wants to use {{tool}}:",
+      "label": "Answer for the agent",
+      "placeholder": "Write the answer…",
+      "placeholderOther": "Or another answer…",
+      "send": "Send",
+      "skip": "Continue without it",
+      "allowOnce": "Allow once",
+      "allowAlways": "Always allow in this project",
+      "deny": "Deny",
+      "expires": "It continues without an answer in {{time}}.",
+      "permissionExpires": "It is denied automatically in {{time}}.",
+      "answer": "Answer: {{answer}}",
+      "skipped": "No answer: it continues without it.",
+      "expired": "Nobody answered in time.",
+      "expiredPermission": "Nobody answered in time: denied.",
+      "answers": {
+        "once": "Allowed once.",
+        "always": "Always allowed in this project (removed on the “Agent” page).",
+        "deny": "Denied."
+      }
+    },
+    "window": {
+      "minimized": "In the “{{title}}” window (minimized in the taskbar). If it asks for permission, answer there.",
+      "behind": "In the “{{title}}” window, behind the browser. If it asks for permission, answer there.",
+      "wt": "In a Windows Terminal tab (“{{title}}”). If it asks for permission, answer there.",
+      "terminal": "In the “{{title}}” terminal window. If it asks for permission, answer there."
+    },
+    "silent": {
+      "title": "The agent has not started",
+      "body": "It has done nothing with the app in 3 minutes. It may be waiting for an answer in its window.",
+      "background": "No sign of activity in 3 minutes."
+    },
+    "closed": {
+      "title": "The window was closed",
+      "body": "The agent’s window was closed before it finished. What it had already saved stays."
+    },
+    "showWindow": "Show the window",
+    "windowFlashing": "Windows does not allow bringing it to the front: it is restored and flashing in the taskbar.",
+    "windowNotFound": "The window was not found: it may have been closed already.",
+    "relaunch": "Launch again"
   }
 }

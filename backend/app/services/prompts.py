@@ -25,7 +25,10 @@ from app.models import ApplicationAttempt, Source, UserPrompt
 from app.models.base import utcnow
 
 PromptKind = Literal["captcha", "anti_bot", "login_required"]
-PromptViewKind = Literal["captcha", "anti_bot", "login_required", "question"]
+PromptViewKind = Literal["captcha", "anti_bot", "login_required", "question", "permission"]
+# Fase 48.1b: lo que se contesta a un permiso.
+PermissionAnswer = Literal["once", "always", "deny"]
+PERMISSION_ANSWERS: tuple[str, ...] = ("once", "always", "deny")
 PromptStatus = Literal["pending", "done", "skipped", "expired"]
 Outcome = Literal["done", "skipped"]
 
@@ -40,6 +43,7 @@ _TITLES: dict[str, str] = {
     "anti_bot": "La web pide comprobar que eres una persona",
     "login_required": "Inicia sesión",
     "question": "Tu agente te pregunta",
+    "permission": "El agente pide permiso",
 }
 
 
@@ -62,8 +66,10 @@ class PromptView(BaseModel):
     answered_at: datetime | None
     seconds_left: int  # hasta que caduca; 0 si ya no está pendiente
     options: list[str] = []  # preguntas: respuestas para elegir
-    answer: str | None = None  # preguntas: lo que ha contestado
+    answer: str | None = None  # preguntas: lo que ha contestado; permisos: `once|always|deny`
     job_id: int | None = None
+    run_id: int | None = None  # fase 48.1b: la ejecución sin ventana que lo pidió
+    tool: str | None = None  # en un permiso, la herramienta (lo que hace, en `message`)
 
 
 class PendingPrompts(BaseModel):
@@ -96,6 +102,8 @@ def _view(session: Session, prompt: UserPrompt, now: datetime | None = None) -> 
         options=prompt.options or [],
         answer=prompt.answer,
         job_id=prompt.job_id,
+        run_id=prompt.run_id,
+        tool=prompt.tool,
     )
 
 
@@ -147,14 +155,17 @@ def ask(
     options: list[str] | None = None,
     job_id: int | None = None,
     timeout_seconds: int = QUESTION_TIMEOUT_SECONDS,
+    run_id: int | None = None,
 ) -> PromptView:
-    """Una pregunta del agente que se contesta en la app."""
+    """Una pregunta del agente que se contesta en la app. `run_id`: la ejecución sin ventana que
+    pregunta (se contesta en su panel)."""
     now = utcnow()
     prompt = UserPrompt(
         kind="question",
         message=question.strip(),
         options=[option.strip() for option in options or [] if option.strip()] or None,
         job_id=job_id,
+        run_id=run_id,
         status="pending",
         created_at=now,
         expires_at=now + timedelta(seconds=timeout_seconds),
@@ -212,6 +223,13 @@ def answer(
         if not clean:
             raise ValueError("Falta escribir o elegir una respuesta.")
         prompt.answer = clean[:MAX_ANSWER]
+    if prompt.kind == "permission":
+        # «Saltar» un permiso es denegarlo.
+        choice = (text or "").strip() if outcome == "done" else "deny"
+        offered = prompt.options or list(PERMISSION_ANSWERS)
+        if choice not in PERMISSION_ANSWERS or choice not in offered:
+            raise ValueError(f"Este permiso se contesta con: {', '.join(offered)}.")
+        prompt.answer = choice
     prompt.status = outcome
     prompt.answered_at = now
     session.flush()

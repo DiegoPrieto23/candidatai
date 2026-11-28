@@ -476,8 +476,11 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
   `review-replies` propone qué ha pasado y la propuesta se acepta en «Respuestas». Al aceptar o
   ignorar, un aviso indica en qué oferta ha quedado, con su enlace; «Ignorar» se puede deshacer
   desde él. Con el teclado: `J`/`K` para pasar de un correo a otro, `A` para aceptar, `I` para
-  ignorar. Sin activarlo, se anota en su ficha o en el tablero con «Actualizar estado». Qué lee
-  exactamente: [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md#respuestas-de-las-empresas).
+  ignorar. Sin activarlo, se anota en su ficha o en el tablero con «Actualizar estado». Las
+  respuestas se leen de sus propias carpetas, aparte de la de las alertas: por defecto la bandeja de
+  entrada, y se eligen en el buzón con **Elegir del buzón** (p. ej. también una etiqueta
+  «Procesos»). Arriba, en «Respuestas», se ve de qué buzones y carpetas se leen, con **Cambiar**. Qué
+  lee exactamente: [`CONFIGURAR_CORREO.md`](CONFIGURAR_CORREO.md#respuestas-de-las-empresas).
 - **Resultados:** qué funciona. Arriba, frases sacadas de los datos: por qué canal responden más
   (referencia, web de la empresa, portales de empleo o las ofertas añadidas a mano), cuánto tardan
   las empresas en responder, por dónde responden antes y la mejor fuente. Cada frase sale cuando hay
@@ -523,11 +526,24 @@ El worker ejecuta las fuentes automáticas cada día a la hora de `connectors.da
 
 ## 11. El agente desde la UI
 
-Muchas pantallas tienen botones que abren el agente con la orden ya escrita:
+Muchas pantallas tienen botones que lanzan el agente con la orden ya escrita:
 
+- **Sin ventana, en el portal (por defecto):** si la acción puede ir en segundo plano con el agente
+  elegido (ver más abajo), el botón principal la lanza sin abrir ninguna ventana. El aviso de abajo a
+  la derecha dice en qué paso va («3/6 · Redactar» en «Generar CV») o qué herramienta usa, y el
+  tiempo que lleva; **Ver conversación** abre un panel lateral con cada herramienta que usa el agente
+  y lo que escribe (en pantallas anchas, la página se aparta para dejarle sitio). Si falla, el aviso
+  ofrece **Abrir en una ventana**, que retoma la misma sesión. Con **Abrir en una ventana** activado
+  en la página «Agente», el botón principal vuelve a abrir la ventana del agente.
+  En el panel se le puede **escribir**: mientras trabaja, se le pasa en su siguiente paso; cuando
+  ya ha terminado, retoma la misma conversación (p. ej. «acorta el resumen» saca otra versión del CV
+  y la verifica), con Claude Code u OpenCode; con Codex, se sigue en una ventana. La pestaña
+  **Terminal** enseña lo mismo como en una consola. Las conversaciones de cada oferta se vuelven a
+  abrir desde su ficha, en «Historial».
 - **En una ventana aparte:** abre una ventana con el agente, donde se ve y se aprueba lo que hace.
-  Si un botón no puede abrir el agente, muestra la orden entera en un recuadro con «Copiar» e indica
-  dónde pegarla.
+  Es lo que hace el botón principal en las acciones que preguntan o usan el navegador o la web, y
+  una opción del desplegable en las demás. Si un botón no puede abrir el agente, muestra la orden
+  entera en un recuadro con «Copiar» e indica dónde pegarla.
 - **Avisos de lo que hace el agente:** lo que se lanza con un botón (leer y valorar ofertas, revisar
   respuestas, generar o corregir un CV, la carta, investigar la empresa, preparar una entrevista…)
   sale en un aviso en cualquier página, con lo que lleva hecho, y cambia cuando termina o si no ha
@@ -536,13 +552,18 @@ Muchas pantallas tienen botones que abren el agente con la orden ya escrita:
   delante, también una notificación del sistema. El CV queda además en `data/cvs/` y la guía en
   `data/entrevistas/`.
 - **El agente pregunta en la app:** si necesita un dato para escribir un CV, una carta o una guía,
-  un aviso permite contestar ahí mismo. También se puede contestar en su ventana. Los permisos que
-  pide y las conversaciones (un simulacro, p. ej.) siguen en su ventana.
-- **En segundo plano** (Claude Code; OpenCode solo en `process-jobs` y `assess-fit`): para los
-  skills que no preguntan (`process-jobs`, `assess-fit`, `generate-cv`, `correct-cv`, `verify-cv`,
-  `generate-cover-letter` y el resumen en inglés). Corre sin ventana, solo con las herramientas de la
-  app que necesita, y un aviso indica cuándo termina. Si el agente no puede, el desplegable propone
-  uno que sí. Necesita `cai worker` en marcha.
+  un aviso permite contestar ahí mismo. Sin ventana, el aviso se pone ámbar con **Responder** y la
+  pregunta sale en el panel de su conversación, con las opciones o un texto libre. Si Claude Code
+  necesita **permiso** para algo que la acción no tiene permitido de antemano, lo pide en el mismo
+  panel: «Permitir una vez», «Permitir siempre en este proyecto» o «Denegar»; sin respuesta en 5
+  minutos, se deniega. Lo permitido siempre se ve y se quita en la página «Agente». Un permiso nunca
+  sustituye la confirmación de una candidatura. Con Codex u OpenCode no se pide: lo que la acción no
+  permite se deniega. Las conversaciones (un simulacro, p. ej.) siguen en su ventana.
+- **En segundo plano** (Claude Code y OpenCode; Codex, en todas salvo `process-jobs`): para
+  los skills que no preguntan (`process-jobs`, `assess-fit`, `generate-cv`, `correct-cv`,
+  `verify-cv`, `generate-cover-letter` y el resumen en inglés). Corre sin ventana, solo con las
+  herramientas de la app que necesita, y el aviso dice cómo va. Si el agente no puede, el
+  desplegable propone uno que sí. Necesita `cai worker` en marcha (lo arranca `cai start`).
   - **Coste:** la sección «Coste» de la página «Agente» suma tokens, tiempo y, si el agente lo da,
     dinero, por acción, agente y modelo (7 y 30 días), con lo que pesa cada skill; la ficha indica lo
     gastado en esa oferta y «Resultados», por candidatura enviada y por entrevista. Lo que se hace en una
@@ -565,10 +586,17 @@ agente se abre y permite usar otro solo esa vez. Si un agente no sirve para una 
 navegador para buscar ofertas, p. ej.), el botón lo indica y no lo lanza. Sin nada elegido, se usa
 `CAI_AGENT` del `.env` o el primero instalado. La ventana del agente se abre detrás del navegador,
 que sigue a la vista: en Windows, una ventana de PowerShell minimizada en la barra de tareas, con el
-nombre de la acción (ahí se aprueban los permisos que pida; con `CAI_TERMINAL=wt` en el `.env`, se
-usa Windows Terminal, que sí se pone delante). En macOS y Linux, los botones abren Terminal.app o la
-terminal del escritorio; para usar otra (iTerm2, kitty…), se pone `CAI_TERMINAL=iterm` (o su nombre
-o ruta) en el `.env`.
+nombre de la acción (ahí se aprueban los permisos que pida). En la página «Agente», **Cómo se abre la
+ventana** permite elegir otra forma: **a la vista, detrás del navegador**, o **en Windows Terminal**,
+que sí se pone delante (lo mismo que `CAI_TERMINAL=wt` en el `.env`, mientras no se elija otra
+cosa). El aviso de abajo a la derecha dice en qué ventana está y, en Windows, **Mostrar la ventana**
+la restaura y la pone delante (si Windows no lo permite, la deja parpadeando en la barra de tareas;
+una pestaña de Windows Terminal no se puede traer así). Si la ventana se cierra antes de terminar, el
+aviso pasa a **La ventana se cerró**; si en 3 minutos el agente no ha hecho nada con la app (suele
+ser que espera una respuesta en su ventana), pasa a **El agente no ha empezado**, con **Mostrar la
+ventana**, **Lanzar de nuevo** y **Marcar como terminada**. En macOS y Linux, los botones abren
+Terminal.app o la terminal del escritorio; para usar otra (iTerm2, kitty…), se pone
+`CAI_TERMINAL=iterm` (o su nombre o ruta) en el `.env`.
 
 **Niveles de gasto.** En la misma página, «Económico», «Equilibrado» y «Máximo» guardan el agente y
 el modelo de las acciones principales. «Económico» usa un modelo local para procesar, valorar y
@@ -579,7 +607,8 @@ clic. «Deshacer el último» deja las preferencias como estaban.
 
 - **`.env`** (en la raíz, fuera de git): `CAI_DATA_DIR`, `SOFFICE_PATH`, claves de InfoJobs y
   Adzuna, IMAP (`CAI_IMAP_HOST`, `CAI_IMAP_PORT`, `CAI_IMAP_USER`, `CAI_IMAP_PASSWORD`,
-  `CAI_IMAP_FOLDER`, `CAI_IMAP_REPLIES_FOLDER`), `CAI_BROWSER_CHANNEL` (`chrome` o `msedge` para la
+  `CAI_IMAP_FOLDER`, y `CAI_IMAP_REPLIES_FOLDER` hasta elegir las carpetas de respuestas en la UI),
+  `CAI_BROWSER_CHANNEL` (`chrome` o `msedge` para la
   candidatura asistida), `CAI_EMBEDDINGS=off`, `CAI_UPDATE_CHECK=off` (no pregunta a GitHub si hay
   una versión nueva), `UV_PATH` (uv fuera del PATH), `CAI_LANG` (`es` o
   `en`: idioma que va primero en los mensajes de `cai start` en la terminal, que salen en los dos, y de las órdenes al agente mientras no

@@ -3,7 +3,7 @@ import { Trans, useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router'
 import { ArrowsClockwiseIcon, CaretRightIcon, CheckCircleIcon, EnvelopeSimpleIcon, ShieldWarningIcon, XIcon } from '@phosphor-icons/react'
 import type { RepliesPollResult, ReplyInboxItem } from '@/api/client'
-import { usePollReplies, useReplies, useReply, useUnignoreReply, type ReplyStatus } from '@/api/queries'
+import { useMailSources, usePollReplies, useReplies, useReply, useUnignoreReply, type ReplyStatus } from '@/api/queries'
 import { AgentButton } from '@/components/AgentButton'
 import { Kbd } from '@/components/Kbd'
 import { ReplyProposalCard, type ReplyResolved } from '@/components/ReplyDecision'
@@ -11,6 +11,7 @@ import { EmptyState, ErrorState } from '@/components/States'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatList, i18n } from '@/lib/i18n'
+import { folderLabel } from '@/lib/mailFolders'
 import { formatRelative, STAGE_LABEL } from '@/lib/labels'
 import { MATCH_REASON_LABEL, REPLY_EVENT_LABEL } from '@/lib/replies'
 import { formatWhen } from '@/lib/time'
@@ -38,6 +39,31 @@ function from(item: ReplyInboxItem): string {
   return item.sender_name || item.sender
 }
 
+/** «Principal · INBOX» → «Principal · Bandeja de entrada». */
+function readPlace(place: string): string {
+  const [box, folder] = place.split(' · ')
+  return folder === undefined ? place : `${box} · ${folderLabel(folder)}`
+}
+
+/** Fase 48.3: de qué buzones y carpetas se leen las respuestas, con el enlace para cambiarlo. */
+function ReadFrom() {
+  const { t } = useTranslation('replies', { keyPrefix: 'page' })
+  const { data } = useMailSources()
+  if (!data) return null
+  const reading = data.demo
+    ? []
+    : data.sources.filter((s) => s.kind === 'imap' && s.enabled && s.read_replies)
+  const where = formatList(reading.map((s) => `${s.label} · ${formatList(s.replies_folders.map(folderLabel))}`))
+  return (
+    <p className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
+      <span>{reading.length > 0 ? t('readFrom', { where }) : t('readNothing')}</span>
+      <Link to="/fuentes/correo" className="font-medium text-foreground underline underline-offset-2">
+        {t('change')}
+      </Link>
+    </p>
+  )
+}
+
 function PollResult({ result, onClose }: { result: RepliesPollResult; onClose: () => void }) {
   const { t } = useTranslation('replies', { keyPrefix: 'page' })
   return (
@@ -48,6 +74,9 @@ function PollResult({ result, onClose }: { result: RepliesPollResult; onClose: (
       <EnvelopeSimpleIcon className="mt-0.5 size-[18px] shrink-0 text-primary" weight="duotone" />
       <div className="min-w-0 flex-1">
         <p>{result.message}</p>
+        {(result.read ?? []).length > 0 && (
+          <p className="mt-0.5 text-xs text-muted-foreground">{t('readNow', { where: formatList((result.read ?? []).map(readPlace)) })}</p>
+        )}
         {result.errors.length > 0 && (
           <ul className="mt-1 space-y-0.5 text-xs text-muted-foreground">
             {result.errors.slice(0, 5).map((issue, i) => (
@@ -394,6 +423,7 @@ export function RepliesPage() {
           <p className="max-w-prose text-sm text-muted-foreground">
             {t('intro')}
           </p>
+          <ReadFrom />
         </div>
         <div className="flex shrink-0 flex-wrap items-start gap-2">
           {unclassified > 0 && (

@@ -477,7 +477,10 @@ The worker runs the automatic sources every day at `connectors.daily_at`
   processes; `review-replies` proposes what happened and you accept it in **Replies**. When you
   accept or ignore one, a notice says which job it ended up on, with its link; **Ignore** can be undone
   from there. With the keyboard: `J`/`K` to move between emails, `A` to accept, `I` to ignore. If you
-  leave it off, note it on the job page or on the board with **Update status**.
+  leave it off, note it on the job page or on the board with **Update status**. Replies are read
+  from their own folders, separate from the alerts folder: the inbox by default, and you choose them
+  in the mailbox with **Choose from the mailbox** (a “Procesos” Gmail label as well, say). At the
+  top of **Replies** you see which mailboxes and folders are read, with **Change**.
 - **Results:** what works for you. At the top, sentences drawn from your data: which channel gets
   you more replies (referral, company careers site, job boards or the jobs you add yourself), how long
   companies take to reply, where they reply sooner and your best source. Each sentence appears once
@@ -524,11 +527,24 @@ The worker runs the automatic sources every day at `connectors.daily_at`
 
 ## 11. The agent from the UI
 
-Many pages have buttons that open your agent with the instruction already written:
+Many pages have buttons that launch your agent with the instruction already written:
 
-- **In a separate window:** opens a window with your agent; you see and approve what it does. If
-  a button cannot open your agent, it shows the whole command in a box with **Copy** and says where
-  to paste it.
+- **No window, in the portal (the default):** if the action can run in the background with the
+  chosen agent (see below), the main button starts it without opening any window. The notice at
+  the bottom right says which step it is on ("3/6 · Write" in **Generate CV**) or which tool it is
+  using, and how long it has taken; **View conversation** opens a side panel with every tool your
+  agent uses and what it writes (on wide screens the page moves aside to make room for it). If it
+  fails, the notice offers **Open in a window**, which continues the same session. With **Open in a
+  window** turned on in the **Agent** page, the main button opens your agent's window again.
+  You can **write** to your agent in the panel: while it works, it gets your message at its next
+  step; once it has finished, it continues the same conversation ("make the summary shorter"
+  produces another CV version and verifies it), with Claude Code or OpenCode; with Codex, it
+  continues in a window. The **Terminal** tab shows the same as a console. Each job's
+  conversations can be opened again from its page, under **History**.
+- **In a separate window:** opens a window with your agent; you see and approve what it does. It
+  is what the main button does for actions that ask questions or use the browser or the web, and an
+  option in the menu for the rest. If a button cannot open your agent, it shows the whole command
+  in a box with **Copy** and says where to paste it.
 - **Notices of what your agent is doing:** what you launch with a button (reading and assessing
   jobs, reviewing replies, generating or correcting a CV, the cover letter, company research,
   preparing an interview…) shows up in a notice on every page, with what it has done so far, and
@@ -537,13 +553,19 @@ Many pages have buttons that open your agent with the instruction already writte
   allowed notifications and are in another window, a system notification too. The CV is also
   saved in `data/cvs/` and the guide in `data/entrevistas/`.
 - **Your agent asks you in the app:** if it needs to know something to write a CV, a cover letter
-  or a guide, a notice lets you answer right there. You can also answer in its window. Permission
-  requests and conversations (a mock interview, say) stay in its window.
-- **In the background** (Claude Code; OpenCode only for `process-jobs` and `assess-fit`): for skills that do not ask
-  questions (`process-jobs`, `assess-fit`, `generate-cv`, `correct-cv`, `verify-cv`,
-  `generate-cover-letter` and the English summary). It runs without a window, only with the app tools it needs, and a
-  notice tells you when it is done. If your agent cannot, the menu suggests one
-  that can. Requires `cai worker`.
+  or a guide, a notice lets you answer right there. With no window, the notice turns amber with
+  **Respond** and the question shows in its conversation panel, with the options or free text. If
+  Claude Code needs **permission** for something the action does not allow beforehand, it asks in
+  the same panel: "Allow once", "Always allow in this project" or "Deny"; with no answer in 5
+  minutes, it is denied. What is always allowed is listed, and can be removed, on the **Agent** page.
+  A permission never replaces confirming an application. With Codex or OpenCode it is not asked:
+  whatever the action does not allow is denied. Conversations (a mock interview, say) stay in its
+  window.
+- **In the background** (Claude Code and OpenCode; Codex, for all except `process-jobs`): for
+  skills that do not ask questions (`process-jobs`, `assess-fit`, `generate-cv`,
+  `correct-cv`, `verify-cv`, `generate-cover-letter` and the English summary). It runs without a
+  window, only with the app tools it needs, and the notice shows how it is going. If your agent
+  cannot, the menu suggests one that can. Requires `cai worker` (started by `cai start`).
   - **Cost:** the **Cost** section of the **Agent** page adds up tokens, time and, if the agent
     reports it, money, by action, agent and model (7 and 30 days), with how much each skill
     weighs; the job page shows what was spent on that job and **Results**, per sent application and
@@ -567,10 +589,17 @@ If an agent is not suited to an action (it has no browser to search for postings
 says so and does not launch it. With nothing chosen, `CAI_AGENT` from `.env` or the first installed
 agent is used.
 Your agent's window opens behind your browser, which stays in view: on Windows, a PowerShell window
-minimized on the taskbar, named after the action (approve the permissions it asks for there; with
-`CAI_TERMINAL=wt` in `.env`, Windows Terminal is used instead, and it does come to the front).
-On macOS and Linux, the buttons open Terminal.app or your desktop's terminal; to use another one
-(iTerm2, kitty…), set `CAI_TERMINAL=iterm` (or its name or path) in `.env`.
+minimized on the taskbar, named after the action (approve the permissions it asks for there). On the
+“Agent” page, **How the window opens** lets you pick another way: **visible, behind the browser**, or
+**in Windows Terminal**, which does come to the front (the same as `CAI_TERMINAL=wt` in `.env`, as
+long as you have not chosen anything else). The notice at the bottom right says which window it is
+in and, on Windows, **Show the window** restores it and brings it to the front (if Windows does not
+allow that, it is left flashing on the taskbar; a Windows Terminal tab cannot be brought back this
+way). If the window is closed before it finishes, the notice changes to **The window was closed**;
+if your agent has done nothing with the app in 3 minutes (it is usually waiting for an answer in its
+window), it changes to **The agent has not started**, with **Show the window**, **Launch again** and
+**Mark as finished**. On macOS and Linux, the buttons open Terminal.app or your desktop's terminal;
+to use another one (iTerm2, kitty…), set `CAI_TERMINAL=iterm` (or its name or path) in `.env`.
 
 **Spending tiers.** On the same page, “Economy”, “Balanced” and “Maximum” store the agent and model
 for the main actions. “Economy” uses a local model to process, assess and classify replies, and

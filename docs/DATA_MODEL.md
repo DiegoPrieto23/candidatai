@@ -45,7 +45,11 @@ Una fila por ejecución de una fuente; la usan los conectores y, desde la 09b, a
 ### `agent_tasks` (fase 39g)
 Lo que acaba de lanzar un botón de la app: de ella salen los avisos «Leyendo y valorando ofertas…», «Generando el
 CV…». Cómo va se calcula con `mcp_calls` (un guardado correcto posterior) y, en segundo plano, con
-`agent_runs`. Las conversaciones no se siguen: no tienen un final que avisar.
+`agent_runs`. Las conversaciones no se siguen: no tienen un final que avisar. Las acciones con
+pasos declarados (`agent_actions.Step`: «Generar CV», «Corregir CV», «Verificar CV», «Escribir
+carta») dicen en el aviso en qué paso van, también con `mcp_calls`: un paso está hecho si el agente
+llamó bien a una de sus herramientas o a la de un paso posterior.
+
 | Columna | Tipo | Notas |
 |---|---|---|
 | id | int PK | |
@@ -56,6 +60,10 @@ CV…». Cómo va se calcula con `mcp_calls` (un guardado correcto posterior) y,
 | outcome | str? | `done` o `stopped`, lo que dijo el agente con `finish_task` |
 | started_at / finished_at | datetime | |
 | dismissed_at | datetime? | Aviso cerrado por el usuario, o sustituido por uno nuevo de lo mismo |
+| window_token | str? | Fase 48.1d: nombre del fichero (`data/tmp/windows/<token>.pid`) donde la ventana deja el PID de su shell al abrirse |
+| window_style / window_title | str? | Cómo se abrió (`minimized`, `behind`, `wt` o `terminal`) y su título |
+| window_pid | int? | El PID de esa ventana, leído del fichero (que se borra) |
+| window_closed_at | datetime? | Cuándo se vio cerrada sin haber terminado: el aviso pasa a «La ventana se cerró» |
 
 ### `search_runs` (fase 39d)
 Una búsqueda abierta desde «Buscar ahora» en la terminal del agente: de ella sale el aviso «Buscando…».
@@ -548,21 +556,37 @@ Registro por paso en `data/logs/applier/<intento>.jsonl` (sin valores personales
 Avisos para que el usuario haga algo en el navegador (migración 0012): un captcha, una
 comprobación anti-bot o un login. Los crea el agente (`request_user_action`) al buscar ofertas o
 el worker cuando una candidatura asistida se para. También las preguntas del agente (`ask_user`,
-migración 0036). La UI los enseña en un pop-up.
+migración 0036). La UI los enseña en un pop-up. Desde la fase 48.1b (migración 0046), también los
+permisos que pide un agente sin ventana (`request_permission`); los de una ejecución que se sigue en
+el portal se contestan en su panel. Queda así registrado quién permitió qué y cuándo.
 
 | Columna | Tipo | Notas |
 |---|---|---|
 | id | int PK | |
-| kind | str | `captcha`, `anti_bot`, `login_required`, `question` |
+| kind | str | `captcha`, `anti_bot`, `login_required`, `question`, `permission` |
 | options | JSON? | Pregunta: las respuestas para elegir |
-| answer | text? | Pregunta: lo que contestó el usuario |
+| answer | text? | Pregunta: lo que contestó el usuario. Permiso: `once`, `always` o `deny` («Saltar» = `deny`) |
 | job_id | int? | Pregunta: la oferta de la que va |
-| message | text | Qué hacer y dónde |
+| run_id | FK agent_runs? | La ejecución sin ventana que preguntó o pidió permiso (de `CAI_RUN_ID`) |
+| tool | str? | Permiso: la herramienta (`Bash`, `Read`…) |
+| message | text | Qué hacer y dónde; en un permiso, lo que quiere hacer (el comando, el fichero…, hasta 500 caracteres) |
 | url | str? | La página afectada |
 | source_id | FK sources? | La plataforma (búsqueda con navegador) |
 | attempt_id | FK application_attempts? | El intento (candidatura asistida): con «Ya está» se encola `apply_fill_page` |
 | status | str | `pending` → `done` («Ya está») / `skipped` («Saltar») / `expired` (pasó `expires_at` o lo sustituyó otro aviso de lo mismo) |
-| created_at / expires_at / answered_at | datetime | Por defecto caduca a los 5 minutos |
+| created_at / expires_at / answered_at | datetime | Por defecto caduca a los 5 minutos (un permiso sin respuesta, denegado) |
+
+### `agent_permission_rules`
+«Permitir siempre en este proyecto» desde el portal (fase 48.1b, migración 0046): esa herramienta con
+ese detalle se permite sin preguntar en las ejecuciones sin ventana. Se guarda en la app, no en la
+configuración del agente, y se quita desde la página «Agente».
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | int PK | |
+| tool | str | La herramienta (único con `detail`) |
+| detail | text | Lo que se permite, tal cual lo describió el permiso (el comando, el fichero…) |
+| created_at | datetime | |
 
 ## Ampliaciones de la fase 13 (sin tablas nuevas)
 
@@ -601,11 +625,12 @@ entorno), con el nombre que guarda `secret_ref`.
 | security | str | `ssl` o `starttls` |
 | user | str? | |
 | folder | str | Carpeta IMAP de las alertas, o el nombre de la carpeta de `data/inbox/` |
-| replies_folder | str | Carpeta IMAP de las respuestas (`INBOX`) |
+| replies_folders | JSON | Fase 48.3: las carpetas IMAP de las respuestas, de 1 a 10 (`["INBOX"]` por defecto) |
+| replies_folders_set | bool | En la cuenta de `.env`: las carpetas de respuestas se eligieron en la UI y ya no salen de `CAI_IMAP_REPLIES_FOLDER` |
 | enabled | bool | |
 | read_replies | bool | Si se leen de aquí las respuestas de las empresas. Se activa a propósito, también en la «Principal» |
 | secret_ref | str? | Nombre de la contraseña en el llavero, o de su variable de entorno (`CAI_IMAP_<ALIAS>_PASSWORD`) |
-| from_env | bool | La cuenta `CAI_IMAP_*` de `.env`: servidor, usuario y carpetas salen de ahí |
+| from_env | bool | La cuenta `CAI_IMAP_*` de `.env`: servidor, usuario y carpeta de alertas salen de ahí (las de respuestas, de `.env` hasta que se eligen en la UI) |
 | allow_private | bool | «Servidor en mi equipo o mi red» (un servidor propio) |
 | last_polled_at | datetime? | Última lectura |
 | last_error | JSON? | `{code, message}` del último fallo (`MailboxError`), o `null` |
@@ -862,6 +887,31 @@ entre procesos. Cancelar y terminar también van condicionados al estado. Si el 
 que esté en curso queda `failed`; si muere de golpe, al arrancar quedan `failed`, no se repiten y
 se para su agente si sigue vivo.
 
+### `agent_run_events`
+La conversación de una ejecución en segundo plano, en orden, para seguirla en el portal (migración
+0045). La escribe el runner con lo que leen los lectores de `agent_output.py` y la UI la lee con
+`GET /agent/runs/{id}/events?after=<seq>`. Hasta 2 000 por ejecución.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | int PK | |
+| run_id | FK agent_runs | |
+| seq | int | Orden dentro de la ejecución (único con `run_id`) |
+| at | datetime | Cuándo lo guardó el runner |
+| kind | str | `system` (arranque), `tool_start`, `tool_result`, `text` (lo que escribe el agente principal), `result`, `error`; reservados: `user`, `question`, `permission` |
+| tool | str? | La herramienta, sin prefijo MCP (`get_profile`, `Skill`, `command_execution`…) |
+| text | text? | El texto del agente (hasta 8 000 caracteres, con sus saltos de línea), el resultado si no repite el último mensaje, el error o, en una herramienta, un detalle corto: el skill, el subagente o el fichero. `denied` en un `tool_result` que el techo de la acción no permitió. Nunca la entrada ni la salida de una herramienta |
+| ok | bool? | En `tool_result` y `result`: si fue bien |
+| sub | bool | Lo hizo un subagente (su texto no se guarda) |
+| delivered_at | datetime? | Fase 48.1c (migración 0047): en un mensaje del usuario (`kind = user`) escrito mientras trabaja, cuándo se le pasó al agente (con su siguiente herramienta). Los que retoman la conversación van en la orden y nacen entregados |
+
+`user` (fase 48.1c) es lo que el usuario escribe en el panel. Al retomar una ejecución terminada,
+la misma fila de `agent_runs` vuelve a `queued` con la orden de retomar su sesión, y la conversación
+sigue con el `seq` siguiente: el `seq` lo da la base (el mayor más uno), porque escriben el runner y
+la API.
+
+El texto del agente es contenido no confiable: la UI lo pinta como texto plano.
+
 ### `agent_requests`
 Cola de encargos: lo que la UI deja para la próxima sesión interactiva del agente.
 
@@ -937,7 +987,7 @@ lee `services/agent_prefs.py`.
 | Columna | Tipo | Notas |
 |---|---|---|
 | id | int PK | |
-| scope | str | `default` (el agente por defecto), `agent` (el modelo de un agente), `action` (el agente de una acción), `tier` / `tier_undo` (niveles de gasto) o `setting` (un ajuste con su número o valor en `model`: `assess_min_score`, `extra_matching`, `browse_max_offers`, las ofertas por portal de las plataformas nuevas, y `ui_lang`, el idioma del portal, `es` o `en`, con el que se escriben las órdenes al agente y la consola de `cai start`) |
+| scope | str | `default` (el agente por defecto), `agent` (el modelo de un agente), `action` (el agente de una acción), `tier` / `tier_undo` (niveles de gasto) o `setting` (un ajuste con su número o valor en `model`: `assess_min_score`, `extra_matching`, `browse_max_offers`, las ofertas por portal de las plataformas nuevas, `open_in_window`, «Abrir en una ventana» (`1` o `0`), y `ui_lang`, el idioma del portal, `es` o `en`, con el que se escriben las órdenes al agente y la consola de `cai start`) |
 | key | str | Vacía en `default`; el agente en `agent`; la acción en `action`. Única con `scope` |
 | agent | str? | En `default` y `action` |
 | model / preset | str? | Uno de los dos o ninguno. El modelo es texto libre validado con `models.pattern` del agente, sin red |

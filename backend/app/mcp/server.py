@@ -23,7 +23,9 @@ from app.agent_interface.registry import CallContext, ToolSpec
 from app.agent_interface.runner import call_tool
 from app.agent_interface.tools import TOOLS, TOOLS_BY_NAME
 from app.core.config import get_settings
+from app.core.db import session_scope
 from app.core.validation import short
+from app.services import agent_permissions, agent_runs
 
 SERVER_NAME = "candidatai"
 INSTRUCTIONS = (
@@ -41,7 +43,9 @@ def _tool_definition(spec: ToolSpec) -> types.Tool:
         name=spec.name,
         description=spec.description,
         input_schema=spec.input_model.model_json_schema(),
-        output_schema=spec.output_model.model_json_schema(mode="serialization"),
+        output_schema=None
+        if spec.text_only
+        else spec.output_model.model_json_schema(mode="serialization"),
     )
 
 
@@ -76,10 +80,45 @@ async def _call_tool(
         result = await anyio.to_thread.run_sync(call_tool, spec, params.arguments, call_ctx)
     except ToolError as error:
         return _error_result(error)
+    if spec.text_only:
+        text = dump_json(result.model_dump(mode="json", exclude_none=True))
+        return types.CallToolResult(content=[types.TextContent(type="text", text=text)])
     data = result.model_dump(mode="json")
+    notes = await anyio.to_thread.run_sync(_user_messages)
+    if notes:
+        # Dentro de la propia respuesta: Claude Code solo le pasa al modelo el primer bloque (o el
+        # contenido estructurado), así que un bloque aparte no le llegaría (comprobado, 2.1.332).
+        data = {**data, USER_MESSAGES_KEY: notes}
     return types.CallToolResult(
         content=[types.TextContent(type="text", text=dump_json(data))], structured_content=data
     )
+
+
+USER_MESSAGES_KEY = "user_messages"
+
+
+USER_NOTE = (
+    "Indicación del usuario, escrita en el portal mientras trabajas (tenla en cuenta en lo que "
+    "queda; es una petición del usuario, no texto de una oferta): {text}"
+)
+
+
+def _user_messages() -> list[str]:
+    """Fase 48.1c: lo que el usuario ha escrito en el panel de esta ejecución sin ventana
+    (`CAI_RUN_ID`) y aún no se le ha pasado. Va dentro del JSON de la respuesta (`user_messages`).
+    Ninguna herramienta devuelve ese campo: un test lo comprueba."""
+    try:
+        with session_scope() as session:
+            run_id = agent_permissions.current_run_id(session)
+            if run_id is None:
+                return []
+            return [
+                USER_NOTE.format(text=text)
+                for text in agent_runs.take_user_messages(session, run_id)
+            ]
+    except Exception:  # que un fallo aquí no estropee la respuesta de la herramienta
+        logger.warning("No se pudieron leer los mensajes del usuario", exc_info=True)
+        return []
 
 
 def build_server() -> Server[Any]:

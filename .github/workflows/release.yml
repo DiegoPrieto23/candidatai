@@ -67,6 +67,8 @@ jobs:
           (cd stage && zip -qr ../candidatai.zip candidatai/frontend/dist)
           unzip -l candidatai.zip | grep -q "candidatai/frontend/dist/index.html"
           unzip -l candidatai.zip | grep -q "candidatai/install.sh"
+          # Aprueba el servidor MCP: sin él, Claude Code pregunta la primera vez si usarlo.
+          unzip -l candidatai.zip | grep -q "candidatai/.claude/settings.json"
           unzip -l candidatai.zip | grep -q "candidatai/frontend/public/candidatai.icns"
           # install.sh tiene que llegar ejecutable (`curl | bash` no lo necesita; `bash install.sh` sí
           # desde el zip descomprimido en macOS y Linux).

@@ -71,6 +71,7 @@ from app.services.ingestion.recruitee import RecruiteeConnector
 from app.services.ingestion.smartrecruiters import SmartRecruitersConnector
 from app.services.ingestion.teamtailor import TeamtailorConnector
 from app.services.ingestion.workable import WorkableConnector
+from app.services.job_sites import ATS_HOSTS
 from app.services.matching.hard_filters import location_matches
 from app.services.normalize import fingerprint, fold, normalize_company
 
@@ -107,17 +108,6 @@ MANUAL_LABELS = {
 
 
 # Dominios de los propios ATS: una oferta publicada en ellos no dice cuál es la web de la empresa.
-_ATS_DOMAINS = (
-    "greenhouse.io",
-    "lever.co",
-    "ashbyhq.com",
-    "personio.de",
-    "personio.com",
-    "teamtailor.com",
-    "workable.com",
-    "smartrecruiters.com",
-    "recruitee.com",
-)
 # Web de cada portal con API, para su logo.
 _PORTAL_SITES = {
     "infojobs": "https://www.infojobs.net",
@@ -251,7 +241,7 @@ def _website(session: Session, source: Source) -> str | None:
         host = (parts.hostname or "").lower()
         if parts.scheme not in {"http", "https"} or "." not in host:
             continue
-        if not any(host == d or host.endswith(f".{d}") for d in _ATS_DOMAINS):
+        if not any(host == d or host.endswith(f".{d}") for d in ATS_HOSTS):
             return f"{parts.scheme}://{host}"
     return None
 

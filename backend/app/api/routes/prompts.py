@@ -4,10 +4,10 @@ Capa fina sobre `services/prompts.py`. Los crea el agente (`request_user_action`
 una candidatura asistida; aquí solo se leen y se contestan.
 """
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.api.deps import SessionDep
+from app.api.deps import SessionDep, require_ui
 from app.services import prompts
 
 router = APIRouter(prefix="/prompts", tags=["prompts"])
@@ -26,7 +26,11 @@ def list_pending_prompts(session: SessionDep) -> prompts.PendingPrompts:
     return prompts.list_pending(session)
 
 
-@router.post("/{prompt_id}/answer", operation_id="answer_prompt")
+@router.post(
+    "/{prompt_id}/answer", operation_id="answer_prompt", dependencies=[Depends(require_ui)]
+)
 def answer_prompt(session: SessionDep, prompt_id: int, body: AnswerBody) -> prompts.PromptView:
-    """«Ya está» o «Saltar». En una candidatura asistida, «Ya está» vuelve a rellenar la página."""
+    """«Ya está» o «Saltar». En una candidatura asistida, «Ya está» vuelve a rellenar la página.
+    Solo desde la UI (fase 48.1b): ninguna otra web puede contestar un permiso. Que no lo conteste
+    el propio agente lo garantiza su techo sin ventana: no tiene terminal ni web."""
     return prompts.answer(session, prompt_id, body.outcome, body.answer)

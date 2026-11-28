@@ -43,11 +43,11 @@ from app.core import processes
 from app.core.config import REPO_ROOT
 from app.core.db import session_scope
 from app.core.policies import get_policies
-from app.models import AgentRun
+from app.models import AgentRun, AgentRunEvent
 from app.models.base import utcnow
-from app.services import agent_registry, agent_run_config
+from app.services import agent_permissions, agent_registry, agent_run_config
 from app.services.agent_launch import CLIENT_ENV, QUESTION_PREFIX, QUESTION_PREFIX_EN
-from app.services.agent_output import PARSERS, short
+from app.services.agent_output import PARSERS, RunEvent, short
 from app.services.agent_runs import INTERRUPTED, ProgressKind, RunStatus
 
 logger = logging.getLogger(__name__)
@@ -55,6 +55,7 @@ logger = logging.getLogger(__name__)
 FLUSH_SECONDS = 2.0  # cada cuánto se guarda el progreso y se mira si han pedido cancelar
 RESULT_GRACE_SECONDS = 10.0  # tras el resultado final, lo que se espera a que el agente salga
 MAX_QUESTIONS = 10
+MAX_EVENTS = 2_000  # de la conversación de una ejecución; lo que pase de ahí no se guarda
 # «PREGUNTA:» con la orden en español y «QUESTION:» con la orden en inglés.
 _QUESTION_WORDS = "|".join(re.escape(p.rstrip(":")) for p in (QUESTION_PREFIX, QUESTION_PREFIX_EN))
 QUESTION_RE = re.compile(rf"^[\W_]*(?:{_QUESTION_WORDS})\s*:\**\s*(.+)$", re.I)
@@ -242,6 +243,72 @@ def _save(run_id: int, **values: Any) -> bool:
     return _retry_locked(work)
 
 
+FINAL_EVENTS = frozenset({"result", "error"})  # caben siempre: el panel dice cómo acabó
+
+
+def _save_events(run_id: int, events: list[RunEvent], seen: int, stored: int) -> tuple[int, int]:
+    """Guarda los eventos de la conversación desde `seen` y devuelve hasta dónde se ha mirado y
+    cuántos hay guardados. Hasta `MAX_EVENTS`; los dos últimos huecos, solo para el resultado y
+    los errores."""
+    fresh: list[RunEvent] = []
+    for event in events[seen:]:
+        room = MAX_EVENTS if event.kind in FINAL_EVENTS else MAX_EVENTS - len(FINAL_EVENTS)
+        if stored >= room:
+            continue
+        stored += 1
+        fresh.append(event)
+    if fresh:
+
+        def work() -> None:
+            # El `seq` sale de la base: los mensajes del usuario (fase 48.1c) se escriben aquí
+            # también, desde la API. La lectura va dentro del savepoint, que reserva la base para
+            # escribir (`BEGIN IMMEDIATE`, `core.db`): nadie más escribe entre leer y guardar.
+            with session_scope() as session, session.begin_nested():
+                last = session.scalar(
+                    select(func.max(AgentRunEvent.seq)).where(AgentRunEvent.run_id == run_id)
+                )
+                now = utcnow()
+                session.add_all(
+                    AgentRunEvent(
+                        run_id=run_id,
+                        seq=(last or 0) + offset + 1,
+                        at=now,
+                        kind=event.kind,
+                        tool=event.tool,
+                        text=event.text,
+                        ok=event.ok,
+                        sub=event.sub,
+                    )
+                    for offset, event in enumerate(fresh)
+                )
+
+        _retry_locked(work)
+    return len(events), stored
+
+
+def merge_usage(before: dict[str, Any] | None, now: dict[str, Any]) -> dict[str, Any]:
+    """Fase 48.1c: al retomar una conversación, el uso se suma al de antes (las cifras) y lo demás
+    (las herramientas denegadas) se junta."""
+    merged: dict[str, Any] = dict(before or {})
+    for key, value in now.items():
+        old = merged.get(key)
+        # Lo que da cada agente al retomar es de esa invocación, no acumulado (comprobado con Claude
+        # Code 2.1.332: `num_turns` 1 y sus propios tokens), así que se suma.
+        numbers = (int, float)
+        if (
+            isinstance(value, numbers)
+            and isinstance(old, numbers)
+            and not isinstance(value, bool)
+            and not isinstance(old, bool)
+        ):
+            merged[key] = old + value
+        elif isinstance(value, list) and isinstance(old, list):
+            merged[key] = sorted(set(old) | set(value))
+        else:
+            merged[key] = value
+    return merged
+
+
 def _mcp_prefix(agent: str) -> str | None:
     """`tools.mcp_prefix` del agente que ejecutó, si tiene segundo plano (`agent_registry`)."""
     try:
@@ -282,14 +349,23 @@ def _execute(run: AgentRun, timeout: float | None, poll: float) -> AgentRunOutco
     policy = get_policies().background_runs
     timeout = timeout if timeout is not None else policy.timeout_minutes * 60
     progress: deque[dict[str, Any]] = deque(maxlen=policy.max_progress_lines)
+    # La conversación: lo que da el lector de la salida más lo que dice el propio runner.
+    events: list[RunEvent] = []
+    seen_events = stored_events = 0
 
     def note(kind: ProgressKind, text: str) -> None:
         progress.append({"at": utcnow().isoformat(), "kind": kind, "text": text})
 
-    def finish(status: RunStatus, error: str | None = None, **values: Any) -> AgentRunOutcome:
+    def finish(
+        status: RunStatus, error: str | None = None, told: bool = False, **values: Any
+    ) -> AgentRunOutcome:
+        """`told`: el agente ya dejó el error en la conversación (no se repite)."""
         if error:
             note("error", short(error))
+            if not told:
+                events.append(RunEvent("error", short(error, 500)))
         values = {"progress": list(progress), "finished_at": utcnow(), **values}
+        _save_events(run.id, events, seen_events, stored_events)
         _save(run.id, status=status, error=error, **values)
         questions = len(values.get("questions") or [])
         return AgentRunOutcome(
@@ -306,7 +382,10 @@ def _execute(run: AgentRun, timeout: float | None, poll: float) -> AgentRunOutco
         return finish("failed", f"No se pudo preparar la configuración de la ejecución: {exc}")
     try:
         unset = [*run.unset_env, *clear_env]
-        proc = _popen(command, unset, run.agent, extra_env)
+        # Fase 48.1b: con la ejecución en el entorno, lo que pregunte o pida (`ask_user`,
+        # `request_permission`) sale en su panel.
+        run_env = {**extra_env, agent_permissions.RUN_ENV: str(run.id)}
+        proc = _popen(command, unset, run.agent, run_env)
     except OSError as exc:
         return finish("failed", f"No se pudo lanzar el agente: {exc}")
 
@@ -344,6 +423,7 @@ def _execute(run: AgentRun, timeout: float | None, poll: float) -> AgentRunOutco
                 for kind, text in state.progress[seen:]:
                     note(kind, text)
                 seen = len(state.progress)
+                events.extend(state.events[len(events) :])  # hasta `finish`, solo los del lector
                 if state.mcp_broken:
                     stop = "mcp"
                     break
@@ -358,6 +438,9 @@ def _execute(run: AgentRun, timeout: float | None, poll: float) -> AgentRunOutco
                 break
             if now >= next_flush:
                 next_flush = now + FLUSH_SECONDS
+                seen_events, stored_events = _save_events(
+                    run.id, events, seen_events, stored_events
+                )
                 if _save(run.id, progress=list(progress), session_id=state.session_id):
                     stop = "cancelled"
                     break
@@ -381,8 +464,8 @@ def _execute(run: AgentRun, timeout: float | None, poll: float) -> AgentRunOutco
 
     state = parser.state
     common: dict[str, Any] = {
-        "session_id": state.session_id,
-        "usage": state.usage or None,
+        "session_id": state.session_id or run.session_id,
+        "usage": merge_usage(run.usage, state.usage) or None,
         "result": state.result,
     }
     if stop == "cancelled":
@@ -411,7 +494,7 @@ def _execute(run: AgentRun, timeout: float | None, poll: float) -> AgentRunOutco
     if state.is_error:
         kind = f" ({state.subtype})" if state.subtype and state.subtype != "success" else ""
         reason = short(state.result or "sin detalle")
-        return finish("failed", f"El agente terminó con error{kind}: {reason}", **common)
+        return finish("failed", f"El agente terminó con error{kind}: {reason}", told=True, **common)
     questions = questions_in(state.result or "")
     note("info", "Terminada.")
     return finish("needs_user" if questions else "done", questions=questions, **common)
