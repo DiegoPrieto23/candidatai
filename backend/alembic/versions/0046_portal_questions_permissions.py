@@ -42,7 +42,9 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.drop_table("agent_permission_rules")
     with op.batch_alter_table("user_prompts") as batch_op:
-        batch_op.drop_constraint(batch_op.f("fk_user_prompts_run_id_agent_runs"), type_="foreignkey")
+        batch_op.drop_constraint(
+            batch_op.f("fk_user_prompts_run_id_agent_runs"), type_="foreignkey"
+        )
         batch_op.drop_index(batch_op.f("ix_user_prompts_run_id"))
         batch_op.drop_column("tool")
         batch_op.drop_column("run_id")
